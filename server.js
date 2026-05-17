@@ -75,11 +75,8 @@ app.post("/criar-pagamento", async (req, res) => {
     const resposta = await preference.create({
       body: {
   payment_methods: {
-    excluded_payment_types: [],
-    installments: 1,
-    default_payment_method_id: "pix"
-  },
-
+  installments: 1
+},
   external_reference: String(idPedido),
 
   items: [
