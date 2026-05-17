@@ -41,7 +41,7 @@ app.post("/criar-pagamento", async (req, res) => {
       estado
     } = req.body;
 
-    const valorFrete = 20;
+    const valorFrete = 0;
 
     const totalPedido = itens.reduce((soma, item) => {
       return soma + (Number(item.preco) * Number(item.quantidade));

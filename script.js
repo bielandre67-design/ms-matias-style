@@ -240,10 +240,10 @@ function calcularFrete(){
     return;
   }
 
-  valorFrete = 20;
+  valorFrete = 0;
 
   document.getElementById("resultadoFrete").innerText =
-    "Frete: R$ 20,00";
+    "Frete grátis para teste";
 
   atualizarCarrinho();
 }
