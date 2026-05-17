@@ -205,7 +205,7 @@ if(dados.init_point){
    alert("Erro ao iniciar pagamento.");
 }
 
-}
+} // <- adiciona ESSA aqui
 
 function aumentarQuantidade(index){
 
