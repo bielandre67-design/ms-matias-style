@@ -80,7 +80,7 @@ Complemento: ${complemento || "Sem complemento"}
 }
 async function marcarEnviado(id){
 
-  await fetch("https://ms-matias-style.onrender.com/atualizar-status", {, {
+await fetch("https://ms-matias-style.onrender.com/atualizar-status", {
 
     method:"POST",
 
