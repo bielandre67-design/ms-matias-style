@@ -129,7 +129,6 @@ function mostrarAviso(){
 }
 async function finalizarCompra(){
   
-
   if(carrinho.length === 0){
     alert("Seu carrinho está vazio.");
     return;
@@ -160,8 +159,8 @@ if(valorFrete <= 0){
 
   try{
 
-    const resposta = await fetch("https://ms-matias-style.onrender.com/criar-pagamento",  {
-      method:"POST",
+    const resposta = await fetch("https://ms-matias-style.onrender.com/criar-pagamento", {
+    method:"POST",
 
       headers:{
         "Content-Type":"application/json"
@@ -193,34 +192,39 @@ if(valorFrete <= 0){
 
     const dados = await resposta.json();
 
+console.log(dados);
+
+if(dados.init_point){
     window.location.href = dados.init_point;
+}else{
+    alert("Mercado Pago não gerou o link de pagamento. Veja o console.");
+}
 
-  }catch(erro){
-
-    console.log(erro);
-
-    alert("Erro ao iniciar pagamento.");
-
-  }
+}catch(erro){
+   console.log(erro);
+   alert("Erro ao iniciar pagamento.");
+}
 
 }
-function aumentarQuantidade(index){
-  carrinho[index].quantidade += 1;
 
-  atualizarContador();
-  atualizarCarrinho();
+function aumentarQuantidade(index){
+
+    carrinho[index].quantidade += 1;
+
+    atualizarContador();
+    atualizarCarrinho();
 }
 
 function diminuirQuantidade(index){
 
-  if(carrinho[index].quantidade > 1){
-    carrinho[index].quantidade -= 1;
-  }else{
-    carrinho.splice(index, 1);
-  }
+    if(carrinho[index].quantidade > 1){
+        carrinho[index].quantidade -= 1;
+    }else{
+        carrinho.splice(index, 1);
+    }
 
-  atualizarContador();
-  atualizarCarrinho();
+    atualizarContador();
+    atualizarCarrinho();
 }
 
 function calcularFrete(){
@@ -344,6 +348,7 @@ async function buscarEndereco(){
   }
 
   try{
+
     const resposta = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
     const endereco = await resposta.json();
 
