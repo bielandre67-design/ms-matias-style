@@ -142,6 +142,42 @@ app.post("/atualizar-status", (req, res) => {
   });
 });
 const PORT = process.env.PORT || 3000;
+app.post("/webhook", async (req, res) => {
+  try {
+    const pagamentoId = req.body?.data?.id || req.query["data.id"];
+
+    if(!pagamentoId){
+      return res.sendStatus(200);
+    }
+
+    const resposta = await fetch(`https://api.mercadopago.com/v1/payments/${pagamentoId}`, {
+      headers: {
+        Authorization: `Bearer ${client.accessToken}`
+      }
+    });
+
+    const pagamento = await resposta.json();
+
+    if(pagamento.status === "approved"){
+      const idPedido = pagamento.external_reference;
+
+      const pedidos = lerPedidos();
+
+      const pedido = pedidos.find(p => String(p.id) === String(idPedido));
+
+      if(pedido){
+        pedido.status = "pago";
+        salvarPedidos(pedidos);
+      }
+    }
+
+    res.sendStatus(200);
+
+  }catch(erro){
+    console.log("Erro no webhook:", erro);
+    res.sendStatus(200);
+  }
+});
 
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
