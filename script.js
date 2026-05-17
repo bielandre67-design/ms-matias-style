@@ -152,10 +152,10 @@ if(!cep || !rua || !numero || !bairro || !cidade || !estado){
   return;
 }
 
-if(valorFrete <= 0){
-  alert("Calcule o frete antes de finalizar a compra.");
-  return;
-}
+// if(valorFrete <= 0){
+//   alert("Calcule o frete antes de finalizar a compra.");
+//   return;
+// }
 
   try{
 
