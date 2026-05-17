@@ -70,12 +70,19 @@ app.post("/criar-pagamento", async (req, res) => {
     salvarPedidos(pedidos);
 
     const preference = new Preference(client);
+    
 
     const resposta = await preference.create({
       body: {
-        external_reference: String(idPedido),
+  payment_methods: {
+    excluded_payment_types: [],
+    installments: 1,
+    default_payment_method_id: "pix"
+  },
 
-        items: [
+  external_reference: String(idPedido),
+
+  items: [
           ...itens.map((item) => ({
             title: `${item.nome} - Tamanho ${item.tamanho}`,
             quantity: item.quantidade,
@@ -96,6 +103,7 @@ app.post("/criar-pagamento", async (req, res) => {
           failure: "https://ms-matias-style.vercel.app/erro.html",
           pending: "https://ms-matias-style.vercel.app/pendente.html"
         }
+        
       }
     });
 
