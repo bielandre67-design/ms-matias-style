@@ -4,7 +4,7 @@ async function carregarPedidos(){
   lista.innerHTML = "<p>Carregando pedidos...</p>";
 
   try{
-    const resposta = await fetch("http://localhost:3000/pedidos");
+    const resposta = await fetch("https://ms-matias-style.onrender.com/pedidos")
     const pedidos = await resposta.json();
 
     if(pedidos.length === 0){
@@ -80,7 +80,7 @@ Complemento: ${complemento || "Sem complemento"}
 }
 async function marcarEnviado(id){
 
-  await fetch("http://localhost:3000/atualizar-status", {
+  await fetch("https://ms-matias-style.onrender.com/atualizar-status", {, {
 
     method:"POST",
 

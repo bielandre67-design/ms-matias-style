@@ -160,7 +160,7 @@ if(valorFrete <= 0){
 
   try{
 
-    const resposta = await fetch("http://localhost:3000/criar-pagamento", {
+    const resposta = await fetch("https://ms-matias-style.onrender.com/criar-pagamento"), {
       method:"POST",
 
       headers:{
