@@ -93,9 +93,9 @@ app.post("/criar-pagamento", async (req, res) => {
 
   
 
-    const totalPedido = itens.reduce((soma, item) => {
-      return soma + (Number(item.preco) * Number(item.quantidade));
-    }, 0) + valorFrete;
+    const totalPedido = items.reduce((soma, item) => {
+  return soma + (Number(item.preco) * Number(item.quantidade));
+}, 0) + (Number(valorFrete) || 0);
 
     const pedidos = lerPedidos();
     const idPedido = pedidos.length + 1;

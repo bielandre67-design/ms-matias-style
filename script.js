@@ -630,9 +630,7 @@ div.classList.add("frete-selecionado");
 }
 
 
-function finalizarCompra() {
-  alert("Agora vamos ligar isso no Mercado Pago.");
-}
+
 
 let slideAtualBanner = 0;
 
