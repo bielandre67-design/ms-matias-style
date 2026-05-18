@@ -76,23 +76,22 @@ const client = new MercadoPagoConfig({
 });
 app.post("/criar-pagamento", async (req, res) => {
   try {
- const {
-  items,
-  nome,
-  telefone,
-  cep,
-  rua,
-  numero,
-  complemento,
-  bairro,
-  cidade,
-  estado,
-  valorFrete,
-  freteSelecionado,
-  desconto,
-  totalComFrete
-} = req.body;
+ const body = req.body || {};
 
+const items = body.items || [];
+const nome = body.nome || "";
+const telefone = body.telefone || "";
+const cep = body.cep || "";
+const rua = body.rua || "";
+const numero = body.numero || "";
+const complemento = body.complemento || "";
+const bairro = body.bairro || "";
+const cidade = body.cidade || "";
+const estado = body.estado || "";
+const valorFrete = Number(body.valorFrete) || 0;
+const freteSelecionado = body.freteSelecionado || null;
+const desconto = Number(body.desconto) || 0;
+const totalComFrete = Number(body.totalComFrete) || 0;
   
 
     const totalPedido = items.reduce((soma, item) => {
