@@ -170,30 +170,26 @@ console.log("FRETE ENVIADO:", valorFrete, freteSelecionado);
         "Content-Type":"application/json"
       },
 
-     body: JSON.stringify({
-
-  itens: carrinho,
+   body: JSON.stringify({
+  items: carrinho,
 
   nome: document.getElementById("nomeCliente").value,
   telefone: document.getElementById("telefoneCliente").value,
-
-  cep: document.getElementById("cepCliente").value,
-
-  
 
   cep: document.getElementById("cepCliente").value,
   rua: document.getElementById("ruaCliente").value,
   numero: document.getElementById("numeroCliente").value,
   complemento: document.getElementById("complementoCliente").value,
   bairro: document.getElementById("bairroCliente").value,
-  ccidade: document.getElementById("cidadeCliente").value,
-estado: document.getElementById("estadoCliente").value,
+  cidade: document.getElementById("cidadeCliente").value,
+  estado: document.getElementById("estadoCliente").value,
 
-valorFrete: valorFrete,
-freteSelecionado: freteSelecionado
+  valorFrete: valorFrete,
+  freteSelecionado: freteSelecionado,
 
-})
-    });
+  desconto: desconto,
+  totalComFrete: totalComFrete
+})});
 
     const dados = await resposta.json();
 
