@@ -246,14 +246,14 @@ async function calcularFrete() {
   try {
 
     const resposta = await fetch("https://ms-matias-style.onrender.com/calcular-frete", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ cep })
-    });
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({ cep })
+});
 
-    const fretes = await resposta.json();
+const fretes = await resposta.json();
 
     const opcoesValidas = fretes.filter(frete => !frete.error);
 
