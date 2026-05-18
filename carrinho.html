@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Carrinho - MS</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <main class="checkout-ms">
+
+    <button class="voltar-checkout" onclick="history.back()">‹</button>
+
+    <h2 id="tituloEtapa">Carrinho</h2>
+
+    <div class="etapas">
+  <span class="ativo" data-num="1">Carrinho</span>
+  <span data-num="2">Entrega</span>
+  <span data-num="3">Pagamento</span>
+</div>
+
+   <section id="etapaCarrinho" class="etapa-checkout ativa">
+
+  <div id="listaCarrinhoMobile"></div>
+
+  <div class="resumo-checkout">
+    <p><span>Subtotal</span><strong id="subtotal1">R$ 0,00</strong></p>
+    <p><span>Total</span><strong id="total1">R$ 0,00</strong></p>
+  </div>
+
+  <button class="btn-checkout" onclick="irEntrega()">
+    Continuar
+  </button>
+  <button class="btn-limpar" onclick="limparCarrinhoMobile()">
+  Limpar carrinho
+</button>
+
+</section>
+
+    
+    <section id="etapaEntrega" class="etapa-checkout">
+      <h3>Calcular frete</h3>
+
+      <div class="cep-box">
+        <input id="cepCheckout" placeholder="Digite seu CEP">
+        <button onclick="calcularFreteCheckout()">Calcular</button>
+      </div>
+
+      <div class="frete-opcao">
+        <span>◎ Frete Normal<br><small>3 a 7 dias úteis</small></span>
+        <strong id="freteValor">R$ 0,00</strong>
+      </div>
+
+      <div class="resumo-checkout">
+        <p><span>Subtotal</span><strong>R$ 1,00</strong></p>
+        <p><span>Frete</span><strong>R$ 15,90</strong></p>
+       <strong id="totalCheckout">R$ 1,00</strong></p>
+      </div>
+
+      <button class="btn-checkout" onclick="irPagamento()">Continuar para pagamento</button>
+    </section>
+
+    <section id="etapaPagamento" class="etapa-checkout">
+      <div class="resumo-checkout">
+        <h3>Resumo do pedido</h3>
+
+        <div class="item-checkout mini">
+          <img id="checkoutImg2" src="moletom-rosa.png">
+          <div>
+            <h3 id="checkoutNome2">Moletom Rosa MS</h3>
+            <p id="checkoutTam2">Tamanho: P</p>
+            <p>Qtd: 1</p>
+          </div>
+        
+        </div>
+
+        <p><span>Subtotal</span><strong>R$ 1,00</strong></p>
+        <p><span>Frete</span><strong>R$ 15,90</strong></p>
+        <p><span>Total</span><strong>R$ 16,90</strong></p>
+      </div>
+
+      <div class="pagamento-box">
+        <h3>Pagamento</h3>
+        <p>Você será redirecionado para o Mercado Pago para finalizar sua compra.</p>
+      </div>
+
+      <button class="btn-checkout" onclick="finalizarCompra()">🔒 Finalizar compra</button>
+    </section>
+
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

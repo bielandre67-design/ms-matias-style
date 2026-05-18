@@ -36,35 +36,65 @@
 
 
 
- <section class="hero" id="inicio">
+<!-- ===== BANNER PC ===== -->
+<section class="hero" id="inicio">
 
-    <div class="slider">
+  <div class="slider">
 
-        <div class="slides">
-            <img src="banner-ms10.png">
-            <img src="moletom-rosa.png">
-            <img src="MOLETOM-PRETO.png">
-        </div>
-
+    <div class="slides">
+      <img src="banner-ms10.png">
+      <img src="moletom-rosa.png">
+      <img src="MOLETOM-PRETO.png">
     </div>
 
-    
+  </div>
+
+  <div class="hero-text">
+
+    <p class="tag">Nova coleção</p>
+
+    <h1>
+      Streetwear jovem, limpo e pesado no estilo.
+    </h1>
+
+    <p>
+      Moletons selecionados para quem curte visual
+      minimalista, urbano e confortável.
+    </p>
+
+  </div>
+
+</section>
 
 
+<!-- ===== BANNER MOBILE ===== -->
+<section class="banner-mobile">
 
-    <div class="hero-texto">
-        <p class="tag">Nova coleção</p>
-        <h1>Streetwear jovem, limpo e pesado no estilo.</h1>
+  <div class="banner-slider">
 
-        <p>
-            Moletons selecionados para quem curte visual minimalista,
-            urbano e confortável.
-        </p>
+  <img src="modelo-rosa.png" class="slide ativo">
 
-        <a href="#produtos" class="btn-principal">
-            Ver produtos
-        </a>
-    </div>
+  <img src="modelo-preto.png" class="slide">
+
+  <img src="modelo-offwhite.png" class="slide">
+
+</div>
+
+  <div class="banner-info">
+
+    <span>NOVA COLEÇÃO</span>
+
+    <h1>Streetwear premium</h1>
+
+    <p>
+      Visual jovem, minimalista e pesado no estilo.
+    </p>
+
+    <a href="#produtos" class="btn-banner">
+      Ver produtos
+    </a>
+
+  </div>
 
 </section>
 
@@ -126,7 +156,7 @@
         <img src="modelo-offwhite.png" class="foto-hover">
       </div>
       <h3>Moletom Off White MS</h3>
-      <p class="preco">R$ 5,00</p>
+      <p class="preco">R$ 30,00</p>
       <div class="tamanhos">
         <button onclick="selecionarTamanho(this, 'P')">P</button>
         <button onclick="selecionarTamanho(this, 'M')">M</button>
@@ -135,7 +165,7 @@
       </div>
       <button class="btn-comprar" onclick="adicionarCarrinho(this)"
         data-nome="Moletom Off White MS"
-        data-preco="5.00"
+        data-preco="15.00"
         data-img="moletom-offwhite.png">
         Adicionar ao carrinho
       </button>
@@ -219,71 +249,101 @@
   <div class="fundo-carrinho" id="fundoCarrinho" onclick="fecharCarrinho()"></div>
 
   <aside class="carrinho" id="carrinho">
-    <div class="carrinho-topo">
-      <h2>Seu carrinho</h2>
-      <button onclick="fecharCarrinho()">✕</button>
-    </div>
 
+  <div class="carrinho-topo">
+    <h2>Seu carrinho</h2>
+    <button onclick="fecharCarrinho()">×</button>
+  </div>
+
+  <div class="etapas-pc">
+    <span class="ativo" id="step1">1 Carrinho</span>
+    <span id="step2">2 Entrega</span>
+    <span id="step3">3 Pagamento</span>
+  </div>
+
+  <div id="etapaCarrinhoPC" class="etapa-pc ativa">
     <div id="listaCarrinho" class="lista-carrinho">
       <p class="carrinho-vazio">Seu carrinho está vazio.</p>
     </div>
 
-    <div class="carrinho-rodape">
-    
+    <button class="btn-finalizar" onclick="irEntregaPC()">Continuar</button>
+    <button class="btn-limpar-pc" onclick="limparCarrinhoPC()">Limpar carrinho</button>
+  </div>
 
-    <div class="cupom-box">
-     
-
-    <label>Código promocional</label>
-
-    <div class="cupom-area">
-
-        <input type="text"
-id="cupomInput"
-placeholder="Digite seu cupom"
-autocomplete="off">
-        <button onclick="aplicarCupom()">
-            Aplicar
-        </button>
-
-    </div>
-
-    <p id="cupomMensagem"></p>
-
-</div>
+  <div id="etapaEntregaPC" class="etapa-pc">
+    <button class="voltar-etapa" onclick="irCarrinhoPC()">‹ Voltar</button>
 
     <div class="frete-box">
       <div class="dados-cliente">
-  <input type="text" id="nomeCliente" placeholder="Nome completo">
-  <input type="text" id="telefoneCliente" placeholder="WhatsApp">
-</div>
-  <label>Digite seu CEP</label>
-  <input type="text" id="cepCliente" placeholder="00000-000" oninput="buscarEndereco()">
-  <div class="endereco-box">
-    <input type="text" id="ruaCliente" placeholder="Rua">
-    <input type="text" id="bairroCliente" placeholder="Bairro">
-    <input type="text" id="cidadeCliente" placeholder="Cidade">
-    <input type="text" id="estadoCliente" placeholder="Estado">
-    <input type="text" id="numeroCliente" placeholder="Número da casa">
-    <input type="text" id="complementoCliente" placeholder="Complemento">
-  </div>
+        <input type="text" id="nomeCliente" placeholder="Nome completo">
+        <input type="text" id="telefoneCliente" placeholder="WhatsApp">
+      </div>
 
-  <button onclick="calcularFrete()">Calcular frete</button>
-  <p id="resultadoFrete"></p>
-</div>
+      <label>Digite seu CEP</label>
+      <input type="text" id="cepCliente" placeholder="00000-000" oninput="buscarEndereco()">
+
+      <div class="endereco-box">
+        <input type="text" id="ruaCliente" placeholder="Rua">
+        <input type="text" id="bairroCliente" placeholder="Bairro">
+        <input type="text" id="cidadeCliente" placeholder="Cidade">
+        <input type="text" id="estadoCliente" placeholder="Estado">
+        <input type="text" id="numeroCliente" placeholder="Número da casa">
+        <input type="text" id="complementoCliente" placeholder="Complemento">
+      </div>
+
+      <button onclick="calcularFrete()">Calcular frete</button>
+      <p id="resultadoFrete"></p>
+    </div>
 
     <div class="total">
-        <span>Total</span>
-        <strong id="totalCarrinho">R$ 0,00</strong>
+      <span>Total</span>
+      <strong id="totalCarrinho">R$ 0,00</strong>
     </div>
 
-    <button class="btn-finalizar" onclick="finalizarCompra()">
-        Finalizar compra
+    <button class="btn-finalizar" onclick="irPagamentoPC()">Continuar para pagamento</button>
+    <button class="btn-limpar-pc" onclick="limparCarrinhoPC()">Limpar carrinho</button>
+  </div>
+
+  <div id="etapaPagamentoPC" class="etapa-pc">
+    <button class="voltar-etapa" onclick="irEntregaPC()">‹ Voltar</button>
+
+    <div id="resumoPagamentoPC" class="resumo-pagamento-pc"></div>
+
+   <div class="cupom-premium">
+
+  <div class="cupom-topo">
+
+    <span>Cupom de desconto</span>
+
+    <small>
+    
+    </small>
+
+  </div>
+
+  <div class="cupom-linha">
+
+    <input
+      type="text"
+      id="cupomInput"
+      placeholder="Digite seu cupom">
+
+    <button onclick="aplicarCupom()">
+      APLICAR
     </button>
 
-</div>
+  </div>
+
+  <p id="cupomMensagem"></p>
+
+
     </div>
-  </aside>
+
+    <button class="btn-finalizar" onclick="finalizarCompraFinal()">Finalizar compra</button>
+    <button class="btn-limpar-pc" onclick="limparCarrinhoPC()">Limpar carrinho</button>
+  </div>
+
+</aside>
 
   <div class="aviso" id="aviso">
     <img src="img/logo.png" alt="Logo MS">
@@ -311,7 +371,36 @@ autocomplete="off">
 
 
 </aside>
+<div class="produto-detalhe" id="produtoDetalhe">
+  <button class="voltar-produto" onclick="fecharProdutoDetalhe()">‹</button>
 
+  <img id="detalheImg" src="" alt="Produto">
+
+  <h2 id="detalheNome"></h2>
+  <p class="detalhe-preco" id="detalhePreco"></p>
+
+  <div class="beneficios">
+    <span>🛡️ Qualidade premium</span>
+    <span>🔥 Conforto e estilo</span>
+  </div>
+
+  <p class="label-tamanho">Tamanho</p>
+
+  <div class="tamanhos detalhe-tamanhos">
+    <button onclick="selecionarTamanho(this, 'P')">P</button>
+    <button onclick="selecionarTamanho(this, 'M')">M</button>
+    <button onclick="selecionarTamanho(this, 'G')">G</button>
+    <button onclick="selecionarTamanho(this, 'GG')">GG</button>
+  </div>
+
+  <button class="btn-detalhe-carrinho" onclick="adicionarProdutoDetalhe()">
+    🛒 Adicionar ao carrinho
+  </button>
+
+  <button class="btn-comprar-agora" onclick="adicionarProdutoDetalhe()">
+    Comprar agora
+  </button>
+</div>
 
 </div>
 </body>

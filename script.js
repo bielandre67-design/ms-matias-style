@@ -5,17 +5,16 @@ let totalComFrete = 0;
 
 function selecionarTamanho(botao, tamanho) {
 
-    const card = botao.closest(".card-produto");
+  const card = botao.closest(".card-produto");
 
-    card.querySelectorAll(".tamanhos button").forEach(btn => {
-        btn.classList.remove("selecionado");
-    });
+  card.querySelectorAll(".tamanhos button").forEach(btn => {
+    btn.classList.remove("ativo");
+  });
 
-    botao.classList.add("selecionado");
+  botao.classList.add("ativo");
 
-    card.dataset.tamanho = tamanho;
+  card.dataset.tamanho = tamanho;
 
-    console.log("Selecionado:", tamanho);
 }
 
 function atualizarContador(){
@@ -57,7 +56,7 @@ function atualizarCarrinho(){
 
     lista.innerHTML += `
       <div class="item-carrinho">
-        <img src="${item.imagem}" class="img-carrinho">
+       <img src="${item.img}" class="img-carrinho">
 
         <div class="item-info">
           <h4>${item.nome}</h4>
@@ -99,7 +98,12 @@ function removerItem(index){
   atualizarCarrinho();
 }
 
-function abrirCarrinho(){
+function abrirCarrinho() {
+
+  if (window.innerWidth <= 768) {
+    window.location.href = "carrinho.html";
+    return;
+  }
 
   document.getElementById("carrinho")
     .classList.add("ativo");
@@ -158,7 +162,7 @@ if(!cep || !rua || !numero || !bairro || !cidade || !estado){
 // }
 
   try{
-
+console.log("FRETE ENVIADO:", valorFrete, freteSelecionado);
     const resposta = await fetch("https://ms-matias-style.onrender.com/criar-pagamento", {
     method:"POST",
 
@@ -175,17 +179,18 @@ if(!cep || !rua || !numero || !bairro || !cidade || !estado){
 
   cep: document.getElementById("cepCliente").value,
 
-  itens: carrinho,
+  
 
   cep: document.getElementById("cepCliente").value,
   rua: document.getElementById("ruaCliente").value,
   numero: document.getElementById("numeroCliente").value,
   complemento: document.getElementById("complementoCliente").value,
   bairro: document.getElementById("bairroCliente").value,
-  cidade: document.getElementById("cidadeCliente").value,
-  estado: document.getElementById("estadoCliente").value,
+  ccidade: document.getElementById("cidadeCliente").value,
+estado: document.getElementById("estadoCliente").value,
 
-  total: totalComFrete
+valorFrete: valorFrete,
+freteSelecionado: freteSelecionado
 
 })
     });
@@ -226,63 +231,141 @@ function diminuirQuantidade(index){
     atualizarContador();
     atualizarCarrinho();
 }
+async function calcularFrete() {
 
-function calcularFrete(){
-  if(carrinho.length === 0){
-  alert("Escolha um tamanho e adicione o produto ao carrinho antes de calcular o frete.");
-  return;
-}
+  const cep = document.getElementById("cepCliente").value.replace(/\D/g, "");
+  const resultadoFrete = document.getElementById("resultadoFrete");
 
-  let cep = document.getElementById("cepCliente").value;
-
-  if(cep.length < 8){
+  if (cep.length !== 8) {
     alert("Digite um CEP válido.");
     return;
   }
 
-  valorFrete = 0;
+  resultadoFrete.innerHTML = "Calculando frete...";
 
-  document.getElementById("resultadoFrete").innerText =
-    "Frete grátis para teste";
+  try {
+
+    const resposta = await fetch("http://localhost:3000/calcular-frete", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ cep })
+    });
+
+    const fretes = await resposta.json();
+
+    const opcoesValidas = fretes.filter(frete => !frete.error);
+
+    if (opcoesValidas.length === 0) {
+      resultadoFrete.innerHTML = "Nenhuma opção de frete encontrada.";
+      return;
+    }
+
+    resultadoFrete.innerHTML = opcoesValidas.map(frete => `
+      <div class="opcao-frete"
+        onclick="selecionarFrete('${frete.company.name}', ${frete.price}, ${frete.delivery_time})">
+
+        <strong>${frete.company.name} - ${frete.name}</strong><br>
+
+        R$ ${Number(frete.price).toFixed(2).replace(".", ",")}<br>
+
+        <small>Prazo: ${frete.delivery_time} dias úteis</small>
+      </div>
+    `).join("");
+
+  } catch (erro) {
+
+    console.log(erro);
+
+    resultadoFrete.innerHTML = "Erro ao calcular o frete.";
+  }
+}
+
+window.calcularFrete = calcularFrete;
+
+
+let freteSelecionado = null;
+
+function selecionarFrete(nome, preco, prazo) {
+  preco = Number(preco);
+
+  freteSelecionado = {
+    nome: nome,
+    preco: preco,
+    prazo: prazo
+  };
+
+  valorFrete = preco;
+
+  const resultadoFrete = document.getElementById("resultadoFrete");
+
+  resultadoFrete.innerHTML = `
+    <div class="frete-escolhido">
+      Frete escolhido: <strong>${nome}</strong><br>
+      Valor: R$ ${preco.toFixed(2).replace(".", ",")}<br>
+      Prazo: ${prazo} dias uteis
+    </div>
+  `;
 
   atualizarCarrinho();
 }
-function selecionarTamanho(botao, tamanho) {
-
-    const card = botao.closest(".card-produto");
-
-    card.querySelectorAll(".tamanhos button").forEach(btn => {
-        btn.classList.remove("selecionado");
-    });
-
-    botao.classList.add("selecionado");
-
-    card.dataset.tamanho = tamanho;
-}
 
 function adicionarCarrinho(botao) {
-    const card = botao.closest(".card-produto");
-    const tamanho = card.dataset.tamanho;
 
-    if (!tamanho) {
-        document.getElementById("avisoMS").classList.add("ativo");
-return;
+  const card = botao.closest(".card-produto");
+
+  const tamanhoSelecionado =
+    card.querySelector(".tamanhos button.ativo");
+
+  if (!tamanhoSelecionado) {
+    alert("Escolha um tamanho antes de adicionar.");
+    return;
+  }
+
+  const produto = {
+    nome: botao.dataset.nome,
+    preco: Number(botao.dataset.preco),
+    img: botao.dataset.img,
+    tamanho: tamanhoSelecionado.innerText,
+    quantidade: 1
+  };
+
+  // MOBILE
+  if (window.innerWidth <= 768) {
+
+    let carrinhoMobile =
+      JSON.parse(localStorage.getItem("carrinhoMobile")) || [];
+
+    const produtoExistente = carrinhoMobile.find(item =>
+      item.nome === produto.nome &&
+      item.tamanho === produto.tamanho
+    );
+
+    if (produtoExistente) {
+      produtoExistente.quantidade += 1;
+    } else {
+      carrinhoMobile.push(produto);
     }
 
-    const nome = botao.dataset.nome;
-    const preco = Number(botao.dataset.preco);
-    const imagem = botao.dataset.img;
+    localStorage.setItem(
+      "carrinhoMobile",
+      JSON.stringify(carrinhoMobile)
+    );
 
-    carrinho.push({
-        nome: nome,
-        preco: preco,
-        imagem: imagem,
-        tamanho: tamanho,
-        quantidade: 1
-    });
+    atualizarContadorMobile();
 
-    atualizarCarrinho();
-    abrirCarrinho();
+    alert("Produto adicionado ao carrinho!");
+
+    return;
+  }
+
+  // PC
+  carrinho.push(produto);
+
+  atualizarCarrinho();
+
+  abrirCarrinho();
 }
 function fecharAviso() {
     document.getElementById("avisoMS").classList.remove("ativo");
@@ -316,10 +399,10 @@ function aplicarCupom(){
 
     atualizarCarrinho();
 }
-let slideAtual = 0;
 
-function trocarSlideHero() {
-    const slides = document.querySelectorAll(".slide-img");
+
+function trocarSlideHero () {
+    
 
     if (slides.length === 0) return;
 
@@ -366,3 +449,523 @@ async function buscarEndereco(){
     alert("Erro ao buscar endereço.");
   }
 }
+let produtoAtualDetalhe = null;
+
+document.querySelectorAll(".card-produto").forEach(card => {
+  card.addEventListener("click", function(e) {
+    if (e.target.tagName === "BUTTON") return;
+
+    const nome = this.querySelector("h3").innerText;
+    const preco = this.querySelector(".preco").innerText;
+    const img = this.querySelector(".foto-normal").getAttribute("src");
+
+    produtoAtualDetalhe = {
+      nome: nome,
+      preco: preco,
+      img: img
+    };
+
+    document.getElementById("detalheNome").innerText = nome;
+    document.getElementById("detalhePreco").innerText = preco;
+    document.getElementById("detalheImg").src = img;
+
+    document.getElementById("produtoDetalhe").classList.add("ativo");
+  });
+});
+
+function fecharProdutoDetalhe() {
+  document.getElementById("produtoDetalhe").classList.remove("ativo");
+}
+
+function adicionarProdutoDetalhe() {
+
+  const tamanhoSelecionado = document.querySelector(
+    ".detalhe-tamanhos button.ativo"
+  );
+
+  if (!tamanhoSelecionado) {
+    alert("Escolha um tamanho");
+    return;
+  }
+
+  const produto = {
+    nome: produtoAtualDetalhe.nome,
+    preco: produtoAtualDetalhe.preco,
+    img: produtoAtualDetalhe.img,
+    tamanho: tamanhoSelecionado.innerText,
+    quantidade: 1
+  };
+
+  localStorage.setItem(
+    "produtoComprarAgora",
+    JSON.stringify(produto)
+  );
+
+  window.location.href = "carrinho.html";
+}
+function mostrarEtapa(id) {
+
+  document.querySelectorAll(".etapa-checkout").forEach(e => {
+    e.classList.remove("ativa");
+  });
+
+  document.getElementById(id).classList.add("ativa");
+
+  document.querySelectorAll(".etapas span").forEach(e => {
+    e.classList.remove("ativo");
+  });
+
+  if (id === "etapaCarrinho") {
+    document
+      .querySelector(".etapas span:nth-child(1)")
+      .classList.add("ativo");
+  }
+
+  if (id === "etapaEntrega") {
+    document
+      .querySelector(".etapas span:nth-child(2)")
+      .classList.add("ativo");
+  }
+
+  if (id === "etapaPagamento") {
+    document
+      .querySelector(".etapas span:nth-child(3)")
+      .classList.add("ativo");
+  }
+
+}
+
+function irEntrega() {
+  mostrarEtapa("etapaEntrega");
+  document.getElementById("tituloEtapa").innerText = "Entrega";
+}
+
+function irPagamento() {
+  mostrarEtapa("etapaPagamento");
+  document.getElementById("tituloEtapa").innerText = "Pagamento";
+}
+
+function calcularFreteCheckout() {
+
+  const cep = document
+    .getElementById("cepCheckout")
+    .value
+    .replace(/\D/g, "");
+
+  if (cep.length !== 8) {
+    alert("Digite um CEP válido");
+    return;
+  }
+
+  const valorFrete = 15.90;
+
+  document.getElementById("freteValor").innerText =
+    valorFrete.toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL"
+    });
+
+  const subtotal = 1;
+  const total = subtotal + valorFrete;
+
+  document.getElementById("totalCheckout").innerText =
+    total.toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL"
+    });
+
+}
+
+
+function finalizarCompra() {
+  alert("Agora vamos ligar isso no Mercado Pago.");
+}
+
+let slideAtualBanner = 0;
+
+setInterval(() => {
+  
+
+  if (!slides || slides.length === 0) return;
+
+  slides.forEach(slide => slide.classList.remove("ativo"));
+
+  slideAtualBanner++;
+
+  if (slideAtualBanner >= slides.length) {
+    slideAtualBanner = 0;
+  }
+
+  slides[slideAtualBanner].classList.add("ativo");
+}, 2500);
+let tamanhoSelecionado = "";
+let quantidadeMobile = 1;
+let precoMobile = 1;
+
+function alterarQuantidade(valor) {
+  quantidadeMobile += valor;
+
+  if (quantidadeMobile < 1) {
+    quantidadeMobile = 1;
+  }
+
+  const qtd = document.getElementById("quantidadeCheckout");
+  if (qtd) qtd.innerText = quantidadeMobile;
+
+  const subtotal = precoMobile * quantidadeMobile;
+
+  const subtotal1 = document.getElementById("subtotal1");
+  const total1 = document.getElementById("total1");
+
+  if (subtotal1) {
+    subtotal1.innerText = subtotal.toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL"
+    });
+  }
+
+  if (total1) {
+    total1.innerText = subtotal.toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL"
+    });
+  }
+}
+function atualizarContadorMobile() {
+  const carrinhoMobile = JSON.parse(localStorage.getItem("carrinhoMobile")) || [];
+  const total = carrinhoMobile.reduce((soma, item) => soma + item.quantidade, 0);
+
+  const contador = document.getElementById("contadorCarrinho");
+  if (contador) contador.innerText = total;
+}
+
+document.addEventListener("DOMContentLoaded", atualizarContadorMobile);
+function carregarCarrinhoMobile() {
+  if (!document.querySelector(".checkout-ms")) return;
+
+  const carrinhoMobile =
+    JSON.parse(localStorage.getItem("carrinhoMobile")) || [];
+
+  if (carrinhoMobile.length === 0) return;
+
+  const produto = carrinhoMobile[0];
+
+  document.getElementById("checkoutImg").src = produto.img;
+  document.getElementById("checkoutNome").innerText = produto.nome;
+  document.getElementById("checkoutTam").innerText = "Tamanho: " + produto.tamanho;
+  document.getElementById("quantidadeCheckout").innerText = produto.quantidade;
+
+  const subtotal = carrinhoMobile.reduce((total, item) => {
+    return total + Number(item.preco) * item.quantidade;
+  }, 0);
+
+  document.getElementById("subtotal1").innerText =
+    subtotal.toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL"
+    });
+
+  document.getElementById("total1").innerText =
+    subtotal.toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL"
+    });
+}
+
+document.addEventListener("DOMContentLoaded", carregarCarrinhoMobile);
+function carregarCarrinhoMobile() {
+
+  const lista =
+    document.getElementById("listaCarrinhoMobile");
+
+  if (!lista) return;
+
+  const carrinhoMobile =
+    JSON.parse(localStorage.getItem("carrinhoMobile")) || [];
+
+  lista.innerHTML = "";
+
+  if (carrinhoMobile.length === 0) {
+
+    lista.innerHTML = `
+      <p style="text-align:center; color:#999;">
+        Seu carrinho está vazio.
+      </p>
+    `;
+
+    return;
+  }
+
+  let subtotal = 0;
+
+  carrinhoMobile.forEach((item, index) => {
+
+    subtotal += item.preco * item.quantidade;
+
+    lista.innerHTML += `
+
+      <div class="item-checkout">
+
+        <div class="produto-topo">
+
+          <img src="${item.img}" class="img-carrinho">
+
+          <div class="produto-info">
+
+            <h3>${item.nome}</h3>
+
+            <p>Tamanho: ${item.tamanho}</p>
+
+            <div class="qtd">
+
+              <button onclick="alterarQuantidadeMobile(${index}, -1)">
+                −
+              </button>
+
+              <span>${item.quantidade}</span>
+
+              <button onclick="alterarQuantidadeMobile(${index}, 1)">
+                +
+              </button>
+
+            </div>
+
+            <strong>
+              ${(item.preco * item.quantidade).toLocaleString("pt-BR", {
+                style: "currency",
+                currency: "BRL"
+              })}
+            </strong>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    `;
+  });
+
+  document.getElementById("subtotal1").innerText =
+    subtotal.toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL"
+    });
+
+  document.getElementById("total1").innerText =
+    subtotal.toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL"
+    });
+
+}
+
+function alterarQuantidadeMobile(index, valor) {
+
+  let carrinhoMobile =
+    JSON.parse(localStorage.getItem("carrinhoMobile")) || [];
+
+  carrinhoMobile[index].quantidade += valor;
+
+  if (carrinhoMobile[index].quantidade <= 0) {
+    carrinhoMobile.splice(index, 1);
+  }
+
+  localStorage.setItem(
+    "carrinhoMobile",
+    JSON.stringify(carrinhoMobile)
+  );
+
+  carregarCarrinhoMobile();
+
+  atualizarContadorMobile();
+}
+
+document.addEventListener(
+  "DOMContentLoaded",
+  carregarCarrinhoMobile
+);
+function limparCarrinhoMobile() {
+
+  localStorage.removeItem("carrinhoMobile");
+
+  carregarCarrinhoMobile();
+
+  atualizarContadorMobile();
+
+}
+function irEntregaPC() {
+
+  document.querySelectorAll(".etapa-pc")
+    .forEach(etapa => {
+      etapa.classList.remove("ativa");
+    });
+
+  document
+    .getElementById("etapaEntregaPC")
+    .classList.add("ativa");
+
+  document.querySelectorAll(".etapas-pc span")
+    .forEach(step => {
+      step.classList.remove("ativo");
+    });
+
+  document
+    .getElementById("step2")
+    .classList.add("ativo");
+
+}
+function irPagamentoPC() {
+
+  document.querySelectorAll(".etapa-pc").forEach(etapa => {
+    etapa.classList.remove("ativa");
+  });
+
+  document.getElementById("etapaPagamentoPC").classList.add("ativa");
+
+  document.querySelectorAll(".etapas-pc span").forEach(step => {
+    step.classList.remove("ativo");
+  });
+
+  document.getElementById("step3").classList.add("ativo");
+
+  montarResumoPagamentoPC();
+
+}
+
+function finalizarCompraFinal() {
+  finalizarCompra();
+}
+function limparCarrinhoPC() {
+  carrinho = [];
+  atualizarCarrinho();
+  atualizarContador();
+  irCarrinhoPC();
+}
+function irCarrinhoPC() {
+
+  document.querySelectorAll(".etapa-pc")
+    .forEach(etapa => {
+      etapa.classList.remove("ativa");
+    });
+
+  document
+    .getElementById("etapaCarrinhoPC")
+    .classList.add("ativa");
+
+  document.querySelectorAll(".etapas-pc span")
+    .forEach(step => {
+      step.classList.remove("ativo");
+    });
+
+  document
+    .getElementById("step1")
+    .classList.add("ativo");
+
+}
+function irEntregaPC() {
+
+  document.querySelectorAll(".etapa-pc")
+    .forEach(etapa => {
+      etapa.classList.remove("ativa");
+    });
+
+  document
+    .getElementById("etapaEntregaPC")
+    .classList.add("ativa");
+
+  document.querySelectorAll(".etapas-pc span")
+    .forEach(step => {
+      step.classList.remove("ativo");
+    });
+
+  document
+    .getElementById("step2")
+    .classList.add("ativo");
+
+}
+function montarResumoPagamentoPC() {
+  const resumo = document.getElementById("resumoPagamentoPC");
+  if (!resumo) return;
+
+  if (!carrinho || carrinho.length === 0) {
+    resumo.innerHTML = "<p>Seu carrinho está vazio.</p>";
+    return;
+  }
+
+  let subtotal = 0;
+
+  resumo.innerHTML = "<h3>Resumo do pedido</h3>";
+
+  carrinho.forEach(item => {
+    subtotal += Number(item.preco) * item.quantidade;
+
+    resumo.innerHTML += `
+      <div class="item-resumo-pc">
+        <img src="${item.img}">
+        <div>
+          <strong>${item.nome}</strong>
+          <p>Tamanho: ${item.tamanho}</p>
+          <p>Qtd: ${item.quantidade}</p>
+        </div>
+        <span>
+          ${(Number(item.preco) * item.quantidade).toLocaleString("pt-BR", {
+            style: "currency",
+            currency: "BRL"
+          })}
+        </span>
+      </div>
+    `;
+  });
+
+  resumo.innerHTML += `
+    <div class="total-resumo-pc">
+      <p>
+        <span>Total</span>
+        <strong>${document.getElementById("totalCarrinho").innerText}</strong>
+      </p>
+    </div>
+  `;
+}
+/* ===== SLIDER AUTOMÁTICO ===== */
+
+
+
+let slideAtual = 0;
+
+function trocarSlide() {
+
+  slides[slideAtual].classList.remove('ativo');
+
+  slideAtual++;
+
+  if (slideAtual >= slides.length) {
+    slideAtual = 0;
+  }
+
+  slides[slideAtual].classList.add('ativo');
+}
+
+/* troca a cada 4 segundos */
+setInterval(trocarSlide, 4000);
+/* ===== SLIDER AUTOMÁTICO ===== */
+
+const slides = document.querySelectorAll(".slide");
+
+
+
+function trocarSlide() {
+
+  slides[slideAtual].classList.remove("ativo");
+
+  slideAtual++;
+
+  if (slideAtual >= slides.length) {
+    slideAtual = 0;
+  }
+
+  slides[slideAtual].classList.add("ativo");
+}
+
+/* troca sozinho */
+setInterval(trocarSlide, 3500);
