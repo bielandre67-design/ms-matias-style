@@ -597,6 +597,11 @@ async function calcularFreteCheckout() {
     `;
 
     div.onclick = () => {
+      document.querySelectorAll(".frete-opcao").forEach(opcao => {
+  opcao.classList.remove("frete-selecionado");
+});
+
+div.classList.add("frete-selecionado");
 
       valorFrete = preco;
 

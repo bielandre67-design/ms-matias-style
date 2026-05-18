@@ -4385,3 +4385,20 @@ overflow:hidden;
   opacity: 1 !important;
   visibility: visible !important;
 }
+.frete-opcao.frete-selecionado {
+  border: 2px solid #fff;
+  background: rgba(255,255,255,.18);
+  box-shadow: 0 0 0 2px rgba(255,255,255,.25);
+}
+
+.frete-opcao.frete-selecionado::after {
+  content: "Escolhido";
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #000;
+  background: #fff;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
