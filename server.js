@@ -76,7 +76,7 @@ const client = new MercadoPagoConfig({
 });
 app.post("/criar-pagamento", async (req, res) => {
   try {
-    const {
+ const {
   items,
   nome,
   telefone,
@@ -88,7 +88,9 @@ app.post("/criar-pagamento", async (req, res) => {
   cidade,
   estado,
   valorFrete,
-  freteSelecionado
+  freteSelecionado,
+  desconto,
+  totalComFrete
 } = req.body;
 
   
