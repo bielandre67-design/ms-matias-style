@@ -593,13 +593,16 @@ async function calcularFreteCheckout() {
     `;
 
     div.onclick = () => {
-      document.querySelectorAll(".frete-opcao").forEach(opcao => {
-  opcao.classList.remove("frete-selecionado");
-});
 
-div.classList.add("frete-selecionado");
+  document.querySelectorAll(".frete-opcao").forEach(opcao => {
+    if (opcao !== div) {
+      opcao.style.display = "none";
+    }
+  });
 
-      valorFrete = preco;
+  div.classList.add("frete-selecionado");
+
+  valorFrete = preco;
 
       document.getElementById("freteResumo").innerText =
         preco.toLocaleString("pt-BR", {

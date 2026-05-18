@@ -157,12 +157,16 @@ app.post("/criar-pagamento", async (req, res) => {
       init_point: resposta.init_point
     });
 
-  } catch (erro) {
-    console.log(erro);
-    res.status(500).json({
-      erro: "Erro ao criar pagamento"
-    });
-  }
+  } catch (error) {
+
+  console.log("ERRO PAGAMENTO:", error);
+
+  res.status(500).json({
+    erro: "Erro ao criar pagamento",
+    detalhes: error.message
+  });
+
+}
 });
 
 app.get("/pedidos", (req, res) => {

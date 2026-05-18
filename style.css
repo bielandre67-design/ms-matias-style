@@ -4402,3 +4402,8 @@ overflow:hidden;
   padding: 4px 10px;
   border-radius: 999px;
 }
+.frete-selecionado {
+  border: 2px solid #fff;
+  background: rgba(255,255,255,.12);
+  transform: scale(1.02);
+}
