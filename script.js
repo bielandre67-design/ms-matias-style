@@ -545,7 +545,7 @@ function irPagamento() {
   document.getElementById("tituloEtapa").innerText = "Pagamento";
 }
 
-function calcularFreteCheckout() {
+async function calcularFreteCheckout() {
 
   const cep = document
     .getElementById("cepCheckout")
@@ -557,22 +557,70 @@ function calcularFreteCheckout() {
     return;
   }
 
-  const valorFrete = 15.90;
+  const resposta = await fetch("https://ms-matias-style.onrender.com/calcular-frete", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ cep })
+  });
 
-  document.getElementById("freteValor").innerText =
-    valorFrete.toLocaleString("pt-BR", {
-      style: "currency",
-      currency: "BRL"
-    });
+  const fretes = await resposta.json();
 
-  const subtotal = 1;
-  const total = subtotal + valorFrete;
+  const container = document.getElementById("opcoesFreteCheckout");
 
-  document.getElementById("totalCheckout").innerText =
-    total.toLocaleString("pt-BR", {
-      style: "currency",
-      currency: "BRL"
-    });
+  container.innerHTML = "";
+
+  fretes.forEach(frete => {
+
+    if (frete.error) return;
+
+    const preco = Number(frete.price);
+
+    const div = document.createElement("div");
+
+    div.className = "frete-opcao";
+
+    div.innerHTML = `
+      <span>
+        ⊙ ${frete.company.name} - ${frete.name}
+        <br>
+        <small>Prazo: ${frete.delivery_time} dias úteis</small>
+      </span>
+
+      <strong>
+        ${preco.toLocaleString("pt-BR", {
+          style: "currency",
+          currency: "BRL"
+        })}
+      </strong>
+    `;
+
+    div.onclick = () => {
+
+      valorFrete = preco;
+
+      document.getElementById("freteResumo").innerText =
+        preco.toLocaleString("pt-BR", {
+          style: "currency",
+          currency: "BRL"
+        });
+
+      const subtotal = 1;
+
+      const total = subtotal + preco;
+
+      document.getElementById("totalCheckout").innerText =
+        total.toLocaleString("pt-BR", {
+          style: "currency",
+          currency: "BRL"
+        });
+
+    };
+
+    container.appendChild(div);
+
+  });
 
 }
 
@@ -953,19 +1001,3 @@ setInterval(trocarSlide, 4000);
 const slides = document.querySelectorAll(".slide");
 
 
-
-function trocarSlide() {
-
-  slides[slideAtual].classList.remove("ativo");
-
-  slideAtual++;
-
-  if (slideAtual >= slides.length) {
-    slideAtual = 0;
-  }
-
-  slides[slideAtual].classList.add("ativo");
-}
-
-/* troca sozinho */
-setInterval(trocarSlide, 3500);
