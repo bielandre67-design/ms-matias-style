@@ -245,7 +245,7 @@ async function calcularFrete() {
 
   try {
 
-    const resposta = await fetch("http://localhost:3000/calcular-frete", {
+    const resposta = await fetch("https://ms-matias-style.onrender.com/calcular-frete", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
