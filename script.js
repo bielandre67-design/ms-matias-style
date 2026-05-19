@@ -1,20 +1,30 @@
-let carrinho = [];
+let carrinho = JSON.parse(localStorage.getItem("carrinho")) || [];
 let valorFrete = 0;
 let desconto = 0;
 let totalComFrete = 0;
 
 function selecionarTamanho(botao, tamanho) {
+  const grupo = botao.closest(".tamanhos");
 
-  const card = botao.closest(".card-produto");
+  if (!grupo) return;
 
-  card.querySelectorAll(".tamanhos button").forEach(btn => {
+  grupo.querySelectorAll("button").forEach(btn => {
     btn.classList.remove("ativo");
   });
 
   botao.classList.add("ativo");
 
-  card.dataset.tamanho = tamanho;
+  const card = botao.closest(".card-produto");
 
+  if (card) {
+    card.dataset.tamanho = tamanho;
+  }
+
+  const detalhe = botao.closest("#produtoDetalhe");
+
+  if (detalhe) {
+    detalhe.dataset.tamanho = tamanho;
+  }
 }
 
 function atualizarContador(){
@@ -86,15 +96,10 @@ function atualizarCarrinho(){
 }
 
 function removerItem(index){
-
   carrinho.splice(index, 1);
-
+  localStorage.setItem("carrinho", JSON.stringify(carrinho));
+  localStorage.setItem("carrinhoMobile", JSON.stringify(carrinho));
   atualizarContador();
-  atualizarCarrinho();
-
-
-  document.getElementById("contadorCarrinho").innerText = contador;
-
   atualizarCarrinho();
 }
 
@@ -132,81 +137,132 @@ function mostrarAviso(){
   }, 2500);
 }
 async function finalizarCompra(){
-  
-  if(carrinho.length === 0){
+  if (carrinho.length === 0) {
     alert("Seu carrinho está vazio.");
     return;
   }
-  let cep = document.getElementById("cepCliente").value.trim();
-let rua = document.getElementById("ruaCliente").value.trim();
-let numero = document.getElementById("numeroCliente").value.trim();
-let bairro = document.getElementById("bairroCliente").value.trim();
-let cidade = document.getElementById("cidadeCliente").value.trim();
-let estado = document.getElementById("estadoCliente").value.trim();
-let nome = document.getElementById("nomeCliente").value.trim();
-let telefone = document.getElementById("telefoneCliente").value.trim();
 
-if(!nome || !telefone){
-  alert("Preencha seu nome e WhatsApp antes de finalizar a compra.");
-  return;
-}
+ const nome =
+  document.getElementById("nomeClienteMobile")?.value.trim() ||
+  document.getElementById("nomeCliente")?.value.trim() ||
+  "";
 
-if(!cep || !rua || !numero || !bairro || !cidade || !estado){
-  alert("Preencha o endereço completo antes de finalizar a compra.");
-  return;
-}
+const telefone =
+  document.getElementById("telefoneClienteMobile")?.value.trim() ||
+  document.getElementById("telefoneCliente")?.value.trim() ||
+  "";
 
-// if(valorFrete <= 0){
-//   alert("Calcule o frete antes de finalizar a compra.");
-//   return;
-// }
+const cep =
+  document.getElementById("cepCheckout")?.value.trim() ||
+  document.getElementById("cepCliente")?.value.trim() ||
+  "";
+
+const rua =
+  document.getElementById("ruaCliente")?.value.trim() ||
+  "";
+
+const numero =
+  document.getElementById("numeroCasa")?.value.trim() ||
+  document.getElementById("numeroCliente")?.value.trim() ||
+  "";
+
+const complemento =
+  document.getElementById("complementoCliente")?.value.trim() ||
+  "";
+
+const bairro =
+  document.getElementById("bairroCliente")?.value.trim() ||
+  "";
+
+const cidade =
+  document.getElementById("cidadeCliente")?.value.trim() ||
+  "";
+
+const estado =
+  document.getElementById("estadoCliente")?.value.trim() ||
+  "";
+
+  if(!nome || !telefone){
+    alert("Preencha seu nome e WhatsApp antes de finalizar a compra.");
+    return;
+  }
+
+  if(!cep || !rua || !numero || !bairro || !cidade){
+    alert("Preencha o endereço completo antes de finalizar a compra.");
+    return;
+  }
 
   try{
-console.log("FRETE ENVIADO:", valorFrete, freteSelecionado);
-    const resposta = await fetch("https://ms-matias-style.onrender.com/criar-pagamento", {
-    method:"POST",
+    console.log("FRETE ENVIADO:", valorFrete, freteSelecionado);
 
+    const resposta = await fetch("https://ms-matias-style.onrender.com/criar-pagamento", {
+      method:"POST",
       headers:{
         "Content-Type":"application/json"
       },
+      body: JSON.stringify({
+        items: carrinho,
+        nome,
+        telefone,
+        cep,
+        rua,
+        numero,
+        complemento,
+        bairro,
+        cidade,
+        estado,
+        valorFrete: valorFrete,
+        freteSelecionado: freteSelecionado,
+        desconto: desconto,
+        totalComFrete: totalComFrete
+      })
+    });
 
-   body: JSON.stringify({
-  items: carrinho,
+    const novoPedido = {
+  id: Date.now(),
+  nome,
+  telefone,
+  endereco: {
+    cep,
+    rua,
+    numero,
+    complemento,
+    bairro,
+    cidade
+  },
+  produtos: carrinho,
+  frete: freteSelecionado || {
+    nome: "Frete selecionado",
+    preco: valorFrete
+  },
+  total: totalComFrete,
+  status: "pendente",
+  data: new Date().toLocaleString("pt-BR")
+};
 
-  nome: document.getElementById("nomeCliente").value,
-  telefone: document.getElementById("telefoneCliente").value,
+const pedidosSalvos =
+  JSON.parse(localStorage.getItem("pedidosMS")) || [];
 
-  cep: document.getElementById("cepCliente").value,
-  rua: document.getElementById("ruaCliente").value,
-  numero: document.getElementById("numeroCliente").value,
-  complemento: document.getElementById("complementoCliente").value,
-  bairro: document.getElementById("bairroCliente").value,
-  cidade: document.getElementById("cidadeCliente").value,
-  estado: document.getElementById("estadoCliente").value,
+pedidosSalvos.push(novoPedido);
 
-  valorFrete: valorFrete,
-  freteSelecionado: freteSelecionado,
+localStorage.setItem(
+  "pedidosMS",
+  JSON.stringify(pedidosSalvos)
+);
 
-  desconto: desconto,
-  totalComFrete: totalComFrete
-})});
+const dados = await resposta.json();
+    console.log(dados);
 
-    const dados = await resposta.json();
-
-console.log(dados);
-
-if(dados.init_point){
-    window.location.href = dados.init_point;
-}else{
-    alert("Mercado Pago não gerou o link de pagamento. Veja o console.");
+    if(dados.init_point){
+      window.location.href = dados.init_point;
+    }else{
+      alert("Mercado Pago não gerou o link de pagamento. Veja o console.");
+    }
+  }catch(erro){
+    console.log(erro);
+    alert("Erro ao iniciar pagamento.");
+  }
 }
-
-}catch(erro){
-   console.log(erro);
-   alert("Erro ao iniciar pagamento.");
-}
-
-} // <- adiciona ESSA aqui
 
 function aumentarQuantidade(index){
 
@@ -307,62 +363,7 @@ function selecionarFrete(nome, preco, prazo) {
   atualizarCarrinho();
 }
 
-function adicionarCarrinho(botao) {
 
-  const card = botao.closest(".card-produto");
-
-  const tamanhoSelecionado =
-    card.querySelector(".tamanhos button.ativo");
-
-  if (!tamanhoSelecionado) {
-    alert("Escolha um tamanho antes de adicionar.");
-    return;
-  }
-
-  const produto = {
-    nome: botao.dataset.nome,
-    preco: Number(botao.dataset.preco),
-    img: botao.dataset.img,
-    tamanho: tamanhoSelecionado.innerText,
-    quantidade: 1
-  };
-
-  // MOBILE
-  if (window.innerWidth <= 768) {
-
-    let carrinhoMobile =
-      JSON.parse(localStorage.getItem("carrinhoMobile")) || [];
-
-    const produtoExistente = carrinhoMobile.find(item =>
-      item.nome === produto.nome &&
-      item.tamanho === produto.tamanho
-    );
-
-    if (produtoExistente) {
-      produtoExistente.quantidade += 1;
-    } else {
-      carrinhoMobile.push(produto);
-    }
-
-    localStorage.setItem(
-      "carrinhoMobile",
-      JSON.stringify(carrinhoMobile)
-    );
-
-    atualizarContadorMobile();
-
-    alert("Produto adicionado ao carrinho!");
-
-    return;
-  }
-
-  // PC
-  carrinho.push(produto);
-
-  atualizarCarrinho();
-
-  abrirCarrinho();
-}
 function fecharAviso() {
     document.getElementById("avisoMS").classList.remove("ativo");
 }
@@ -397,19 +398,7 @@ function aplicarCupom(){
 }
 
 
-function trocarSlideHero () {
-    
 
-    if (slides.length === 0) return;
-
-    slides[slideAtual].classList.remove("ativa");
-
-    slideAtual = (slideAtual + 1) % slides.length;
-
-    slides[slideAtual].classList.add("ativa");
-}
-
-setInterval(trocarSlideHero, 1000);
 
 function abrirContato(){
     document.getElementById("modalContato").classList.add("ativo");
@@ -475,14 +464,15 @@ function fecharProdutoDetalhe() {
 
 function adicionarProdutoDetalhe() {
 
-  const tamanhoSelecionado = document.querySelector(
-    ".detalhe-tamanhos button.ativo"
-  );
+  
+  const tamanho =
+document.getElementById("produtoDetalhe")
+.dataset.tamanho;
 
-  if (!tamanhoSelecionado) {
-    alert("Escolha um tamanho");
-    return;
-  }
+if (!tamanho) {
+  mostrarAviso();
+  return;
+}
 
   const produto = {
     nome: produtoAtualDetalhe.nome,
@@ -531,27 +521,93 @@ function mostrarEtapa(id) {
 
 }
 
+function irEntregaPC() {
+
+  if (carrinho.length === 0) {
+    alert("Seu carrinho está vazio.");
+    return;
+  }
+
+  document.querySelectorAll(".etapa-pc")
+    .forEach(etapa => {
+      etapa.classList.remove("ativa");
+    });
+
+  document
+    .getElementById("etapaEntregaPC")
+    .classList.add("ativa");
+
+  document.querySelectorAll(".etapas-pc span")
+    .forEach(step => {
+      step.classList.remove("ativo");
+    });
+
+  document
+    .getElementById("step2")
+    .classList.add("ativo");
+    
+}
 function irEntrega() {
+
+  if (carrinho.length === 0) {
+    alert("Adicione um produto ao carrinho.");
+    return;
+  }
+
   mostrarEtapa("etapaEntrega");
-  document.getElementById("tituloEtapa").innerText = "Entrega";
+
+  document.getElementById("tituloEtapa").innerText =
+    "Entrega";
 }
 
 function irPagamento() {
+
+  const cep =
+    document.getElementById("cepCheckout")?.value.trim();
+
+  if (!cep || cep.length < 8) {
+    alert("Preencha o CEP antes de continuar.");
+    return;
+  }
+
+  if (valorFrete <= 0) {
+    alert("Calcule e selecione um frete.");
+    return;
+  }
+  atualizarTotaisMobile();
+
   mostrarEtapa("etapaPagamento");
-  document.getElementById("tituloEtapa").innerText = "Pagamento";
+
+  document.getElementById("tituloEtapa").innerText =
+    "Pagamento";
 }
 
 async function calcularFreteCheckout() {
 
-  const cep = document
-    .getElementById("cepCheckout")
-    .value
-    .replace(/\D/g, "");
+ const cep = document
+  .getElementById("cepCheckout")
+  .value
+  .replace(/\D/g, "");
 
-  if (cep.length !== 8) {
-    alert("Digite um CEP válido");
-    return;
-  }
+const respostaCep = await fetch(
+  `https://viacep.com.br/ws/${cep}/json/`
+);
+
+const dadosCep = await respostaCep.json();
+
+if (!dadosCep.erro) {
+
+  document.getElementById("ruaCliente").value =
+    dadosCep.logradouro || "";
+
+  document.getElementById("bairroCliente").value =
+    dadosCep.bairro || "";
+
+  document.getElementById("cidadeCliente").value =
+    dadosCep.localidade || "";
+
+}
+
 
   const resposta = await fetch("https://ms-matias-style.onrender.com/calcular-frete", {
     method: "POST",
@@ -631,23 +687,7 @@ async function calcularFreteCheckout() {
 
 
 
-let slideAtualBanner = 0;
 
-setInterval(() => {
-  
-
-  if (!slides || slides.length === 0) return;
-
-  slides.forEach(slide => slide.classList.remove("ativo"));
-
-  slideAtualBanner++;
-
-  if (slideAtualBanner >= slides.length) {
-    slideAtualBanner = 0;
-  }
-
-  slides[slideAtualBanner].classList.add("ativo");
-}, 2500);
 let tamanhoSelecionado = "";
 let quantidadeMobile = 1;
 let precoMobile = 1;
@@ -755,6 +795,7 @@ function carregarCarrinhoMobile() {
     lista.innerHTML += `
 
       <div class="item-checkout">
+      
 
         <div class="produto-topo">
 
@@ -779,6 +820,9 @@ function carregarCarrinhoMobile() {
               </button>
 
             </div>
+            <button class="remover-mobile" onclick="removerItem(${index})">
+Remover
+</button>
 
             <strong>
               ${(item.preco * item.quantidade).toLocaleString("pt-BR", {
@@ -867,20 +911,42 @@ function irEntregaPC() {
 }
 function irPagamentoPC() {
 
+  const nome =
+    document.getElementById("nomeCliente")?.value.trim();
+
+  const telefone =
+    document.getElementById("telefoneCliente")?.value.trim();
+
+  const cep =
+    document.getElementById("cepCliente")?.value.trim();
+
+  if (!nome || !telefone || !cep) {
+    alert("Preencha todos os dados antes de continuar.");
+    return;
+  }
+
+  if (valorFrete <= 0) {
+    alert("Selecione um frete antes de continuar.");
+    return;
+  }
+
   document.querySelectorAll(".etapa-pc").forEach(etapa => {
     etapa.classList.remove("ativa");
   });
 
-  document.getElementById("etapaPagamentoPC").classList.add("ativa");
+  document
+    .getElementById("etapaPagamentoPC")
+    .classList.add("ativa");
 
   document.querySelectorAll(".etapas-pc span").forEach(step => {
     step.classList.remove("ativo");
   });
 
-  document.getElementById("step3").classList.add("ativo");
+  document
+    .getElementById("step3")
+    .classList.add("ativo");
 
   montarResumoPagamentoPC();
-
 }
 
 function finalizarCompraFinal() {
@@ -932,8 +998,8 @@ function irEntregaPC() {
   document
     .getElementById("step2")
     .classList.add("ativo");
-
 }
+
 function montarResumoPagamentoPC() {
   const resumo = document.getElementById("resumoPagamentoPC");
   if (!resumo) return;
@@ -969,37 +1035,160 @@ function montarResumoPagamentoPC() {
   });
 
   resumo.innerHTML += `
-    <div class="total-resumo-pc">
-      <p>
-        <span>Total</span>
-        <strong>${document.getElementById("totalCarrinho").innerText}</strong>
-      </p>
-    </div>
-  `;
+  <div class="total-resumo-pc">
+    <p>
+      <span>Total</span>
+      <strong>${document.getElementById("totalCarrinho").innerText}</strong>
+    </p>
+  </div>
+`;
 }
-/* ===== SLIDER AUTOMÁTICO ===== */
 
+/* ===== SLIDER AUTOMÁTICO SEGURO ===== */
+document.addEventListener("DOMContentLoaded", function () {
+  const slides = document.querySelectorAll(".slide");
+  let slideAtual = 0;
 
+  if (!slides || slides.length === 0) return;
 
-let slideAtual = 0;
+  setInterval(function () {
+    slides[slideAtual].classList.remove("ativo");
+    slides[slideAtual].classList.remove("ativa");
 
-function trocarSlide() {
+    slideAtual = (slideAtual + 1) % slides.length;
 
-  slides[slideAtual].classList.remove('ativo');
+    slides[slideAtual].classList.add("ativo");
+  }, 4000);
+});
+function atualizarTotaisMobile() {
+  const carrinhoMobile =
+    JSON.parse(localStorage.getItem("carrinhoMobile")) || [];
 
-  slideAtual++;
+  const subtotal = carrinhoMobile.reduce((total, item) => {
+    return total + Number(item.preco) * item.quantidade;
+  }, 0);
 
-  if (slideAtual >= slides.length) {
-    slideAtual = 0;
+  const total = subtotal + Number(valorFrete || 0);
+
+  const subtotalCheckout = document.getElementById("subtotalCheckout");
+  const totalCheckout = document.getElementById("totalCheckout");
+  const totalPagamentoMobile = document.getElementById("totalPagamentoMobile");
+  const resumoPagamentoMobile = document.getElementById("resumoPagamentoMobile");
+
+  if (subtotalCheckout) {
+    subtotalCheckout.innerText = subtotal.toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL"
+    });
   }
 
-  slides[slideAtual].classList.add('ativo');
+  if (totalCheckout) {
+    totalCheckout.innerText = total.toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL"
+    });
+  }
+
+  if (totalPagamentoMobile) {
+    totalPagamentoMobile.innerText = total.toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL"
+    });
+  }
+
+  if (resumoPagamentoMobile) {
+    const nome = document.getElementById("nomeClienteMobile")?.value || "";
+    const telefone = document.getElementById("telefoneClienteMobile")?.value || "";
+    const cep = document.getElementById("cepCheckout")?.value || "";
+    const rua = document.getElementById("ruaCliente")?.value || "";
+    const numero = document.getElementById("numeroCasa")?.value || "";
+    const bairro = document.getElementById("bairroCliente")?.value || "";
+    const cidade = document.getElementById("cidadeCliente")?.value || "";
+
+    resumoPagamentoMobile.innerHTML = `
+      <div class="conferencia-pagamento">
+        <h4>Dados da entrega</h4>
+        <p><strong>Nome:</strong> ${nome}</p>
+        <p><strong>WhatsApp:</strong> ${telefone}</p>
+        <p><strong>Endereço:</strong> ${rua}, ${numero}</p>
+        <p><strong>Bairro:</strong> ${bairro}</p>
+        <p><strong>Cidade:</strong> ${cidade}</p>
+        <p><strong>CEP:</strong> ${cep}</p>
+        <p><strong>Frete:</strong> ${Number(valorFrete || 0).toLocaleString("pt-BR", {
+          style: "currency",
+          currency: "BRL"
+        })}</p>
+      </div>
+    `;
+  }
+}
+function voltarCheckoutMobile() {
+  const etapaCarrinho = document.getElementById("etapaCarrinho");
+  const etapaEntrega = document.getElementById("etapaEntrega");
+  const etapaPagamento = document.getElementById("etapaPagamento");
+
+  if (etapaPagamento && etapaPagamento.classList.contains("ativa")) {
+    etapaPagamento.classList.remove("ativa");
+    etapaEntrega.classList.add("ativa");
+
+    document.getElementById("tituloEtapa").innerText = "Entrega";
+
+    document.querySelectorAll(".etapas span").forEach(step => {
+      step.classList.remove("ativo");
+    });
+
+    document.querySelector('.etapas span[data-num="2"]').classList.add("ativo");
+    return;
+  }
+
+  if (etapaEntrega && etapaEntrega.classList.contains("ativa")) {
+    etapaEntrega.classList.remove("ativa");
+    etapaCarrinho.classList.add("ativa");
+
+    document.getElementById("tituloEtapa").innerText = "Carrinho";
+
+    document.querySelectorAll(".etapas span").forEach(step => {
+      step.classList.remove("ativo");
+    });
+
+    document.querySelector('.etapas span[data-num="1"]').classList.add("ativo");
+    return;
+  }
+
+  window.location.href = "index.html";
+}
+let fotosDetalhe = [];
+let fotoAtualDetalhe = 0;
+let produtoDetalheAtual = null;
+
+function abrirProdutoDetalheCard(card) {
+  produtoDetalheAtual = {
+    nome: card.dataset.nome,
+    preco: Number(card.dataset.preco),
+    img: card.dataset.img
+  };
+
+  fotosDetalhe = card.dataset.fotos.split(",");
+  fotoAtualDetalhe = 0;
+
+  document.getElementById("detalheImg").src = fotosDetalhe[fotoAtualDetalhe];
+  document.getElementById("detalheNome").innerText = produtoDetalheAtual.nome;
+  document.getElementById("detalhePreco").innerText =
+    "R$ " + produtoDetalheAtual.preco.toFixed(2).replace(".", ",");
+
+  document.getElementById("produtoDetalhe").classList.add("ativo");
 }
 
-/* troca a cada 4 segundos */
-setInterval(trocarSlide, 4000);
-/* ===== SLIDER AUTOMÁTICO ===== */
+function trocarFotoDetalhe(direcao) {
+  fotoAtualDetalhe += direcao;
 
-const slides = document.querySelectorAll(".slide");
+  if (fotoAtualDetalhe < 0) {
+    fotoAtualDetalhe = fotosDetalhe.length - 1;
+  }
 
+  if (fotoAtualDetalhe >= fotosDetalhe.length) {
+    fotoAtualDetalhe = 0;
+  }
 
+  document.getElementById("detalheImg").src = fotosDetalhe[fotoAtualDetalhe];
+}

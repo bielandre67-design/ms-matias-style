@@ -35,18 +35,47 @@
 
       <div class="card">
         <span>Pagos</span>
-        <strong id="pedidosPagos">0</strong>
+        <strong id="totalPagos">0</strong>
       </div>
 
       <div class="card">
         <span>Pendentes</span>
-        <strong id="pedidosPendentes">0</strong>
+        <strong id="totalPendentes">0</strong>
       </div>
     </section>
+<div class="abas-pedidos">
+  <button class="aba-pedido ativa" onclick="filtrarPedidos('todos', this)">
+    Todos
+  </button>
 
+  <button class="aba-pedido" onclick="filtrarPedidos('pendente', this)">
+    Novos pedidos
+  </button>
+
+  <button class="aba-pedido" onclick="filtrarPedidos('pago', this)">
+    Pagos
+  </button>
+
+  <button class="aba-pedido" onclick="filtrarPedidos('enviado', this)">
+    Enviados
+  </button>
+</div>
     <section>
       <h2>Pedidos</h2>
-      <div id="listaPedidos" class="lista"></div>
+      <div class="abas-pedidos">
+  <button class="aba-pedido ativa" onclick="filtrarPedidos('pendente', this)">
+    Novos pedidos <span id="qtdNovos">0</span>
+  </button>
+
+  <button class="aba-pedido" onclick="filtrarPedidos('pago', this)">
+    Pagos <span id="qtdPagosAba">0</span>
+  </button>
+
+  <button class="aba-pedido" onclick="filtrarPedidos('enviado', this)">
+    Enviados <span id="qtdEnviados">0</span>
+  </button>
+</div>
+      <div id="pedidos" class="lista"></div>
     </section>
   </main>
 
