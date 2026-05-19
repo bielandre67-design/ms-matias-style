@@ -115,9 +115,16 @@ async function carregarPedidos() {
       pedidos.filter(p => p.status !== "pago").length;
 
     if (pedidos.length === 0) {
-      lista.innerHTML = "<p>Nenhum pedido ainda.</p>";
-      return;
-    }
+
+  lista.innerHTML = `
+    <div class="lista-vazia">
+      <h3>Nenhum pedido ainda</h3>
+      <p>Quando alguém comprar na MS os pedidos aparecerão aqui.</p>
+    </div>
+  `;
+
+  return;
+}
 
     lista.innerHTML = pedidos.map(pedido => {
       const produtos = JSON.parse(pedido.items || "[]");
