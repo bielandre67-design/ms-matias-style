@@ -76,33 +76,29 @@ const client = new MercadoPagoConfig({
 });
 app.post("/criar-pagamento", async (req, res) => {
   try {
+    const body = req.body || {};
+    const carrinhoItems = body.items || [];
 
- const body = req.body || {};
-const items = body.items || [];
-const nome = body.nome || "";
-const telefone = body.telefone || "";
-const cep = body.cep || "";
-const rua = body.rua || "";
-const numero = body.numero || "";
-const complemento = body.complemento || "";
-const bairro = body.bairro || "";
-const cidade = body.cidade || "";
-const estado = body.estado || "";
-const valorFrete = Number(body.valorFrete) || 0;
-const freteSelecionado = body.freteSelecionado || null;
-const desconto = Number(body.desconto) || 0;
-const totalComFrete = Number(body.totalComFrete) || 0;
-  
+    const nome = body.nome || "";
+    const telefone = body.telefone || "";
+    const cep = body.cep || "";
+    const rua = body.rua || "";
+    const numero = body.numero || "";
+    const complemento = body.complemento || "";
+    const bairro = body.bairro || "";
+    const cidade = body.cidade || "";
+    const estado = body.estado || "";
 
-    const subtotal = items.reduce((soma, item) => {
-  return soma + (Number(item.preco) * Number(item.quantidade));
-}, 0);
+    const valorFrete = Number(body.valorFrete) || 0;
+    const freteSelecionado = body.freteSelecionado || null;
+    const desconto = Number(body.desconto) || 0;
 
-const valorDesconto =
-  desconto > 0 ? subtotal * (desconto / 100) : 0;
+    const subtotal = carrinhoItems.reduce((soma, item) => {
+      return soma + (Number(item.preco) * Number(item.quantidade || 1));
+    }, 0);
 
-const totalPedido =
-  subtotal - valorDesconto + valorFrete;
+    const valorDesconto = desconto > 0 ? subtotal * (desconto / 100) : 0;
+    const totalPedido = subtotal - valorDesconto + valorFrete;
 
     const pedidos = lerPedidos();
     const idPedido = pedidos.length + 1;
@@ -118,7 +114,7 @@ const totalPedido =
       bairro,
       cidade,
       estado,
-      itens: JSON.stringify(itens),
+      items: JSON.stringify(carrinhoItems),
       total: totalPedido,
       status: "aguardando pagamento",
       data: new Date().toLocaleString("pt-BR")
@@ -128,37 +124,35 @@ const totalPedido =
 
     const preference = new Preference(client);
 
-
     const resposta = await preference.create({
-  body: {
-    external_reference: String(idPedido),
+      body: {
+        external_reference: String(idPedido),
 
-    items: [
-  ...items.map((item) => ({
-    title: `${item.nome} - Tamanho ${item.tamanho}`,
-    quantity: item.quantidade,
-    unit_price: Number(item.preco),
-    currency_id: "BRL"
-  })),
+        items: [
+          ...carrinhoItems.map((item) => ({
+            title: `${item.nome} - Tamanho ${item.tamanho || "-"}`,
+            quantity: Number(item.quantidade) || 1,
+            unit_price: Number(item.preco),
+            currency_id: "BRL"
+          })),
 
-  {
-  title: freteSelecionado
-    ? `Frete - ${freteSelecionado.nome}`
-    : "Frete",
-
-  quantity: 1,
-  unit_price: Number(valorFrete) || 0,
-  currency_id: "BRL"
-},
-
-],
+          {
+            title: freteSelecionado
+              ? `Frete - ${freteSelecionado.nome}`
+              : "Frete",
+            quantity: 1,
+            unit_price: valorFrete,
+            currency_id: "BRL"
+          }
+        ],
 
         back_urls: {
           success: "https://ms-matias-style.vercel.app/sucesso.html",
           failure: "https://ms-matias-style.vercel.app/erro.html",
           pending: "https://ms-matias-style.vercel.app/pendente.html"
-        }
+        },
 
+        auto_return: "approved"
       }
     });
 
@@ -169,15 +163,13 @@ const totalPedido =
     });
 
   } catch (error) {
+    console.log("ERRO PAGAMENTO:", error);
 
-  console.log("ERRO PAGAMENTO:", error);
-
-  res.status(500).json({
-    erro: "Erro ao criar pagamento",
-    detalhes: error.message
-  });
-
-}
+    res.status(500).json({
+      erro: "Erro ao criar pagamento",
+      detalhes: error.message
+    });
+  }
 });
 
 app.get("/pedidos", (req, res) => {
