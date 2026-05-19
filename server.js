@@ -94,9 +94,15 @@ const desconto = Number(body.desconto) || 0;
 const totalComFrete = Number(body.totalComFrete) || 0;
   
 
-    const totalPedido = items.reduce((soma, item) => {
+    const subtotal = items.reduce((soma, item) => {
   return soma + (Number(item.preco) * Number(item.quantidade));
-}, 0) + (Number(valorFrete) || 0);
+}, 0);
+
+const valorDesconto =
+  desconto > 0 ? subtotal * (desconto / 100) : 0;
+
+const totalPedido =
+  subtotal - valorDesconto + valorFrete;
 
     const pedidos = lerPedidos();
     const idPedido = pedidos.length + 1;
@@ -136,11 +142,15 @@ const totalComFrete = Number(body.totalComFrete) || 0;
   })),
 
   {
-    title: freteSelecionado ? `Frete - ${freteSelecionado.nome}` : "Frete",
-    quantity: 1,
-    unit_price: Number(valorFrete) || 0,
-    currency_id: "BRL"
-  }
+  title: freteSelecionado
+    ? `Frete - ${freteSelecionado.nome}`
+    : "Frete",
+
+  quantity: 1,
+  unit_price: Number(valorFrete) || 0,
+  currency_id: "BRL"
+},
+
 ],
 
         back_urls: {
