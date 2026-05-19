@@ -76,8 +76,8 @@ const client = new MercadoPagoConfig({
 });
 app.post("/criar-pagamento", async (req, res) => {
   try {
- const body = req.body || {};
 
+ const body = req.body || {};
 const items = body.items || [];
 const nome = body.nome || "";
 const telefone = body.telefone || "";
