@@ -286,3 +286,58 @@ h2 {
   color: #ff6b6b;
   font-weight: 700;
 }
+header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:40px;
+    gap:20px;
+    flex-wrap:wrap;
+}
+
+.logo-admin{
+    display:flex;
+    align-items:center;
+    gap:15px;
+}
+
+.logo-admin img{
+    width:70px;
+    height:70px;
+    object-fit:contain;
+}
+
+.logo-admin h1{
+    font-size:42px;
+    margin:0;
+    color:white;
+}
+
+.logo-admin p{
+    margin:0;
+    color:#aaa;
+    font-size:18px;
+}
+
+.acoes-topo{
+    display:flex;
+    gap:15px;
+}
+
+.acoes-topo button{
+    border:none;
+    padding:14px 24px;
+    border-radius:14px;
+    font-weight:700;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.acoes-topo button:hover{
+    transform:translateY(-2px);
+}
+
+.btn-sair{
+    background:#ff3b5c;
+    color:white;
+}

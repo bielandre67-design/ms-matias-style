@@ -1,14 +1,24 @@
 async function carregarPedidos(){
   const lista = document.getElementById("listaPedidos");
 
-  lista.innerHTML = "<p>Carregando pedidos...</p>";
+  lista.innerHTML = `
+<div class="lista-vazia">
+    <h3>Carregando pedidos...</h3>
+    <p>Sincronizando painel MS</p>
+</div>
+`;
 
   try{
     const resposta = await fetch("https://ms-matias-style.onrender.com/pedidos")
     const pedidos = await resposta.json();
 
     if(pedidos.length === 0){
-      lista.innerHTML = "<p>Nenhum pedido encontrado.</p>";
+     lista.innerHTML = `
+<div class="lista-vazia">
+    <h3>Nenhum pedido ainda</h3>
+    <p>Quando alguém comprar na MS os pedidos aparecerão aqui.</p>
+</div>
+`;
       return;
     }
 
@@ -194,8 +204,8 @@ async function atualizarStatus(id, status) {
 }
 
 carregarPedidos();
-<script>
-  if (localStorage.getItem("adminLogado") !== "sim") {
+
+function logoutADM() {
+    localStorage.removeItem("adminLogado");
     window.location.href = "login.html";
-  }
-</script>
+}

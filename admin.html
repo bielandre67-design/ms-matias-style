@@ -1,26 +1,4 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Painel MS</title>
-  <link rel="stylesheet" href="admin.css">
-</head>
-<body>
 
-  <header>
-    <h1>Painel de Pedidos MS</h1>
-    <button onclick="carregarPedidos()">Atualizar</button>
-  </header>
-
-  <main id="listaPedidos">
-    <p>Carregando pedidos...</p>
-  </main>
-
-  <script src="admin.js"></script>
-</body>
-</html>
-<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
@@ -29,17 +7,25 @@
   <link rel="stylesheet" href="admin.css">
 </head>
 <body>
+<header>
 
-  <div class="logo-admin">
-  <img src="logo.png">
-  <div>
-    <h1>Painel ADM</h1>
-    <p>MS Matias Style</p>
-  </div>
+<div class="logo-admin">
+    <img src="logo.png">
+    <div>
+        <h1>Painel ADM</h1>
+        <p>MS Matias Style</p>
+    </div>
 </div>
 
-      <button onclick="carregarPedidos()">Atualizar</button>
-    </header>
+<div class="acoes-topo">
+  <button onclick="carregarPedidos()">Atualizar</button>
+
+  <button class="btn-sair" onclick="logoutADM()">
+    Sair
+  </button>
+</div>
+
+</header>
 
     <section class="cards-resumo">
       <div class="card">
