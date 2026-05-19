@@ -20,3 +20,49 @@
   <script src="admin.js"></script>
 </body>
 </html>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel ADM - MS</title>
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+  <main class="admin">
+    <header class="topo">
+      <div>
+        <h1>Painel ADM</h1>
+        <p>MS Matias Style</p>
+      </div>
+
+      <button onclick="carregarPedidos()">Atualizar</button>
+    </header>
+
+    <section class="cards-resumo">
+      <div class="card">
+        <span>Total de pedidos</span>
+        <strong id="totalPedidos">0</strong>
+      </div>
+
+      <div class="card">
+        <span>Pagos</span>
+        <strong id="pedidosPagos">0</strong>
+      </div>
+
+      <div class="card">
+        <span>Pendentes</span>
+        <strong id="pedidosPendentes">0</strong>
+      </div>
+    </section>
+
+    <section>
+      <h2>Pedidos</h2>
+      <div id="listaPedidos" class="lista"></div>
+    </section>
+  </main>
+
+  <script src="admin.js"></script>
+</body>
+</html>

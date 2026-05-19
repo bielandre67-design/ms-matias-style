@@ -142,3 +142,154 @@ small{
 .btn-enviado:hover{
   opacity:0.9;
 }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  background: #080808;
+  color: white;
+}
+
+.admin {
+  width: min(1100px, 94%);
+  margin: auto;
+  padding: 30px 0;
+}
+
+.topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.topo h1 {
+  font-size: 32px;
+}
+
+.topo p {
+  color: #aaa;
+}
+
+button {
+  border: none;
+  border-radius: 12px;
+  padding: 12px 18px;
+  font-weight: 800;
+  cursor: pointer;
+  background: white;
+  color: black;
+}
+
+.cards-resumo {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+.card {
+  background: #121212;
+  border: 1px solid #252525;
+  border-radius: 18px;
+  padding: 20px;
+}
+
+.card span {
+  color: #aaa;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.card strong {
+  font-size: 30px;
+}
+
+h2 {
+  margin-bottom: 15px;
+}
+
+.lista {
+  display: grid;
+  gap: 16px;
+}
+
+.pedido {
+  background: #111;
+  border: 1px solid #292929;
+  border-radius: 18px;
+  padding: 18px;
+}
+
+.pedido-topo {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.status {
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.status.pago {
+  background: #1dd15d;
+  color: #001b09;
+}
+
+.status.pendente,
+.status.aguardando {
+  background: #ffd166;
+  color: #231600;
+}
+
+.info {
+  color: #ddd;
+  line-height: 1.7;
+  margin: 10px 0;
+}
+
+.produtos {
+  background: #080808;
+  padding: 12px;
+  border-radius: 12px;
+  margin: 12px 0;
+}
+
+.acoes {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.btn-pago {
+  background: #1dd15d;
+}
+
+.btn-enviado {
+  background: #62a8ff;
+}
+
+.btn-whats {
+  background: #25d366;
+}
+
+@media (max-width: 700px) {
+  .cards-resumo {
+    grid-template-columns: 1fr;
+  }
+
+  .topo {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+}
