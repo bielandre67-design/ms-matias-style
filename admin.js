@@ -194,3 +194,8 @@ async function atualizarStatus(id, status) {
 }
 
 carregarPedidos();
+<script>
+  if (localStorage.getItem("adminLogado") !== "sim") {
+    window.location.href = "login.html";
+  }
+</script>

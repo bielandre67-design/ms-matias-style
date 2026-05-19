@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login ADM - MS</title>
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+  <main class="login-ms">
+    <div class="login-card">
+      <img src="logo.png" class="login-logo">
+
+      <h1>Login ADM</h1>
+      <p>MS Matias Style</p>
+
+      <input id="usuario" placeholder="Usuário">
+      <input id="senha" type="password" placeholder="Senha">
+
+      <button onclick="entrarADM()">Entrar</button>
+
+      <small id="erroLogin"></small>
+    </div>
+  </main>
+
+  <script>
+    function entrarADM() {
+      const usuario = document.getElementById("usuario").value;
+      const senha = document.getElementById("senha").value;
+
+      if (usuario === "ms" && senha === "123456") {
+        localStorage.setItem("adminLogado", "sim");
+        window.location.href = "admin.html";
+      } else {
+        document.getElementById("erroLogin").innerText = "Usuário ou senha incorretos.";
+      }
+    }
+  </script>
+
+</body>
+</html>

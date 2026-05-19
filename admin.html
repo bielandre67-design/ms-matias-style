@@ -65,5 +65,13 @@
   </main>
 
   <script src="admin.js"></script>
+  
+<script>
+  if (localStorage.getItem("adminLogado") !== "sim") {
+    window.location.href = "login.html";
+  }
+</script>
+
+<script src="admin.js"></script>
 </body>
 </html>
