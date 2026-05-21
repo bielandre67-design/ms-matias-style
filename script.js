@@ -79,17 +79,15 @@ function adicionarCarrinho(botao) {
   const card = botao.closest(".card-produto");
 
   const nome = botao.dataset.nome;
-  const preco = botao.dataset.preco;
+  const precoFinal = Number(botao.dataset.preco);
   const imagem = botao.dataset.img;
 
   let tamanho = "";
 
-  const tamanhoAtivo = card.querySelector(".tamanhos button.ativo");
-  if (tamanhoAtivo) {
-    tamanho = tamanhoAtivo.innerText.trim();
+  if (card) {
+    const tamanhoAtivo = card.querySelector(".tamanhos button.ativo");
+    if (tamanhoAtivo) tamanho = tamanhoAtivo.innerText.trim();
   }
-
-  const precoFinal = Number(botao.dataset.preco);
 
   if (!tamanho) {
     alert("Escolha um tamanho antes de adicionar ao carrinho.");
@@ -106,17 +104,16 @@ function adicionarCarrinho(botao) {
     itemExistente.quantidade += 1;
   } else {
     carrinho.push({
-  nome: nome,
-  preco: precoFinal,
-  imagem: imagem,
-  tamanho: tamanho,
-  quantidade: 1
-});
+      nome: nome,
+      preco: precoFinal,
+      imagem: imagem,
+      tamanho: tamanho,
+      quantidade: 1
+    });
   }
 
   salvarCarrinho();
   atualizarTudo();
-
   mostrarToastMS();
 }
 
@@ -131,13 +128,27 @@ function adicionarProdutoDetalhe() {
     return;
   }
 
-  adicionarCarrinho(
-    produtoDetalheAtual.nome,
-    produtoDetalheAtual.preco,
-    produtoDetalheAtual.img,
-    tamanho
+  carregarCarrinho();
+
+  const itemExistente = carrinho.find(item =>
+    item.nome === produtoDetalheAtual.nome && item.tamanho === tamanho
   );
 
+  if (itemExistente) {
+    itemExistente.quantidade += 1;
+  } else {
+    carrinho.push({
+      nome: produtoDetalheAtual.nome,
+      preco: produtoDetalheAtual.preco,
+      imagem: produtoDetalheAtual.img,
+      tamanho: tamanho,
+      quantidade: 1
+    });
+  }
+
+  salvarCarrinho();
+  atualizarTudo();
+  mostrarToastMS();
   fecharProdutoDetalhe();
 }
 
@@ -1001,20 +1012,18 @@ const dados = await resposta.json();
   }
 }
 
-function finalizarCompraFinal() {
+function finalizarCompraFinal(){
+  const tel =
+    document.getElementById("telefoneClienteMobile") ||
+    document.getElementById("telefoneCliente");
 
-  const whatsapp = document
-    .getElementById("telefoneCliente")
-    .value.replace(/\D/g, "");
-
-  if (whatsapp.length < 11) {
+  if(!tel || tel.value.replace(/\D/g, "").length < 11){
     alert("Digite um WhatsApp válido com DDD.");
     return;
   }
 
   finalizarCompra();
 }
-
 // ===============================
 // SLIDER
 // ===============================
@@ -1079,15 +1088,3 @@ window.abrirProdutoDetalheCard = abrirProdutoDetalheCard;
 window.trocarFotoDetalhe = trocarFotoDetalhe;
 window.fecharProdutoDetalhe = fecharProdutoDetalhe;
 window.adicionarProdutoDetalhe = adicionarProdutoDetalhe;
-function fecharProdutoDetalhe(){
-  const detalhe = document.getElementById("produtoDetalhe");
-
-  if(detalhe){
-    detalhe.classList.remove("ativo");
-    detalhe.style.display = "none";
-  }
-
-  document.body.classList.remove("sem-scroll");
-  document.body.style.overflow = "auto";
-  window.location.hash = "produtos";
-}
