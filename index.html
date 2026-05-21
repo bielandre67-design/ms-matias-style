@@ -19,16 +19,25 @@
       <span>MS Matias Style</span>
     </div>
 
-    <nav class="menu">
-      <a href="#inicio">Início</a>
-      <a href="#produtos">Produtos</a>
-      <a href="javascript:void(0)" onclick="abrirContato()">Contato</a>
-    </nav>
+    
 
-    <button class="btn-carrinho" onclick="abrirCarrinho()" aria-label="Abrir carrinho">
-      <span class="icone-carrinho">🛒</span>
-      <span id="contadorCarrinho" class="contador-carrinho">0</span>
-    </button>
+    <nav class="menu">
+  <a href="#inicio">Início</a>
+  <a href="#produtos">Produtos</a>
+  <a href="#contato">Contato</a>
+</nav>
+
+
+
+
+    <button class="btn-menu-mobile" onclick="abrirMenuMobile()">☰</button>
+
+<button class="btn-carrinho" onclick="abrirCarrinho()" aria-label="Abrir carrinho">
+
+    <span class="icone-carrinho">🛒</span>
+    <span id="contadorCarrinho" class="contador-carrinho">0</span>
+
+</button>
   </header>
 
   <!-- HERO PC + MOBILE -->
@@ -40,9 +49,13 @@
 
       <p>CONFORTO • ESTILO • ATITUDE</p>
 
-      <a href="#produtos" class="btn-hero">
-        VER PRODUTOS <span>→</span>
-      </a>
+      <a 
+class="btn-banner"
+onclick="document.getElementById('moletons').scrollIntoView({behavior:'smooth'})">
+
+VER PRODUTOS →
+
+</a>
     </div>
   </section>
 
@@ -63,14 +76,41 @@
         Visual jovem, minimalista e pesado no estilo.
       </p>
 
-      <a href="#produtos" class="btn-banner">
-        Ver produtos
-      </a>
+      <button class="btn-banner" onclick="document.getElementById('moletons').scrollIntoView({behavior:'smooth'})">
+  VER PRODUTOS →
+</button>
     </div>
   </section>
+<section class="categorias-home">
 
+  <a href="#jaquetas" class="categoria-item">
+    <span>◈</span>
+    <p>Jaquetas</p>
+  </a>
+
+  <a href="#moletons" class="categoria-item">
+    <span>⬒</span>
+    <p>Moletons</p>
+  </a>
+
+  <a href="#toucas" class="categoria-item">
+    <span>◉</span>
+    <p>Toucas</p>
+  </a>
+
+  <a href="#camisetas" class="categoria-item">
+    <span>▣</span>
+    <p>Camisetas</p>
+  </a>
+
+  <a href="#calcas" class="categoria-item">
+    <span>║</span>
+    <p>Calças</p>
+  </a>
+
+</section>
   <!-- PRODUTOS -->
-  <section class="produtos" id="produtos">
+  <section class="produtos" id="moletons">
     <div class="titulo-section">
       <p>Produtos</p>
       <h2>Escolha seu moletom</h2>
@@ -81,16 +121,16 @@
    <div class="card-produto"
 data-nome="Moletom Rosa MS"
 data-preco="1.00"
-data-img="moletom-rosa.png"
-data-fotos="moletom-rosa.png,modelo-rosa.png">
+data-img="moletom-rosa.jpeg"
+data-fotos="moletom-rosa.jpeg,modelo-rosa.jpeg">
 
   <div class="produto-img"
   onclick="abrirProdutoDetalheCard(this.closest('.card-produto'))">
 
-      <img src="moletom-rosa.png"
+      <img src="moletom-rosa.jpeg"
       class="foto-normal">
 
-      <img src="modelo-rosa.png"
+      <img src="modelo-rosa.jpeg"
       class="foto-hover">
 
   </div>
@@ -124,7 +164,7 @@ data-fotos="moletom-rosa.png,modelo-rosa.png">
           onclick="adicionarCarrinho(this)"
           data-nome="Moletom Rosa MS"
           data-preco="1.00"
-          data-img="moletom-rosa.png">
+          data-img="moletom-rosa.jpeg">
 
           <span>Adicionar ao carrinho</span>
           <span class="icone-btn-carrinho">🛒</span>
@@ -136,11 +176,11 @@ data-fotos="moletom-rosa.png,modelo-rosa.png">
      <div class="card-produto"
 data-nome="Moletom Preto MS"
 data-preco="1.00"
-data-img="MOLETOM-PRETO.png"
-data-fotos="MOLETOM-PRETO.png,modelo-preto.png">
+data-img="MOLETOM-PRETO.jpeg"
+data-fotos="MOLETOM-PRETO.jpeg,modelo-preto.png">
         <div class="produto-img">
-          <img src="MOLETOM-PRETO.png" class="foto-normal" alt="Moletom Preto MS">
-          <img src="modelo-preto.png" class="foto-hover" alt="Modelo com Moletom Preto MS">
+          <img src="MOLETOM-PRETO.jpeg" class="foto-normal" alt="Moletom Preto MS">
+          <img src="modelo-preto.jpeg" class="foto-hover" alt="Modelo com Moletom Preto MS">
         </div>
 
         <h3>Moletom Preto MS</h3>
@@ -173,7 +213,7 @@ data-fotos="MOLETOM-PRETO.png,modelo-preto.png">
           onclick="adicionarCarrinho(this)"
           data-nome="Moletom Preto MS"
           data-preco="1.00"
-          data-img="MOLETOM-PRETO.png">
+          data-img="MOLETOM-PRETO.jpeg">
 
           <span>Adicionar ao carrinho</span>
           <span class="icone-btn-carrinho">🛒</span>
@@ -662,7 +702,7 @@ alt="Modelo com Moletom Off White MS">
 <section class="secao-produtos">
 
   <div class="topo-secao">
-    <div class="subtitulo-secao">CORTA VENTO</div>
+    <section class="produtos" id="jaquetas">
     <h2 class="titulo-secao">JAQUETAS MS</h2>
     <div class="linha-titulo"></div>
   </div>
@@ -753,8 +793,217 @@ alt="Modelo com Moletom Off White MS">
     <button onclick="selecionarTamanho(this, 'GG')">
       GG
     </button>
+      </div>
+</section>
+ <!-- CAMISETAS OVERSIZED -->
+<section class="produtos" id="camisetas">
+
+  <div class="titulo-section">
+    <p>Produtos</p>
+    <h2>Camisetas Oversized</h2>
+  </div>
+
+  <div class="grid-produtos">
+
+    <!-- PRETA -->
+    <div class="card-produto"
+    data-nome="Camiseta Oversized Preta"
+    data-preco="89.90"
+    data-img="Camiseta Oversized Preta.jpeg"
+    data-fotos="Camiseta Oversized Preta.jpeg,Camiseta Oversized Preta Modelo.jpeg">
+
+      <div class="produto-img"
+      onclick="abrirProdutoDetalheCard(this.closest('.card-produto'))">
+
+        <img src="Camiseta Oversized Preta.jpeg" class="foto-normal">
+
+        <img src="modelo Camiseta Oversized Preta.jpeg" class="foto-hover">
+
+      </div>
+
+      <h3>Camiseta Oversized Preta</h3>
+
+      <div class="preco-box">
+        <span class="preco-antigo">R$ 129,90</span>
+
+        <p class="preco">R$ 89,90</p>
+
+        <span class="parcelamento">
+          em até 2x sem juros
+        </span>
+      </div>
+
+      <div class="tamanhos">
+        <button onclick="selecionarTamanho(this,'P')">P</button>
+        <button onclick="selecionarTamanho(this,'M')">M</button>
+        <button onclick="selecionarTamanho(this,'G')">G</button>
+        <button onclick="selecionarTamanho(this,'GG')">GG</button>
+      </div>
+
+      <button
+      class="btn-comprar"
+      onclick="adicionarCarrinho(this)"
+      data-nome="Camiseta Oversized Preta"
+      data-preco="89.90"
+      data-img="Camiseta Oversized Preta.jpeg">
+
+        <span>Adicionar ao carrinho</span>
+        <span class="icone-btn-carrinho">🛒</span>
+
+      </button>
+
+    </div>
+
+    <!-- OFF WHITE -->
+    <div class="card-produto"
+    data-nome="Camiseta Oversized Off White"
+    data-preco="89.90"
+    data-img="Camiseta Oversized Off-White.jpeg"
+    data-fotos="Camiseta Oversized Off-White.jpeg,Camiseta Oversized Off-White Modelo.jpeg">
+
+      <div class="produto-img"
+      onclick="abrirProdutoDetalheCard(this.closest('.card-produto'))">
+
+        <img src="Camiseta Oversized Off-White.jpeg" class="foto-normal">
+
+        <img src="modelo Camiseta Oversized Off-White.jpeg" class="foto-hover">
+
+      </div>
+
+      <h3>Camiseta Oversized Off White</h3>
+
+      <div class="preco-box">
+        <span class="preco-antigo">R$ 129,90</span>
+
+        <p class="preco">R$ 89,90</p>
+
+        <span class="parcelamento">
+          em até 2x sem juros
+        </span>
+      </div>
+
+      <div class="tamanhos">
+        <button onclick="selecionarTamanho(this,'P')">P</button>
+        <button onclick="selecionarTamanho(this,'M')">M</button>
+        <button onclick="selecionarTamanho(this,'G')">G</button>
+        <button onclick="selecionarTamanho(this,'GG')">GG</button>
+      </div>
+
+      <button
+      class="btn-comprar"
+      onclick="adicionarCarrinho(this)"
+      data-nome="Camiseta Oversized Off White"
+      data-preco="89.90"
+      data-img="Camiseta Oversized Off-White.jpeg">
+
+        <span>Adicionar ao carrinho</span>
+        <span class="icone-btn-carrinho">🛒</span>
+
+      </button>
+
+    </div>
+
+    <!-- MARROM -->
+    <div class="card-produto"
+    data-nome="Camiseta Oversized Marrom"
+    data-preco="89.90"
+    data-img="Camiseta Oversized Marrom.jpeg"
+    data-fotos="Camiseta Oversized Marrom.jpeg,Camiseta Oversized Marrom Modelo.jpeg">
+
+      <div class="produto-img"
+      onclick="abrirProdutoDetalheCard(this.closest('.card-produto'))">
+
+        <img src="Camiseta Oversized Marrom.jpeg" class="foto-normal">
+
+        <img src="modelo Camiseta Oversized Marrom.jpeg" class="foto-hover">
+
+      </div>
+
+      <h3>Camiseta Oversized Marrom</h3>
+
+      <div class="preco-box">
+        <span class="preco-antigo">R$ 129,90</span>
+
+        <p class="preco">R$ 89,90</p>
+
+        <span class="parcelamento">
+          em até 2x sem juros
+        </span>
+      </div>
+
+      <div class="tamanhos">
+        <button onclick="selecionarTamanho(this,'P')">P</button>
+        <button onclick="selecionarTamanho(this,'M')">M</button>
+        <button onclick="selecionarTamanho(this,'G')">G</button>
+        <button onclick="selecionarTamanho(this,'GG')">GG</button>
+      </div>
+
+      <button
+      class="btn-comprar"
+      onclick="adicionarCarrinho(this)"
+      data-nome="Camiseta Oversized Marrom"
+      data-preco="89.90"
+      data-img="Camiseta Oversized Marrom.jpeg">
+
+        <span>Adicionar ao carrinho</span>
+        <span class="icone-btn-carrinho">🛒</span>
+
+      </button>
+
+    </div>
+
+    <!-- BRANCA -->
+    <div class="card-produto"
+    data-nome="Camiseta Oversized Branca"
+    data-preco="89.90"
+    data-img="Camiseta Oversized Bege.jpeg"
+    data-fotos="Camiseta Oversized Bege.jpeg,Camiseta Oversized Bege Modelo.jpeg">
+
+      <div class="produto-img"
+      onclick="abrirProdutoDetalheCard(this.closest('.card-produto'))">
+
+        <img src="Camiseta Oversized Bege.jpeg" class="foto-normal">
+
+        <img src="modelo Camiseta Oversized Bege.jpeg" class="foto-hover">
+
+      </div>
+
+      <h3>Camiseta Oversized Branca</h3>
+
+      <div class="preco-box">
+        <span class="preco-antigo">R$ 129,90</span>
+
+        <p class="preco">R$ 89,90</p>
+
+        <span class="parcelamento">
+          em até 2x sem juros
+        </span>
+      </div>
+
+      <div class="tamanhos">
+        <button onclick="selecionarTamanho(this,'P')">P</button>
+        <button onclick="selecionarTamanho(this,'M')">M</button>
+        <button onclick="selecionarTamanho(this,'G')">G</button>
+        <button onclick="selecionarTamanho(this,'GG')">GG</button>
+      </div>
+
+      <button
+      class="btn-comprar"
+      onclick="adicionarCarrinho(this)"
+      data-nome="Camiseta Oversized Branca"
+      data-preco="89.90"
+      data-img="Camiseta Oversized Bege.jpeg">
+
+        <span>Adicionar ao carrinho</span>
+        <span class="icone-btn-carrinho">🛒</span>
+
+      </button>
+
+    </div>
 
   </div>
+
+</section>
 
   <!-- BOTÃO -->
   <button class="btn-carrinho"
@@ -1034,5 +1283,107 @@ alt="Modelo com Moletom Off White MS">
   <img src="logo.png" alt="MS">
   <span>Produto adicionado ao carrinho</span>
 </div>
+<!-- MODAL PRODUTO MOBILE -->
+<div class="produto-detalhe-mobile" id="produtoDetalheMobile">
+  <div class="detalhe-topo">
+    <button onclick="fecharDetalheMobile()">‹</button>
+    <button id="favoritoDetalhe">♡</button>
+  </div>
+
+  <div class="detalhe-img">
+    <img id="detalheImg" src="">
+  </div>
+
+  <h2 class="detalhe-nome" id="detalheNome"></h2>
+  <p class="detalhe-preco" id="detalhePreco"></p>
+  <span class="detalhe-parcela">em até 2x sem juros</span>
+
+  <p class="detalhe-label">Tamanho</p>
+  <div class="detalhe-tamanhos">
+    <button onclick="selecionarTamanhoDetalhe(this,'P')">P</button>
+    <button onclick="selecionarTamanhoDetalhe(this,'M')">M</button>
+    <button onclick="selecionarTamanhoDetalhe(this,'G')">G</button>
+    <button onclick="selecionarTamanhoDetalhe(this,'GG')">GG</button>
+  </div>
+
+  <button class="detalhe-comprar" onclick="comprarProdutoDetalheMobile()">
+    🛍️ Adicionar ao carrinho
+  </button>
+</div>
+
+<!-- RODAPÉ MOBILE -->
+<nav class="menu-mobile-ms">
+  <a href="#inicio" class="ativo">
+    <span>⌂</span>
+    Início
+  </a>
+
+  <a href="javascript:void(0)" onclick="irParaCategorias()">
+  <span>▦</span>
+  Categorias
+</a>
+
+  <a href="javascript:void(0)" onclick="abrirCarrinho()">
+    <span>🛒</span>
+    Carrinho
+  </a>
+</nav>
+<div class="menu-lateral-mobile" id="menuLateralMobile">
+
+  <button class="fechar-menu-mobile"
+  onclick="fecharMenuMobile()">×</button>
+
+ <div class="titulo-menu-mobile">
+
+  <span>MS®</span>
+
+  <h3>STREETWEAR</h3>
+
+  <p>Premium Collection</p>
+
+</div>
+
+  <a href="#jaquetas"
+  onclick="fecharMenuMobile()">
+  Jaquetas
+  </a>
+
+  <a href="#moletons"
+  onclick="fecharMenuMobile()">
+  Moletons
+  </a>
+
+  <a href="#toucas"
+  onclick="fecharMenuMobile()">
+  Toucas
+  </a>
+
+  <a href="#camisetas"
+  onclick="fecharMenuMobile()">
+  Camisetas
+  </a>
+
+  <a href="#calcas"
+  onclick="fecharMenuMobile()">
+  Calças
+  </a>
+
+  <div class="menu-contato-mobile">
+
+  <button class="btn-ajuda-mobile" onclick="abrirAjudaMobile()">
+    Precisa de ajuda?
+    <span>+</span>
+  </button>
+
+  <div class="opcoes-ajuda-mobile" id="opcoesAjudaMobile">
+    <a href="https://wa.me/55SEUNUMERO" target="_blank">WhatsApp</a>
+    <a href="https://instagram.com/matiasstyleofc" target="_blank">Instagram</a>
+    <a href="mailto:matiasstyleofc@gmail.com">Email</a>
+  </div>
+
+</div>
+
+</div>
+
 </body>
 </html>

@@ -1053,6 +1053,78 @@ function atualizarTudo() {
   atualizarContador();
   atualizarCarrinho();
 }
+function irParaMoletons() {
+  const secao = document.getElementById("moletons");
+
+  if (secao) {
+    secao.scrollIntoView({
+      behavior: "smooth"
+    });
+  }
+}
+function irParaCategorias() {
+  const secao = document.querySelector(".categorias-home");
+
+  if (!secao) return;
+
+  const distanciaDoTopo = secao.getBoundingClientRect().top + window.pageYOffset;
+  const descontoHeader = 95;
+
+  window.scrollTo({
+    top: distanciaDoTopo - descontoHeader,
+    behavior: "smooth"
+  });
+}
+function abrirMenuMobile(){
+  document.getElementById("menuLateralMobile").classList.add("ativo");
+}
+
+function fecharMenuMobile(){
+  document.getElementById("menuLateralMobile").classList.remove("ativo");
+}
+function abrirAjudaMobile(){
+  document.getElementById("opcoesAjudaMobile").classList.toggle("ativo");
+}
+/* =========================
+MENU LATERAL
+========================= */
+
+function abrirMenuMobile(){
+  document
+    .getElementById("menuLateralMobile")
+    .classList.add("ativo");
+}
+
+function fecharMenuMobile(){
+  document
+    .getElementById("menuLateralMobile")
+    .classList.remove("ativo");
+}
+
+function abrirAjudaMobile(){
+  document
+    .getElementById("opcoesAjudaMobile")
+    .classList.toggle("ativo");
+}
+document.addEventListener("DOMContentLoaded", function(){
+  const detalhe = document.getElementById("produtoDetalheMobile");
+
+  if (detalhe) {
+    detalhe.classList.remove("ativo");
+    detalhe.style.display = "none";
+  }
+});
+window.abrirMenuMobile = abrirMenuMobile;
+window.fecharMenuMobile = fecharMenuMobile;
+window.abrirAjudaMobile = abrirAjudaMobile;
+window.abrirAjudaMobile = abrirAjudaMobile;
+
+window.abrirMenuMobile = abrirMenuMobile;
+window.fecharMenuMobile = fecharMenuMobile;
+
+window.irParaCategorias = irParaCategorias;
+
+window.irParaMoletons = irParaMoletons;
 
 document.addEventListener("DOMContentLoaded", atualizarTudo);
 
