@@ -40,7 +40,14 @@
         <h3>Entrega</h3>
 
         <input type="text" id="nomeClienteMobile" placeholder="Seu nome completo">
-        <input type="tel" id="telefoneClienteMobile" placeholder="WhatsApp">
+        <input 
+  type="tel"
+  id="telefoneClienteMobile"
+  placeholder="WhatsApp com DDD"
+  maxlength="15"
+  required
+  oninput="formatarWhatsapp(this)"
+>
 
         <div class="cep-box">
           <input type="text" id="cepCheckout" placeholder="Digite seu CEP">

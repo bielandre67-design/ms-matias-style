@@ -74,8 +74,17 @@ console.log("RESPOSTA MELHOR ENVIO:", data);
 const client = new MercadoPagoConfig({
   accessToken: "APP_USR-6498416472210940-051420-58c6f52200361da5cb99befae642591b-3403641746"
 });
+app.get("/pedidos", (req, res) => {
+  try {
+    const pedidos = JSON.parse(fs.readFileSync("pedidos.json", "utf8"));
+    res.json(pedidos);
+  } catch {
+    res.json([]);
+  }
+});
 app.post("/criar-pagamento", async (req, res) => {
   try {
+    
     const body = req.body || {};
     const carrinhoItems = body.items || [];
 
@@ -102,6 +111,10 @@ app.post("/criar-pagamento", async (req, res) => {
 
     const pedidos = lerPedidos();
     const idPedido = pedidos.length + 1;
+const agoraBrasil = new Date().toLocaleString("pt-BR", {
+  timeZone: "America/Sao_Paulo",
+  hour12: false
+});
 
     pedidos.push({
       id: idPedido,
@@ -114,11 +127,13 @@ app.post("/criar-pagamento", async (req, res) => {
       bairro,
       cidade,
       estado,
-      items: JSON.stringify(carrinhoItems),
+      produtos: carrinhoItems,
       total: totalPedido,
-      status: "aguardando pagamento",
-      data: new Date().toLocaleString("pt-BR")
-    });
+     status: "aguardando pagamento",
+     data: agoraBrasil,
+});
+
+
 
     salvarPedidos(pedidos);
 

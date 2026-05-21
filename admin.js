@@ -1,16 +1,76 @@
+(function () {
 const pedidosContainer = document.getElementById("pedidos");
 const totalPedidos = document.getElementById("totalPedidos");
 const totalPagos = document.getElementById("totalPagos");
 const totalPendentes = document.getElementById("totalPendentes");
 
 let filtroAtual = "todos";
+let pedidosCache = [];
 
-function pegarPedidos() {
-  return JSON.parse(localStorage.getItem("pedidosMS")) || [];
+const API_PEDIDOS = "http://192.168.1.2:3000/pedidos";
+
+async function pegarPedidos() {
+  try {
+    const resposta = await fetch(API_PEDIDOS + "?t=" + Date.now());
+
+    if (!resposta.ok) {
+      throw new Error("Erro ao buscar pedidos");
+    }
+
+    const pedidosServidor = await resposta.json();
+    const pedidosLocal = JSON.parse(localStorage.getItem("pedidos")) || [];
+    const pedidosMS = JSON.parse(localStorage.getItem("pedidosMS")) || [];
+
+    const todosPedidos = pedidosServidor.length
+      ? pedidosServidor
+      : pedidosLocal.length
+        ? pedidosLocal
+        : pedidosMS;
+
+    const statusSalvos = JSON.parse(localStorage.getItem("statusPedidosMS")) || {};
+
+    pedidosCache = (todosPedidos || []).map((pedido) => {
+      const id = String(pedido.id || pedido.data || Date.now());
+
+      return {
+        ...pedido,
+        id: id,
+        status: statusSalvos[id] || pedido.status || "pendente"
+      };
+    });
+
+    localStorage.setItem("pedidosMS", JSON.stringify(pedidosCache));
+    return pedidosCache;
+
+  } catch (erro) {
+    console.log("Erro ao buscar pedidos:", erro);
+
+    const pedidosLocal = JSON.parse(localStorage.getItem("pedidos")) || [];
+    const pedidosMS = JSON.parse(localStorage.getItem("pedidosMS")) || [];
+
+    pedidosCache = pedidosLocal.length ? pedidosLocal : pedidosMS;
+
+    return pedidosCache;
+  }
+}
+function salvarStatusPedido(id, status) {
+  const statusSalvos = JSON.parse(localStorage.getItem("statusPedidosMS")) || {};
+  statusSalvos[String(id)] = status;
+  localStorage.setItem("statusPedidosMS", JSON.stringify(statusSalvos));
+
+  pedidosCache = pedidosCache.map((pedido) => {
+    if (String(pedido.id) === String(id)) {
+      return { ...pedido, status };
+    }
+
+    return pedido;
+  });
+
+  localStorage.setItem("pedidosMS", JSON.stringify(pedidosCache));
 }
 
-function salvarPedidos(pedidos) {
-  localStorage.setItem("pedidosMS", JSON.stringify(pedidos));
+function acharPedido(id) {
+  return pedidosCache.find((pedido) => String(pedido.id) === String(id));
 }
 
 function formatarMoeda(valor) {
@@ -20,17 +80,64 @@ function formatarMoeda(valor) {
   });
 }
 
-function carregarPedidos() {
-  const pedidos = pegarPedidos();
+function texto(valor) {
+  if (valor === undefined || valor === null || valor === "") return "-";
+  return valor;
+}
 
-  const novos = pedidos.filter(p =>
+function enderecoDoPedido(pedido) {
+  return {
+    cep: pedido.endereco?.cep || pedido.cep || "",
+    rua: pedido.endereco?.rua || pedido.rua || "",
+    numero: pedido.endereco?.numero || pedido.numero || "",
+    complemento: pedido.endereco?.complemento || pedido.complemento || "",
+    bairro: pedido.endereco?.bairro || pedido.bairro || "",
+    cidade: pedido.endereco?.cidade || pedido.cidade || "",
+    estado: pedido.endereco?.estado || pedido.estado || ""
+  };
+}
+
+function produtosDoPedido(pedido) {
+  let produtos = pedido.produtos || pedido.itens || pedido.items || [];
+
+  if (typeof produtos === "string") {
+    try {
+      produtos = JSON.parse(produtos);
+    } catch {
+      produtos = [];
+    }
+  }
+
+  if (!Array.isArray(produtos)) {
+    produtos = [];
+  }
+
+  return produtos;
+}
+
+function telefoneLimpo(telefone) {
+  let numero = String(telefone || "").replace(/\D/g, "");
+
+  if (!numero) return "";
+
+  if (!numero.startsWith("55")) {
+    numero = "55" + numero;
+  }
+
+  return numero;
+}
+
+async function carregarPedidos() {
+  const pedidos = await pegarPedidos();
+
+  const novos = pedidos.filter((p) =>
     !p.status ||
     p.status === "pendente" ||
     p.status === "aguardando pagamento"
   );
 
-  const pagos = pedidos.filter(p => p.status === "pago");
-  const enviados = pedidos.filter(p => p.status === "enviado");
+  const pagos = pedidos.filter((p) => p.status === "pago");
+  const enviados = pedidos.filter((p) => p.status === "enviado");
 
   if (totalPedidos) totalPedidos.innerText = pedidos.length;
   if (totalPagos) totalPagos.innerText = pagos.length;
@@ -43,6 +150,8 @@ function carregarPedidos() {
   if (qtdNovos) qtdNovos.innerText = novos.length;
   if (qtdPagosAba) qtdPagosAba.innerText = pagos.length;
   if (qtdEnviados) qtdEnviados.innerText = enviados.length;
+
+  if (!pedidosContainer) return;
 
   pedidosContainer.innerHTML = "";
 
@@ -57,7 +166,7 @@ function carregarPedidos() {
   }
 
   const pedidosFiltrados = pedidos
-    .filter(pedido => {
+    .filter((pedido) => {
       if (filtroAtual === "todos") return true;
 
       if (filtroAtual === "pendente") {
@@ -82,18 +191,19 @@ function carregarPedidos() {
     return;
   }
 
-  pedidosFiltrados.forEach(pedido => {
+  pedidosFiltrados.forEach((pedido) => {
     const status = pedido.status || "pendente";
+    const endereco = enderecoDoPedido(pedido);
+    const produtos = produtosDoPedido(pedido);
 
-    const produtosHTML = (pedido.produtos || []).map(produto => `
+    const produtosHTML = produtos.map((produto) => `
       <div class="produto-admin">
-        <img src="${produto.img}" alt="Produto">
-
+        ${produto.img || produto.imagem ? `<img src="${produto.img || produto.imagem}" alt="Produto">` : ""}
         <div>
-          <strong>${produto.nome}</strong>
-          <p>Tamanho: ${produto.tamanho || "-"}</p>
-          <p>Qtd: ${produto.quantidade || 1}</p>
-          <p>${formatarMoeda(produto.preco)}</p>
+          <strong>${texto(produto.nome || produto.title)}</strong>
+          <p>Tamanho: ${texto(produto.tamanho || produto.size)}</p>
+          <p>Qtd: ${produto.quantidade || produto.qtd || 1}</p>
+          <p>${formatarMoeda(produto.preco || produto.price)}</p>
         </div>
       </div>
     `).join("");
@@ -104,8 +214,8 @@ function carregarPedidos() {
     card.innerHTML = `
       <div class="pedido-topo">
         <div>
-          <h3>Pedido #${pedido.id}</h3>
-          <p>${pedido.data || ""}</p>
+          <h3>Pedido #${texto(pedido.id)}</h3>
+          <p>${texto(pedido.data)}</p>
         </div>
 
         <span class="status-pedido ${status}">
@@ -115,21 +225,31 @@ function carregarPedidos() {
 
       <div class="cliente-admin">
         <h4>Cliente</h4>
-        <p><strong>Nome:</strong> ${pedido.nome || "-"}</p>
-        <p><strong>WhatsApp:</strong> ${pedido.telefone || "-"}</p>
+        <p><strong>Nome:</strong> ${texto(pedido.nome)}</p>
+        <p><strong>WhatsApp:</strong> ${texto(pedido.telefone)}</p>
       </div>
 
       <div class="endereco-admin">
         <h4>Endereço de entrega</h4>
-        <p><strong>Rua:</strong> ${pedido.endereco?.rua || "-"}, ${pedido.endereco?.numero || "-"}</p>
-        <p><strong>Bairro:</strong> ${pedido.endereco?.bairro || "-"}</p>
-        <p><strong>Cidade:</strong> ${pedido.endereco?.cidade || "-"}</p>
-        <p><strong>CEP:</strong> ${pedido.endereco?.cep || "-"}</p>
+        <p><strong>Rua:</strong> ${texto(endereco.rua)}, ${texto(endereco.numero)}</p>
+        <p><strong>Bairro:</strong> ${texto(endereco.bairro)}</p>
+        <p><strong>Cidade:</strong> ${texto(endereco.cidade)} ${endereco.estado ? "- " + endereco.estado : ""}</p>
+        <p><strong>CEP:</strong> ${texto(endereco.cep)}</p>
+
+<p><strong>Frete:</strong> 
+${texto(pedido.frete?.nome || "Não informado")}
+</p>
+
+<p><strong>Valor Frete:</strong> 
+R$ ${Number(pedido.frete?.preco || 0)
+.toFixed(2)
+.replace(".", ",")}
+</p>
       </div>
 
       <div class="pedido-produtos">
         <h4>Produtos</h4>
-        ${produtosHTML}
+        ${produtosHTML || "<p>Nenhum produto encontrado.</p>"}
       </div>
 
       <div class="pedido-total">
@@ -137,11 +257,11 @@ function carregarPedidos() {
       </div>
 
       <div class="pedido-botoes">
-        <button onclick="copiarEndereco(${pedido.id})">Copiar endereço</button>
-        <button onclick="imprimirPedido(${pedido.id})">Imprimir etiqueta</button>
-        <button onclick="marcarPago(${pedido.id})">Marcar pago</button>
-        <button onclick="marcarEnviado(${pedido.id})">Marcar enviado</button>
-        <button onclick="abrirWhatsApp(${pedido.id})">Chamar no WhatsApp</button>
+        <button type="button" onclick="window.copiarEndereco('${pedido.id}')">Copiar endereço</button>
+        <button type="button" onclick="window.imprimirPedido('${pedido.id}')">Imprimir etiqueta</button>
+        <button type="button" onclick="window.marcarPago('${pedido.id}')">Marcar pago</button>
+        <button type="button" onclick="window.marcarEnviado('${pedido.id}')">Marcar enviado</button>
+        <button type="button" onclick="window.abrirWhatsApp('${pedido.id}')">Chamar no WhatsApp</button>
       </div>
     `;
 
@@ -149,357 +269,262 @@ function carregarPedidos() {
   });
 }
 
-function filtrarPedidos(filtro, botao) {
+window.filtrarPedidos = function(filtro, botao) {
   filtroAtual = filtro;
 
-  document.querySelectorAll(".aba-pedido").forEach(btn => {
+  document.querySelectorAll(".aba-pedido").forEach((btn) => {
     btn.classList.remove("ativa");
   });
 
-  botao.classList.add("ativa");
+  if (botao) botao.classList.add("ativa");
 
   carregarPedidos();
-}
+};
 
-function copiarEndereco(id) {
-  const pedido = pegarPedidos().find(p => p.id === id);
-  if (!pedido) return;
+window.copiarEndereco = function(id) {
+  const pedido = acharPedido(id);
 
-  const texto = `
-${pedido.nome}
-${pedido.telefone}
+  if (!pedido) {
+    alert("Pedido não encontrado.");
+    return;
+  }
 
-${pedido.endereco?.rua}, ${pedido.endereco?.numero}
-${pedido.endereco?.bairro}
-${pedido.endereco?.cidade}
-CEP: ${pedido.endereco?.cep}
-  `;
+  const endereco = enderecoDoPedido(pedido);
 
-  navigator.clipboard.writeText(texto);
-  alert("Endereço copiado!");
-}
+  const conteudo = `${texto(pedido.nome)}
+WhatsApp: ${texto(pedido.telefone)}
 
-function imprimirPedido(id) {
+${texto(endereco.rua)}, ${texto(endereco.numero)}
+Bairro: ${texto(endereco.bairro)}
+Cidade: ${texto(endereco.cidade)} ${endereco.estado ? "- " + endereco.estado : ""}
+CEP: ${texto(endereco.cep)}`;
 
-  const pedidos =
-    JSON.parse(localStorage.getItem("pedidosMS")) || [];
+  navigator.clipboard.writeText(conteudo)
+    .then(() => alert("Endereço copiado!"))
+    .catch(() => prompt("Copie o endereço:", conteudo));
+};
 
-  const pedido =
-    pedidos.find(p => p.id === id);
+window.imprimirPedido = function(id) {
+  const pedido = acharPedido(id);
 
-  if (!pedido) return;
+  if (!pedido) {
+    alert("Pedido não encontrado.");
+    return;
+  }
+
+  const endereco = enderecoDoPedido(pedido);
+  const produtos = produtosDoPedido(pedido);
+
+  const produtosHTML = produtos.map((produto) => `
+    <p>
+      <strong>${texto(produto.nome || produto.title)}</strong>
+      | Tam: ${texto(produto.tamanho || produto.size)}
+      | Qtd: ${produto.quantidade || produto.qtd || 1}
+    </p>
+  `).join("");
 
   const janela = window.open("", "_blank");
 
+  if (!janela) {
+    alert("Permita pop-ups para imprimir a etiqueta.");
+    return;
+  }
+
   janela.document.write(`
+    <html>
+      <head>
+        <title>Etiqueta MS</title>
+        <style>
+          body{
+            font-family: Arial, sans-serif;
+            background:#f2f2f2;
+            padding:8px;
+            margin:0;
+          }
 
-  <html>
+          .etiqueta{
+            width:620px;
+            max-width:100%;
+            margin:auto;
+            background:#fff;
+            border-radius:20px;
+            overflow:hidden;
+          }
 
-  <head>
+          .topo{
+            background:#000;
+            color:#fff;
+            padding:18px;
+          }
 
-    <title>Etiqueta MS</title>
+          .topo h1{
+            margin:0;
+            font-size:28px;
+          }
 
-   <style>
+          .topo p{
+            margin-top:10px;
+            opacity:.8;
+          }
 
-  body{
-  font-family:Arial;
-  background:#f2f2f2;
-  padding:8px;
-  margin:0;
-}
+          .conteudo{
+            padding:30px;
+          }
 
-  .etiqueta{
-  width:620px;
-  margin:auto;
-  background:#fff;
-  border: none;
-  border-radius:20px;
-  overflow:hidden;
-  page-break-inside: avoid;
-}
-  
-.box{
-  page-break-inside: avoid;
-}
+          .box{
+            border:2px solid #ddd;
+            border-radius:18px;
+            padding:25px;
+            margin-bottom:25px;
+            page-break-inside:avoid;
+          }
 
-      .topo{
-  background:#000;
-  color:#fff;
-  padding:18px;
-}
+          h2{
+            margin-top:0;
+            font-size:24px;
+          }
 
-      .topo h1{
-        margin:0;
-        font-size:28px;
-      }
+          p{
+            font-size:18px;
+            margin:10px 0;
+          }
 
-      .topo p{
-        margin-top:10px;
-        opacity:.8;
-      }
+          .cep{
+            font-size:26px;
+            font-weight:bold;
+            margin-top:20px;
+          }
 
-      .conteudo{
-        padding:30px;
-      }
+          .total{
+            background:#000;
+            color:#fff;
+            padding:20px;
+            border-radius:16px;
+            font-size:22px;
+            font-weight:bold;
+          }
 
-      .box{
-        border:2px solid #ddd;
-        border-radius:18px;
-        padding:25px;
-        margin-bottom:25px;
-      }
+          .linha{
+            border-top:2px dashed #999;
+            margin:30px 0;
+          }
 
-      h2{
-        margin-top:0;
-        font-size:24px;
-      }
+          .pedido-id{
+            font-size:22px;
+            font-weight:bold;
+            margin-bottom:20px;
+          }
 
-      p{
-        font-size:18px;
-        margin:10px 0;
-      }
+          @media print{
+            body{ background:#fff; }
+            .etiqueta{ width:100%; border-radius:0; }
+          }
+        </style>
+      </head>
 
-      .cep{
-        font-size:26px;
-        font-weight:bold;
-        margin-top:20px;
-      }
-
-      .total{
-        background:#000;
-        color:#fff;
-        padding:20px;
-        border-radius:16px;
-        font-size:22px;
-        font-weight:bold;
-      }
-
-      .linha{
-        border-top:2px dashed #999;
-        margin:30px 0;
-      }
-
-      .pedido-id{
-        font-size:22px;
-        font-weight:bold;
-        margin-bottom:20px;
-      }
-
-    </style>
-
-  </head>
-
-  <body>
-
-    <div class="etiqueta">
-
-      <div class="topo">
-
-        <h1>MS Matias Style</h1>
-
-        <p>
-          Etiqueta de envio
-        </p>
-
-      </div>
-
-      <div class="conteudo">
-
-        <div class="pedido-id">
-          Pedido #${pedido.id}
-        </div>
-
-        <div class="box">
-
-          <h2>DESTINATÁRIO</h2>
-
-          <p>
-            <strong>Nome:</strong>
-            ${pedido.nome}
-          </p>
-
-          <p>
-            <strong>WhatsApp:</strong>
-            ${pedido.telefone}
-          </p>
-
-          <p>
-            <strong>Rua:</strong>
-            ${pedido.endereco.rua},
-            ${pedido.endereco.numero}
-          </p>
-
-          <p>
-            <strong>Bairro:</strong>
-            ${pedido.endereco.bairro}
-          </p>
-
-          <p>
-            <strong>Cidade:</strong>
-            ${pedido.endereco.cidade}
-          </p>
-
-          <div class="cep">
-            CEP: ${pedido.endereco.cep}
+      <body>
+        <div class="etiqueta">
+          <div class="topo">
+            <h1>MS Matias Style</h1>
+            <p>Etiqueta de envio</p>
           </div>
 
+          <div class="conteudo">
+            <div class="pedido-id">Pedido #${texto(pedido.id)}</div>
+
+            <div class="box">
+              <h2>DESTINATÁRIO</h2>
+              <p><strong>Nome:</strong> ${texto(pedido.nome)}</p>
+              <p><strong>WhatsApp:</strong> ${texto(pedido.telefone)}</p>
+              <p><strong>Rua:</strong> ${texto(endereco.rua)}, ${texto(endereco.numero)}</p>
+              <p><strong>Bairro:</strong> ${texto(endereco.bairro)}</p>
+              <p><strong>Cidade:</strong> ${texto(endereco.cidade)} ${endereco.estado ? "- " + endereco.estado : ""}</p>
+              <div class="cep">CEP: ${texto(endereco.cep)}</div>
+            </div>
+
+            <div class="linha"></div>
+
+            <div class="box">
+              <h2>REMETENTE</h2>
+              <p><strong>MS Matias Style</strong></p>
+              <p>Rua: Rua Livramento 841</p>
+              <p>Bairro: Santana</p>
+              <p>Porto Alegre - RS</p>
+              <p>CEP: 90640130</p>
+            </div>
+
+            <div class="box">
+              <h2>Produtos</h2>
+              ${produtosHTML || "<p>Nenhum produto encontrado.</p>"}
+            </div>
+
+            <div class="total">
+              Total: ${formatarMoeda(pedido.total)}
+            </div>
+          </div>
         </div>
 
-        <div class="linha"></div>
-
-        <div class="box">
-
-          <h2>REMETENTE</h2>
-
-          <p>
-            <strong>MS Matias Style</strong>
-          </p>
-<p>
-<p>
-            Rua:Rua livramento 841
-          </p>
-            Bairro:Bairro santana
-          </p>
-        
-
-          <p>
-            Porto Alegre - RS
-          </p>
-
-          <p>
-            CEP:90640130
-          </p>
-
-        </div>
-
-        <div class="box">
-
-          <h2>Produtos</h2>
-
-          ${pedido.produtos.map(produto => `
-            <p>
-              <strong>${produto.nome}</strong>
-              | Tam: ${produto.tamanho}
-              | Qtd: ${produto.quantidade}
-            </p>
-          `).join("")}
-
-        </div>
-
-        <div class="total">
-          Total: R$ ${pedido.total.toFixed(2)}
-        </div>
-
-      </div>
-
-    </div>
-
-    <script>
-      window.print();
-    </script>
-
-  </body>
-
-  </html>
-
+        <script>
+          window.onload = function(){
+            window.print();
+          };
+        </script>
+      </body>
+    </html>
   `);
 
   janela.document.close();
-}
+};
 
-function marcarPago(id) {
-  const pedidos = pegarPedidos();
-  const pedido = pedidos.find(p => p.id === id);
-
-  if (!pedido) return;
-
-  pedido.status = "pago";
-  salvarPedidos(pedidos);
-  carregarPedidos();
-}
-
-function marcarEnviado(id) {
-  const pedidos = pegarPedidos();
-  const pedido = pedidos.find(p => p.id === id);
-
-  if (!pedido) return;
-
-  pedido.status = "enviado";
-  salvarPedidos(pedidos);
-  carregarPedidos();
-}
-
-function abrirWhatsApp(id) {
-  const pedido = pegarPedidos().find(p => p.id === id);
-  if (!pedido) return;
-
-  const telefone = String(pedido.telefone || "").replace(/\D/g, "");
-
-  const mensagem = encodeURIComponent(
-    `Olá ${pedido.nome}, seu pedido da MS Matias Style está sendo preparado.`
-  );
-
-  window.open(`https://wa.me/55${telefone}?text=${mensagem}`, "_blank");
-}
-
-function logoutADM() {
-  localStorage.removeItem("adminLogado");
-  window.location.href = "login.html";
-}
-
-carregarPedidos();
-async function ativarNotificacoes() {
-
-  if (!("Notification" in window)) return;
-
-  if (Notification.permission !== "granted") {
-    await Notification.requestPermission();
-  }
-
-}
-
-function notificarNovoPedido(pedido) {
-
-  if (Notification.permission === "granted") {
-
-    new Notification("🛒 Novo pedido na MS", {
-      body: `
-${pedido.nome}
-${pedido.total.toFixed(2)}
-      `,
-      icon: "logo.png"
-    });
-
-  }
-
-}
-
-let ultimoTotalPedidos =
-  JSON.parse(localStorage.getItem("pedidosMS"))?.length || 0;
-
-setInterval(() => {
-
-  const pedidos =
-    JSON.parse(localStorage.getItem("pedidosMS")) || [];
-
-  if (pedidos.length > ultimoTotalPedidos) {
-
-    const ultimoPedido =
-      pedidos[pedidos.length - 1];
-
-    notificarNovoPedido(ultimoPedido);
-
-    ultimoTotalPedidos = pedidos.length;
-  }
-
-}, 5000);
-
-ativarNotificacoes();
-async function ativarNotificacoesADM() {
-  if (!("Notification" in window)) {
-    console.log("Este navegador não suporta notificações.");
+window.marcarPago = function(id) {
+  if (!acharPedido(id)) {
+    alert("Pedido não encontrado.");
     return;
   }
+
+  salvarStatusPedido(id, "pago");
+  carregarPedidos();
+};
+
+window.marcarEnviado = function(id) {
+  if (!acharPedido(id)) {
+    alert("Pedido não encontrado.");
+    return;
+  }
+
+  salvarStatusPedido(id, "enviado");
+  carregarPedidos();
+};
+
+window.abrirWhatsApp = function(id) {
+  const pedido = acharPedido(id);
+
+  if (!pedido) {
+    alert("Pedido não encontrado.");
+    return;
+  }
+
+  const telefone = telefoneLimpo(pedido.telefone);
+
+  if (!telefone) {
+    alert("Esse pedido está sem WhatsApp.");
+    return;
+  }
+
+  const mensagem = encodeURIComponent(
+    `Olá ${pedido.nome || ""}, seu pedido da MS Matias Style está sendo preparado.`
+  );
+
+  window.open(`https://wa.me/${telefone}?text=${mensagem}`, "_blank");
+};
+
+window.logoutADM = function() {
+  localStorage.removeItem("adminLogado");
+  window.location.href = "login.html";
+};
+
+async function ativarNotificacoesADM() {
+  if (!("Notification" in window)) return;
 
   if (Notification.permission === "default") {
     await Notification.requestPermission();
@@ -516,11 +541,16 @@ function notificarNovoPedidoADM(pedido) {
   });
 }
 
-let ultimoTotalPedidosADM =
-  Number(localStorage.getItem("ultimoTotalPedidosADM")) || pegarPedidos().length;
+let ultimoTotalPedidosADM = Number(localStorage.getItem("ultimoTotalPedidosADM")) || 0;
 
-function verificarNovosPedidosADM() {
-  const pedidos = pegarPedidos();
+async function verificarNovosPedidosADM() {
+  const pedidos = await pegarPedidos();
+
+  if (ultimoTotalPedidosADM === 0) {
+    ultimoTotalPedidosADM = pedidos.length;
+    localStorage.setItem("ultimoTotalPedidosADM", String(ultimoTotalPedidosADM));
+    return;
+  }
 
   if (pedidos.length > ultimoTotalPedidosADM) {
     const ultimoPedido = pedidos[pedidos.length - 1];
@@ -528,16 +558,18 @@ function verificarNovosPedidosADM() {
     notificarNovoPedidoADM(ultimoPedido);
 
     ultimoTotalPedidosADM = pedidos.length;
-
-    localStorage.setItem(
-      "ultimoTotalPedidosADM",
-      String(ultimoTotalPedidosADM)
-    );
+    localStorage.setItem("ultimoTotalPedidosADM", String(ultimoTotalPedidosADM));
 
     carregarPedidos();
   }
 }
 
+carregarPedidos();
 ativarNotificacoesADM();
-
 setInterval(verificarNovosPedidosADM, 5000);
+window.carregarPedidos = carregarPedidos;
+
+window.atualizarPedidos = function() {
+  carregarPedidos();
+};
+})();
