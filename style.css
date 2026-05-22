@@ -4897,3 +4897,51 @@ display:none !important;
 }
 
 }
+@media(max-width:768px){
+  .topo{
+    height:86px !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:space-between !important;
+    padding:10px 14px !important;
+    gap:8px !important;
+  }
+
+  .btn-menu-mobile{
+    order:1 !important;
+  }
+
+  .logo-area{
+    order:2 !important;
+    position:static !important;
+    transform:none !important;
+    margin:0 !important;
+    flex:1 !important;
+  }
+
+  .topo-acoes{
+    order:3 !important;
+    position:static !important;
+    transform:none !important;
+    margin:0 !important;
+    display:flex !important;
+    gap:8px !important;
+  }
+
+  .logo-topo{
+    width:42px !important;
+    height:42px !important;
+  }
+
+  .logo-area span{
+    font-size:15px !important;
+    white-space:nowrap !important;
+  }
+
+  .btn-menu-mobile,
+  .btn-topo-favoritos,
+  .btn-carrinho{
+    width:44px !important;
+    height:44px !important;
+  }
+}
