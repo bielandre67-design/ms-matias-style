@@ -1195,9 +1195,12 @@ function removerFavorito(index){
 }
 
 function abrirFavoritos(){
-  document.getElementById("painelFavoritos")?.classList.add("ativo");
-  document.getElementById("fundoFavoritos")?.classList.add("ativo");
-  atualizarFavoritos();
+
+  const favoritos = document.getElementById("painelFavoritos");
+
+  if(!favoritos) return;
+
+  favoritos.classList.toggle("ativo");
 }
 
 function fecharFavoritos(){
