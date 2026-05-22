@@ -25,19 +25,42 @@
   <a href="#inicio">Início</a>
   <a href="#produtos">Produtos</a>
   <a href="#contato">Contato</a>
+  <a href="#" onclick="abrirFavoritos()">
+♡ Favoritos
+</a>
 </nav>
 
 
+<button class="btn-menu-mobile"
+onclick="abrirMenuMobile()">
+☰
+</button>
 
+<div class="topo-acoes">
 
-    <button class="btn-menu-mobile" onclick="abrirMenuMobile()">☰</button>
+<button class="btn-topo-favoritos"
+onclick="abrirFavoritos()">
 
-<button class="btn-carrinho" onclick="abrirCarrinho()" aria-label="Abrir carrinho">
+♡ 
 
-    <span class="icone-carrinho">🛒</span>
-    <span id="contadorCarrinho" class="contador-carrinho">0</span>
+<b id="contadorFavoritos">0</b>
 
 </button>
+
+<button class="btn-carrinho"
+onclick="abrirCarrinho()"
+aria-label="Abrir carrinho">
+
+<span class="icone-carrinho">🛒</span>
+
+<span id="contadorCarrinho"
+class="contador-carrinho">
+0
+</span>
+
+</button>
+
+</div>
   </header>
 
   <!-- HERO PC + MOBILE -->
@@ -119,11 +142,14 @@ VER PRODUTOS →
     <div class="grid-produtos">
 
    <div class="card-produto"
-data-nome="Moletom Rosa MS"
-data-preco="1.00"
-data-img="moletom-rosa.jpeg"
-data-fotos="moletom-rosa.jpeg,modelo-rosa.jpeg">
+  data-nome="Moletom Rosa MS"
+  data-preco="1.00"
+  data-img="moletom-rosa.jpeg"
+  data-fotos="moletom-rosa.jpeg,modelo-rosa.jpeg">
 
+  <button class="btn-favorito" onclick="favoritarProduto(this, event)">
+    ♡
+  </button>
   <div class="produto-img"
   onclick="abrirProdutoDetalheCard(this.closest('.card-produto'))">
 
@@ -178,6 +204,9 @@ data-nome="Moletom Preto MS"
 data-preco="1.00"
 data-img="MOLETOM-PRETO.jpeg"
 data-fotos="MOLETOM-PRETO.jpeg,modelo-preto.png">
+<button class="btn-favorito" onclick="favoritarProduto(this, event)">
+  ♡
+</button>
         <div class="produto-img">
           <img src="MOLETOM-PRETO.jpeg" class="foto-normal" alt="Moletom Preto MS">
           <img src="modelo-preto.jpeg" class="foto-hover" alt="Modelo com Moletom Preto MS">
@@ -214,6 +243,7 @@ data-fotos="MOLETOM-PRETO.jpeg,modelo-preto.png">
           data-nome="Moletom Preto MS"
           data-preco="1.00"
           data-img="MOLETOM-PRETO.jpeg">
+          
 
           <span>Adicionar ao carrinho</span>
           <span class="icone-btn-carrinho">🛒</span>
@@ -225,6 +255,10 @@ data-fotos="MOLETOM-PRETO.jpeg,modelo-preto.png">
   data-preco="100.00"
   data-img="moletom-cinza.jpeg"
   data-fotos="moletom-cinza.jpeg,moletom-cinza-modelo.jpeg">
+
+  <button class="btn-favorito" onclick="favoritarProduto(this, event)">
+  ♡
+</button>
 
   <div class="produto-img" onclick="abrirProdutoDetalheCard(this.closest('.card-produto'))">
     <img src="moletom-vinho.jpeg" class="foto-normal">
@@ -273,6 +307,9 @@ data-fotos="MOLETOM-PRETO.jpeg,modelo-preto.png">
   data-preco="100.00"
   data-img="moletom-marrom.jpeg"
   data-fotos="moletom-marrom.jpeg,moletom-marrom-modelo.jpeg">
+  <button class="btn-favorito" onclick="favoritarProduto(this, event)">
+  ♡
+</button>
 
   <div class="produto-img" onclick="abrirProdutoDetalheCard(this.closest('.card-produto'))">
     <img src="moletom-marrom.jpeg" class="foto-normal">
@@ -310,6 +347,7 @@ data-fotos="MOLETOM-PRETO.jpeg,modelo-preto.png">
     data-nome="Moletom Marrom MS"
     data-preco="100.00"
     data-img="moletom-marrom.jpeg">
+    
 
     <span>Adicionar ao carrinho</span>
     <span class="icone-btn-carrinho">🛒</span>
@@ -321,6 +359,9 @@ data-fotos="MOLETOM-PRETO.jpeg,modelo-preto.png">
   data-preco="100.00"
   data-img="moletom-cinza.jpeg"
   data-fotos="moletom-cinza.jpeg,moletom-cinza-modelo.jpeg">
+  <button class="btn-favorito" onclick="favoritarProduto(this, event)">
+  ♡
+</button>
 
   <div class="produto-img" onclick="abrirProdutoDetalheCard(this.closest('.card-produto'))">
     <img src="moletom-cinza.jpeg" class="foto-normal">
@@ -369,6 +410,9 @@ data-nome="Moletom Off White MS"
 data-preco="1.00"
 data-img="moletom-offwhite.png"
 data-fotos="moletom-offwhite.png,modelo-offwhite.png">
+<button class="btn-favorito" onclick="favoritarProduto(this, event)">
+  ♡
+</button>
 
 <div class="produto-img"
 onclick="abrirProdutoDetalheCard(this.closest('.card-produto'))">
@@ -443,6 +487,9 @@ alt="Modelo com Moletom Off White MS">
       data-preco="149.90"
       data-img="calca-preta.jpeg"
       data-fotos="calca-preta.jpeg,calca-preta-modelo.jpeg">
+      <button class="btn-favorito" onclick="favoritarProduto(this, event)">
+  ♡
+</button>
 
       <div class="produto-img"
       onclick="abrirProdutoDetalheCard(this.closest('.card-produto'))">
@@ -501,6 +548,9 @@ alt="Modelo com Moletom Off White MS">
       data-preco="149.90"
       data-img="calca-branca.jpeg"
       data-fotos="calca-branca.jpeg,calca-branca-modelo.jpeg">
+      <button class="btn-favorito" onclick="favoritarProduto(this, event)">
+  ♡
+</button>
 
       <div class="produto-img"
       onclick="abrirProdutoDetalheCard(this.closest('.card-produto'))">
@@ -560,6 +610,10 @@ alt="Modelo com Moletom Off White MS">
       data-img="calca-cinza.jpeg"
       data-fotos="calca-cinza.jpeg,calca-cinza-modelo.jpeg">
 
+      <button class="btn-favorito" onclick="favoritarProduto(this, event)">
+  ♡
+</button>
+
       <div class="produto-img"
       onclick="abrirProdutoDetalheCard(this.closest('.card-produto'))">
 
@@ -600,6 +654,7 @@ alt="Modelo com Moletom Off White MS">
         data-nome="Calça Cinza MS"
         data-preco="149.90"
         data-img="calca-cinza.jpeg">
+        
 
         <span>Adicionar ao carrinho</span>
 
@@ -621,15 +676,24 @@ alt="Modelo com Moletom Off White MS">
 <section class="produtos categoria-toucas" id="toucas">
 
   <div class="grid-produtos">
+    
 
     <!-- TOUCA -->
-    <div class="card-produto">
-
+   <div class="card-produto"
+data-nome="Touca MS"
+data-preco="79"
+data-img="touca-preta.png"
+data-fotos="touca-preta.png,touca-modelo-preto.png">
+<button class="btn-favorito"
+onclick="favoritarProduto(this, event)">
+♡
+</button>
       <div class="produto-img">
 
   <img src="touca-preta.png" class="img-principal">
 
   <img src="touca-modelo-preto.png" class="img-hover">
+  
 
 </div>
 
@@ -649,10 +713,13 @@ alt="Modelo com Moletom Off White MS">
   data-nome="Touca MS"
   data-preco="79"
   data-img="touca-preta.png"
+
+  
   onclick="adicionarCarrinho(this)">
   <span>ADICIONAR AO CARRINHO</span>
   <span class="icone-btn-carrinho">🛒</span>
 </button>
+
 
     </div>
 
@@ -661,7 +728,15 @@ alt="Modelo com Moletom Off White MS">
 
 
     <!-- MEIA -->
-   <div class="card-produto">
+   <div class="card-produto"
+data-nome="Meia MS Cano Alto"
+data-preco="29.90"
+data-img="meia branca.png"
+data-fotos="meia branca.png,modelo meia.jpeg">
+<button class="btn-favorito"
+onclick="favoritarProduto(this, event)">
+♡
+</button>
 
   <div class="produto-img">
 
@@ -709,7 +784,15 @@ alt="Modelo com Moletom Off White MS">
 
   <div class="grid-produtos">
 
-    <div class="card-produto">
+    <div class="card-produto"
+data-nome="Jaqueta MS Azul"
+data-preco="159.90"
+data-img="jaqueta azul.png"
+data-fotos="jaqueta azul.png,modelo jaqueta azul.png">
+<button class="btn-favorito"
+onclick="favoritarProduto(this, event)">
+♡
+</button>
       <div class="produto-img">
         <img src="jaqueta azul.png" class="img-principal" alt="Jaqueta MS Azul">
         <img src="modelo jaqueta azul.png" class="img-hover" alt="Modelo usando Jaqueta MS Azul">
@@ -732,7 +815,16 @@ alt="Modelo com Moletom Off White MS">
       </button>
     </div>
 
-    <div class="card-produto">
+    <div class="card-produto"
+data-nome="Corta Vento Branco MS"
+data-preco="159.90"
+data-img="Jaqueta Corta Vento Impermeável Masculina Branco.png"
+data-fotos="Jaqueta Corta Vento Impermeável Masculina Branco.png,modelo corta vento Branco.png">
+
+<button class="btn-favorito"
+onclick="favoritarProduto(this, event)">
+♡
+</button>
       <div class="produto-img">
         <img src="Jaqueta Corta Vento Impermeável Masculina Branco.png" class="img-principal" alt="Corta Vento Branco">
         <img src="modelo corta vento Branco.png" class="img-hover" alt="Modelo usando Corta Vento Branco">
@@ -755,7 +847,16 @@ alt="Modelo com Moletom Off White MS">
       </button>
     </div>
     <!-- JAQUETA PRETA -->
-<div class="card-produto">
+<div class="card-produto"
+data-nome="Jaqueta MS Preta"
+data-preco="159.90"
+data-img="jaqueta preta.png"
+data-fotos="jaqueta preta.png,modelo jaqueta preta.jpeg">
+
+<button class="btn-favorito"
+onclick="favoritarProduto(this, event)">
+♡
+</button>
 
   <div class="produto-img">
 
@@ -1005,21 +1106,6 @@ alt="Modelo com Moletom Off White MS">
 
 </section>
 
-  <!-- BOTÃO -->
-  <button class="btn-carrinho"
-    onclick="adicionarCarrinho(
-      'Jaqueta MS Preta',
-      189,
-      'jaqueta preta.png'
-    )">
-
-    <span>ADICIONAR AO CARRINHO</span>
-
-    <span class="icone-btn-carrinho">
-      🛒
-    </span>
-
-  </button>
 
 </div>
 
@@ -1385,5 +1471,76 @@ alt="Modelo com Moletom Off White MS">
 
 </div>
 
+<button id="btnTopoEsquerda"
+onclick="window.scrollTo({top:0, behavior:'smooth'})">
+↑
+</button>
+
+<button id="btnTopoDireita"
+onclick="window.scrollTo({top:0, behavior:'smooth'})">
+↑
+</button>
+<section class="final-ms">
+
+  <div class="overlay-final"></div>
+
+  <div class="conteudo-final">
+
+    <span class="tag-final">MS MATIAS STYLE</span>
+
+    <h2>
+      ESTILO NÃO É MODA.<br>
+      É PRESENÇA.
+    </h2>
+
+    <p>
+      Criado para quem quer vestir personalidade,
+      conforto e atitude todos os dias.
+    </p>
+
+    <a href="https://www.instagram.com/matiasstyleofc"
+    target="_blank"
+    class="btn-final-ms">
+      VER INSTAGRAM
+    </a>
+<div class="seguranca-final">
+
+  <div class="seguro-card">
+    <span>🔒</span>
+    <h4>Compra segura</h4>
+    <p>Pagamento protegido pelo Mercado Pago.</p>
+  </div>
+
+  <div class="seguro-card">
+    <span>💳</span>
+    <h4>Formas de pagamento</h4>
+    <p>Pix, cartão de crédito e saldo Mercado Pago.</p>
+  </div>
+
+  <div class="seguro-card">
+    <span>📦</span>
+    <h4>Entrega acompanhada</h4>
+    <p>Pedido separado com dados de entrega.</p>
+  </div>
+
+</div>
+  </div>
+
+  <div class="logo-fundo-ms">
+    MS
+  </div>
+
+</section>
+<div id="fundoFavoritos" class="fundo-favoritos" onclick="fecharFavoritos()"></div>
+
+<div id="painelFavoritos" class="painel-favoritos">
+
+  <button class="fechar-favoritos" onclick="fecharFavoritos()">×</button>
+
+  <h2>Favoritos</h2>
+
+  <div id="listaFavoritos"></div>
+
+</div>
 </body>
 </html>

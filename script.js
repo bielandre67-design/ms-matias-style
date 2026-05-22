@@ -15,13 +15,17 @@ function salvarCarrinho() {
 }
 function mostrarToastMS() {
   const toast = document.getElementById("msToast");
-  if (!toast) return;
+
+  if (!toast) {
+    console.log("Toast não encontrado");
+    return;
+  }
 
   toast.classList.add("ativo");
 
   setTimeout(() => {
     toast.classList.remove("ativo");
-  }, 3000);
+  }, 2500);
 }
 
 function carregarCarrinho() {
@@ -1113,6 +1117,111 @@ document.addEventListener("DOMContentLoaded", function(){
     detalhe.classList.remove("ativo");
     detalhe.style.display = "none";
   }
+});
+let favoritos = JSON.parse(localStorage.getItem("favoritosMS")) || [];
+
+function salvarFavoritos(){
+  localStorage.setItem("favoritosMS", JSON.stringify(favoritos));
+}
+
+function favoritarProduto(botao, evento){
+  evento.stopPropagation();
+
+  const card = botao.closest(".card-produto");
+  if(!card) return;
+
+  const nome =
+    card.dataset.nome ||
+    card.querySelector("h3")?.innerText ||
+    "";
+
+  const preco =
+    card.dataset.preco ||
+    card.querySelector(".preco")?.innerText ||
+    "";
+
+  const imagem =
+    card.dataset.img ||
+    card.querySelector(".img-principal")?.getAttribute("src") ||
+    card.querySelector(".produto-img img")?.getAttribute("src") ||
+    "";
+
+  const existe = favoritos.find(item => item.nome === nome);
+
+  if(existe){
+    favoritos = favoritos.filter(item => item.nome !== nome);
+    botao.classList.remove("ativo");
+    botao.innerText = "♡";
+  } else {
+    favoritos.push({ nome, preco, imagem });
+    botao.classList.add("ativo");
+    botao.innerText = "♥";
+  }
+
+  salvarFavoritos();
+  atualizarFavoritos();
+}
+
+function atualizarFavoritos(){
+  const contador = document.getElementById("contadorFavoritos");
+  const lista = document.getElementById("listaFavoritos");
+
+  if(contador) contador.innerText = favoritos.length;
+
+  if(!lista) return;
+
+  if(favoritos.length === 0){
+    lista.innerHTML = "<p style='color:#999'>Nenhum favorito ainda.</p>";
+    return;
+  }
+
+  lista.innerHTML = favoritos.map((item, index) => `
+    <div class="item-favorito">
+      <img src="${item.imagem}" alt="${item.nome}">
+      <div>
+        <h4>${item.nome}</h4>
+        <p>${item.preco}</p>
+        <button onclick="removerFavorito(${index})">Remover</button>
+      </div>
+    </div>
+  `).join("");
+}
+
+function removerFavorito(index){
+  favoritos.splice(index, 1);
+  salvarFavoritos();
+  atualizarFavoritos();
+  marcarFavoritosNosCards();
+}
+
+function abrirFavoritos(){
+  document.getElementById("painelFavoritos")?.classList.add("ativo");
+  document.getElementById("fundoFavoritos")?.classList.add("ativo");
+  atualizarFavoritos();
+}
+
+function fecharFavoritos(){
+  document.getElementById("painelFavoritos")?.classList.remove("ativo");
+  document.getElementById("fundoFavoritos")?.classList.remove("ativo");
+}
+
+function marcarFavoritosNosCards(){
+  document.querySelectorAll(".card-produto").forEach(card => {
+    const nome = card.dataset.nome || card.querySelector("h3")?.innerText || "";
+    const botao = card.querySelector(".btn-favorito");
+
+    if(!botao) return;
+
+    const existe = favoritos.find(item => item.nome === nome);
+
+    botao.classList.toggle("ativo", !!existe);
+    botao.innerText = existe ? "♥" : "♡";
+  });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  atualizarFavoritos();
+  marcarFavoritosNosCards();
 });
 window.abrirMenuMobile = abrirMenuMobile;
 window.fecharMenuMobile = fecharMenuMobile;
