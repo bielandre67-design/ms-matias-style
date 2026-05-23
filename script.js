@@ -117,8 +117,9 @@ function adicionarCarrinho(botao) {
   }
 
   salvarCarrinho();
-  atualizarTudo();
-  mostrarToastMS();
+atualizarTudo();
+animarProdutoParaCarrinho(botao);
+mostrarToastMS();
 }
 
 function adicionarProdutoDetalhe() {
@@ -152,6 +153,9 @@ function adicionarProdutoDetalhe() {
 
   salvarCarrinho();
   atualizarTudo();
+  animarProdutoParaCarrinho(
+document.querySelector(".btn-carrinho")
+);
   mostrarToastMS();
   fecharProdutoDetalhe();
 }
@@ -1244,6 +1248,46 @@ estrela.classList.remove("ativa");
 
 });
 
+}
+function animarProdutoParaCarrinho(botao){
+  const card = botao.closest(".card-produto");
+  const img = card?.querySelector(".produto-img img");
+
+  const carrinhoTopo = document.querySelector("header .btn-carrinho");
+
+  if(!img || !carrinhoTopo){
+    console.log("Animação não encontrou imagem ou carrinho");
+    return;
+  }
+
+  const imgRect = img.getBoundingClientRect();
+  const cartRect = carrinhoTopo.getBoundingClientRect();
+
+  const clone = img.cloneNode(true);
+  clone.className = "produto-voando";
+
+  clone.style.left = imgRect.left + "px";
+  clone.style.top = imgRect.top + "px";
+
+  document.body.appendChild(clone);
+
+  setTimeout(() => {
+    clone.style.left = cartRect.left + "px";
+    clone.style.top = cartRect.top + "px";
+    clone.style.transform = "scale(.15)";
+    clone.style.opacity = "0";
+  }, 50);
+
+  setTimeout(() => {
+    clone.remove();
+
+    carrinhoTopo.classList.add("animar-carrinho");
+
+    setTimeout(() => {
+      carrinhoTopo.classList.remove("animar-carrinho");
+    }, 500);
+
+  }, 1650);
 }
 window.abrirMenuMobile = abrirMenuMobile;
 window.fecharMenuMobile = fecharMenuMobile;
