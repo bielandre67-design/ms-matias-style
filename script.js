@@ -1226,6 +1226,25 @@ document.addEventListener("DOMContentLoaded", () => {
   atualizarFavoritos();
   marcarFavoritosNosCards();
 });
+
+function avaliar(event, elemento, nota){
+
+event.stopPropagation();
+
+const estrelas =
+elemento.parentElement.querySelectorAll("span");
+
+estrelas.forEach((estrela, index)=>{
+
+if(index < nota){
+estrela.classList.add("ativa");
+}else{
+estrela.classList.remove("ativa");
+}
+
+});
+
+}
 window.abrirMenuMobile = abrirMenuMobile;
 window.fecharMenuMobile = fecharMenuMobile;
 window.abrirAjudaMobile = abrirAjudaMobile;
