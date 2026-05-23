@@ -5040,3 +5040,10 @@ transform:scale(1.08);
 .avaliacao-produto span:hover{
 transform:scale(1.12);
 }
+@media(max-width:768px){
+
+.avaliacao-produto span{
+font-size:16px !important;
+}
+
+}
