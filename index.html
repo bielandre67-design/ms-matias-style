@@ -13,55 +13,31 @@
 <body>
 
   <!-- TOPO -->
-  <header class="topo">
-    <div class="logo-area">
-      <img src="logo.png" alt="Logo MS" class="logo-topo">
-      <span>MS Matias Style</span>
-    </div>
+<header class="header">
 
-    
+  <div class="logo">
+    <img src="logo.png" alt="Logo MS">
+    <span>MS Matias Style</span>
+  </div>
+
+  <div class="icones-header">
 
     <nav class="menu">
-  <a href="#inicio">Início</a>
-  <a href="#produtos">Produtos</a>
-  <a href="#contato">Contato</a>
-  <a href="#" onclick="abrirFavoritos()">
-♡ Favoritos
-</a>
-</nav>
+      <a href="#inicio">Início</a>
+      <a href="#produtos">Produtos</a>
+      <a href="#contato">Contato</a>
+    </nav>
 
+    <a href="#" onclick="abrirFavoritos()" class="btn-topo">♡</a>
 
-<button class="btn-menu-mobile"
-onclick="abrirMenuMobile()">
-☰
-</button>
+<a href="#" onclick="abrirCarrinho()" class="btn-topo">🛒</a>
 
-<div class="topo-acoes">
+<button onclick="abrirMenuMobile()" class="btn-topo" type="button">☰</button>
 
-<button class="btn-topo-favoritos"
-onclick="abrirFavoritos()">
+  </div>
 
-♡ 
+</header>
 
-<b id="contadorFavoritos">0</b>
-
-</button>
-
-<button class="btn-carrinho"
-onclick="abrirCarrinho()"
-aria-label="Abrir carrinho">
-
-<span class="icone-carrinho">🛒</span>
-
-<span id="contadorCarrinho"
-class="contador-carrinho">
-0
-</span>
-
-</button>
-
-</div>
-  </header>
 
   <!-- HERO PC + MOBILE -->
   <section class="hero-ms" id="inicio">
@@ -880,15 +856,16 @@ onclick="favoritarProduto(this, event)">
 
       <h3>JAQUETA MS AZUL</h3>
 
-     <div class="avaliacao-produto">
+<div class="avaliacao-produto">
   <span onclick="avaliar(event, this, 1)">★</span>
   <span onclick="avaliar(event, this, 2)">★</span>
   <span onclick="avaliar(event, this, 3)">★</span>
   <span onclick="avaliar(event, this, 4)">★</span>
   <span onclick="avaliar(event, this, 5)">★</span>
-</div> class="preco-antigo">R$ 199,90</p>
-      <p class="preco">R$ 159,90</p>
-      <p class="parcelamento">em até 2x sem juros</p>
+</div>
+
+<p class="preco-antigo">R$ 199,90</p>
+<p class="preco">R$ 159,90</p>
 
       <div class="tamanhos">
         <button onclick="selecionarTamanho(this,'P')">P</button>
@@ -917,19 +894,18 @@ onclick="favoritarProduto(this, event)">
         <img src="modelo corta vento Branco.png" class="img-hover" alt="Modelo usando Corta Vento Branco">
       </div>
 
-      <h3>CORTA VENTO BRANCO</h3>
+     <h3>JAQUETA MS BRANCA</h3>
 
-     <div class="avaliacao-produto">
+<div class="avaliacao-produto">
   <span onclick="avaliar(event, this, 1)">★</span>
   <span onclick="avaliar(event, this, 2)">★</span>
   <span onclick="avaliar(event, this, 3)">★</span>
   <span onclick="avaliar(event, this, 4)">★</span>
   <span onclick="avaliar(event, this, 5)">★</span>
 </div>
-</div>
-      <p class="preco-antigo">R$ 219,90</p>
-      <p class="preco">R$ 169,90</p>
-      <p class="parcelamento">em até 2x sem juros</p>
+
+<p class="preco-antigo">R$ 199,90</p>
+<p class="preco">R$ 159,90</p>
 
       <div class="tamanhos">
         <button onclick="selecionarTamanho(this,'P')">P</button>
@@ -1116,19 +1092,21 @@ onclick="favoritarProduto(this, event)">
         <button onclick="selecionarTamanho(this,'GG')">GG</button>
       </div>
 
-      <button
-      class="btn-comprar"
-      onclick="adicionarCarrinho(this)"
-      data-nome="Camiseta Oversized Off White"
-      data-preco="89.90"
-      data-img="Camiseta Oversized Off-White.jpeg">
-<button class="btn-favorito" onclick="favoritarProduto(this, event)">
-  ♡
+    <button class="btn-favorito" onclick="favoritarProduto(this, event)">
+♡
 </button>
-        <span>Adicionar ao carrinho</span>
-        <span class="icone-btn-carrinho">🛒</span>
 
-      </button>
+<button
+class="btn-comprar"
+onclick="adicionarCarrinho(this)"
+data-nome="Camiseta Oversized Off White"
+data-preco="89.90"
+data-img="Camiseta Oversized Off-White.jpeg">
+
+<span>Adicionar ao carrinho</span>
+<span class="icone-btn-carrinho">🛒</span>
+
+</button>
 
     </div>
 
@@ -1328,7 +1306,7 @@ onclick="favoritarProduto(this, event)">
         <p class="carrinho-vazio">Seu carrinho está vazio.</p>
       </div>
 
-      <button class="btn-finalizar" onclick="irEntregaPC()">Continuar</button>
+      <button type="button" class="btn-finalizar" onclick="irEntregaPC()">Continuar</button>
       <button class="btn-limpar-pc" onclick="limparCarrinhoPC()">Limpar carrinho</button>
     </div>
 
@@ -1369,7 +1347,7 @@ onclick="favoritarProduto(this, event)">
         <strong id="totalCarrinho">R$ 0,00</strong>
       </div>
 
-      <button class="btn-finalizar" onclick="irPagamentoPC()">Continuar para pagamento</button>
+      <button type="button" class="btn-finalizar" onclick="irPagamentoPC()">Continuar para pagamento</button>
       <button class="btn-limpar-pc" onclick="limparCarrinhoPC()">Limpar carrinho</button>
     </div>
 
@@ -1395,7 +1373,9 @@ onclick="favoritarProduto(this, event)">
         <p id="cupomMensagem"></p>
       </div>
 
-      <button class="btn-finalizar" onclick="finalizarCompraFinal()">Finalizar compra</button>
+    <button type="button" class="btn-finalizar" onclick="finalizarCompra(event)">
+  Finalizar compra
+</button>
       <button class="btn-limpar-pc" onclick="limparCarrinhoPC()">Limpar carrinho</button>
     </div>
 
@@ -1428,90 +1408,118 @@ onclick="favoritarProduto(this, event)">
   <!-- DETALHE DO PRODUTO MOBILE -->
 
 <div class="produto-detalhe" id="produtoDetalhe">
-
-    <button class="voltar-produto" onclick="window.location.href='index.html#toucas'">
-  ←
+  <button class="fechar-detalhe" onclick="fecharProdutoDetalhe()">
+✕
 </button>
 
-    <div class="detalhe-container">
+  <button class="voltar-produto" onclick="fecharProdutoDetalhe()">
+    ←
+  </button>
 
-        <div class="galeria-lateral">
+  <div class="detalhe-container">
 
-            <div class="miniaturas-detalhe"
-            id="miniaturasDetalhe"></div>
+    <div class="galeria-lateral">
 
-            <div class="imagem-principal">
+      <div class="miniaturas-detalhe" id="miniaturasDetalhe"></div>
 
-                <button class="seta-galeria esquerda"
-                onclick="trocarFotoDetalhe(-1)">
-                ❮
-                </button>
+      <div class="imagem-principal">
 
-                <img id="detalheImg"
-                src=""
-                alt="Produto">
+      
 
-                <button class="seta-galeria direita"
-                onclick="trocarFotoDetalhe(1)">
-                ❯
-                </button>
+        <button class="seta-galeria esquerda" onclick="trocarFotoDetalhe(-1)">
+          ❮
+        </button>
 
-            </div>
+        <img id="detalheImg" src="" alt="Produto">
 
-        </div>
+        <button class="seta-galeria direita" onclick="trocarFotoDetalhe(1)">
+          ❯
+        </button>
 
-        <div class="info-detalhe">
+      </div>
 
-            <p class="tag-detalhe">
-            MS MATIAS STYLE
-            </p>
-
-            <h2 id="detalheNome"></h2>
-
-            <p class="descricao-detalhe">
-            Produto premium MS, feito para conforto
-            e estilo no dia a dia.
-            </p>
-
-            <p class="detalhe-preco"
-            id="detalhePreco"></p>
-
-            <p class="label-tamanho">
-            Escolha o tamanho
-            </p>
-
-            <div class="tamanhos detalhe-tamanhos">
-
-                <button onclick="selecionarTamanho(this, 'P')">P</button>
-
-                <button onclick="selecionarTamanho(this, 'M')">M</button>
-
-                <button onclick="selecionarTamanho(this, 'G')">G</button>
-
-                <button onclick="selecionarTamanho(this, 'GG')">GG</button>
-
-            </div>
-
-            <button class="btn-detalhe-carrinho"
-            onclick="adicionarProdutoDetalhe()">
-
-            🛒 Adicionar ao carrinho
-
-            </button>
-
-            <button class="btn-comprar-agora"
-            onclick="adicionarProdutoDetalhe()">
-
-            Comprar agora
-
-            </button>
-
-        </div>
+     
 
     </div>
 
+    <div class="info-detalhe">
+
+      <p class="tag-detalhe">MS MATIAS STYLE</p>
+
+      <h2 id="detalheNome"></h2>
+
+      <p class="descricao-detalhe">
+        Produto premium MS, feito para conforto e estilo no dia a dia.
+      </p>
+
+      <div class="avaliacao-detalhe">
+        ★★★★★ <span>4.9 • 248 avaliações</span>
+        <b>✔ Tamanho fiel</b>
+      </div>
+
+      <p class="detalhe-preco" id="detalhePreco"></p>
+
+      <p class="parcelamento-detalhe">
+        💳 Até 3x de R$ 33,33 sem juros
+      </p>
+
+      <div class="beneficios-detalhe">
+        <div>🌿 <strong>Algodão premium</strong><span>Tecido macio</span></div>
+        <div>👕 <strong>Caimento oversized</strong><span>Modelagem moderna</span></div>
+       
+       
+      </div>
+
+      <p class="label-tamanho">Escolha o tamanho</p>
+
+      <div class="tamanhos detalhe-tamanhos">
+        <button onclick="selecionarTamanho(this, 'P')">P</button>
+        <button onclick="selecionarTamanho(this, 'M')">M</button>
+        <button onclick="selecionarTamanho(this, 'G')">G</button>
+        <button onclick="selecionarTamanho(this, 'GG')">GG</button>
+      </div>
+
+    
+
+      <button class="btn-detalhe-carrinho" onclick="adicionarProdutoDetalhe()">
+        🛒 ADICIONAR AO CARRINHO
+      </button>
+
+      <button class="btn-comprar-agora" onclick="comprarAgoraDetalhe()">
+  ⚡ COMPRAR AGORA
+  <span>Receba antes de todos</span>
+</button>
+   
+
+      <div class="descricao-acordeon">
+        <details open>
+          <summary>DESCRIÇÃO DO PRODUTO</summary>
+          <p>Moletom premium MS, desenvolvido com tecido de alta qualidade para máximo conforto e estilo.</p>
+        </details>
+
+        <details>
+          <summary>DETALHES DO PRODUTO</summary>
+          <p>Logo MS, costura reforçada, acabamento premium e caimento moderno.</p>
+        </details>
+
+        <details>
+          <summary>COMPOSIÇÃO</summary>
+          <p>Algodão, poliéster e elastano para conforto, durabilidade e elasticidade.</p>
+        </details>
+
+        <details>
+          <summary>CUIDADOS COM A PEÇA</summary>
+          <p>Lavar do avesso, não usar alvejante e secar à sombra.</p>
+        </details>
+      </div>
+
+    </div>
+
+  </div>
+
 </div>
 <script src="script.js"></script>
+
 <div id="msToast" class="ms-toast">
   <img src="logo.png" alt="MS">
   <span>Produto adicionado ao carrinho</span>

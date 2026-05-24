@@ -277,7 +277,43 @@ app.get("/gerar-token", async (req, res) => {
   res.json(data);
 
 });
+app.use(express.urlencoded({ extended: true }));
 
+app.post("/checkout-mp", async (req, res) => {
+  try {
+    const pedido = JSON.parse(req.body.pedido || "{}");
+
+    const carrinhoItems = pedido.items || [];
+    const valorFrete = Number(pedido.valorFrete) || 0;
+
+    const preference = new Preference(client);
+
+    const resposta = await preference.create({
+      body: {
+        items: [
+          ...carrinhoItems.map(item => ({
+            title: `${item.nome} - Tamanho ${item.tamanho || "-"}`,
+            quantity: Number(item.quantidade) || 1,
+            unit_price: Number(item.preco),
+            currency_id: "BRL"
+          })),
+          {
+            title: "Frete",
+            quantity: 1,
+            unit_price: valorFrete,
+            currency_id: "BRL"
+          }
+        ]
+      }
+    });
+
+    return res.redirect(resposta.init_point);
+
+  } catch (erro) {
+    console.log("ERRO CHECKOUT MP:", erro);
+    return res.send("Erro ao abrir Mercado Pago.");
+  }
+});
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
 });

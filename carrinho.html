@@ -87,30 +87,91 @@ Continuar
       </button>
     </section>
 
-    <section id="etapaPagamento" class="etapa-checkout">
-      <div class="resumo-checkout">
-        <h3>Resumo do pedido</h3>
+   <section id="etapaPagamento" class="etapa-checkout">
+  <div class="resumo-checkout">
+    <h3>Resumo do pedido</h3>
+    <div id="resumoPagamentoMobile"></div>
 
-        <div id="resumoPagamentoMobile"></div>
+    <p>
+      <span>Total</span>
+      <strong id="totalPagamentoMobile">R$ 0,00</strong>
+    </p>
+  </div>
 
-        <p>
-          <span>Total</span>
-          <strong id="totalPagamentoMobile">R$ 0,00</strong>
-        </p>
-      </div>
+  <div class="pagamento-box">
+    <h3>Pagamento</h3>
+    <p>Você será redirecionado para o Mercado Pago para finalizar sua compra.</p>
+  </div>
 
-      <div class="pagamento-box">
-        <h3>Pagamento</h3>
-        <p>Você será redirecionado para o Mercado Pago para finalizar sua compra.</p>
-      </div>
+  <form id="formMercadoPago" action="http://localhost:3000/checkout-mp" method="POST">
+  <input type="hidden" name="pedido" id="pedidoMercadoPago">
 
-      <<button type="button" class="btn-checkout" onclick="finalizarCompraFinal()">
-        🔒 Finalizar compra
-      </button>
-    </section>
+  <button
+type="button"
+id="btnFinalizarPagamento"
+class="btn-finalizar"
+>
+Finalizar compra
+</button>
 
-  </main>
+<script>
+function enviarMercadoPago(){
+  const carrinho = JSON.parse(localStorage.getItem("carrinho")) || [];
+  const valorFrete = Number(localStorage.getItem("valorFreteMS")) || 0;
 
-  <script src="script.js"></script>
+  document.getElementById("pedidoMercadoPago").value = JSON.stringify({
+    items: carrinho,
+    valorFrete: valorFrete
+  });
+
+  document.getElementById("formMercadoPago").submit();
+}
+
+document.getElementById("btnFinalizarPagamento").addEventListener("click", function(e){
+  e.preventDefault();
+  enviarMercadoPago();
+});
+</script>
+
+</main>
+
+<script src="script.js"></script>
+
+<script>
+async function pagarMercadoPago(event){
+  event.preventDefault();
+  event.stopPropagation();
+
+  const carrinho = JSON.parse(localStorage.getItem("carrinho")) || [];
+  const valorFrete = Number(localStorage.getItem("valorFreteMS")) || 0;
+
+  if(carrinho.length === 0){
+    alert("Carrinho vazio.");
+    return false;
+  }
+
+  const resposta = await fetch("http://localhost:3000/criar-pagamento", {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body:JSON.stringify({
+      items:carrinho,
+      valorFrete:valorFrete
+    })
+  });
+
+  const dados = await resposta.json();
+
+  console.log("MERCADO PAGO:", dados);
+
+  if(dados.init_point){
+    window.location.href = dados.init_point;
+    return false;
+  }
+
+  alert("Não veio link do Mercado Pago.");
+  return false;
+}
+</script>
+
 </body>
 </html>
