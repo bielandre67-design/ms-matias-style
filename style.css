@@ -6243,3 +6243,46 @@ body{
   pointer-events: auto;
   z-index: 10001;
 }
+@media (max-width: 768px){
+
+  .topo,
+  .header{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  /* BOTÕES ESQUERDA */
+  .topo-acoes,
+  .icones-header{
+    order: 1;
+
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* LOGO DIREITA */
+  .logo-area,
+  .logo{
+    order: 2;
+
+    margin-left: auto;
+
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-area span,
+  .logo span{
+    font-size: 1rem;
+  }
+
+  .logo-topo,
+  .logo img{
+    width: 38px;
+    height: 38px;
+  }
+
+}
