@@ -581,7 +581,24 @@ async function calcularFrete() {
 
     const fretes = await resposta.json();
     console.log("FRETES RECEBIDOS:", fretes);
-    const opcoesValidas = fretes.filter(frete => !frete.error);
+    const opcoesValidas = fretes.filter(frete => {
+
+  if (frete.error) return false;
+
+  const empresa = (frete.company?.name || "").toLowerCase();
+  const servico = (frete.name || "").toLowerCase();
+
+  return (
+    servico.includes("pac") ||
+    servico.includes("sedex") ||
+    (
+      empresa.includes("jadlog") &&
+      servico.includes("package") &&
+      !servico.includes("centralizado")
+    )
+  );
+
+});
 
     if (!resultadoFrete) return;
 
@@ -643,12 +660,16 @@ async function calcularFreteCheckout() {
     if (!container) return;
 
     container.innerHTML = "";
-    const fretesFiltrados = fretes.filter(frete =>
-  frete.name.includes("Correios") ||
-  frete.name.includes("Jadlog") ||
-  frete.name.includes("Loggi")
-);
+   const fretesFiltrados = fretes.filter(frete => {
+  const empresa = (frete.company?.name || "").toLowerCase();
+  const servico = (frete.name || "").toLowerCase();
 
+  return (
+    servico.includes("pac") ||
+    servico.includes("sedex") ||
+    (empresa.includes("jadlog") && servico.includes("package") && !servico.includes("centralizado"))
+  );
+});
     fretesFiltrados.forEach(frete => {
       if (frete.error) return;
 
@@ -886,7 +907,7 @@ function fecharProdutoDetalhe() {
 // ===============================
 // FINALIZAR COMPRA
 // ===============================
-alert("ENTROU NA FINALIZAR COMPRA");
+
 
 async function finalizarCompra(event) {
   if (event) {
