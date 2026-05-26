@@ -78,12 +78,32 @@ function selecionarTamanho(botao, tamanho) {
 // Funciona no PC e Mobile
 // ===============================
 
-function adicionarCarrinho(botao) {
-  const card = botao.closest(".card-produto");
+function adicionarCarrinho(arg1, arg2, arg3, arg4) {
+  let botao;
+  let nome;
+  let precoFinal;
+  let imagem;
 
-  const nome = botao.dataset.nome;
-  const precoFinal = Number(botao.dataset.preco);
-  const imagem = botao.dataset.img;
+  // Aceita os dois formatos que existem no seu HTML:
+  // adicionarCarrinho(this)
+  // adicionarCarrinho('Nome', 159.90, 'imagem.png', this)
+  if (typeof arg1 === "string") {
+    nome = arg1;
+    precoFinal = Number(arg2);
+    imagem = arg3;
+    botao = arg4;
+  } else {
+    botao = arg1;
+    nome = botao?.dataset?.nome;
+    precoFinal = Number(botao?.dataset?.preco);
+    imagem = botao?.dataset?.img;
+  }
+
+  const card = botao && typeof botao.closest === "function" ? botao.closest(".card-produto") : null;
+
+  if (!nome && card) nome = card.dataset.nome || card.querySelector("h3")?.innerText || "Produto MS";
+  if (!precoFinal && card) precoFinal = pegarPrecoNumero(card.dataset.preco || card.querySelector(".preco")?.innerText || 0);
+  if (!imagem && card) imagem = card.dataset.img || card.querySelector("img")?.getAttribute("src") || "";
 
   let tamanho = "";
 
@@ -115,17 +135,25 @@ function adicionarCarrinho(botao) {
     });
   }
 
-  salvarCarrinho();
+salvarCarrinho();
+
+atualizarBadgeCarrinho();
+
 atualizarTudo();
-animarProdutoParaCarrinho(botao);
-mostrarToastMS();
+renderCarrinhoMobileMS();
+
+  if (typeof animarProdutoParaCarrinho === "function" && botao) {
+    animarProdutoParaCarrinho(botao);
+  }
+
+  mostrarToastMS();
 }
 
 function adicionarProdutoDetalhe() {
   const detalhe = document.getElementById("produtoDetalhe");
   if (!detalhe || !produtoDetalheAtual) return;
 
-  const tamanho = detalhe.dataset.tamanho;
+  const tamanho = detalhe.querySelector(".detalhe-tamanhos button.ativo")?.innerText.trim();
 
   if (!tamanho) {
     alert("Escolha um tamanho antes de adicionar ao carrinho.");
@@ -389,8 +417,19 @@ function mostrarEtapa(id) {
 
   const step = document.querySelector(`.etapas span[data-num="${mapa[id]}"]`);
   if (step) step.classList.add("ativo");
-}
 
+  if (id === "etapaCarrinho") {
+    atualizarCarrinho();
+  }
+
+  if (id === "etapaEntrega") {
+    document.getElementById("tituloEtapa").innerText = "Entrega";
+  }
+
+  if (id === "etapaPagamento") {
+    document.getElementById("tituloEtapa").innerText = "Pagamento";
+  }
+}
 function irEntrega() {
   carregarCarrinho();
 
@@ -404,31 +443,51 @@ function irEntrega() {
 }
 
 function irPagamento() {
-  const cep = document.getElementById("cepCheckout").value.trim();
+
+  const cep = document.getElementById("cepCheckout")?.value.trim();
+  const whats = document.getElementById("telefoneClienteMobile")?.value.trim();
+  const rua = document.getElementById("ruaCliente")?.value.trim();
+  const numero = document.getElementById("numeroCasa")?.value.trim();
+  const bairro = document.getElementById("bairroCliente")?.value.trim();
+  const cidade = document.getElementById("cidadeCliente")?.value.trim();
+  const estado = document.getElementById("estadoCliente")?.value.trim();
 
   if (!cep || cep.replace(/\D/g, "").length < 8) {
-    alert("Preencha o CEP antes de continuar.");
+    alert("Preencha o CEP corretamente.");
     return;
   }
 
-  if (valorFrete <= 0) {
-    alert("Calcule e selecione um frete.");
+  if (!valorFrete || valorFrete <= 0) {
+    alert("Calcule o frete antes de continuar.");
     return;
   }
 
-  const whatsapp = document
-    .getElementById("telefoneClienteMobile")
-    .value.replace(/\D/g, "");
-
-  if (whatsapp.length < 11) {
-    alert("Digite um WhatsApp válido com DDD.");
+  if (!whats || whats.replace(/\D/g, "").length < 10) {
+    alert("Preencha o WhatsApp com DDD.");
     return;
   }
 
-  atualizarTotaisMobile();
+  if (!rua || !numero || !bairro || !cidade || !estado) {
+    alert("Preencha todos os dados.");
+    return;
+  }
 
   mostrarEtapa("etapaPagamento");
-  atualizarTexto("tituloEtapa", "Pagamento");
+
+  const carrinho = JSON.parse(localStorage.getItem("carrinho")) || [];
+
+  const subtotal = carrinho.reduce((acc, item) => {
+    return acc + Number(item.preco) * Number(item.quantidade || 1);
+  }, 0);
+
+  const total = subtotal + Number(valorFrete || 0);
+
+  document.getElementById("fretePagamentoMobile").innerText =
+    dinheiro(valorFrete);
+
+  document.getElementById("totalPagamentoMobile").innerText =
+    dinheiro(total);
+
 }
 function voltarCheckoutMobile() {
   const etapaCarrinho = document.getElementById("etapaCarrinho");
@@ -904,6 +963,17 @@ function fecharProdutoDetalhe() {
 }
 
 // abre detalhe clicando no card, sem atrapalhar botões
+
+function mostrarLoadingCheckout() {
+  const loading = document.getElementById("loadingCheckout");
+  if (loading) loading.classList.add("ativo");
+}
+
+function esconderLoadingCheckout() {
+  const loading = document.getElementById("loadingCheckout");
+  if (loading) loading.classList.remove("ativo");
+}
+
 // ===============================
 // FINALIZAR COMPRA
 // ===============================
@@ -923,6 +993,7 @@ async function finalizarCompra(event) {
   }
 
   atualizarCarrinho();
+  mostrarLoadingCheckout();
 
   try {
     const resposta = await fetch(`${API_BASE}/criar-pagamento`, {
@@ -953,6 +1024,7 @@ async function finalizarCompra(event) {
 
   } catch (erro) {
     console.error("ERRO MERCADO PAGO:", erro);
+    esconderLoadingCheckout();
     alert("Erro ao iniciar pagamento.");
     return false;
   }
@@ -1232,17 +1304,17 @@ function animarProdutoParaCarrinho(botao){
 
   }, 1650);
 }
-function comprarAgoraDetalhe(){
+function comprarAgoraDetalhe() {
   const detalhe = document.getElementById("produtoDetalhe");
 
-  if(!detalhe || !produtoDetalheAtual){
+  if (!detalhe || !produtoDetalheAtual) {
     alert("Produto não encontrado.");
     return;
   }
 
-  const tamanho = detalhe.dataset.tamanho;
+  const tamanho = detalhe.querySelector(".detalhe-tamanhos button.ativo")?.innerText.trim();
 
-  if(!tamanho){
+  if (!tamanho) {
     alert("Escolha um tamanho antes de comprar.");
     return;
   }
@@ -1258,9 +1330,30 @@ function comprarAgoraDetalhe(){
   });
 
   salvarCarrinho();
-  atualizarTudo();
 
- abrirCarrinho();
+mostrarToastMS();
+
+atualizarTudo();
+
+  fecharProdutoDetalhe();
+
+  if (window.innerWidth <= 768) {
+    abrirCarrinhoMobileMS();
+    mostrarEtapaMS("cmmsEtapaFrete");
+  } else {
+    abrirCarrinho();
+    irEntregaPC();
+  }
+}
+function mostrarEtapaMS(id){
+  document.querySelectorAll(".cmms-etapa").forEach(e => e.classList.remove("ativa"));
+  document.getElementById(id)?.classList.add("ativa");
+
+  document.querySelectorAll(".cmms-etapas span").forEach(s => s.classList.remove("ativo"));
+
+  if(id === "cmmsEtapaProdutos") document.getElementById("cmmsStep1")?.classList.add("ativo");
+  if(id === "cmmsEtapaFrete") document.getElementById("cmmsStep2")?.classList.add("ativo");
+  if(id === "cmmsEtapaPagamento") document.getElementById("cmmsStep3")?.classList.add("ativo");
 }
 function irPagamentoDoJeitoCerto(){
   const etapaCarrinhoPC = document.getElementById("etapaCarrinhoPC");
@@ -1298,6 +1391,7 @@ document.addEventListener("click", function(e){
   area.classList.toggle("zoom-ativo");
 });
 document.addEventListener("mousemove", function(e){
+  if (!e.target || typeof e.target.closest !== "function") return;
   const area = e.target.closest(".imagem-principal");
 
   if(!area) return;
@@ -1315,6 +1409,7 @@ document.addEventListener("mousemove", function(e){
 });
 
 document.addEventListener("mouseleave", function(e){
+  if (!e.target || typeof e.target.closest !== "function") return;
   const area = e.target.closest(".imagem-principal");
 
   if(!area) return;
@@ -1333,6 +1428,637 @@ function abrirMenu(){
   }
 
   menu.classList.toggle("ativo");
+}
+function abrirCarrinhoMobile() {
+  atualizarCarrinho();
+  mostrarEtapa("etapaCarrinho");
+
+  const carrinhoMobile = document.getElementById("carrinhoMobile");
+  const carrinhoPC = document.getElementById("carrinho");
+  const fundo = document.getElementById("fundoCarrinho");
+
+  if (window.innerWidth <= 768 && carrinhoMobile) {
+    carrinhoMobile.classList.add("ativo");
+  } else if (carrinhoPC) {
+    carrinhoPC.classList.add("ativo");
+    if (fundo) fundo.classList.add("ativo");
+  } else if (carrinhoMobile) {
+    carrinhoMobile.classList.add("ativo");
+  } else {
+    alert("Carrinho não encontrado");
+  }
+}
+
+function fecharCarrinhoMobile() {
+
+  const carrinho = document.getElementById("carrinhoMobile");
+
+  if (!carrinho) return;
+
+  carrinho.classList.remove("ativo");
+
+}
+
+
+function continuarCarrinhoMobile() {
+  irEntrega();
+}
+
+function abrirCarrinhoMobileNovo() {
+  abrirCarrinhoMobile();
+}
+
+function fecharCarrinhoMobileNovo() {
+  fecharCarrinhoMobile();
+}
+
+function irParaCheckoutMobileNovo() {
+  irEntrega();
+}
+function abrirCarrinhoMobile() {
+  const checkoutMobile =
+    document.getElementById("checkoutMobile") ||
+    document.querySelector(".checkout-mobile") ||
+    document.querySelector(".carrinho-mobile");
+
+  if (checkoutMobile) {
+    checkoutMobile.classList.add("ativo");
+  }
+
+  if (typeof mostrarEtapa === "function") {
+    mostrarEtapa("etapaCarrinho");
+  }
+
+  if (typeof atualizarCarrinho === "function") {
+    atualizarCarrinho();
+  }
+}
+
+function fecharCarrinhoMobile() {
+  const checkoutMobile =
+    document.getElementById("checkoutMobile") ||
+    document.querySelector(".checkout-mobile") ||
+    document.querySelector(".carrinho-mobile");
+
+  if (checkoutMobile) {
+    checkoutMobile.classList.remove("ativo");
+  }
+}
+function abrirCarrinhoMobile() {
+  const checkout = document.getElementById("checkoutMobile");
+
+  if (!checkout) return;
+
+  checkout.classList.add("ativo");
+
+  carregarCarrinho();
+  atualizarCarrinho();
+
+  const listaMobile = document.getElementById("listaCarrinhoMobile");
+
+  if (listaMobile) {
+    montarListaCarrinho(listaMobile, carrinho);
+  }
+
+  mostrarEtapa("etapaCarrinho");
+}
+function atualizarBadgeCarrinho(){
+
+  carregarCarrinho();
+
+  const contador =
+    document.getElementById("contadorCarrinho");
+
+  if(!contador) return;
+
+  const total = carrinho.reduce((acc,item)=>{
+    return acc + Number(item.quantidade || 1);
+  },0);
+
+  contador.innerText = total;
+}
+
+document.addEventListener("DOMContentLoaded", ()=>{
+
+  atualizarBadgeCarrinho();
+
+});
+function renderCarrinhoMobileMS() {
+  carregarCarrinho();
+
+  const lista = document.getElementById("listaCarrinhoMobile");
+  if (!lista) return;
+
+  if (carrinho.length === 0) {
+    lista.innerHTML = `<p class="carrinho-vazio-mobile">Seu carrinho está vazio.</p>`;
+    return;
+  }
+
+  lista.innerHTML = carrinho.map((item, index) => `
+    <div class="item-mobile-ms">
+      <img src="${item.imagem || item.img}" alt="${item.nome}">
+
+      <div class="info-mobile-ms">
+        <h4>${item.nome}</h4>
+        <p>Tamanho: ${item.tamanho}</p>
+
+        <div class="qtd-mobile-ms">
+          <button onclick="diminuirQuantidade(${index}); renderCarrinhoMobileMS();">−</button>
+          <span>${item.quantidade}</span>
+          <button onclick="aumentarQuantidade(${index}); renderCarrinhoMobileMS();">+</button>
+        </div>
+
+        <strong>${dinheiro(Number(item.preco) * Number(item.quantidade || 1))}</strong>
+
+        <button class="remover-mobile-ms" onclick="removerItem(${index}); renderCarrinhoMobileMS();">
+          Remover
+        </button>
+      </div>
+    </div>
+  `).join("");
+}
+
+function abrirCarrinhoMobile() {
+  const checkout = document.getElementById("checkoutMobile");
+  if (!checkout) return;
+
+  checkout.classList.add("ativo");
+
+  mostrarEtapa("etapaCarrinho");
+  renderCarrinhoMobileMS();
+}
+function abrirCarrinhoMobile() {
+  const checkout = document.getElementById("checkoutMobile");
+  const lista = document.getElementById("listaCarrinhoMobile");
+
+  if (!checkout) return;
+
+  checkout.classList.add("ativo");
+
+  document.getElementById("tituloEtapa").innerText = "Meu carrinho";
+
+  document.querySelectorAll(".etapa-checkout").forEach(e => e.classList.remove("ativa"));
+  document.getElementById("etapaCarrinho").classList.add("ativa");
+
+  document.querySelectorAll(".etapas span").forEach(s => s.classList.remove("ativo"));
+  document.querySelector('.etapas span[data-num="1"]').classList.add("ativo");
+
+  carrinho = JSON.parse(localStorage.getItem("carrinho")) || [];
+
+  if (!lista) {
+    alert("Não achei listaCarrinhoMobile no HTML");
+    return;
+  }
+
+  if (carrinho.length === 0) {
+    lista.innerHTML = `<p style="color:#aaa;text-align:center;margin:25px 0;">Seu carrinho está vazio.</p>`;
+    return;
+  }
+
+  lista.innerHTML = carrinho.map((item, index) => `
+    <div class="item-mobile-ms">
+      <img src="${item.imagem || item.img || ''}">
+      <div>
+        <h4>${item.nome}</h4>
+        <p>Tamanho: ${item.tamanho}</p>
+        <strong>${dinheiro(Number(item.preco) * Number(item.quantidade || 1))}</strong>
+        <p>Qtd: ${item.quantidade || 1}</p>
+        <button onclick="removerItem(${index}); abrirCarrinhoMobile();">Remover</button>
+      </div>
+    </div>
+  `).join("");
+}
+function abrirCarrinhoMobileMS() {
+  const modal = document.getElementById("carrinhoMobileMS");
+  const lista = document.getElementById("listaCarrinhoMobileMS");
+
+  if (!modal || !lista) return;
+
+  modal.classList.add("ativo");
+
+  const carrinhoMS = JSON.parse(localStorage.getItem("carrinho")) || [];
+
+  if (carrinhoMS.length === 0) {
+    lista.innerHTML = `
+      <p style="color:#aaa;text-align:center;margin:20px 0;">
+        Seu carrinho está vazio.
+      </p>
+    `;
+    return;
+  }
+
+  lista.innerHTML = carrinhoMS.map((item, index) => `
+  <div class="cmms-item">
+
+    <img src="${item.imagem || item.img || ""}">
+
+    <div class="cmms-info">
+
+      <h4>${item.nome}</h4>
+
+      <p>Tamanho: ${item.tamanho}</p>
+
+      <p>
+        Preço unit.:
+        ${dinheiro(Number(item.preco))}
+      </p>
+
+      <strong>
+        ${dinheiro(Number(item.preco) * Number(item.quantidade || 1))}
+      </strong>
+
+      <div class="cmms-acoes">
+
+        <div class="cmms-qtd">
+
+          <button onclick="
+            diminuirQuantidade(${index});
+            abrirCarrinhoMobileMS();
+          ">
+            −
+          </button>
+
+          <span>
+            ${item.quantidade || 1}
+          </span>
+
+          <button onclick="
+            aumentarQuantidade(${index});
+            abrirCarrinhoMobileMS();
+          ">
+            +
+          </button>
+
+        </div>
+
+        <button
+        class="cmms-remover"
+        onclick="
+          removerItem(${index});
+          abrirCarrinhoMobileMS();
+        ">
+
+          🗑 Remover
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+`).join("") + `
+
+  <div class="cmms-footer">
+
+    <div class="cmms-total">
+
+      <span>Total:</span>
+
+      <strong>
+        ${dinheiro(
+          carrinhoMS.reduce((acc, item) => {
+            return acc + (Number(item.preco) * Number(item.quantidade || 1));
+          }, 0)
+        )}
+      </strong>
+
+    </div>
+
+   <button class="cmms-continuar" onclick="irFreteMS()">
+  Continuar
+</button>
+
+    <button
+    class="cmms-limpar"
+    onclick="limparCarrinhoMS()">
+
+      🗑 Limpar carrinho
+
+    </button>
+
+  </div>
+`;}
+function limparCarrinhoMS() {
+
+  localStorage.removeItem("carrinho");
+
+  carrinho = [];
+
+  abrirCarrinhoMobileMS();
+
+  atualizarBadgeCarrinho();
+
+}
+function fecharCarrinhoMobileMS() {
+  document.getElementById("carrinhoMobileMS")?.classList.remove("ativo");
+}
+
+/* caso esteja escrito com letra diferente em algum botão */
+function fecharCarrinhoMobilems() {
+  fecharCarrinhoMobileMS();
+}
+function irFreteMS(){
+  document.getElementById("tituloCarrinhoMS").innerText = "Entrega";
+
+  document.querySelectorAll(".cmms-etapa").forEach(e => e.classList.remove("ativa"));
+  document.getElementById("cmmsEtapaFrete").classList.add("ativa");
+
+  document.querySelectorAll(".cmms-etapas span").forEach(s => s.classList.remove("ativo"));
+  document.getElementById("cmmsStep2").classList.add("ativo");
+}
+function irPagamentoMS(){
+
+  document.getElementById("tituloCarrinhoMS").innerText = "Pagamento";
+
+  document.querySelectorAll(".cmms-etapa").forEach(e=>{
+    e.classList.remove("ativa");
+  });
+
+  document.getElementById("cmmsEtapaPagamento")
+  .classList.add("ativa");
+
+  document.querySelectorAll(".cmms-etapas span")
+  .forEach(s=>{
+    s.classList.remove("ativo");
+  });
+
+  document.getElementById("cmmsStep3")
+  .classList.add("ativo");
+
+  const carrinhoMS =
+  JSON.parse(localStorage.getItem("carrinho")) || [];
+
+  const total = carrinhoMS.reduce((acc,item)=>{
+    return acc + (
+      Number(item.preco) *
+      Number(item.quantidade || 1)
+    );
+  },0);
+
+  document.getElementById("totalPagamentoMobile")
+  .innerText = dinheiro(total);
+
+}
+function voltarFreteMS(){
+
+  document.getElementById("tituloCarrinhoMS")
+  .innerText = "Entrega";
+
+  document.querySelectorAll(".cmms-etapa")
+  .forEach(e=>{
+    e.classList.remove("ativa");
+  });
+
+  document.getElementById("cmmsEtapaFrete")
+  .classList.add("ativa");
+
+  document.querySelectorAll(".cmms-etapas span")
+  .forEach(s=>{
+    s.classList.remove("ativo");
+  });
+
+  document.getElementById("cmmsStep2")
+  .classList.add("ativo");
+
+}
+function voltarProdutosMS(){
+  document.getElementById("tituloCarrinhoMS").innerText = "Meu carrinho";
+
+  document.querySelectorAll(".cmms-etapa").forEach(e => e.classList.remove("ativa"));
+  document.getElementById("cmmsEtapaProdutos").classList.add("ativa");
+
+  document.querySelectorAll(".cmms-etapas span").forEach(s => s.classList.remove("ativo"));
+  document.getElementById("cmmsStep1").classList.add("ativo");
+}
+function abrirCarrinhoResponsivo() {
+
+  if (window.innerWidth <= 768) {
+
+    abrirCarrinhoMobileMS();
+
+  } else {
+
+    abrirCarrinho();
+
+  }
+
+}
+function abrirCarrinhoMobileMS() {
+  const carrinho = document.getElementById("carrinhoMobileMS");
+
+  if (!carrinho) {
+    alert("Não achei o carrinhoMobileMS");
+    return;
+  }
+
+  carrinho.classList.add("ativo");
+}
+
+function fecharCarrinhoMobileMS() {
+  document.getElementById("carrinhoMobileMS")?.classList.remove("ativo");
+}
+function abrirCarrinhoMobileMS() {
+  const modal = document.getElementById("carrinhoMobileMS");
+
+  if (!modal) {
+    alert("Não achei o carrinhoMobileMS no HTML");
+    return;
+  }
+
+  modal.classList.add("ativo");
+
+  if (typeof abrirCarrinhoMobileMSRender === "function") {
+    abrirCarrinhoMobileMSRender();
+  }
+}
+
+function fecharCarrinhoMobileMS() {
+  const modal = document.getElementById("carrinhoMobileMS");
+  if (modal) modal.classList.remove("ativo");
+}
+function abrirCarrinhoResponsivoMS() {
+  if (window.innerWidth <= 768) {
+    const modal = document.getElementById("carrinhoMobileMS");
+
+    if (!modal) {
+      alert("Não achei o carrinhoMobileMS");
+      return;
+    }
+
+    modal.classList.add("ativo");
+    return;
+  }
+
+  abrirCarrinho();
+}
+function avaliar(event, estrela, nota) {
+  event.stopPropagation();
+
+  const box = estrela.closest(".avaliacao-produto");
+  if (!box) return;
+
+  box.dataset.nota = nota;
+
+  const estrelas = box.querySelectorAll("span");
+
+  estrelas.forEach((s, index) => {
+    if (index < nota) {
+      s.classList.add("ativa");
+    } else {
+      s.classList.remove("ativa");
+    }
+  });
+}
+function selecionarTamanho(botao, tamanho){
+  const card = botao.closest(".card-produto");
+  const grupo = botao.closest(".tamanhos");
+
+  if(grupo){
+    grupo.querySelectorAll("button").forEach(b => b.classList.remove("ativo"));
+  }
+
+  botao.classList.add("ativo");
+
+  if(card){
+    card.dataset.tamanho = tamanho;
+  }
+}
+
+function adicionarCarrinho(botao){
+  const card = botao.closest(".card-produto");
+
+  if(!card){
+    alert("Produto não encontrado.");
+    return;
+  }
+
+  const tamanho = card.dataset.tamanho;
+
+  if(!tamanho){
+    alert("Escolha um tamanho antes de adicionar.");
+    return;
+  }
+
+  const carrinho = JSON.parse(localStorage.getItem("carrinho")) || [];
+
+  carrinho.push({
+    nome: botao.dataset.nome || card.dataset.nome,
+    preco: Number(botao.dataset.preco || card.dataset.preco),
+    imagem: botao.dataset.img || card.dataset.img,
+    tamanho: tamanho,
+    quantidade: 1
+  });
+
+  localStorage.setItem("carrinho", JSON.stringify(carrinho));
+
+  localStorage.setItem("carrinho", JSON.stringify(carrinho));
+
+if(typeof atualizarCarrinho === "function"){
+  atualizarCarrinho();
+}
+
+if(typeof atualizarContador === "function"){
+  atualizarContador();
+}
+
+animarProdutoAoCarrinho(botao);
+
+mostrarToastMS();
+}
+function mostrarToastMS(texto = "🛒 Produto adicionado ao carrinho") {
+
+  const toast = document.getElementById("toastMS");
+
+  if(!toast) return;
+
+  toast.innerHTML = texto;
+
+  toast.classList.add("ativo");
+
+  clearTimeout(window.toastTimeoutMS);
+
+  window.toastTimeoutMS = setTimeout(() => {
+    toast.classList.remove("ativo");
+  }, 2500);
+
+}
+function animarProdutoAoCarrinho(botao){
+
+  const card = botao.closest(".card-produto");
+
+  if(!card) return;
+
+  const img = card.querySelector("img");
+
+  const carrinho =
+  document.querySelector(".btn-com-badge");
+
+  if(!img || !carrinho) return;
+
+  const imgRect = img.getBoundingClientRect();
+  const carrinhoRect = carrinho.getBoundingClientRect();
+
+  const clone = img.cloneNode(true);
+
+  clone.style.position = "fixed";
+  clone.style.zIndex = "999999";
+  clone.style.pointerEvents = "none";
+
+  clone.style.left = imgRect.left + "px";
+  clone.style.top = imgRect.top + "px";
+
+  clone.style.width = imgRect.width + "px";
+  clone.style.height = imgRect.height + "px";
+
+  clone.style.borderRadius = "24px";
+
+  clone.style.transition =
+  "all .8s cubic-bezier(.2,.8,.2,1)";
+
+  clone.style.boxShadow =
+  "0 0 30px rgba(212,175,55,.45)";
+
+  document.body.appendChild(clone);
+
+  requestAnimationFrame(() => {
+
+    clone.style.left =
+    carrinhoRect.left + "px";
+
+    clone.style.top =
+    carrinhoRect.top + "px";
+
+    clone.style.width = "25px";
+    clone.style.height = "25px";
+
+    clone.style.opacity = ".2";
+
+    clone.style.transform =
+    "scale(.3) rotate(15deg)";
+
+  });
+
+  setTimeout(() => {
+    clone.remove();
+  }, 850);
+
+}
+function avaliar(el, nota){
+
+  const estrelas =
+  el.parentElement.querySelectorAll("span");
+
+  estrelas.forEach((estrela,index)=>{
+
+    if(index < nota){
+      estrela.classList.add("ativa");
+    }else{
+      estrela.classList.remove("ativa");
+    }
+
+  });
+
 }
 
 window.irPagamentoDoJeitoCerto = irPagamentoDoJeitoCerto;
@@ -1387,3 +2113,19 @@ window.adicionarProdutoDetalhe = adicionarProdutoDetalhe;
 // CORREÇÃO DEFINITIVA DO BOTÃO FINAL
 // ===============================
 
+
+window.abrirCarrinhoMobile = abrirCarrinhoMobile;
+
+window.fecharCarrinhoMobile = fecharCarrinhoMobile;
+
+window.continuarCarrinhoMobile = continuarCarrinhoMobile;
+
+window.abrirCarrinhoMobileNovo = abrirCarrinhoMobileNovo;
+
+window.fecharCarrinhoMobileNovo = fecharCarrinhoMobileNovo;
+
+window.irParaCheckoutMobileNovo = irParaCheckoutMobileNovo;
+
+window.mostrarLoadingCheckout = mostrarLoadingCheckout;
+
+window.esconderLoadingCheckout = esconderLoadingCheckout;

@@ -23,14 +23,27 @@
   <div class="icones-header">
 
     <nav class="menu">
-      <a href="#inicio">Início</a>
-      <a href="#produtos">Produtos</a>
-      <a href="#contato">Contato</a>
-    </nav>
+  <a href="#inicio">INÍCIO</a>
+  <a href="#moletons">PRODUTOS⌄</a>
+  <a href="#categoriasHome">CATEGORIAS⌄</a>
+  <a href="javascript:void(0)" onclick="abrirFavoritos(); return false;">FAVORITOS</a>
+</nav>
 
-    <a href="#" onclick="abrirFavoritos()" class="btn-topo">♡</a>
+    <a href="javascript:void(0)" onclick="abrirFavoritos(); return false;" class="btn-topo btn-com-badge">
 
-<a href="#" onclick="abrirCarrinho()" class="btn-topo">🛒</a>
+  <span class="icone-topo">♡</span>
+
+  <span id="contadorFavoritos" class="badge-topo">1</span>
+
+</a>
+
+<a href="javascript:void(0)" onclick="abrirCarrinhoResponsivoMS(); return false;" class="btn-topo btn-com-badge">
+
+  <span class="icone-topo">🛍</span>
+
+  <span id="contadorCarrinho" class="badge-topo">0</span>
+
+</a>
 
 <button onclick="abrirMenuMobile()" class="btn-topo" type="button">☰</button>
 
@@ -80,7 +93,7 @@ VER PRODUTOS →
 </button>
     </div>
   </section>
-<section class="categorias-home">
+<section class="categorias-home" id="categoriasHome">
 
   <a href="#jaquetas" class="categoria-item">
     <span>◈</span>
@@ -94,7 +107,7 @@ VER PRODUTOS →
 
   <a href="#toucas" class="categoria-item">
     <span>◉</span>
-    <p>Toucas</p>
+    <p>ACESSÓRIOS</p>
   </a>
 
   <a href="#camisetas" class="categoria-item">
@@ -111,19 +124,22 @@ VER PRODUTOS →
 
   <!-- PRODUTOS -->
   <section class="produtos" id="moletons">
-    <div class="titulo-section">
-      <p>Produtos</p>
-      <h2>Escolha seu moletom</h2>
-    </div>
+
+  <div class="titulo-section premium-titulo">
+    <p>COLEÇÃO</p>
+    <h2>MOLETONS MS</h2>
+    <span>Qualidade premium, conforto incomparável, estilo único.</span>
+  </div>
 
     <div class="grid-produtos">
 
    <div class="card-produto"
+   
   data-nome="Moletom Rosa MS"
   data-preco="1.00"
   data-img="moletom-rosa.jpeg"
   data-fotos="moletom-rosa.jpeg,modelo-rosa.jpeg">
-
+<span class="selo-produto">NOVIDADE</span>
   <button class="btn-favorito" onclick="favoritarProduto(this, event)">
     ♡
   </button>
@@ -185,11 +201,14 @@ VER PRODUTOS →
       
 
      <div class="card-produto"
+     
 data-nome="Moletom Preto MS"
 data-preco="1.00"
 data-img="MOLETOM-PRETO.jpeg"
 data-fotos="MOLETOM-PRETO.jpeg,modelo-preto.jpeg">
+<span class="selo-produto">⚡LIMITADO</span>
 <button class="btn-favorito" onclick="favoritarProduto(this, event)">
+
   ♡
 </button>
         <div class="produto-img">
@@ -247,6 +266,7 @@ data-fotos="MOLETOM-PRETO.jpeg,modelo-preto.jpeg">
   data-preco="100.00"
   data-img="moletom-cinza.jpeg"
   data-fotos="moletom-cinza.jpeg,moletom-cinza-modelo.jpeg">
+  <span class="selo-produto">⚡ LIMITADO</span>
 
   <button class="btn-favorito" onclick="favoritarProduto(this, event)">
   ♡
@@ -302,20 +322,21 @@ data-fotos="MOLETOM-PRETO.jpeg,modelo-preto.jpeg">
 
 </div>
 <div class="card-produto"
-  data-nome="Moletom-marrom MS"
+  data-nome="Moleto-bege MS"
   data-preco="100.00"
-  data-img="moletom-marrom.jpeg"
-  data-fotos="moletom-marrom.jpeg,moletom-marrom-modelo.jpeg">
+  data-img="moletom-bege.png"
+  data-fotos="moletom-bege.png,modelo-moletom-bege.png">
+<span class="selo-produto">⚡ LIMITADO</span>
   <button class="btn-favorito" onclick="favoritarProduto(this, event)">
   ♡
 </button>
 
   <div class="produto-img" onclick="abrirProdutoDetalheCard(this.closest('.card-produto'))">
-    <img src="moletom-marrom.jpeg" class="foto-normal">
-    <img src="moletom-marrom-modelo.jpeg" class="foto-hover">
+    <img src="moletom-bege.png" class="foto-normal">
+    <img src="modelo-moletom-bege.png" class="foto-hover">
   </div>
 
-  <h3>Moletom Marrom MS</h3>
+  <h3>Moletom Bege MS</h3>
 
  <div class="avaliacao-produto">
   <span onclick="avaliar(event, this, 1)">★</span>
@@ -351,9 +372,9 @@ data-fotos="MOLETOM-PRETO.jpeg,modelo-preto.jpeg">
   <button
     class="btn-comprar"
     onclick="adicionarCarrinho(this)"
-    data-nome="Moletom Marrom MS"
+    data-nome="Moletom Bege MS"
     data-preco="100.00"
-    data-img="moletom-marrom.jpeg">
+    data-img="moletom-bege.png">
     
 
     <span>Adicionar ao carrinho</span>
@@ -366,6 +387,7 @@ data-fotos="MOLETOM-PRETO.jpeg,modelo-preto.jpeg">
   data-preco="100.00"
   data-img="moletom-cinza.jpeg"
   data-fotos="moletom-cinza.jpeg,moletom-cinza-modelo.jpeg">
+  <span class="selo-produto">⚡ LIMITADO</span>
   <button class="btn-favorito" onclick="favoritarProduto(this, event)">
   ♡
 </button>
@@ -420,10 +442,11 @@ data-fotos="MOLETOM-PRETO.jpeg,modelo-preto.jpeg">
 
 </div>
       <div class="card-produto"
-data-nome="Moletom Off White MS"
+data-nome="Moletom BRANCO MS"
 data-preco="1.00"
-data-img="moletom-offwhite.png"
-data-fotos="moletom-offwhite.png,modelo-offwhite.png">
+data-img="moletom-branco.png"
+data-fotos="moletom-branco.png,modelo-branco.png">
+<span class="selo-produto">⚡ LIMITADO</span>
 <button class="btn-favorito" onclick="favoritarProduto(this, event)">
   ♡
 </button>
@@ -431,17 +454,17 @@ data-fotos="moletom-offwhite.png,modelo-offwhite.png">
 <div class="produto-img"
 onclick="abrirProdutoDetalheCard(this.closest('.card-produto'))">
 
-<img src="moletom-offwhite.png"
+<img src="moletom-branco.png"
 class="foto-normal"
-alt="Moletom Off White MS">
+alt="Moletom BRANCO MS">
 
-<img src="modelo-offwhite.png"
+<img src="modelo-moletom-branco.png"
 class="foto-hover"
-alt="Modelo com Moletom Off White MS">
+alt="Modelo com Moletom BRANCO MS">
 
 </div>
 
-        <h3>Moletom Off White MS</h3>
+        <h3>Moletom BRANCO MS</h3>
         <div class="avaliacao-produto">
   <span onclick="avaliar(event, this, 1)">★</span>
   <span onclick="avaliar(event, this, 2)">★</span>
@@ -478,17 +501,78 @@ alt="Modelo com Moletom Off White MS">
           onclick="adicionarCarrinho(this)"
           data-nome="Moletom Off White MS"
           data-preco="15.00"
-          data-img="moletom-offwhite.png">
+          data-img="moletom-branco.png">
 
           <span>Adicionar ao carrinho</span>
           <span class="icone-btn-carrinho">🛒</span>
 
         </button>
       </div>
+      <div class="card-produto">
+
+  <span class="selo-produto">LIMITADO</span>
+
+  <button class="btn-favorito">♡</button>
+
+  <div class="produto-img">
+
+    <img src="moletom-azul.png" class="img-principal">
+
+    <img src="modelo-moletom-azul.png" class="img-hover">
+
+  </div>
+
+  <h3>MOLETOM AZUL MS</h3>
+
+  <div class="avaliacao-produto">
+
+  <span onclick="avaliar(this,1)">★</span>
+  <span onclick="avaliar(this,2)">★</span>
+  <span onclick="avaliar(this,3)">★</span>
+  <span onclick="avaliar(this,4)">★</span>
+  <span onclick="avaliar(this,5)">★</span>
+
+</div>
+
+  <p class="preco-antigo">R$ 199,90</p>
+
+  <div class="preco">R$ 100</div>
+
+  <p class="parcelamento">
+    em até 2x sem juros
+  </p>
+
+  <div class="tamanhos">
+
+    <button onclick="selecionarTamanho(this, 'P')">P</button>
+
+    <button onclick="selecionarTamanho(this, 'M')">M</button>
+
+    <button onclick="selecionarTamanho(this, 'G')">G</button>
+
+    <button onclick="selecionarTamanho(this, 'GG')">GG</button>
+
+  </div>
+
+  <button
+    class="btn-comprar"
+    onclick="adicionarCarrinho(this)"
+    data-nome="Moletom Azul MS"
+    data-preco="100"
+    data-img="moletom-azul.png">
+
+    <span>ADICIONAR AO CARRINHO</span>
+
+    <span class="icone-btn-carrinho">🛒</span>
+
+  </button>
+
+</div>
 
     </div>
     
   </section>
+  
   <!-- ========================= -->
 <!-- CALÇAS MS -->
 <!-- ========================= -->
@@ -508,6 +592,7 @@ alt="Modelo com Moletom Off White MS">
       data-preco="149.90"
       data-img="calca-preta.jpeg"
       data-fotos="calca-preta.jpeg,calca-preta-modelo.jpeg">
+      <span class="selo-produto">⚡ LIMITADO</span>
       <button class="btn-favorito" onclick="favoritarProduto(this, event)">
   ♡
 </button>
@@ -576,6 +661,7 @@ alt="Modelo com Moletom Off White MS">
       data-preco="149.90"
       data-img="calca-branca.jpeg"
       data-fotos="calca-branca.jpeg,calca-branca-modelo.jpeg">
+      <span class="selo-produto">⚡ LIMITADO</span>
       <button class="btn-favorito" onclick="favoritarProduto(this, event)">
   ♡
 </button>
@@ -644,6 +730,7 @@ alt="Modelo com Moletom Off White MS">
       data-preco="149.90"
       data-img="calca-cinza.jpeg"
       data-fotos="calca-cinza.jpeg,calca-cinza-modelo.jpeg">
+      <span class="selo-produto">⚡ LIMITADO</span>
 
       <button class="btn-favorito" onclick="favoritarProduto(this, event)">
   ♡
@@ -717,6 +804,11 @@ alt="Modelo com Moletom Off White MS">
 
 <section class="produtos categoria-toucas" id="toucas">
 
+  <div class="titulo-section">
+    <p>COLEÇÃO</p>
+    <h2>ACESSÓRIOS MS</h2>
+  </div>
+
   <div class="grid-produtos">
     
 
@@ -726,6 +818,7 @@ data-nome="Touca MS"
 data-preco="79"
 data-img="touca-preta.png"
 data-fotos="touca-preta.png,touca-modelo-preto.png">
+<span class="selo-produto fogo">🔥 NOVIDADE</span>
 <button class="btn-favorito"
 onclick="favoritarProduto(this, event)">
 ♡
@@ -782,6 +875,7 @@ data-nome="Meia MS Cano Alto"
 data-preco="29.90"
 data-img="meia branca.png"
 data-fotos="meia branca.png,modelo meia.jpeg">
+<span class="selo-produto fogo">🔥 NOVIDADE</span>
 <button class="btn-favorito"
 onclick="favoritarProduto(this, event)">
 ♡
@@ -845,6 +939,7 @@ data-nome="Jaqueta MS Azul"
 data-preco="159.90"
 data-img="jaqueta azul.png"
 data-fotos="jaqueta azul.png,modelo jaqueta azul.png">
+<span class="selo-produto fogo">🔥NOVIDADE</span>
 <button class="btn-favorito"
 onclick="favoritarProduto(this, event)">
 ♡
@@ -884,6 +979,7 @@ data-nome="Corta Vento Branco MS"
 data-preco="159.90"
 data-img="Jaqueta Corta Vento Impermeável Masculina Branco.png"
 data-fotos="Jaqueta Corta Vento Impermeável Masculina Branco.png,modelo corta vento Branco.png">
+<span class="selo-produto fogo">🔥 NOVIDADE</span>
 
 <button class="btn-favorito"
 onclick="favoritarProduto(this, event)">
@@ -924,6 +1020,7 @@ data-nome="Jaqueta MS Preta"
 data-preco="159.90"
 data-img="jaqueta preta.png"
 data-fotos="jaqueta preta.png,modelo jaqueta preta.jpeg">
+<span class="selo-produto fogo">🔥 NOVIDADE</span>
 
 <button class="btn-favorito"
 onclick="favoritarProduto(this, event)">
@@ -1214,16 +1311,15 @@ data-img="Camiseta Oversized Off-White.jpeg">
       </div>
 
       <button
-      class="btn-comprar"
-      onclick="adicionarCarrinho(this)"
-      data-nome="Camiseta Oversized Branca"
-      data-preco="89.90"
-      data-img="Camiseta Oversized Bege.jpeg">
+class="btn-comprar"
+onclick="adicionarCarrinho(this)"
+data-nome="Camiseta Oversized Branca"
+data-preco="89.90"
+data-img="Camiseta Oversized Bege.jpeg">
 
-        <span>Adicionar ao carrinho</span>
-        <span class="icone-btn-carrinho">🛒</span>
+<span>ADICIONAR AO CARRINHO 🛒</span>
 
-      </button>
+</button>
 
     </div>
 
@@ -1552,22 +1648,43 @@ data-img="Camiseta Oversized Off-White.jpeg">
   </button>
 </div>
 
-<!-- RODAPÉ MOBILE -->
 <nav class="menu-mobile-ms">
+
+  <!-- INICIO -->
   <a href="#inicio" class="ativo">
     <span>⌂</span>
     Início
   </a>
 
-  <a href="javascript:void(0)" onclick="irParaCategorias()">
-  <span>▦</span>
-  Categorias
+  <!-- CATEGORIAS NO MEIO -->
+  <a href="#categoriasHome" class="btn-menu-mobile">
+
+    <div class="icone-grid">
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+
+    Categorias
+
+  </a>
+
+  <!-- CARRINHO NA DIREITA -->
+  <a href="#"
+onclick="abrirCarrinhoMobileMS(); return false;"
+class="btn-topo btn-com-badge">
+
+<span>🛒</span>
+
+<span id="contadorCarrinho" class="badge-topo">
+0
+</span>
+
+Carrinho
+
 </a>
 
-  <a href="javascript:void(0)" onclick="abrirCarrinho()">
-    <span>🛒</span>
-    Carrinho
-  </a>
 </nav>
 <div class="menu-lateral-mobile" id="menuLateralMobile">
 
@@ -1596,7 +1713,7 @@ data-img="Camiseta Oversized Off-White.jpeg">
 
   <a href="#toucas"
   onclick="fecharMenuMobile()">
-  Toucas
+  Acessórios
   </a>
 
   <a href="#camisetas"
@@ -1635,12 +1752,11 @@ onclick="window.scrollTo({top:0, behavior:'smooth'})">
 onclick="window.scrollTo({top:0, behavior:'smooth'})">
 ↑
 </button>
-<section class="final-ms">
+<section class="final-ms" id="contato">
 
   <div class="overlay-final"></div>
 
   <div class="conteudo-final">
-
     <span class="tag-final">MS MATIAS STYLE</span>
 
     <h2>
@@ -1654,36 +1770,33 @@ onclick="window.scrollTo({top:0, behavior:'smooth'})">
     </p>
 
     <a href="https://www.instagram.com/matiasstyleofc"
-    target="_blank"
-    class="btn-final-ms">
+       target="_blank"
+       class="btn-final-ms">
       VER INSTAGRAM
     </a>
-<div class="seguranca-final">
 
-  <div class="seguro-card">
-    <span>🔒</span>
-    <h4>Compra segura</h4>
-    <p>Pagamento protegido pelo Mercado Pago.</p>
+    <div class="seguranca-final">
+      <div class="seguro-card">
+        <span>🔒</span>
+        <h4>Compra segura</h4>
+        <p>Pagamento protegido pelo Mercado Pago.</p>
+      </div>
+
+      <div class="seguro-card">
+        <span>💳</span>
+        <h4>Formas de pagamento</h4>
+        <p>Pix, cartão de crédito e saldo Mercado Pago.</p>
+      </div>
+
+      <div class="seguro-card">
+        <span>📦</span>
+        <h4>Entrega acompanhada</h4>
+        <p>Pedido separado com dados de entrega.</p>
+      </div>
+    </div>
   </div>
 
-  <div class="seguro-card">
-    <span>💳</span>
-    <h4>Formas de pagamento</h4>
-    <p>Pix, cartão de crédito e saldo Mercado Pago.</p>
-  </div>
-
-  <div class="seguro-card">
-    <span>📦</span>
-    <h4>Entrega acompanhada</h4>
-    <p>Pedido separado com dados de entrega.</p>
-  </div>
-
-</div>
-  </div>
-
-  <div class="logo-fundo-ms">
-    MS
-  </div>
+  <div class="logo-fundo-ms">MS</div>
 
 </section>
 <div id="fundoFavoritos" class="fundo-favoritos" onclick="fecharFavoritos()"></div>
@@ -1696,6 +1809,240 @@ onclick="window.scrollTo({top:0, behavior:'smooth'})">
 
   <div id="listaFavoritos"></div>
 
+</div>
+
+
+  
+<div id="carrinhoMobileMS" class="carrinho-mobile-ms" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:#050505;z-index:999999999;overflow-y:auto;color:#fff;padding:24px;box-sizing:border-box;">
+
+  <div class="cmms-topo">
+    <h2 id="tituloCarrinhoMS">Meu carrinho</h2>
+    <button type="button" onclick="fecharCarrinhoMobileMS()">×</button>
+  </div>
+
+  <div class="cmms-etapas">
+    <span class="ativo" id="cmmsStep1">1<br>Produtos</span>
+    <span id="cmmsStep2">2<br>Frete</span>
+    <span id="cmmsStep3">3<br>Pagamento</span>
+  </div>
+
+  <div id="cmmsEtapaProdutos" class="cmms-etapa ativa">
+    <div id="listaCarrinhoMobileMS"></div>
+
+    <div class="cmms-footer">
+      <div class="cmms-total">
+        <span>Total:</span>
+        <strong id="totalCarrinhoMobileMS">R$ 0,00</strong>
+      </div>
+
+      <button type="button" class="cmms-continuar" onclick="irFreteMS()">
+        Continuar
+      </button>
+
+      <button type="button" class="cmms-limpar" onclick="limparCarrinhoMS()">
+        Limpar carrinho
+      </button>
+    </div>
+  </div>
+
+  <div id="cmmsEtapaFrete" class="cmms-etapa">
+    <input id="cepCheckout" placeholder="Digite seu CEP">
+    <button type="button" onclick="calcularFreteCheckout()">Calcular frete</button>
+    <div id="opcoesFreteCheckout"></div>
+
+    <input id="telefoneClienteMobile" placeholder="WhatsApp com DDD">
+    <input id="ruaCliente" placeholder="Rua">
+    <input id="numeroCasa" placeholder="Número">
+    <input id="bairroCliente" placeholder="Bairro">
+    <input id="cidadeCliente" placeholder="Cidade">
+    <input id="estadoCliente" placeholder="Estado">
+
+    <button type="button" class="btn-continuar-frete" onclick="irPagamentoMS()">
+      Continuar para pagamento
+    </button>
+
+    <button type="button" class="btn-voltar-ms" onclick="voltarProdutosMS()">
+      ← Voltar para produtos
+    </button>
+  </div>
+
+  <div id="cmmsEtapaPagamento" class="cmms-etapa">
+    <div class="pagamento-box-ms">
+      <span class="label-total">Total da compra</span>
+      <p class="frete-pagamento-ms">Frete: <strong id="fretePagamentoMobile">R$ 0,00</strong></p>
+      <strong id="totalPagamentoMobile">R$ 0,00</strong>
+
+      <button type="button" class="btn-finalizar-ms" onclick="finalizarCompraFinal(event)">
+        Finalizar pagamento
+      </button>
+
+      <button type="button" class="btn-voltar-ms" onclick="voltarFreteMS()">
+        ← Voltar para entrega
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  function dinheiroMS(valor){
+    return Number(valor || 0).toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
+  }
+
+  function getCarrinhoMS(){
+    try { return JSON.parse(localStorage.getItem('carrinho')) || []; }
+    catch(e){ return []; }
+  }
+
+  function setCarrinhoMS(carrinho){
+    localStorage.setItem('carrinho', JSON.stringify(carrinho));
+    if (typeof atualizarBadgeCarrinho === 'function') atualizarBadgeCarrinho();
+    if (typeof atualizarTudo === 'function') atualizarTudo();
+  }
+
+  function subtotalMS(carrinho){
+    return carrinho.reduce(function(acc, item){
+      return acc + Number(item.preco || 0) * Number(item.quantidade || 1);
+    }, 0);
+  }
+
+  function mostrarEtapaMS(nome){
+    document.querySelectorAll('#carrinhoMobileMS .cmms-etapa').forEach(function(el){
+      el.classList.remove('ativa');
+      el.style.display = 'none';
+    });
+    document.querySelectorAll('#carrinhoMobileMS .cmms-etapas span').forEach(function(el){
+      el.classList.remove('ativo');
+    });
+
+    var etapa = document.getElementById('cmmsEtapa' + nome);
+    var step = document.getElementById(nome === 'Produtos' ? 'cmmsStep1' : nome === 'Frete' ? 'cmmsStep2' : 'cmmsStep3');
+    if (etapa) { etapa.classList.add('ativa'); etapa.style.display = 'block'; }
+    if (step) step.classList.add('ativo');
+
+    var titulo = document.getElementById('tituloCarrinhoMS');
+    if (titulo) titulo.innerText = nome === 'Produtos' ? 'Meu carrinho' : nome === 'Frete' ? 'Entrega' : 'Pagamento';
+  }
+
+  window.abrirCarrinhoResponsivoMS = function(){
+    if (window.innerWidth <= 768) {
+      window.abrirCarrinhoMobileMS();
+    } else if (typeof abrirCarrinho === 'function') {
+      abrirCarrinho();
+    }
+  };
+
+  window.abrirCarrinhoMobileMS = function(){
+    var modal = document.getElementById('carrinhoMobileMS');
+    var lista = document.getElementById('listaCarrinhoMobileMS');
+    if (!modal) { alert('Carrinho mobile não encontrado'); return; }
+
+    modal.style.display = 'block';
+    modal.classList.add('ativo');
+    mostrarEtapaMS('Produtos');
+
+    var carrinho = getCarrinhoMS();
+    var total = subtotalMS(carrinho);
+    var totalBox = document.getElementById('totalCarrinhoMobileMS');
+    if (totalBox) totalBox.innerText = dinheiroMS(total);
+
+    if (!lista) return;
+    if (!carrinho.length) {
+      lista.innerHTML = '<p style="text-align:center;color:#999;padding:40px 0;">Seu carrinho está vazio.</p>';
+      return;
+    }
+
+    lista.innerHTML = carrinho.map(function(item, index){
+      var img = item.imagem || item.img || '';
+      var qtd = Number(item.quantidade || 1);
+      var preco = Number(item.preco || 0);
+      return `
+        <div class="cmms-item">
+          <img src="${img}" class="cmms-img" alt="${item.nome || 'Produto'}">
+          <div class="cmms-info">
+            <h4>${item.nome || 'Produto'}</h4>
+            <p>Tamanho: ${item.tamanho || '-'}</p>
+            <p>Preço unit.: ${dinheiroMS(preco)}</p>
+            <strong>${dinheiroMS(preco * qtd)}</strong>
+            <div class="cmms-acoes">
+              <div class="cmms-qtd">
+                <button type="button" onclick="alterarQtdMS(${index}, -1)">−</button>
+                <span>${qtd}</span>
+                <button type="button" onclick="alterarQtdMS(${index}, 1)">+</button>
+              </div>
+              <button type="button" class="btn-remover-ms" onclick="removerItemMS(${index})">Remover</button>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+  };
+
+  window.fecharCarrinhoMobileMS = function(){
+    var modal = document.getElementById('carrinhoMobileMS');
+    if (modal) { modal.style.display = 'none'; modal.classList.remove('ativo'); }
+  };
+
+  window.alterarQtdMS = function(index, valor){
+    var carrinho = getCarrinhoMS();
+    if (!carrinho[index]) return;
+    carrinho[index].quantidade = Number(carrinho[index].quantidade || 1) + valor;
+    if (carrinho[index].quantidade <= 0) carrinho.splice(index, 1);
+    setCarrinhoMS(carrinho);
+    window.abrirCarrinhoMobileMS();
+  };
+
+  window.removerItemMS = function(index){
+    var carrinho = getCarrinhoMS();
+    carrinho.splice(index, 1);
+    setCarrinhoMS(carrinho);
+    window.abrirCarrinhoMobileMS();
+  };
+
+  window.limparCarrinhoMS = function(){
+    setCarrinhoMS([]);
+    window.abrirCarrinhoMobileMS();
+  };
+
+  window.irFreteMS = function(){
+    var carrinho = getCarrinhoMS();
+    if (!carrinho.length) { alert('Adicione um produto ao carrinho.'); return; }
+    mostrarEtapaMS('Frete');
+  };
+
+  window.voltarProdutosMS = function(){
+    window.abrirCarrinhoMobileMS();
+  };
+
+  window.irPagamentoMS = function(){
+    var cep = (document.getElementById('cepCheckout') || {}).value || '';
+    var whats = (document.getElementById('telefoneClienteMobile') || {}).value || '';
+    var rua = (document.getElementById('ruaCliente') || {}).value || '';
+    var numero = (document.getElementById('numeroCasa') || {}).value || '';
+    var bairro = (document.getElementById('bairroCliente') || {}).value || '';
+    var cidade = (document.getElementById('cidadeCliente') || {}).value || '';
+    var estado = (document.getElementById('estadoCliente') || {}).value || '';
+
+    if (cep.replace(/\D/g,'').length < 8) { alert('Preencha o CEP corretamente.'); return; }
+    if (!window.valorFrete || Number(window.valorFrete) <= 0) { alert('Calcule e selecione uma opção de frete.'); return; }
+    if (whats.replace(/\D/g,'').length < 10) { alert('Preencha o WhatsApp com DDD.'); return; }
+    if (!rua.trim() || !numero.trim() || !bairro.trim() || !cidade.trim() || !estado.trim()) { alert('Preencha todos os dados de entrega.'); return; }
+
+    var carrinho = getCarrinhoMS();
+    var frete = Number(window.valorFrete || 0);
+    var total = subtotalMS(carrinho) + frete;
+    var freteBox = document.getElementById('fretePagamentoMobile');
+    var totalBox = document.getElementById('totalPagamentoMobile');
+    if (freteBox) freteBox.innerText = dinheiroMS(frete);
+    if (totalBox) totalBox.innerText = dinheiroMS(total);
+    mostrarEtapaMS('Pagamento');
+  };
+
+  window.voltarFreteMS = function(){ mostrarEtapaMS('Frete'); };
+})();
+</script>
+<div id="toastMS" class="toast-ms">
+  🛒 Produto adicionado ao carrinho
 </div>
 </body>
 </html>
