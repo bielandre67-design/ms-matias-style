@@ -584,17 +584,27 @@ function montarResumoPagamentoPC() {
     const imagemItem = item.img || item.imagem || "";
 
     resumo.innerHTML += `
-      <div class="item-resumo-pc">
-        <img src="${imagemItem}">
-        <div>
-          <strong>${item.nome}</strong>
-          <p>Tamanho: ${item.tamanho}</p>
-          <p>Qtd: ${item.quantidade}</p>
-        </div>
-        <span>${dinheiro(Number(item.preco) * Number(item.quantidade || 1))}</span>
+   <div class="item-resumo-pc">
+
+      <img src="${imagemItem}">
+
+      <div class="info-item-resumo">
+         <strong>${item.nome}</strong>
+
+         <p>Tamanho: ${item.tamanho}</p>
+
+         <div class="linha-preco-qtd">
+            <span>Qtd: ${item.quantidade}</span>
+
+            <strong class="preco-item-resumo">
+               ${dinheiro(Number(item.preco) * Number(item.quantidade || 1))}
+            </strong>
+         </div>
       </div>
-    `;
-  });
+
+   </div>
+`;
+});
 
   resumo.innerHTML += `
     <div class="total-resumo-pc">
@@ -1345,15 +1355,22 @@ atualizarTudo();
     irEntregaPC();
   }
 }
-function mostrarEtapaMS(id){
+function mostrarEtapaMS(id) {
   document.querySelectorAll(".cmms-etapa").forEach(e => e.classList.remove("ativa"));
   document.getElementById(id)?.classList.add("ativa");
 
   document.querySelectorAll(".cmms-etapas span").forEach(s => s.classList.remove("ativo"));
 
-  if(id === "cmmsEtapaProdutos") document.getElementById("cmmsStep1")?.classList.add("ativo");
-  if(id === "cmmsEtapaFrete") document.getElementById("cmmsStep2")?.classList.add("ativo");
-  if(id === "cmmsEtapaPagamento") document.getElementById("cmmsStep3")?.classList.add("ativo");
+  if (id === "cmmsEtapaProdutos") document.getElementById("cmmsStep1")?.classList.add("ativo");
+  if (id === "cmmsEtapaFrete") document.getElementById("cmmsStep2")?.classList.add("ativo");
+  if (id === "cmmsEtapaPagamento") {
+    document.getElementById("cmmsStep3")?.classList.add("ativo");
+    atualizarResumoPagamentoMS();
+  }
+  if (id === "cmmsEtapaPagamento") {
+  setTimeout(window.atualizarResumoPagamentoMS, 100);
+}
+  
 }
 function irPagamentoDoJeitoCerto(){
   const etapaCarrinhoPC = document.getElementById("etapaCarrinhoPC");
@@ -2060,8 +2077,366 @@ function avaliar(el, nota){
   });
 
 }
+async function buscarEnderecoCheckout() {
 
-window.irPagamentoDoJeitoCerto = irPagamentoDoJeitoCerto;
+  const cep = document
+    .getElementById("cepCheckout")
+    .value
+    .replace(/\D/g, "");
+
+  if (cep.length !== 8) return;
+
+  try {
+
+    const resposta = await fetch(
+      `https://viacep.com.br/ws/${cep}/json/`
+    );
+
+    const dados = await resposta.json();
+
+    if (dados.erro) {
+      alert("CEP não encontrado");
+      return;
+    }
+
+    document.getElementById("ruaCliente").value =
+      dados.logradouro || "";
+
+    document.getElementById("bairroCliente").value =
+      dados.bairro || "";
+
+    document.getElementById("cidadeCliente").value =
+      dados.localidade || "";
+
+    document.getElementById("estadoCliente").value =
+      dados.uf || "";
+
+  } catch (erro) {
+
+    console.error("Erro ao buscar CEP:", erro);
+
+  }
+
+}
+async function buscarEnderecoCheckout() {
+  const cep = document.getElementById("cepCheckout").value.replace(/\D/g, "");
+
+  if (cep.length !== 8) return;
+
+  try {
+    const resposta = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+    const dados = await resposta.json();
+
+    if (dados.erro) {
+      alert("CEP não encontrado");
+      return;
+    }
+
+    document.getElementById("ruaCliente").value = dados.logradouro || "";
+    document.getElementById("bairroCliente").value = dados.bairro || "";
+    document.getElementById("cidadeCliente").value = dados.localidade || "";
+    document.getElementById("estadoCliente").value = dados.uf || "";
+
+  } catch (erro) {
+    console.log("Erro ViaCEP:", erro);
+  }
+}
+async function buscarEnderecoCheckout() {
+  const cepInput = document.getElementById("cepCheckout");
+  const rua = document.getElementById("ruaCliente");
+  const bairro = document.getElementById("bairroCliente");
+  const cidade = document.getElementById("cidadeCliente");
+  const estado = document.getElementById("estadoCliente");
+
+  if (!cepInput || !rua || !bairro || !cidade || !estado) {
+    alert("Algum ID do endereço está errado");
+    return;
+  }
+
+  const cep = cepInput.value.replace(/\D/g, "");
+
+  if (cep.length !== 8) return;
+
+  try {
+    const resposta = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+    const dados = await resposta.json();
+
+    if (dados.erro) {
+      alert("CEP não encontrado");
+      return;
+    }
+
+    rua.value = dados.logradouro || "";
+    bairro.value = dados.bairro || "";
+    cidade.value = dados.localidade || "";
+    estado.value = dados.uf || "";
+
+  } catch (erro) {
+    console.error("Erro ao buscar CEP:", erro);
+  }
+}
+async function buscarEnderecoCheckout() {
+  console.log("FUNÇÃO RODOU");
+
+  const cepInput = document.querySelector("#cepCheckout");
+  const rua = document.querySelector("#ruaCliente");
+  const bairro = document.querySelector("#bairroCliente");
+  const cidade = document.querySelector("#cidadeCliente");
+  const estado = document.querySelector("#estadoCliente");
+
+  console.log({
+    cepInput,
+    rua,
+    bairro,
+    cidade,
+    estado
+  });
+
+  if (!cepInput || !rua || !bairro || !cidade || !estado) {
+    alert("Algum campo não foi encontrado. Confere os IDs no HTML.");
+    return;
+  }
+
+  const cep = cepInput.value.replace(/\D/g, "");
+
+  console.log("CEP LIMPO:", cep);
+
+  if (cep.length !== 8) return;
+
+  const resposta = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+  const dados = await resposta.json();
+
+  console.log("DADOS VIACEP:", dados);
+
+  rua.value = dados.logradouro || "";
+  bairro.value = dados.bairro || "";
+  cidade.value = dados.localidade || "";
+  estado.value = dados.uf || "";
+}
+async function buscarEnderecoCheckout() {
+  const cepInput = document.getElementById("cepCheckout");
+  const cep = cepInput.value.replace(/\D/g, "");
+
+  if (cep.length !== 8) return;
+
+  const resposta = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+  const dados = await resposta.json();
+
+  if (dados.erro) {
+    alert("CEP não encontrado");
+    return;
+  }
+
+  document.getElementById("ruaClienteMobile").value = dados.logradouro || "";
+  document.getElementById("bairroClienteMobile").value = dados.bairro || "";
+  document.getElementById("cidadeClienteMobile").value = dados.localidade || "";
+  document.getElementById("estadoClienteMobile").value = dados.uf || "";
+}
+function atualizarResumoPagamentoMS() {
+  const carrinho = JSON.parse(localStorage.getItem("carrinho")) || [];
+
+  let subtotal = 0;
+
+  carrinho.forEach(item => {
+    const preco = Number(item.preco || item.valor || 0);
+    const qtd = Number(item.quantidade || item.qtd || 1);
+    subtotal += preco * qtd;
+  });
+
+  const frete = Number(window.valorFrete || localStorage.getItem("valorFrete") || 0);
+  const total = subtotal + frete;
+
+  const elProdutos = document.getElementById("valorProdutosPagamento");
+  const elFrete = document.getElementById("valorFretePagamento");
+  const elTotal = document.getElementById("valorTotalPagamento");
+
+  if (elProdutos) elProdutos.innerText = subtotal.toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL"
+  });
+
+  if (elFrete) elFrete.innerText = frete.toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL"
+  });
+
+  if (elTotal) elTotal.innerText = total.toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL"
+  });
+}
+function atualizarResumoPagamentoMS() {
+  const carrinho =
+    window.carrinho ||
+    window.carrinhoMobile ||
+    JSON.parse(localStorage.getItem("carrinhoMobile")) ||
+    JSON.parse(localStorage.getItem("carrinhoMS")) ||
+    JSON.parse(localStorage.getItem("carrinho")) ||
+    [];
+
+  let subtotal = 0;
+
+  carrinho.forEach(item => {
+    const preco = Number(item.preco || item.valor || item.price || item.precoProduto || 0);
+    const qtd = Number(item.quantidade || item.qtd || 1);
+    subtotal += preco * qtd;
+  });
+
+  const frete = Number(
+    window.valorFrete ||
+    localStorage.getItem("valorFrete") ||
+    localStorage.getItem("freteMS") ||
+    0
+  );
+
+  const total = subtotal + frete;
+
+  document.getElementById("valorProdutosPagamento").innerText =
+    subtotal.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+  document.getElementById("valorFretePagamento").innerText =
+    frete.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+  document.getElementById("valorTotalPagamento").innerText =
+    total.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+window.atualizarResumoPagamentoMS = function () {
+  let subtotal = 0;
+
+  const cards = document.querySelectorAll("#resumoPedidoMobile .item-resumo, #resumoPedidoMobile .produto-resumo, #resumoPedidoMobile > div");
+
+  const carrinho = window.carrinho || window.carrinhoMobile || [];
+  const resumoMobile = document.getElementById("resumoPedidoMobile");
+
+if (resumoMobile && Array.isArray(carrinho)) {
+
+  resumoMobile.innerHTML = "";
+
+  carrinho.forEach(item => {
+
+    const imagemItem = item.img || item.imagem || "";
+    const precoFinal = Number(item.preco || 0) * Number(item.quantidade || 1);
+
+    resumoMobile.innerHTML += `
+      <div class="item-resumo-mobile">
+
+        <img src="${imagemItem}">
+
+        <div class="info-item-resumo">
+          <strong>${item.nome}</strong>
+
+          <p>Tamanho: ${item.tamanho}</p>
+
+          <div class="linha-preco-qtd">
+            <span>Qtd: ${item.quantidade}</span>
+
+            <strong class="preco-item-resumo">
+              ${precoFinal.toLocaleString("pt-BR", {
+                style: "currency",
+                currency: "BRL"
+              })}
+            </strong>
+          </div>
+        </div>
+
+      </div>
+    `;
+  });
+}
+
+  if (Array.isArray(carrinho) && carrinho.length > 0) {
+    carrinho.forEach(item => {
+      const preco = Number(item.preco || item.valor || item.price || 0);
+      const qtd = Number(item.quantidade || item.qtd || 1);
+      subtotal += preco * qtd;
+    });
+  }
+
+  if (subtotal <= 0) {
+    subtotal = 0;
+    const textos = document.querySelectorAll("#resumoPedidoMobile strong, #resumoPedidoMobile b, #resumoPedidoMobile span");
+    textos.forEach(t => {
+      const valor = t.textContent.replace(/[^\d,]/g, "").replace(",", ".");
+      if (valor) subtotal += Number(valor) || 0;
+    });
+  }
+
+  const frete = Number(window.valorFrete || window.freteSelecionadoValor || 14.59);
+  const total = subtotal + frete;
+
+  document.getElementById("valorProdutosPagamento").innerText =
+    subtotal.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+  document.getElementById("valorFretePagamento").innerText =
+    frete.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+  document.getElementById("valorTotalPagamento").innerText =
+    total.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+};
+setInterval(() => {
+  const itens = document.querySelectorAll("#resumoPedidoMobile > div");
+  const qtdItens = itens.length;
+
+  const precoUnitario = 100; // preço de cada moletom
+  const subtotal = qtdItens * precoUnitario;
+
+  const frete = 14.59;
+  const total = subtotal + frete;
+
+  const produtos = document.getElementById("valorProdutosPagamento");
+  const freteEl = document.getElementById("valorFretePagamento");
+  const totalEl = document.getElementById("valorTotalPagamento");
+
+  if (produtos) produtos.innerText = subtotal.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  if (freteEl) freteEl.innerText = frete.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  if (totalEl) totalEl.innerText = total.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}, 500);
+let descontoCupomMS = 0;
+
+function aplicarCupomMS(){
+  const cupom = document.getElementById("cupomPagamentoMS").value.trim().toUpperCase();
+  const msg = document.getElementById("mensagemCupomMS");
+
+  if(cupom === "MS10"){
+    descontoCupomMS = 10;
+    msg.innerText = "Cupom aplicado: 10% de desconto";
+  } else {
+    descontoCupomMS = 0;
+    msg.innerText = "Cupom inválido";
+  }
+
+  atualizarResumoPagamentoMS();
+}
+function comprarFavoritosMS(){
+  const itensFavoritos = favoritos.map(item => ({
+  ...item,
+  quantidade: item.quantidade || 1
+}));
+
+window.carrinho = itensFavoritos;
+window.carrinhoMobile = itensFavoritos;
+
+localStorage.setItem("carrinho", JSON.stringify(itensFavoritos));
+localStorage.setItem("carrinhoMS", JSON.stringify(itensFavoritos));
+
+if (window.innerWidth <= 768) {
+
+  abrirCarrinhoMobileMS();
+  carregarCarrinhoMobileMS();
+  mostrarEtapaMS("cmmsEtapaProdutos");
+
+} else {
+
+  fecharFavoritos();
+  abrirCarrinho();
+
+  if (typeof montarResumoPagamentoPC === "function") {
+    montarResumoPagamentoPC();
+  }
+
+}
+}
+
 window.abrirMenuMobile = abrirMenuMobile;
 window.fecharMenuMobile = fecharMenuMobile;
 window.abrirAjudaMobile = abrirAjudaMobile;

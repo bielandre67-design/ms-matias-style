@@ -1808,6 +1808,9 @@ onclick="window.scrollTo({top:0, behavior:'smooth'})">
   <h2>Favoritos</h2>
 
   <div id="listaFavoritos"></div>
+  <button onclick="comprarFavoritosMS()" class="btn-comprar-favoritos-ms">
+  Comprar favoritos
+</button>
 
 </div>
 
@@ -1846,16 +1849,33 @@ onclick="window.scrollTo({top:0, behavior:'smooth'})">
   </div>
 
   <div id="cmmsEtapaFrete" class="cmms-etapa">
-    <input id="cepCheckout" placeholder="Digite seu CEP">
-    <button type="button" onclick="calcularFreteCheckout()">Calcular frete</button>
-    <div id="opcoesFreteCheckout"></div>
+    <label>Digite seu CEP</label>
 
-    <input id="telefoneClienteMobile" placeholder="WhatsApp com DDD">
-    <input id="ruaCliente" placeholder="Rua">
-    <input id="numeroCasa" placeholder="Número">
-    <input id="bairroCliente" placeholder="Bairro">
-    <input id="cidadeCliente" placeholder="Cidade">
-    <input id="estadoCliente" placeholder="Estado">
+<input
+  id="cepCheckout"
+  placeholder="Digite seu CEP"
+  oninput="buscarEnderecoCheckout()"
+  onblur="buscarEnderecoCheckout()"
+>
+
+<input id="telefoneClienteMobile" placeholder="WhatsApp com DDD">
+
+<input id="ruaClienteMobile" placeholder="Rua">
+<input id="numeroCasaMobile" placeholder="Número">
+<input 
+  type="text" 
+  id="complementoCasa" 
+  placeholder="Complemento (Apto, Bloco, Casa...)"
+>
+<input id="bairroClienteMobile" placeholder="Bairro">
+<input id="cidadeClienteMobile" placeholder="Cidade">
+<input id="estadoClienteMobile" placeholder="Estado">
+
+<button type="button" onclick="calcularFreteCheckout()">
+  Calcular frete
+</button>
+
+<div id="opcoesFreteCheckout"></div>
 
     <button type="button" class="btn-continuar-frete" onclick="irPagamentoMS()">
       Continuar para pagamento
@@ -1867,19 +1887,39 @@ onclick="window.scrollTo({top:0, behavior:'smooth'})">
   </div>
 
   <div id="cmmsEtapaPagamento" class="cmms-etapa">
-    <div class="pagamento-box-ms">
-      <span class="label-total">Total da compra</span>
-      <p class="frete-pagamento-ms">Frete: <strong id="fretePagamentoMobile">R$ 0,00</strong></p>
-      <strong id="totalPagamentoMobile">R$ 0,00</strong>
 
-      <button type="button" class="btn-finalizar-ms" onclick="finalizarCompraFinal(event)">
-        Finalizar pagamento
-      </button>
+  <h2>Pagamento</h2>
 
-      <button type="button" class="btn-voltar-ms" onclick="voltarFreteMS()">
-        ← Voltar para entrega
-      </button>
+  <div class="pagamento-card-ms">
+
+    <div class="pagamento-topo-ms">
+      <span>Resumo da compra</span>
+      <strong>MS Matias Style</strong>
     </div>
+
+    <div class="linha-resumo">
+   <span>Produtos</span>
+   <span id="valorProdutosPagamento">R$ 0,00</span>
+</div>
+
+    <div class="linha-resumo">
+   <span>Frete</span>
+   <span id="valorFretePagamento">R$ 0,00</span>
+</div>
+
+    <div class="linha-total">
+   <span>Total</span>
+   <span id="valorTotalPagamento">R$ 0,00</span>
+</div>
+<div id="resumoPedidoMobile" class="resumo-pedido-mobile"></div>
+    <button onclick="finalizarCompra()" class="btn-finalizar-ms">
+      Finalizar pagamento
+    </button>
+
+    <button onclick="voltarFreteMS()" class="btn-voltar-pagamento-ms">
+      ← Voltar para entrega
+    </button>
+
   </div>
 
 </div>
@@ -2014,31 +2054,100 @@ onclick="window.scrollTo({top:0, behavior:'smooth'})">
     window.abrirCarrinhoMobileMS();
   };
 
-  window.irPagamentoMS = function(){
-    var cep = (document.getElementById('cepCheckout') || {}).value || '';
-    var whats = (document.getElementById('telefoneClienteMobile') || {}).value || '';
-    var rua = (document.getElementById('ruaCliente') || {}).value || '';
-    var numero = (document.getElementById('numeroCasa') || {}).value || '';
-    var bairro = (document.getElementById('bairroCliente') || {}).value || '';
-    var cidade = (document.getElementById('cidadeCliente') || {}).value || '';
-    var estado = (document.getElementById('estadoCliente') || {}).value || '';
+  
+window.irPagamentoMS = function(){
+  var cep = (document.getElementById('cepCheckout') || {}).value || '';
+  var whats = (document.getElementById('telefoneClienteMobile') || {}).value || '';
+  var rua = (document.getElementById('ruaClienteMobile') || {}).value || '';
+  var numero = (document.getElementById('numeroCasaMobile') || {}).value || '';
+  var complemento = (document.getElementById('complementoCasa') || {}).value || '';
+  var bairro = (document.getElementById('bairroClienteMobile') || {}).value || '';
+  var cidade = (document.getElementById('cidadeClienteMobile') || {}).value || '';
+  var estado = (document.getElementById('estadoClienteMobile') || {}).value || '';
 
-    if (cep.replace(/\D/g,'').length < 8) { alert('Preencha o CEP corretamente.'); return; }
-    if (!window.valorFrete || Number(window.valorFrete) <= 0) { alert('Calcule e selecione uma opção de frete.'); return; }
-    if (whats.replace(/\D/g,'').length < 10) { alert('Preencha o WhatsApp com DDD.'); return; }
-    if (!rua.trim() || !numero.trim() || !bairro.trim() || !cidade.trim() || !estado.trim()) { alert('Preencha todos os dados de entrega.'); return; }
+  if (cep.replace(/\D/g,'').length < 8) {
+    alert('Preencha o CEP corretamente.');
+    return;
+  }
 
-    var carrinho = getCarrinhoMS();
-    var frete = Number(window.valorFrete || 0);
-    var total = subtotalMS(carrinho) + frete;
-    var freteBox = document.getElementById('fretePagamentoMobile');
-    var totalBox = document.getElementById('totalPagamentoMobile');
-    if (freteBox) freteBox.innerText = dinheiroMS(frete);
-    if (totalBox) totalBox.innerText = dinheiroMS(total);
-    mostrarEtapaMS('Pagamento');
-  };
+  var freteSalvo = JSON.parse(localStorage.getItem("freteSelecionadoMS") || "null");
 
-  window.voltarFreteMS = function(){ mostrarEtapaMS('Frete'); };
+  if (!freteSelecionado && !freteSalvo) {
+    alert('Calcule e selecione uma opção de frete.');
+    return;
+  }
+
+  var frete = Number(
+    freteSelecionado?.preco ||
+    freteSalvo?.preco ||
+    window.valorFrete ||
+    0
+  );
+
+  if (whats.replace(/\D/g,'').length < 10) {
+    alert('Preencha o WhatsApp com DDD.');
+    return;
+  }
+
+  if (!rua.trim() || !numero.trim() || !bairro.trim() || !cidade.trim() || !estado.trim()) {
+    alert('Preencha todos os dados de entrega.');
+    return;
+  }
+
+  var carrinho = getCarrinhoMS();
+  var total = subtotalMS(carrinho) + frete;
+
+  var freteBox = document.getElementById('fretePagamentoMobile');
+  var totalBox = document.getElementById('totalPagamentoMobile');
+
+  if (freteBox) freteBox.innerText = dinheiroMS(frete);
+  if (totalBox) totalBox.innerText = dinheiroMS(total);
+var resumo = document.getElementById("resumoPedidoMobile");
+
+if (resumo) {
+
+  resumo.innerHTML = carrinho.map(item => `
+  
+    <div class="item-resumo-mobile">
+
+      <img src="${item.imagem || item.img}" />
+
+      <div class="info-resumo-mobile">
+
+        <h4>${item.nome}</h4>
+
+        <p>Tamanho: ${item.tamanho || 'Único'}</p>
+
+        <p>Qtd: ${item.quantidade}</p>
+
+      </div>
+
+    </div>
+
+  `).join('') + `
+
+    <div class="frete-resumo-mobile">
+      🚚 ${freteSelecionado?.nome || freteSalvo?.nome || 'Frete'}
+    </div>
+    <div class="cupom-box-ms">
+  <label>Código promocional</label>
+
+  <div class="cupom-linha-ms">
+    <input id="cupomPagamentoMS" type="text" placeholder="Digite seu cupom">
+    <button onclick="aplicarCupomMS()">Aplicar</button>
+  </div>
+
+  <p id="mensagemCupomMS"></p>
+</div>
+
+  `;
+}
+  mostrarEtapaMS('Pagamento');
+};
+
+window.voltarFreteMS = function(){
+  mostrarEtapaMS('Frete');
+};
 })();
 </script>
 <div id="toastMS" class="toast-ms">
