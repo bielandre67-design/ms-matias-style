@@ -1,92 +1,117 @@
-
 <html lang="pt-BR">
 <head>
+  <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>Painel ADM - MS</title>
+
   <link rel="stylesheet" href="admin.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 </head>
+</head>
+
 <body>
-<header>
 
-<div class="logo-admin">
-    <img src="logo.png">
-    <div>
-        <h1>Painel ADM</h1>
-        <p>MS Matias Style</p>
-    </div>
-</div>
-
-<div class="acoes-topo">
-  <button onclick="atualizarPedidos()">Atualizar</button>
-
-  <button class="btn-sair" onclick="logoutADM()">
-    Sair
-  </button>
-</div>
-
-</header>
-
-    <section class="cards-resumo">
-      <div class="card">
-        <span>Total de pedidos</span>
-        <strong id="totalPedidos">0</strong>
-      </div>
-
-      <div class="card">
-        <span>Pagos</span>
-        <strong id="totalPagos">0</strong>
-      </div>
-
-      <div class="card">
-        <span>Pendentes</span>
-        <strong id="totalPendentes">0</strong>
-      </div>
-    </section>
-<div class="abas-pedidos">
-  <button class="aba-pedido ativa" onclick="filtrarPedidos('todos', this)">
-    Todos
-  </button>
-
-  <button class="aba-pedido" onclick="filtrarPedidos('pendente', this)">
-    Novos pedidos
-  </button>
-
-  <button class="aba-pedido" onclick="filtrarPedidos('pago', this)">
-    Pagos
-  </button>
-
-  <button class="aba-pedido" onclick="filtrarPedidos('enviado', this)">
-    Enviados
-  </button>
-</div>
-    <section>
-      <h2>Pedidos</h2>
-      <div class="abas-pedidos">
-  <button class="aba-pedido ativa" onclick="filtrarPedidos('pendente', this)">
-    Novos pedidos <span id="qtdNovos">0</span>
-  </button>
-
-  <button class="aba-pedido" onclick="filtrarPedidos('pago', this)">
-    Pagos <span id="qtdPagosAba">0</span>
-  </button>
-
-  <button class="aba-pedido" onclick="filtrarPedidos('enviado', this)">
-    Enviados <span id="qtdEnviados">0</span>
-  </button>
-</div>
-      <div id="pedidos" class="lista"></div>
-    </section>
-  </main>
-
-  <script src="admin.js"></script>
-  
 <script>
   if (localStorage.getItem("adminLogado") !== "sim") {
     window.location.href = "login.html";
   }
 </script>
 
+<header>
+
+  <div class="logo-admin">
+    <img src="logo.png" alt="Logo MS">
+    <div>
+      <h1>Painel ADM</h1>
+      <p>MS Matias Style</p>
+    </div>
+  </div>
+
+  <div class="acoes-topo">
+    <button onclick="atualizarPedidos()">Atualizar</button>
+
+    <button class="btn-sair" onclick="logoutADM()">
+      Sair
+    </button>
+  </div>
+
+</header>
+
+<main>
+
+  <section class="cards-resumo">
+    <div class="card">
+      <span>Total de pedidos</span>
+      <strong id="totalPedidos">0</strong>
+    </div>
+
+    <div class="card">
+      <span>Pagos</span>
+      <strong id="totalPagos">0</strong>
+    </div>
+
+    <div class="card">
+      <span>Pendentes</span>
+      <strong id="totalPendentes">0</strong>
+    </div>
+  </section>
+<section class="filtros-admin">
+
+  <input
+    id="pesquisaCliente"
+    type="text"
+    placeholder="Pesquisar por nome do cliente..."
+    oninput="carregarPedidos()"
+  >
+
+  <input
+    id="filtroData"
+    type="date"
+    onchange="carregarPedidos()"
+  >
+
+  <div class="card faturamento-dia">
+    <span>Faturamento de hoje</span>
+    <strong id="faturamentoHoje">R$ 0,00</strong>
+  </div>
+
+</section>
+
+<section class="grafico-admin">
+  <h2>Vendas dos últimos 7 dias</h2>
+  <canvas id="graficoVendas" height="120"></canvas>
+</section>
+  <section>
+    <h2>Pedidos</h2>
+
+    <div class="abas-pedidos">
+      <button class="aba-pedido ativa" onclick="filtrarPedidos('todos', this)">
+        Todos
+      </button>
+
+      <button class="aba-pedido" onclick="filtrarPedidos('pendente', this)">
+        Novos pedidos <span id="qtdNovos">0</span>
+      </button>
+
+      <button class="aba-pedido" onclick="filtrarPedidos('pago', this)">
+        Pagos <span id="qtdPagosAba">0</span>
+      </button>
+
+      <button class="aba-pedido" onclick="filtrarPedidos('enviado', this)">
+        Enviados <span id="qtdEnviados">0</span>
+      </button>
+    </div>
+
+    <div id="pedidos" class="lista"></div>
+  </section>
+
+</main>
+
 <script src="admin.js"></script>
+
 </body>
 </html>

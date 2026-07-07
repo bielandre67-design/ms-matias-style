@@ -7,7 +7,7 @@ const totalPendentes = document.getElementById("totalPendentes");
 let filtroAtual = "todos";
 let pedidosCache = [];
 
-const API_PEDIDOS = "http://192.168.1.2:3000/pedidos";
+const API_PEDIDOS = "http://localhost:3000/pedidos";
 
 async function pegarPedidos() {
   try {
@@ -128,7 +128,11 @@ function telefoneLimpo(telefone) {
 }
 
 async function carregarPedidos() {
+
   const pedidos = await pegarPedidos();
+
+  atualizarFaturamentoHoje(pedidos);
+  criarGraficoVendas(pedidos);
 
   const novos = pedidos.filter((p) =>
     !p.status ||
@@ -198,7 +202,11 @@ async function carregarPedidos() {
 
     const produtosHTML = produtos.map((produto) => `
       <div class="produto-admin">
-        ${produto.img || produto.imagem ? `<img src="${produto.img || produto.imagem}" alt="Produto">` : ""}
+       <img 
+src="${produto.img || produto.imagem || 'logo.png'}" 
+alt="Produto"
+onerror="this.src='logo.png'"
+>
         <div>
           <strong>${texto(produto.nome || produto.title)}</strong>
           <p>Tamanho: ${texto(produto.tamanho || produto.size)}</p>
@@ -278,7 +286,7 @@ window.filtrarPedidos = function(filtro, botao) {
 
   if (botao) botao.classList.add("ativa");
 
-  carregarPedidos();
+  renderizarPedidos(pedidosCache);
 };
 
 window.copiarEndereco = function(id) {
@@ -572,4 +580,126 @@ window.carregarPedidos = carregarPedidos;
 window.atualizarPedidos = function() {
   carregarPedidos();
 };
+function atualizarFaturamentoHoje(pedidos){
+
+  const hoje = new Date().toLocaleDateString("pt-BR");
+
+  let total = 0;
+
+  pedidos.forEach((pedido) => {
+
+    const dataPedido = new Date(pedido.data).toLocaleDateString("pt-BR");
+
+    if(dataPedido === hoje && pedido.status === "pago"){
+      total += Number(pedido.total || 0);
+    }
+
+  });
+
+  const box = document.getElementById("faturamentoHoje");
+
+  if(box){
+    box.innerText = total.toLocaleString("pt-BR", {
+      style:"currency",
+      currency:"BRL"
+    });
+  }
+}
+
+function criarGraficoVendas(pedidos){
+
+  const canvas = document.getElementById("graficoVendas");
+
+  if(!canvas) return;
+
+  const dias = [];
+  const valores = [];
+
+  for(let i = 6; i >= 0; i--){
+
+    const data = new Date();
+    data.setDate(data.getDate() - i);
+
+    const label = data.toLocaleDateString("pt-BR", {
+      day:"2-digit",
+      month:"2-digit"
+    });
+
+    dias.push(label);
+
+    let totalDia = 0;
+
+    pedidos.forEach((pedido) => {
+
+      const pedidoData = new Date(pedido.data);
+
+      if(
+        pedidoData.toDateString() === data.toDateString()
+        && pedido.status === "pago"
+      ){
+        totalDia += Number(pedido.total || 0);
+      }
+
+    });
+
+    valores.push(totalDia);
+  }
+
+  if(window.graficoMS){
+    window.graficoMS.destroy();
+  }
+
+  window.graficoMS = new Chart(canvas, {
+    type:"line",
+
+    data:{
+      labels:dias,
+
+      datasets:[{
+        label:"Vendas",
+        data:valores,
+        tension:0.4,
+        fill:true,
+        borderColor:"#d4af37",
+        backgroundColor:"rgba(212,175,55,0.15)",
+        pointBackgroundColor:"#d4af37",
+        pointRadius:5
+      }]
+    },
+
+    options:{
+      responsive:true,
+
+      plugins:{
+        legend:{
+          labels:{
+            color:"#fff"
+          }
+        }
+      },
+
+      scales:{
+        x:{
+          ticks:{
+            color:"#aaa"
+          },
+
+          grid:{
+            color:"rgba(255,255,255,0.05)"
+          }
+        },
+
+        y:{
+          ticks:{
+            color:"#aaa"
+          },
+
+          grid:{
+            color:"rgba(255,255,255,0.05)"
+          }
+        }
+      }
+    }
+  });
+}
 })();

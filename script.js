@@ -42,13 +42,21 @@ function dinheiro(valor) {
 function pegarPrecoNumero(preco) {
   if (typeof preco === "number") return preco;
 
-  return Number(
-    String(preco || "0")
-      .replace("R$", "")
-      .replace(/\./g, "")
-      .replace(",", ".")
-      .trim()
-  );
+  let valor = String(preco || "0")
+    .replace("R$", "")
+    .replace(/\s/g, "")
+    .trim();
+
+  // Aceita os dois formatos:
+  // data-preco="89.90"  -> 89.90
+  // texto "R$ 89,90"   -> 89.90
+  if (valor.includes(",")) {
+    valor = valor.replace(/\./g, "").replace(",", ".");
+  } else {
+    valor = valor.replace(/[^0-9.]/g, "");
+  }
+
+  return parseFloat(valor) || 0;
 }
 
 // ===============================
@@ -123,17 +131,19 @@ function adicionarCarrinho(arg1, arg2, arg3, arg4) {
     item.nome === nome && item.tamanho === tamanho
   );
 
-  if (itemExistente) {
-    itemExistente.quantidade += 1;
-  } else {
-    carrinho.push({
-      nome: nome,
-      preco: precoFinal,
-      imagem: imagem,
-      tamanho: tamanho,
-      quantidade: 1
-    });
-  }
+ const qtd = Number(window.quantidadeDetalhe || 1);
+
+if (itemExistente) {
+  itemExistente.quantidade += qtd;
+} else {
+  carrinho.push({
+    nome: nome,
+    preco: precoFinal,
+    imagem: imagem,
+    tamanho: tamanho,
+    quantidade: qtd
+  });
+}
 
 salvarCarrinho();
 
@@ -150,12 +160,12 @@ renderCarrinhoMobileMS();
 }
 
 function adicionarProdutoDetalhe() {
+
+  console.log("Quantidade escolhida:", quantidadeDetalhe);
   const detalhe = document.getElementById("produtoDetalhe");
   if (!detalhe || !produtoDetalheAtual) return;
 
-  const tamanho = detalhe.querySelector(".detalhe-tamanhos button.ativo")?.innerText.trim();
-
-  if (!tamanho) {
+const tamanho = detalhe.querySelector(".tamanhos-detalhe button.ativo, .detalhe-tamanhos button.ativo")?.innerText.trim();  if (!tamanho) {
     alert("Escolha um tamanho antes de adicionar ao carrinho.");
     return;
   }
@@ -167,24 +177,26 @@ function adicionarProdutoDetalhe() {
   );
 
   if (itemExistente) {
-    itemExistente.quantidade += 1;
+    itemExistente.quantidade += quantidadeDetalhe;
   } else {
     carrinho.push({
       nome: produtoDetalheAtual.nome,
       preco: produtoDetalheAtual.preco,
       imagem: produtoDetalheAtual.img,
       tamanho: tamanho,
-      quantidade: 1
+      quantidade: quantidadeDetalhe
     });
   }
 
   salvarCarrinho();
-  atualizarTudo();
-  animarProdutoParaCarrinho(
-document.querySelector(".btn-carrinho")
+atualizarTudo();
+
+animarProdutoParaCarrinho(
+  document.querySelector(".btn-carrinho")
 );
-  mostrarToastMS();
-  fecharProdutoDetalhe();
+
+avisoCarrinhoPremium();
+
 }
 
 // ===============================
@@ -894,11 +906,19 @@ let produtoDetalheAtual = null;
 function abrirProdutoDetalheCard(card) {
   if (!card) return;
 
+  if (card.classList.contains("produto-em-breve")) {
+    return;
+  }
+
+  const nome = card.dataset.nome;
+  const preco = card.dataset.preco;
+  const img = card.dataset.img;
   produtoDetalheAtual = {
-    nome: card.dataset.nome || card.querySelector("h3")?.innerText || "",
-    preco: pegarPrecoNumero(card.dataset.preco || card.querySelector(".preco")?.innerText || 0),
-    img: card.dataset.img || card.querySelector(".foto-normal")?.getAttribute("src") || ""
-  };
+  nome: nome,
+  preco: pegarPrecoNumero(preco) || 100,
+  precoAntigo: pegarPrecoNumero(card.dataset.precoantigo) || 199,
+  img: img
+};
 
   fotosDetalhe = (card.dataset.fotos || produtoDetalheAtual.img)
     .split(",")
@@ -913,7 +933,19 @@ function abrirProdutoDetalheCard(card) {
   const detalhe = document.getElementById("produtoDetalhe");
 
   if (detalheImg) detalheImg.src = fotosDetalhe[fotoAtualDetalhe] || produtoDetalheAtual.img;
-  if (detalheNome) detalheNome.innerText = produtoDetalheAtual.nome;
+  
+  
+
+const desc = document.getElementById("descricaoProduto");
+const det = document.getElementById("detalhesProduto");
+const comp = document.getElementById("composicaoProduto");
+const cuid = document.getElementById("cuidadosProduto");
+
+if(desc) desc.innerText = card.dataset.descricao || "";
+if(det) det.innerText = card.dataset.detalhes || "";
+if(comp) comp.innerText = card.dataset.composicao || "";
+if(cuid) cuid.innerText = card.dataset.cuidados || "";
+card.dataset.cuidados || "";
   if (detalhePreco) detalhePreco.innerText = dinheiro(produtoDetalheAtual.preco);
   const miniaturas = document.getElementById("miniaturasDetalhe");
 
@@ -1229,11 +1261,11 @@ function abrirFavoritos(){
 
   if(!favoritos) return;
 
-  favoritos.classList.toggle("ativo");
+  favoritos.classList.toggle("favoritos-ativo");
 }
 
 function fecharFavoritos(){
-  document.getElementById("painelFavoritos")?.classList.remove("ativo");
+  document.getElementById("painelFavoritos")?.classList.remove("favoritos-ativo");
   document.getElementById("fundoFavoritos")?.classList.remove("ativo");
 }
 
@@ -1255,25 +1287,28 @@ document.addEventListener("DOMContentLoaded", () => {
   atualizarFavoritos();
   marcarFavoritosNosCards();
 });
+function avaliar(event, estrela, nota){
 
-function avaliar(event, elemento, nota){
+  event.stopPropagation();
 
-event.stopPropagation();
+  const box = estrela.closest(".avaliacao-produto");
 
-const estrelas =
-elemento.parentElement.querySelectorAll("span");
+  if(!box) return;
 
-estrelas.forEach((estrela, index)=>{
+  const estrelas = box.querySelectorAll("span");
 
-if(index < nota){
-estrela.classList.add("ativa");
-}else{
-estrela.classList.remove("ativa");
+  estrelas.forEach((s, index) => {
+
+    if(index < nota){
+      s.classList.add("ativa");
+    }else{
+      s.classList.remove("ativa");
+    }
+
+  });
+
 }
 
-});
-
-}
 function animarProdutoParaCarrinho(botao){
   const card = botao.closest(".card-produto");
   const img = card?.querySelector(".produto-img img");
@@ -1314,46 +1349,8 @@ function animarProdutoParaCarrinho(botao){
 
   }, 1650);
 }
-function comprarAgoraDetalhe() {
-  const detalhe = document.getElementById("produtoDetalhe");
-
-  if (!detalhe || !produtoDetalheAtual) {
-    alert("Produto não encontrado.");
-    return;
-  }
-
-  const tamanho = detalhe.querySelector(".detalhe-tamanhos button.ativo")?.innerText.trim();
-
-  if (!tamanho) {
-    alert("Escolha um tamanho antes de comprar.");
-    return;
-  }
-
-  carregarCarrinho();
-
-  carrinho.push({
-    nome: produtoDetalheAtual.nome,
-    preco: produtoDetalheAtual.preco,
-    imagem: produtoDetalheAtual.img,
-    tamanho: tamanho,
-    quantidade: 1
-  });
-
-  salvarCarrinho();
-
-mostrarToastMS();
-
-atualizarTudo();
-
-  fecharProdutoDetalhe();
-
-  if (window.innerWidth <= 768) {
-    abrirCarrinhoMobileMS();
-    mostrarEtapaMS("cmmsEtapaFrete");
-  } else {
-    abrirCarrinho();
-    irEntregaPC();
-  }
+function comprarAgoraDetalhe(){
+  abrirCarrinhoMS();
 }
 function mostrarEtapaMS(id) {
   document.querySelectorAll(".cmms-etapa").forEach(e => e.classList.remove("ativa"));
@@ -1909,22 +1906,29 @@ function abrirCarrinhoResponsivoMS() {
 
   abrirCarrinho();
 }
-function avaliar(event, estrela, nota) {
-  event.stopPropagation();
+function avaliar(a, b, c){
+
+  let estrela;
+  let nota;
+
+  if(c !== undefined){
+    // formato: avaliar(event, this, 1)
+    if(a && a.stopPropagation) a.stopPropagation();
+    estrela = b;
+    nota = c;
+  }else{
+    // formato antigo: avaliar(this, 1)
+    estrela = a;
+    nota = b;
+  }
 
   const box = estrela.closest(".avaliacao-produto");
-  if (!box) return;
-
-  box.dataset.nota = nota;
+  if(!box) return;
 
   const estrelas = box.querySelectorAll("span");
 
   estrelas.forEach((s, index) => {
-    if (index < nota) {
-      s.classList.add("ativa");
-    } else {
-      s.classList.remove("ativa");
-    }
+    s.classList.toggle("ativa", index < nota);
   });
 }
 function selecionarTamanho(botao, tamanho){
@@ -1942,47 +1946,6 @@ function selecionarTamanho(botao, tamanho){
   }
 }
 
-function adicionarCarrinho(botao){
-  const card = botao.closest(".card-produto");
-
-  if(!card){
-    alert("Produto não encontrado.");
-    return;
-  }
-
-  const tamanho = card.dataset.tamanho;
-
-  if(!tamanho){
-    alert("Escolha um tamanho antes de adicionar.");
-    return;
-  }
-
-  const carrinho = JSON.parse(localStorage.getItem("carrinho")) || [];
-
-  carrinho.push({
-    nome: botao.dataset.nome || card.dataset.nome,
-    preco: Number(botao.dataset.preco || card.dataset.preco),
-    imagem: botao.dataset.img || card.dataset.img,
-    tamanho: tamanho,
-    quantidade: 1
-  });
-
-  localStorage.setItem("carrinho", JSON.stringify(carrinho));
-
-  localStorage.setItem("carrinho", JSON.stringify(carrinho));
-
-if(typeof atualizarCarrinho === "function"){
-  atualizarCarrinho();
-}
-
-if(typeof atualizarContador === "function"){
-  atualizarContador();
-}
-
-animarProdutoAoCarrinho(botao);
-
-mostrarToastMS();
-}
 function mostrarToastMS(texto = "🛒 Produto adicionado ao carrinho") {
 
   const toast = document.getElementById("toastMS");
@@ -2408,33 +2371,262 @@ function aplicarCupomMS(){
   atualizarResumoPagamentoMS();
 }
 function comprarFavoritosMS(){
-  const itensFavoritos = favoritos.map(item => ({
-  ...item,
-  quantidade: item.quantidade || 1
-}));
 
-window.carrinho = itensFavoritos;
-window.carrinhoMobile = itensFavoritos;
+  const favoritos = JSON.parse(localStorage.getItem("favoritosMS")) || [];
 
-localStorage.setItem("carrinho", JSON.stringify(itensFavoritos));
-localStorage.setItem("carrinhoMS", JSON.stringify(itensFavoritos));
+  let carrinho = JSON.parse(localStorage.getItem("carrinho")) || [];
 
-if (window.innerWidth <= 768) {
+  favoritos.forEach(produto => {
 
-  abrirCarrinhoMobileMS();
-  carregarCarrinhoMobileMS();
-  mostrarEtapaMS("cmmsEtapaProdutos");
+    const itemExistente = carrinho.find(item => item.nome === produto.nome);
 
-} else {
+    if(itemExistente){
+      itemExistente.quantidade += 1;
+    } else {
+      carrinho.push({
+        nome: produto.nome,
+        preco: pegarPrecoNumero(produto.preco) || 0,
+        imagem: produto.imagem || produto.img || "",
+        tamanho: produto.tamanho || "P",
+        quantidade: 1
+      });
+    }
 
-  fecharFavoritos();
-  abrirCarrinho();
+  });
 
-  if (typeof montarResumoPagamentoPC === "function") {
-    montarResumoPagamentoPC();
+  localStorage.setItem("carrinho", JSON.stringify(carrinho));
+
+  if(typeof carregarCarrinho === "function") carregarCarrinho();
+  if(typeof atualizarCarrinho === "function") atualizarCarrinho();
+  if(typeof atualizarBadgeCarrinho === "function") atualizarBadgeCarrinho();
+
+  document.getElementById("painelFavoritos")?.classList.remove("ativo");
+  document.getElementById("painelFavoritos")?.classList.remove("favoritos-ativo");
+
+  if(window.innerWidth <= 768){
+    abrirCarrinhoMobileMS();
+  } else {
+    abrirCarrinho();
+  }
+}
+
+
+function iniciarHeroSliderMS(){
+  return;
+}
+
+document.addEventListener("DOMContentLoaded", iniciarHeroSliderMS);
+
+window.avaliar = function(event, elemento, nota){
+
+  if(event && event.stopPropagation){
+    event.stopPropagation();
+  }
+
+  const estrela = elemento;
+  const box = estrela.closest(".avaliacao-produto");
+
+  if(!box) return;
+
+  const estrelas = box.querySelectorAll("span");
+
+  estrelas.forEach((s, index) => {
+    s.classList.toggle("ativa", index < nota);
+  });
+};
+// ===== BUSCA MS =====
+
+function abrirBuscaMS(){
+  document.getElementById("buscaMS").classList.add("ativo");
+  document.getElementById("campoBuscaMS").focus();
+}
+
+function fecharBuscaMS(){
+  document.getElementById("buscaMS").classList.remove("ativo");
+}
+
+function filtrarProdutosMS(){
+
+  const termo = document
+    .getElementById("campoBuscaMS")
+    .value
+    .toLowerCase();
+
+  const resultado = document.getElementById("resultadoBuscaMS");
+
+  resultado.innerHTML = "";
+
+  if(termo.length < 1){
+    return;
+  }
+
+  const cards = document.querySelectorAll(".card-produto");
+
+  cards.forEach(card => {
+
+    const nome =
+      card.querySelector("h3, .nome-produto, .produto-nome")
+      ?.innerText || "";
+
+    const preco =
+      card.querySelector(".preco, .produto-preco")
+      ?.innerText || "";
+
+    const img =
+      card.querySelector("img")
+      ?.src || "";
+
+    if(nome.toLowerCase().includes(termo)){
+
+      const item = document.createElement("div");
+
+      item.className = "item-busca-ms";
+
+      item.innerHTML = `
+        <img src="${img}">
+
+        <div>
+          <strong>${nome}</strong>
+          <span>${preco}</span>
+        </div>
+      `;
+
+      item.onclick = function(){
+
+        fecharBuscaMS();
+
+        abrirProdutoDetalheCard(card);
+
+      };
+
+      resultado.appendChild(item);
+    }
+
+  });
+
+  if(resultado.innerHTML === ""){
+    resultado.innerHTML = "<p>Nenhum produto encontrado.</p>";
   }
 
 }
+// ===== CORREÇÃO TAMANHO DETALHE =====
+
+window.tamanhoSelecionadoDetalhe = "";
+
+function selecionarTamanho(botao, tamanho){
+  window.tamanhoSelecionadoDetalhe = tamanho;
+  window.tamanhoSelecionado = tamanho;
+
+  const grupo = botao.closest(".tamanhos-detalhe, .detalhe-tamanhos, .tamanhos");
+
+  if(grupo){
+    grupo.querySelectorAll("button").forEach(btn => {
+      btn.classList.remove("ativo");
+    });
+  }
+
+  botao.classList.add("ativo");
+}
+// ===== CORREÇÃO DEFINITIVA TAMANHO CARD + DETALHE =====
+
+function selecionarTamanho(botao, tamanho){
+  const grupo = botao.closest(".tamanhos, .tamanhos-detalhe, .detalhe-tamanhos");
+
+  if(grupo){
+    grupo.querySelectorAll("button").forEach(btn => {
+      btn.classList.remove("ativo");
+    });
+  }
+
+  botao.classList.add("ativo");
+
+  const card = botao.closest(".card-produto");
+  if(card){
+    card.dataset.tamanho = tamanho;
+  }
+
+  const detalhe = botao.closest("#produtoDetalhe");
+  if(detalhe){
+    detalhe.dataset.tamanho = tamanho;
+  }
+
+  window.tamanhoSelecionado = tamanho;
+  window.tamanhoSelecionadoDetalhe = tamanho;
+}
+function mostrarToastMS(texto = "Produto adicionado ao carrinho!"){
+  let toast = document.getElementById("toastMS");
+
+  if(!toast){
+    toast = document.createElement("div");
+    toast.id = "toastMS";
+    toast.className = "toast-ms";
+    document.body.appendChild(toast);
+  }
+
+  toast.innerHTML = `
+    <div class="toast-ms-icone">✓</div>
+    <div>
+      <strong>MS MATIAS STYLE</strong>
+      <p>${texto}</p>
+    </div>
+  `;
+
+  toast.classList.add("ativo");
+
+  clearTimeout(window.toastMSTimer);
+  window.toastMSTimer = setTimeout(() => {
+    toast.classList.remove("ativo");
+  }, 2600);
+}
+function avisoCarrinhoPremium(){
+
+  let aviso = document.getElementById("avisoCarrinhoPremium");
+
+  if(!aviso){
+
+    aviso = document.createElement("div");
+
+    aviso.id = "avisoCarrinhoPremium";
+
+    aviso.innerHTML = `
+      <div class="premium-check">✓</div>
+
+      <div class="premium-info">
+        <strong>Produto adicionado</strong>
+        <span>Seu item foi enviado ao carrinho.</span>
+      </div>
+    `;
+
+    document.body.appendChild(aviso);
+  }
+
+  aviso.classList.add("ativo");
+
+  clearTimeout(window.toastPremiumTimer);
+
+  window.toastPremiumTimer = setTimeout(() => {
+    aviso.classList.remove("ativo");
+  }, 2200);
+}
+function abrirCarrinhoMS(){
+  const carrinho =
+    document.querySelector(".carrinho") ||
+    document.getElementById("carrinho") ||
+    document.querySelector(".carrinho-responsivo");
+
+  const fundo =
+    document.querySelector(".fundo-carrinho") ||
+    document.getElementById("fundoCarrinho");
+
+  if(carrinho){
+    carrinho.classList.add("ativo");
+  }
+
+  if(fundo){
+    fundo.classList.add("ativo");
+  }
+
+  document.body.style.overflow = "hidden";
 }
 
 window.abrirMenuMobile = abrirMenuMobile;
@@ -2504,3 +2696,1544 @@ window.irParaCheckoutMobileNovo = irParaCheckoutMobileNovo;
 window.mostrarLoadingCheckout = mostrarLoadingCheckout;
 
 window.esconderLoadingCheckout = esconderLoadingCheckout;
+
+
+/* =========================================================
+   CORREÇÃO FINAL MS - CARRINHO, COMPRAR AGORA E AVISO PREMIUM
+   Colei no final para mandar nas funções antigas sem quebrar o resto.
+   ========================================================= */
+
+function msCarregarCarrinhoFinal(){
+  try{
+    return JSON.parse(localStorage.getItem("carrinho")) || [];
+  }catch(e){
+    return [];
+  }
+}
+
+function msSalvarCarrinhoFinal(lista){
+  localStorage.setItem("carrinho", JSON.stringify(lista || []));
+  window.carrinho = lista || [];
+  carrinho = lista || [];
+}
+
+function msDinheiroFinal(valor){
+  return Number(valor || 0).toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL"
+  });
+}
+
+function msAtualizarTudoFinal(){
+  if(typeof atualizarBadgeCarrinho === "function") atualizarBadgeCarrinho();
+  if(typeof atualizarContador === "function") atualizarContador();
+  if(typeof atualizarCarrinho === "function") atualizarCarrinho();
+  if(typeof renderCarrinhoMobileMS === "function") renderCarrinhoMobileMS();
+}
+
+function avisoCarrinhoPremium(texto = "Seu item foi enviado ao carrinho."){
+  let aviso = document.getElementById("avisoCarrinhoPremium");
+
+  if(!aviso){
+    aviso = document.createElement("div");
+    aviso.id = "avisoCarrinhoPremium";
+    document.body.appendChild(aviso);
+  }
+
+  aviso.innerHTML = `
+    <div class="premium-check">✓</div>
+    <div class="premium-info">
+      <strong>Produto adicionado</strong>
+      <span>${texto}</span>
+    </div>
+  `;
+
+  aviso.classList.add("ativo");
+
+  clearTimeout(window.avisoCarrinhoPremiumTimer);
+  window.avisoCarrinhoPremiumTimer = setTimeout(() => {
+    aviso.classList.remove("ativo");
+  }, 2200);
+}
+
+function selecionarTamanho(botao, tamanho){
+  const grupo = botao.closest(".tamanhos, .tamanhos-detalhe, .detalhe-tamanhos");
+
+  if(grupo){
+    grupo.querySelectorAll("button").forEach(btn => btn.classList.remove("ativo"));
+  }
+
+  botao.classList.add("ativo");
+
+  const card = botao.closest(".card-produto");
+  if(card) card.dataset.tamanho = tamanho;
+
+  const detalhe = botao.closest("#produtoDetalhe");
+  if(detalhe) detalhe.dataset.tamanho = tamanho;
+}
+
+function msPegarProdutoDoCard(botao){
+  const card = botao?.closest?.(".card-produto");
+
+  if(!card) return null;
+
+  const tamanho =
+    card.dataset.tamanho ||
+    card.querySelector(".tamanhos button.ativo, .tamanho-btn.ativo")?.innerText.trim();
+
+  if(!tamanho){
+    alert("Escolha um tamanho antes de adicionar ao carrinho.");
+    return null;
+  }
+
+  const nome =
+    botao.dataset.nome ||
+    card.dataset.nome ||
+    card.querySelector("h3")?.innerText.trim() ||
+    "Produto MS";
+
+  const precoBruto =
+    botao.dataset.preco ||
+    card.dataset.preco ||
+    card.querySelector(".preco")?.innerText ||
+    "100";
+
+  const preco = typeof pegarPrecoNumero === "function"
+    ? pegarPrecoNumero(precoBruto)
+    : Number(String(precoBruto).replace(/\D/g, "")) || 100;
+
+  const imagem =
+    botao.dataset.img ||
+    card.dataset.img ||
+    card.querySelector(".img-principal")?.getAttribute("src") ||
+    card.querySelector(".foto-normal")?.getAttribute("src") ||
+    card.querySelector(".produto-img img")?.getAttribute("src") ||
+    card.querySelector("img")?.getAttribute("src") ||
+    "";
+
+  return { nome, preco, imagem, tamanho, quantidade: 1 };
+}
+
+function msPegarProdutoDoDetalhe(){
+  const detalhe = document.getElementById("produtoDetalhe");
+
+  if(!detalhe || !produtoDetalheAtual){
+    alert("Produto não encontrado.");
+    return null;
+  }
+
+  const tamanho =
+    detalhe.dataset.tamanho ||
+    detalhe.querySelector(".tamanhos-detalhe button.ativo, .detalhe-tamanhos button.ativo")?.innerText.trim();
+
+  if(!tamanho){
+    alert("Escolha um tamanho antes de comprar.");
+    return null;
+  }
+
+  return {
+    nome: produtoDetalheAtual.nome,
+    preco: pegarPrecoNumero(produtoDetalheAtual.preco || 100),
+    imagem: produtoDetalheAtual.img,
+    tamanho: tamanho,
+    quantidade: Number(quantidadeDetalhe || 1)
+  };
+}
+
+function msAdicionarItemFinal(item){
+  const lista = msCarregarCarrinhoFinal();
+
+  const existente = lista.find(produto =>
+    produto.nome === item.nome && produto.tamanho === item.tamanho
+  );
+
+  const qtd = Number(item.quantidade || quantidadeDetalhe || 1);
+
+  if(existente){
+    existente.quantidade = Number(existente.quantidade || 0) + qtd;
+  }else{
+    lista.push({ ...item, quantidade: qtd });
+  }
+
+  msSalvarCarrinhoFinal(lista);
+  msAtualizarTudoFinal();
+
+  return lista;
+}
+
+function adicionarCarrinho(botao){
+  const item = msPegarProdutoDoCard(botao);
+  if(!item) return;
+
+  msAdicionarItemFinal(item);
+
+  if(typeof animarProdutoAoCarrinho === "function"){
+    animarProdutoAoCarrinho(botao);
+  }else if(typeof animarProdutoParaCarrinho === "function"){
+    animarProdutoParaCarrinho(botao);
+  }
+
+  avisoCarrinhoPremium("Seu item foi enviado ao carrinho.");
+}
+
+function adicionarProdutoDetalhe(){
+  console.log("ADICIONAR DETALHE", quantidadeDetalhe);
+  const item = msPegarProdutoDoDetalhe();
+  if(!item) return;
+
+  msAdicionarItemFinal(item);
+  avisoCarrinhoPremium("Seu item foi enviado ao carrinho.");
+}
+
+function abrirCarrinhoMS(){
+  msAtualizarTudoFinal();
+
+  const carrinhoNovo = document.getElementById("carrinhoMobileMS");
+  const carrinhoPC = document.getElementById("carrinho");
+  const fundo = document.getElementById("fundoCarrinho");
+
+  if(carrinhoNovo){
+    carrinhoNovo.classList.add("ativo");
+    carrinhoNovo.style.zIndex = "10000000";
+
+    if(typeof abrirCarrinhoMobileMSRender === "function"){
+      abrirCarrinhoMobileMSRender();
+    }
+
+    if(typeof mostrarEtapaMS === "function"){
+      mostrarEtapaMS("cmmsEtapaProdutos");
+    }
+
+    return;
+  }
+
+  if(carrinhoPC){
+    carrinhoPC.classList.add("ativo");
+    carrinhoPC.style.zIndex = "10000000";
+    if(fundo){
+      fundo.classList.add("ativo");
+      fundo.style.zIndex = "9999999";
+    }
+    return;
+  }
+
+  alert("Carrinho não encontrado no HTML.");
+}
+
+function abrirCarrinhoResponsivoMS(){
+  abrirCarrinhoMS();
+}
+
+function abrirCarrinhoResponsivo(){
+  abrirCarrinhoMS();
+}
+
+function abrirCarrinho(){
+  abrirCarrinhoMS();
+}
+function comprarAgoraDetalhe(){
+
+    adicionarProdutoDetalhe();
+
+    abrirCarrinhoResponsivoMS();
+
+}
+
+function fecharCarrinhoMS(){
+  document.getElementById("carrinhoMobileMS")?.classList.remove("ativo");
+  document.getElementById("carrinho")?.classList.remove("ativo");
+  document.getElementById("fundoCarrinho")?.classList.remove("ativo");
+}
+/* ===== CORREÇÃO FINAL CARRINHO MS ===== */
+
+function abrirCarrinhoMS(){
+
+  carregarCarrinho();
+
+  const carrinhoMS = document.getElementById("carrinhoMobileMS");
+  const carrinhoPC = document.getElementById("carrinho");
+  const fundo = document.getElementById("fundoCarrinho");
+
+  if(window.innerWidth <= 768){
+
+    if(carrinhoMS){
+      carrinhoMS.classList.add("ativo");
+
+      if(typeof abrirCarrinhoMobileMSRender === "function"){
+        abrirCarrinhoMobileMSRender();
+      }
+
+      return;
+    }
+
+  }
+
+  if(carrinhoPC){
+    carrinhoPC.classList.add("ativo");
+    fundo?.classList.add("ativo");
+
+    if(typeof atualizarCarrinho === "function"){
+      atualizarCarrinho();
+    }
+
+    return;
+  }
+
+  alert("Carrinho não encontrado no HTML.");
+}
+
+function comprarAgoraDetalhe(){
+  
+  adicionarProdutoDetalhe();
+  abrirCarrinhoPCMS();
+  return false;
+}
+function abrirCarrinhoPCMS(){
+  const carrinhoMobile = document.getElementById("carrinhoMobileMS");
+  const carrinhoPC = document.getElementById("carrinho");
+  const fundo = document.getElementById("fundoCarrinho");
+
+  if(carrinhoMobile){
+    carrinhoMobile.classList.remove("ativo");
+    carrinhoMobile.style.display = "none";
+  }
+
+  if(!carrinhoPC){
+    alert("Carrinho PC não encontrado.");
+    return false;
+  }
+
+  carrinhoPC.style.display = "block";
+  carrinhoPC.classList.add("ativo");
+
+  if(fundo){
+    fundo.classList.add("ativo");
+  }
+
+  if(typeof atualizarCarrinho === "function"){
+    atualizarCarrinho();
+  }
+
+  return false;
+}
+
+window.comprarAgoraDetalhe = function(){
+  return abrirCarrinhoPCMS();
+};
+
+window.abrirCarrinhoResponsivoMS = function(){
+  if(window.innerWidth > 768){
+    return abrirCarrinhoPCMS();
+  }
+
+  document.getElementById("carrinhoMobileMS")?.classList.add("ativo");
+};
+function abrirCarrinhoPCMS(){
+  const carrinho = document.getElementById("carrinho");
+  const fundo = document.getElementById("fundoCarrinho");
+
+  if(!carrinho){
+    alert("Carrinho PC não encontrado.");
+    return false;
+  }
+
+  carrinho.classList.add("ativo");
+  carrinho.style.display = "block";
+  carrinho.style.right = "0";
+
+  if(fundo){
+    fundo.classList.add("ativo");
+    fundo.style.display = "block";
+  }
+
+  atualizarCarrinho();
+
+  return false;
+}
+/* ===== COMPRAR AGORA DEFINITIVO ===== */
+
+window.comprarAgoraDetalhe = function(){
+
+  const detalhe = document.getElementById("produtoDetalhe");
+
+  const tamanho = detalhe?.querySelector(
+    ".tamanhos-detalhe button.ativo, .detalhe-tamanhos button.ativo, .tamanho-btn.ativo"
+  )?.innerText.trim();
+
+  if(!tamanho){
+    alert("Escolha um tamanho antes de comprar.");
+    return false;
+  }
+
+  const produto = {
+    nome: document.getElementById("detalheNome")?.innerText || "Produto MS",
+    preco: 100,
+    imagem: document.getElementById("detalheImg")?.src || "",
+    tamanho: tamanho,
+    quantidade: 1
+  };
+
+  let carrinhoAtual = JSON.parse(localStorage.getItem("carrinho")) || [];
+
+  carrinhoAtual.push(produto);
+
+  localStorage.setItem("carrinho", JSON.stringify(carrinhoAtual));
+
+  window.carrinho = carrinhoAtual;
+  carrinho = carrinhoAtual;
+
+  if(typeof atualizarCarrinho === "function") atualizarCarrinho();
+  if(typeof atualizarContador === "function") atualizarContador();
+  if(typeof atualizarBadgeCarrinho === "function") atualizarBadgeCarrinho();
+
+  const carrinhoPC = document.getElementById("carrinho");
+  const fundo = document.getElementById("fundoCarrinho");
+
+  if(carrinhoPC){
+    carrinhoPC.classList.add("ativo");
+    carrinhoPC.style.display = "block";
+    carrinhoPC.style.right = "0";
+  }
+
+  if(fundo){
+    fundo.classList.add("ativo");
+    fundo.style.display = "block";
+  }
+
+  return false;
+};
+/* ===== COMPRAR AGORA FINAL MS ===== */
+
+document.addEventListener("click", function(e){
+  const botao = e.target.closest(".btn-comprar-agora-DESATIVADO-MS");
+
+  if(!botao) return;
+
+  e.preventDefault();
+  e.stopPropagation();
+
+  const detalhe = document.getElementById("produtoDetalhe");
+
+  const tamanho = detalhe?.querySelector(
+    ".tamanhos-detalhe button.ativo, .detalhe-tamanhos button.ativo, .tamanho-btn.ativo"
+  )?.innerText.trim();
+
+  if(!tamanho){
+    alert("Escolha um tamanho antes de comprar.");
+    return;
+  }
+
+  const produto = {
+    nome: document.getElementById("detalheNome")?.innerText || "Produto MS",
+    preco: 100,
+    imagem: document.getElementById("detalheImg")?.src || "",
+    tamanho: tamanho,
+    quantidade: 1
+  };
+
+  let carrinhoAtual = JSON.parse(localStorage.getItem("carrinho")) || [];
+
+  carrinhoAtual.push(produto);
+
+  localStorage.setItem("carrinho", JSON.stringify(carrinhoAtual));
+
+  carrinho = carrinhoAtual;
+
+  if(typeof atualizarCarrinho === "function"){
+    atualizarCarrinho();
+  }
+
+  if(typeof atualizarContador === "function"){
+    atualizarContador();
+  }
+
+  if(typeof atualizarBadgeCarrinho === "function"){
+    atualizarBadgeCarrinho();
+  }
+
+  const carrinhoPC = document.getElementById("carrinho");
+  const fundo = document.getElementById("fundoCarrinho");
+
+  if(carrinhoPC){
+    carrinhoPC.classList.add("ativo");
+    carrinhoPC.style.display = "block";
+    carrinhoPC.style.right = "0";
+  }
+
+  if(fundo){
+    fundo.classList.add("ativo");
+    fundo.style.display = "block";
+    fundo.classList.add("ativo");
+  }
+
+}, true);
+function abrirRecomendadoMS(nome, preco, img, fotos, cor = "unica"){
+  produtoDetalheAtual = {
+    nome: nome,
+    preco: pegarPrecoNumero(preco) || 100,
+    precoAntigo: null,
+    img: img,
+    cor: cor
+  };
+
+  fotosDetalhe = String(fotos || img)
+    .split(",")
+    .map(foto => foto.trim())
+    .filter(Boolean);
+
+  fotoAtualDetalhe = 0;
+
+  const detalheImg = document.getElementById("detalheImg");
+  const detalheNome = document.getElementById("detalheNome");
+  const detalhePreco = document.getElementById("detalhePreco");
+  const breadcrumbNome = document.getElementById("breadcrumbNome");
+  const detalhe = document.getElementById("produtoDetalhe");
+  const miniaturas = document.getElementById("miniaturasDetalhe");
+  const precoAntigo = document.querySelector("#produtoDetalhe .preco-antigo");
+
+  if(detalheImg) detalheImg.src = fotosDetalhe[0] || img;
+  if(detalheNome) detalheNome.innerText = nome;
+  if(detalhePreco) detalhePreco.innerText = dinheiro(pegarPrecoNumero(preco));
+  if(breadcrumbNome) breadcrumbNome.innerText = nome;
+  if(precoAntigo) precoAntigo.innerText = "";
+
+  montarCorUnicaRecomendado(cor);
+
+  if(miniaturas){
+    miniaturas.innerHTML = "";
+
+    fotosDetalhe.forEach((foto, index) => {
+      const thumb = document.createElement("img");
+      thumb.src = foto;
+
+      if(index === 0) thumb.classList.add("ativa");
+
+      thumb.onclick = function(event){
+        event.stopPropagation();
+
+        fotoAtualDetalhe = index;
+        if(detalheImg) detalheImg.src = foto;
+
+        miniaturas.querySelectorAll("img").forEach(img => img.classList.remove("ativa"));
+        thumb.classList.add("ativa");
+      };
+
+      miniaturas.appendChild(thumb);
+    });
+  }
+
+  if(detalhe){
+    detalhe.dataset.tamanho = "";
+    detalhe.dataset.cor = cor;
+
+    detalhe.querySelectorAll(".tamanho-btn").forEach(btn => btn.classList.remove("ativo"));
+
+    detalhe.classList.add("ativo");
+    detalhe.style.display = "block";
+    detalhe.scrollTo({ top: 0, behavior: "smooth" });
+  }
+}
+
+function montarCorUnicaRecomendado(cor){
+  const box = document.getElementById("opcoesCoresDetalhe");
+  const texto = document.getElementById("corSelecionadaDetalhe");
+
+  const cores = {
+    preto: { nome: "Preto", hex: "#000000" },
+    branco: { nome: "Branco", hex: "#ffffff" },
+    bege: { nome: "Bege", hex: "#d7bf98" },
+    rosa: { nome: "Rosa", hex: "#d87ba7" },
+    vinho: { nome: "Vinho", hex: "#7b1e1e" },
+    cinza: { nome: "Cinza", hex: "#777777" },
+    azul: { nome: "Azul", hex: "#071b3a" },
+    unica: { nome: "Única", hex: "#d7bf98" }
+  };
+
+  const corInfo = cores[cor] || cores.unica;
+
+  if(box){
+    box.innerHTML = `
+      <button class="cor ativa" type="button" style="background:${corInfo.hex}"></button>
+    `;
+  }
+
+  if(texto){
+    texto.innerText = "Cor selecionada: " + corInfo.nome;
+  }
+}
+
+/* ===== ABRIR PRODUTO PELO CARD - DEFINITIVO ===== */
+
+document.addEventListener("click", function(e){
+  const card = e.target.closest(".card-produto");
+
+  if(!card) return;
+
+  if(
+    e.target.closest("button") ||
+    e.target.closest("a") ||
+    e.target.closest(".tamanhos") ||
+    e.target.closest(".btn-favorito")
+  ){
+    return;
+  }
+
+  abrirProdutoDetalheCard(card);
+});
+
+function alterarQtdDetalhe(valor){
+
+    quantidadeDetalhe += valor;
+
+    if(quantidadeDetalhe < 1){
+        quantidadeDetalhe = 1;
+    }
+
+    const span = document.getElementById("qtdProdutoDetalhe");
+
+    if(span){
+        span.innerText = quantidadeDetalhe;
+    }
+}
+window.abrirCarrinhoResponsivoMS = function(){
+  if(window.innerWidth <= 768){
+    if(typeof abrirCarrinhoMobileMS === "function") return abrirCarrinhoMobileMS();
+    if(typeof abrirCarrinhoMS === "function") return abrirCarrinhoMS();
+    if(typeof abrirCarrinhoMobile === "function") return abrirCarrinhoMobile();
+    if(typeof abrirCarrinho === "function") return abrirCarrinho();
+  }
+  if(typeof abrirCarrinhoPCMS === "function") return abrirCarrinhoPCMS();
+  if(typeof abrirCarrinho === "function") return abrirCarrinho();
+};
+
+/* =========================================================
+   FIX DEFINITIVO MS - QUANTIDADE DO COMPRAR AGORA
+   Mantém a quantidade escolhida no detalhe e impede funções antigas de forçar 1.
+   ========================================================= */
+(function(){
+  function msNumeroPreco(valor){
+    if(typeof valor === "number") return valor;
+    return Number(String(valor || "100")
+      .replace("R$", "")
+      .replace(/\./g, "")
+      .replace(",", ".")
+      .replace(/[^0-9.]/g, "")) || 100;
+  }
+
+  function msQtdDetalheFinal(){
+    const tela = document.getElementById("qtdProdutoDetalhe")?.innerText;
+    const qtd = Number(tela || window.quantidadeDetalhe || quantidadeDetalhe || 1);
+    return qtd > 0 ? qtd : 1;
+  }
+
+  window.alterarQtdDetalhe = function(valor){
+    window.quantidadeDetalhe = Number(window.quantidadeDetalhe || quantidadeDetalhe || 1) + Number(valor || 0);
+    if(window.quantidadeDetalhe < 1) window.quantidadeDetalhe = 1;
+    quantidadeDetalhe = window.quantidadeDetalhe;
+
+    const span = document.getElementById("qtdProdutoDetalhe");
+    if(span) span.innerText = window.quantidadeDetalhe;
+  };
+
+  function msItemDetalheFinal(){
+    const detalhe = document.getElementById("produtoDetalhe");
+    const tamanho = detalhe?.querySelector(".tamanhos-detalhe button.ativo, .detalhe-tamanhos button.ativo, .tamanho-btn.ativo")?.innerText.trim();
+
+    if(!tamanho){
+      alert("Escolha um tamanho antes de comprar.");
+      return null;
+    }
+
+    const nome = produtoDetalheAtual?.nome || document.getElementById("detalheNome")?.innerText || "Produto MS";
+    const preco = msNumeroPreco(produtoDetalheAtual?.preco || document.getElementById("detalhePreco")?.innerText || 100);
+    const imagem = produtoDetalheAtual?.img || document.getElementById("detalheImg")?.src || "";
+
+    return {
+      nome,
+      preco,
+      imagem,
+      tamanho,
+      quantidade: msQtdDetalheFinal()
+    };
+  }
+
+  function msSalvarItemExatoDoDetalhe(){
+    const item = msItemDetalheFinal();
+    if(!item) return false;
+
+    let lista = [];
+    try{
+      lista = JSON.parse(localStorage.getItem("carrinho")) || [];
+    }catch(e){
+      lista = [];
+    }
+
+    // Remove versões antigas do mesmo produto/tamanho que funções antigas adicionaram com qtd 1.
+    lista = lista.filter(produto => !(produto.nome === item.nome && produto.tamanho === item.tamanho));
+    lista.push(item);
+
+    localStorage.setItem("carrinho", JSON.stringify(lista));
+    window.carrinho = lista;
+    if(typeof carrinho !== "undefined") carrinho = lista;
+
+    if(typeof atualizarCarrinho === "function") atualizarCarrinho();
+    if(typeof atualizarContador === "function") atualizarContador();
+    if(typeof atualizarBadgeCarrinho === "function") atualizarBadgeCarrinho();
+    if(typeof renderCarrinhoMobileMS === "function") renderCarrinhoMobileMS();
+
+    return true;
+  }
+
+  window.comprarAgoraDetalhe = function(){
+    if(!msSalvarItemExatoDoDetalhe()) return false;
+
+    setTimeout(function(){
+      if(typeof abrirCarrinhoPCMS === "function") abrirCarrinhoPCMS();
+      else if(typeof abrirCarrinhoMS === "function") abrirCarrinhoMS();
+      else if(typeof abrirCarrinho === "function") abrirCarrinho();
+    }, 50);
+
+    return false;
+  };
+
+  document.addEventListener("click", function(e){
+    const botao = e.target.closest(".btn-comprar-agora-DESATIVADO-MS");
+    if(!botao) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Espera as funções antigas terminarem e corrige o carrinho para a quantidade certa.
+    setTimeout(function(){
+      msSalvarItemExatoDoDetalhe();
+
+      if(typeof abrirCarrinhoPCMS === "function") abrirCarrinhoPCMS();
+      else if(typeof abrirCarrinhoMS === "function") abrirCarrinhoMS();
+      else if(typeof abrirCarrinho === "function") abrirCarrinho();
+    }, 250);
+  }, true);
+})();
+function abrirZoom(){
+
+  const img = document.getElementById("detalheImg");
+  const modal = document.getElementById("zoomModal");
+  const zoomImg = document.getElementById("zoomImg");
+
+  if(!img || !modal || !zoomImg) return;
+
+  zoomImg.src = img.src;
+  modal.classList.add("ativo");
+}
+
+function fecharZoom(){
+  document.getElementById("zoomModal").classList.remove("ativo");
+}
+window.quantidadeDetalhe = 1;
+
+function aumentarQuantidadeDetalhe() {
+  window.quantidadeDetalhe++;
+
+  const el = document.getElementById("quantidadeDetalhe");
+  if (el) el.innerText = window.quantidadeDetalhe;
+}
+
+function diminuirQuantidadeDetalhe() {
+  if (window.quantidadeDetalhe > 1) {
+    window.quantidadeDetalhe--;
+
+    const el = document.getElementById("quantidadeDetalhe");
+    if (el) el.innerText = window.quantidadeDetalhe;
+  }
+}
+
+function comprarAgoraDetalhe() {
+  adicionarProdutoDetalhe();
+
+  setTimeout(() => {
+    abrirCarrinhoResponsivoMS();
+  }, 200);
+}
+window.quantidadeDetalhe = 1;
+
+function atualizarNumeroDetalheMS() {
+  const el1 = document.getElementById("qtdProdutoDetalhe");
+  const el2 = document.getElementById("quantidadeDetalhe");
+
+  if (el1) el1.innerText = window.quantidadeDetalhe;
+  if (el2) el2.innerText = window.quantidadeDetalhe;
+}
+
+function alterarQtdDetalhe(valor) {
+  window.quantidadeDetalhe = Number(window.quantidadeDetalhe || 1);
+
+  window.quantidadeDetalhe += Number(valor);
+
+  if (window.quantidadeDetalhe < 1) {
+    window.quantidadeDetalhe = 1;
+  }
+
+  atualizarNumeroDetalheMS();
+}
+
+function aumentarQuantidadeDetalhe() {
+  alterarQtdDetalhe(1);
+}
+
+function diminuirQuantidadeDetalhe() {
+  alterarQtdDetalhe(-1);
+}
+
+function adicionarProdutoDetalhe() {
+  const detalhe = document.getElementById("produtoDetalhe");
+
+  if (!produtoDetalheAtual) {
+    alert("Produto não encontrado.");
+    return;
+  }
+
+  const tamanho =
+    detalhe.querySelector(".tamanhos button.ativo")?.innerText ||
+    detalhe.querySelector(".tamanho-btn.ativo")?.innerText;
+
+  if (!tamanho) {
+    alertaMS("Escolha um tamanho antes de continuar.");
+    return;
+  }
+
+  carrinho = JSON.parse(localStorage.getItem("carrinho")) || [];
+
+  const itemExistente = carrinho.find(item =>
+    item.nome === produtoDetalheAtual.nome &&
+    item.tamanho === tamanho
+  );
+
+  if (itemExistente) {
+    itemExistente.quantidade += Number(window.quantidadeDetalhe || 1);
+  } else {
+    carrinho.push({
+      nome: produtoDetalheAtual.nome,
+      preco: pegarPrecoNumero(produtoDetalheAtual.preco),
+      imagem: produtoDetalheAtual.img,
+      tamanho: tamanho,
+      quantidade: Number(window.quantidadeDetalhe || 1)
+    });
+  }
+
+  localStorage.setItem("carrinho", JSON.stringify(carrinho));
+
+  atualizarBadgeCarrinho();
+  atualizarTudo();
+
+  if (typeof mostrarToastMS === "function") {
+    mostrarToastMS("✅ Produto adicionado<br><strong>Seu item foi enviado ao carrinho.</strong>");
+  } else if (typeof mostrarToastCarrinhoMS === "function") {
+    mostrarToastCarrinhoMS();
+  }
+}
+
+function comprarAgoraDetalhe() {
+  adicionarProdutoDetalhe();
+
+  setTimeout(() => {
+    abrirCarrinhoResponsivoMS();
+  }, 300);
+}
+
+function alertaMS(texto){
+
+  document.getElementById("msAlertaTexto").innerText = texto;
+
+  document.getElementById("msAlerta")
+    .classList.add("ativo");
+}
+
+
+function fecharAlertaMS(){
+
+  document.getElementById("msAlerta")
+    .classList.remove("ativo");
+
+}
+function mostrarToastCarrinhoMS(){
+
+  const toast =
+    document.getElementById("toastCarrinhoMS");
+
+  if(!toast) return;
+
+  toast.classList.add("ativo");
+
+  setTimeout(() => {
+    toast.classList.remove("ativo");
+  }, 2500);
+
+}
+function toggleAbaProduto(elemento){
+
+  elemento.classList.toggle("ativo");
+
+}
+function toggleInfo(botao){
+
+  const conteudo = botao.nextElementSibling;
+
+  if (!conteudo) return;
+
+  conteudo.classList.toggle("ativo");
+
+}
+window.fecharCarrinhoMobileMS = function() {
+  const modal = document.getElementById("carrinhoMobileMS");
+
+  if(modal){
+    modal.style.display = "none";
+    modal.classList.remove("ativo");
+  }
+}
+const coresHex = {
+    preto: "#000000",
+    vinho: "#7b1e1e",
+    bege: "#d7bf98",
+    cinza: "#777777",
+    rosa: "#d87ba7",
+    azul: "#071b3a",
+    branco: "#ffffff"
+};
+
+function montarCoresProduto(card) {
+    const box = document.getElementById("opcoesCoresDetalhe");
+    if (!box) return;
+
+    const cores = (card.dataset.cores || "").split(",").map(c => c.trim()).filter(Boolean);
+
+    box.innerHTML = "";
+
+    cores.forEach((cor, index) => {
+        const btn = document.createElement("button");
+        btn.className = index === 0 ? "cor ativa" : "cor";
+        btn.dataset.cor = cor;
+        btn.style.background = coresHex[cor] || "#ccc";
+
+        btn.onclick = function () {
+            trocarCorDetalhe(card, cor, btn);
+        };
+
+        box.appendChild(btn);
+    });
+}
+
+function trocarCorDetalhe(card, cor, botao) {
+    const chave = "fotos" + cor.charAt(0).toUpperCase() + cor.slice(1);
+    const fotos = card.dataset[chave];
+
+    if (!fotos) return;
+
+    fotosDetalhe = fotos.split(",").map(f => f.trim()).filter(Boolean);
+    fotoAtualDetalhe = 0;
+
+    const detalheImg = document.getElementById("detalheImg");
+    const miniaturas = document.getElementById("miniaturasDetalhe");
+
+    if (detalheImg) detalheImg.src = fotosDetalhe[0];
+
+    if (miniaturas) {
+        miniaturas.innerHTML = "";
+
+        fotosDetalhe.forEach((foto, index) => {
+            const img = document.createElement("img");
+            img.src = foto;
+
+            if (index === 0) img.classList.add("ativa");
+
+            img.onclick = function () {
+                fotoAtualDetalhe = index;
+                detalheImg.src = foto;
+
+                document
+                    .querySelectorAll(".miniaturas-detalhe img")
+                    .forEach(el => el.classList.remove("ativa"));
+
+                img.classList.add("ativa");
+            };
+
+            miniaturas.appendChild(img);
+        });
+    }
+
+    document.querySelectorAll(".cor").forEach(c => c.classList.remove("ativa"));
+    botao.classList.add("ativa");
+}
+
+/* =========================================================
+   MS MATIAS STYLE - CORES NO DETALHE + CARRINHO CORRETO
+   Corrige: escolher cor troca fotos e adiciona a cor escolhida no carrinho.
+   ========================================================= */
+(function(){
+  const MAPA_CORES_MS = {
+    preto:   { label:'Preto', hex:'#000000' },
+    preta:   { label:'Preta', hex:'#000000' },
+    branco:  { label:'Branco', hex:'#ffffff' },
+    branca:  { label:'Branca', hex:'#ffffff' },
+    bege:    { label:'Bege', hex:'#d7bf98' },
+    cinza:   { label:'Cinza', hex:'#777777' },
+    rosa:    { label:'Rosa', hex:'#d87ba7' },
+    vinho:   { label:'Vinho', hex:'#6e1d25' },
+    bordo:   { label:'Bordô', hex:'#5b1420' },
+    bordô:   { label:'Bordô', hex:'#5b1420' },
+    vermelho:{ label:'Vermelho', hex:'#8a1d1d' },
+    vermelha:{ label:'Vermelha', hex:'#8a1d1d' },
+    azul:    { label:'Azul', hex:'#071b3a' },
+    marinho: { label:'Azul Marinho', hex:'#071b3a' },
+    offwhite:{ label:'Off White', hex:'#eee8dc' },
+    marrom:  { label:'Marrom', hex:'#5a3825' }
+  };
+
+  const PALAVRAS_COR_MS = Object.keys(MAPA_CORES_MS).sort((a,b)=>b.length-a.length);
+
+  window.msProdutoCardAtual = window.msProdutoCardAtual || null;
+  window.msProdutoVariacaoAtual = window.msProdutoVariacaoAtual || null;
+  window.msCorSelecionada = window.msCorSelecionada || '';
+  window.msImagemSelecionada = window.msImagemSelecionada || '';
+
+  function normalizarMS(txt){
+    return String(txt || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
+  }
+
+  function numeroPrecoMS(valor){
+    if(typeof valor === 'number') return valor;
+
+    let preco = String(valor || '0')
+      .replace('R$', '')
+      .replace(/\s/g, '')
+      .trim();
+
+    // Aceita tanto data-preco="89.90" quanto texto "R$ 89,90".
+    if(preco.includes(',')){
+      preco = preco.replace(/\./g, '').replace(',', '.');
+    } else {
+      preco = preco.replace(/[^0-9.]/g, '');
+    }
+
+    return parseFloat(preco) || 0;
+  }
+
+  function dinheiroMS(valor){
+    const n = numeroPrecoMS(valor);
+    return n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+  }
+
+  function corDoNomeMS(nome){
+    const n = ' ' + normalizarMS(nome) + ' ';
+    for(const cor of PALAVRAS_COR_MS){
+      const c = normalizarMS(cor);
+      if(new RegExp('(^|\\s)' + c + '(\\s|$)').test(n)) return cor;
+    }
+    return '';
+  }
+
+  function baseDoNomeMS(nome){
+    let base = ' ' + normalizarMS(nome).replace(/\bms\b/g,'') + ' ';
+    PALAVRAS_COR_MS.forEach(cor => {
+      base = base.replace(new RegExp('\\b' + normalizarMS(cor) + '\\b','g'), ' ');
+    });
+    return base.replace(/\s+/g,' ').trim();
+  }
+
+  function fotosDoCardMS(card){
+    return String(card?.dataset?.fotos || card?.dataset?.img || '')
+      .split(',')
+      .map(f => f.trim())
+      .filter(Boolean);
+  }
+
+  function cardsDoMesmoProdutoMS(cardAtual){
+    const base = baseDoNomeMS(cardAtual?.dataset?.nome || '');
+    const cards = Array.from(document.querySelectorAll('.card-produto'));
+    const iguais = cards.filter(c => baseDoNomeMS(c.dataset.nome || '') === base);
+    return iguais.length ? iguais : (cardAtual ? [cardAtual] : []);
+  }
+
+  function variacoesDoCardMS(cardAtual){
+    const variacoes = [];
+    const usados = new Set();
+
+    // Primeiro tenta pegar produtos irmãos pelo nome: Moletom Preto, Moletom Vinho, Moletom Bege...
+    cardsDoMesmoProdutoMS(cardAtual).forEach(card => {
+      const cor = card.dataset.cor || corDoNomeMS(card.dataset.nome || '') || 'unica';
+      if(usados.has(cor)) return;
+      usados.add(cor);
+      variacoes.push({
+        cor,
+        label: MAPA_CORES_MS[cor]?.label || (cor === 'unica' ? 'Única' : cor),
+        hex: MAPA_CORES_MS[cor]?.hex || '#cccccc',
+        card,
+        fotos: fotosDoCardMS(card)
+      });
+    });
+
+    // Também aceita data-cores no próprio card, caso você use no futuro.
+    const coresExtras = String(cardAtual?.dataset?.cores || '')
+      .split(',')
+      .map(c => c.trim())
+      .filter(Boolean);
+
+    coresExtras.forEach(cor => {
+      if(usados.has(cor)) return;
+      const chave = 'fotos' + cor.charAt(0).toUpperCase() + cor.slice(1);
+      const fotos = String(cardAtual?.dataset?.[chave] || '').split(',').map(f=>f.trim()).filter(Boolean);
+      if(!fotos.length) return;
+      usados.add(cor);
+      variacoes.push({
+        cor,
+        label: MAPA_CORES_MS[cor]?.label || cor,
+        hex: MAPA_CORES_MS[cor]?.hex || '#cccccc',
+        card: cardAtual,
+        fotos
+      });
+    });
+
+    if(!variacoes.length && cardAtual){
+      const cor = corDoNomeMS(cardAtual.dataset.nome || '') || 'unica';
+      variacoes.push({
+        cor,
+        label: MAPA_CORES_MS[cor]?.label || 'Única',
+        hex: MAPA_CORES_MS[cor]?.hex || '#cccccc',
+        card: cardAtual,
+        fotos: fotosDoCardMS(cardAtual)
+      });
+    }
+
+    return variacoes;
+  }
+
+  function montarMiniaturasMS(fotos){
+    const detalheImg = document.getElementById('detalheImg');
+    const miniaturas = document.getElementById('miniaturasDetalhe');
+
+    if(detalheImg && fotos[0]) detalheImg.src = fotos[0];
+    window.msImagemSelecionada = fotos[0] || detalheImg?.src || '';
+
+    if(!miniaturas) return;
+    miniaturas.innerHTML = '';
+
+    fotos.forEach((foto, index) => {
+      const img = document.createElement('img');
+      img.src = foto;
+      if(index === 0) img.classList.add('ativa');
+
+      img.onclick = function(ev){
+        ev.preventDefault();
+        ev.stopPropagation();
+        if(detalheImg) detalheImg.src = foto;
+        window.msImagemSelecionada = foto;
+        miniaturas.querySelectorAll('img').forEach(el => el.classList.remove('ativa'));
+        img.classList.add('ativa');
+      };
+
+      miniaturas.appendChild(img);
+    });
+  }
+
+  function selecionarCorMS(variacao, botao){
+    if(!variacao) return;
+
+    window.msProdutoVariacaoAtual = variacao;
+    window.msProdutoCardAtual = variacao.card || window.msProdutoCardAtual;
+    window.msCorSelecionada = variacao.label || '';
+
+    const card = variacao.card;
+    const nome = card?.dataset?.nome || document.getElementById('detalheNome')?.innerText || 'Produto MS';
+    const preco = numeroPrecoMS(card?.dataset?.preco || document.getElementById('detalhePreco')?.innerText || 0);
+
+    const detalheNome = document.getElementById('detalheNome');
+    const detalhePreco = document.getElementById('detalhePreco');
+    const breadcrumb = document.getElementById('breadcrumbNome');
+
+    if(detalheNome) detalheNome.innerText = nome;
+    if(breadcrumb) breadcrumb.innerText = nome;
+    if(detalhePreco && preco) detalhePreco.innerText = dinheiroMS(preco);
+
+    if(typeof produtoDetalheAtual === 'object' && produtoDetalheAtual){
+      produtoDetalheAtual.nome = nome;
+      produtoDetalheAtual.preco = preco || produtoDetalheAtual.preco;
+      produtoDetalheAtual.img = variacao.fotos?.[0] || card?.dataset?.img || produtoDetalheAtual.img;
+      produtoDetalheAtual.cor = variacao.label || '';
+      produtoDetalheAtual.card = card || produtoDetalheAtual.card;
+    }
+
+    montarMiniaturasMS(variacao.fotos || []);
+
+    const box = document.getElementById('opcoesCoresDetalhe');
+    if(box) box.querySelectorAll('.cor-ms-btn, .cor').forEach(b => b.classList.remove('ativa'));
+    if(botao) botao.classList.add('ativa');
+
+    let texto = document.getElementById('corSelecionadaMS');
+    const bloco = document.getElementById('coresProdutoDetalhe');
+    if(bloco && !texto){
+      texto = document.createElement('div');
+      texto.id = 'corSelecionadaMS';
+      texto.className = 'cor-selecionada-ms';
+      bloco.appendChild(texto);
+    }
+    if(texto) texto.innerText = 'Cor selecionada: ' + (variacao.label || 'Única');
+  }
+
+  window.montarCoresProduto = function(cardAtual){
+    const box = document.getElementById('opcoesCoresDetalhe');
+    const bloco = document.getElementById('coresProdutoDetalhe');
+    if(!box || !bloco || !cardAtual) return;
+
+    const variacoes = variacoesDoCardMS(cardAtual);
+    box.innerHTML = '';
+
+    const corInicial = corDoNomeMS(cardAtual.dataset.nome || '') || cardAtual.dataset.cor || variacoes[0]?.cor;
+    let indiceInicial = variacoes.findIndex(v => v.cor === corInicial);
+    if(indiceInicial < 0) indiceInicial = 0;
+
+    variacoes.forEach((v, index) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'cor-ms-btn' + (index === indiceInicial ? ' ativa' : '');
+      btn.dataset.cor = v.cor;
+      btn.title = v.label;
+      btn.setAttribute('aria-label', 'Selecionar cor ' + v.label);
+      btn.style.background = v.hex;
+
+      if(v.hex === '#ffffff') btn.classList.add('cor-branca-ms');
+
+      btn.onclick = function(ev){
+        ev.preventDefault();
+        ev.stopPropagation();
+        selecionarCorMS(v, btn);
+      };
+
+      box.appendChild(btn);
+    });
+
+    bloco.style.display = variacoes.length ? 'block' : 'none';
+    selecionarCorMS(variacoes[indiceInicial] || variacoes[0], box.children[indiceInicial] || box.children[0]);
+  };
+
+  function tamanhoSelecionadoMS(){
+    const detalhe = document.getElementById('produtoDetalhe');
+    const ativo = detalhe?.querySelector('.tamanhos-detalhe button.ativo, .detalhe-tamanhos button.ativo, .tamanho-btn.ativo, .tamanhos-detalhe .selecionado');
+    return detalhe?.dataset?.tamanho || ativo?.innerText?.trim() || window.tamanhoSelecionadoDetalhe || '';
+  }
+
+  function quantidadeDetalheMS(){
+    const qtdTela = Number(document.getElementById('qtdProdutoDetalhe')?.innerText || document.getElementById('quantidadeDetalhe')?.innerText || window.quantidadeDetalhe || quantidadeDetalhe || 1);
+    return qtdTela > 0 ? qtdTela : 1;
+  }
+
+  function produtoEscolhidoMS(){
+    const variacao = window.msProdutoVariacaoAtual;
+    const card = variacao?.card || window.msProdutoCardAtual;
+    if(!card) return null;
+
+    const cor = variacao?.label || window.msCorSelecionada || MAPA_CORES_MS[corDoNomeMS(card.dataset.nome || '')]?.label || '';
+    const imagem = window.msImagemSelecionada || variacao?.fotos?.[0] || fotosDoCardMS(card)[0] || card.dataset.img || '';
+
+    return {
+      nome: card.dataset.nome || document.getElementById('detalheNome')?.innerText || 'Produto MS',
+      preco: numeroPrecoMS(card.dataset.preco || document.getElementById('detalhePreco')?.innerText || 100),
+      imagem: imagem,
+      img: imagem,
+      cor: cor,
+      tamanho: tamanhoSelecionadoMS(),
+      quantidade: quantidadeDetalheMS()
+    };
+  }
+
+  function salvarItemDetalheMSCarrinho(){
+    const item = produtoEscolhidoMS();
+    if(!item){
+      alert('Produto não encontrado.');
+      return false;
+    }
+
+    if(!item.tamanho){
+      if(typeof alertaMS === 'function') alertaMS('Escolha um tamanho antes de continuar.');
+      else alert('Escolha um tamanho antes de adicionar ao carrinho.');
+      return false;
+    }
+
+    let lista = [];
+    try{ lista = JSON.parse(localStorage.getItem('carrinho')) || []; }catch(e){ lista = []; }
+
+    const existente = lista.find(produto =>
+      produto.nome === item.nome &&
+      produto.tamanho === item.tamanho &&
+      (produto.cor || '') === (item.cor || '')
+    );
+
+    if(existente){
+      existente.quantidade = Number(existente.quantidade || 1) + Number(item.quantidade || 1);
+      existente.imagem = item.imagem;
+      existente.img = item.img;
+      existente.cor = item.cor;
+    }else{
+      lista.push(item);
+    }
+
+    localStorage.setItem('carrinho', JSON.stringify(lista));
+    window.carrinho = lista;
+    try{ carrinho = lista; }catch(e){}
+
+    if(typeof atualizarCarrinho === 'function') atualizarCarrinho();
+    if(typeof atualizarTudo === 'function') atualizarTudo();
+    if(typeof atualizarBadgeCarrinho === 'function') atualizarBadgeCarrinho();
+    if(typeof atualizarContador === 'function') atualizarContador();
+    if(typeof renderCarrinhoMobileMS === 'function') renderCarrinhoMobileMS();
+    setTimeout(mostrarCoresNoCarrinhoMS, 80);
+
+    const toast = document.getElementById('toastCarrinhoMS') || document.getElementById('msToast') || document.getElementById('toastMS');
+    if(toast){
+      if(toast.tagName !== 'DIV' || !toast.querySelector('img')) toast.innerHTML = '🛒 Produto adicionado ao carrinho';
+      toast.classList.add('ativo');
+      toast.style.display = 'block';
+      setTimeout(() => { toast.classList.remove('ativo'); toast.style.display = ''; }, 1800);
+    }
+
+    return true;
+  }
+
+  window.adicionarProdutoDetalhe = function(){
+    return salvarItemDetalheMSCarrinho();
+  };
+
+  window.comprarAgoraDetalhe = function(){
+    if(!salvarItemDetalheMSCarrinho()) return false;
+    setTimeout(function(){
+      if(window.innerWidth <= 768){
+        if(typeof window.abrirCarrinhoMobileMS === 'function') window.abrirCarrinhoMobileMS();
+        else if(typeof window.abrirCarrinhoMS === 'function') window.abrirCarrinhoMS();
+        else if(typeof window.abrirCarrinhoMobile === 'function') window.abrirCarrinhoMobile();
+        else if(typeof window.abrirCarrinho === 'function') window.abrirCarrinho();
+        else window.location.href = 'carrinho.html';
+      }else{
+        if(typeof window.abrirCarrinhoPCMS === 'function') window.abrirCarrinhoPCMS();
+        else if(typeof window.abrirCarrinho === 'function') window.abrirCarrinho();
+      }
+      setTimeout(mostrarCoresNoCarrinhoMS, 100);
+    }, 80);
+    return false;
+  };
+
+  const abrirProdutoDetalheOriginalMS = window.abrirProdutoDetalheCard;
+  window.abrirProdutoDetalheCard = function(card){
+    window.msProdutoCardAtual = card;
+    window.msProdutoVariacaoAtual = null;
+    window.msCorSelecionada = '';
+    window.msImagemSelecionada = '';
+
+    if(typeof abrirProdutoDetalheOriginalMS === 'function') abrirProdutoDetalheOriginalMS.call(this, card);
+
+    setTimeout(function(){
+      window.montarCoresProduto(card);
+    }, 40);
+  };
+
+  const selecionarTamanhoOriginalMS = window.selecionarTamanho;
+  window.selecionarTamanho = function(botao, tamanho){
+    if(typeof selecionarTamanhoOriginalMS === 'function') selecionarTamanhoOriginalMS.call(this, botao, tamanho);
+
+    const detalhe = document.getElementById('produtoDetalhe');
+    if(detalhe) detalhe.dataset.tamanho = tamanho;
+
+    const area = botao?.closest?.('.tamanhos-detalhe, .detalhe-tamanhos, .tamanhos') || document;
+    area.querySelectorAll('.tamanho-btn, button').forEach(b => b.classList.remove('ativo','selecionado'));
+    if(botao) botao.classList.add('ativo');
+
+    window.tamanhoSelecionado = tamanho;
+    window.tamanhoSelecionadoDetalhe = tamanho;
+  };
+
+  function mostrarCoresNoCarrinhoMS(){
+    let lista = [];
+    try{ lista = JSON.parse(localStorage.getItem('carrinho')) || []; }catch(e){ lista = []; }
+
+    const seletores = [
+      '#listaCarrinho .item-carrinho',
+      '#itensCarrinho .item-carrinho',
+      '#listaCarrinhoMobileMS .cmms-item',
+      '.carrinho-itens .item-carrinho',
+      '.item-carrinho'
+    ];
+
+    seletores.forEach(sel => {
+      document.querySelectorAll(sel).forEach((itemEl, i) => {
+        const item = lista[i];
+        if(!item || !item.cor || itemEl.querySelector('.ms-cor-carrinho')) return;
+
+        const alvo = itemEl.querySelector('.cmms-info') || itemEl.querySelector('.info-item') || itemEl.querySelector('.item-info') || itemEl;
+        const p = document.createElement('p');
+        p.className = 'ms-cor-carrinho';
+        p.innerText = 'Cor: ' + item.cor;
+
+        const tamanho = Array.from(alvo.querySelectorAll('p, span')).find(el => /tamanho/i.test(el.innerText || ''));
+        if(tamanho) tamanho.insertAdjacentElement('afterend', p);
+        else alvo.appendChild(p);
+      });
+    });
+  }
+
+  ['atualizarCarrinho','atualizarTudo','renderCarrinhoMobileMS','abrirCarrinhoPCMS','abrirCarrinhoMobileMS','abrirCarrinho'].forEach(nome => {
+    const original = window[nome];
+    if(typeof original !== 'function') return;
+    window[nome] = function(){
+      const retorno = original.apply(this, arguments);
+      setTimeout(mostrarCoresNoCarrinhoMS, 80);
+      return retorno;
+    };
+  });
+
+  document.addEventListener('click', function(e){
+    const card = e.target.closest('.card-produto');
+    if(!card) return;
+    if(e.target.closest('button') || e.target.closest('a') || e.target.closest('.tamanhos') || e.target.closest('.btn-favorito')) return;
+
+    setTimeout(function(){
+      window.msProdutoCardAtual = card;
+      window.montarCoresProduto(card);
+    }, 120);
+  }, true);
+
+  document.addEventListener('click', function(e){
+    if(e.target.closest('.btn-comprar-agora')){
+      e.preventDefault();
+      e.stopPropagation();
+      window.comprarAgoraDetalhe();
+    }
+  }, true);
+
+  document.addEventListener('DOMContentLoaded', function(){
+    setTimeout(mostrarCoresNoCarrinhoMS, 200);
+  });
+})();
+
+
+/* =====================================================
+   MS MATIAS STYLE - SLIDER DO BANNER INICIAL
+===================================================== */
+let slideHeroAtualMS = 0;
+let timerHeroMS = null;
+
+function atualizarHeroSliderMS(){
+  const slides = document.querySelectorAll('.hero-slider-ms .slide-ms');
+  const bolinhas = document.querySelectorAll('.bolinha-hero-ms');
+  if(!slides.length) return;
+
+  slides.forEach((slide, index) => {
+    slide.classList.toggle('ativo', index === slideHeroAtualMS);
+  });
+
+  bolinhas.forEach((bolinha, index) => {
+    bolinha.classList.toggle('ativa', index === slideHeroAtualMS);
+  });
+}
+
+function irSlideHeroMS(index){
+  const slides = document.querySelectorAll('.hero-slider-ms .slide-ms');
+  if(!slides.length) return;
+  slideHeroAtualMS = (index + slides.length) % slides.length;
+  atualizarHeroSliderMS();
+  reiniciarTimerHeroMS();
+}
+
+function mudarSlideHeroMS(direcao){
+  const slides = document.querySelectorAll('.hero-slider-ms .slide-ms');
+  if(!slides.length) return;
+  slideHeroAtualMS = (slideHeroAtualMS + direcao + slides.length) % slides.length;
+  atualizarHeroSliderMS();
+  reiniciarTimerHeroMS();
+}
+
+function iniciarTimerHeroMS(){
+  if(timerHeroMS) clearInterval(timerHeroMS);
+  timerHeroMS = setInterval(() => {
+    const slides = document.querySelectorAll('.hero-slider-ms .slide-ms');
+    if(!slides.length) return;
+    slideHeroAtualMS = (slideHeroAtualMS + 1) % slides.length;
+    atualizarHeroSliderMS();
+  }, 2000);
+}
+
+function reiniciarTimerHeroMS(){
+  iniciarTimerHeroMS();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  atualizarHeroSliderMS();
+  iniciarTimerHeroMS();
+
+  const hero = document.querySelector('.hero-slider-ms');
+  if(hero){
+    hero.addEventListener('mouseenter', () => {
+      if(timerHeroMS) clearInterval(timerHeroMS);
+    });
+    hero.addEventListener('mouseleave', iniciarTimerHeroMS);
+  }
+});
+
+
+/* =====================================================
+   MS FIX FINAL - CARDS + COMPRAR AGORA RESPONSIVO
+   Mantém os cards abrindo e evita carrinho PC no mobile.
+===================================================== */
+(function(){
+  function abrirCarrinhoCertoMS(){
+    if(window.innerWidth <= 768){
+      if(typeof window.abrirCarrinhoMobileMS === 'function') return window.abrirCarrinhoMobileMS();
+      if(typeof window.abrirCarrinhoMS === 'function') return window.abrirCarrinhoMS();
+      if(typeof window.abrirCarrinhoMobile === 'function') return window.abrirCarrinhoMobile();
+      if(typeof window.abrirCarrinho === 'function') return window.abrirCarrinho();
+      window.location.href = 'carrinho.html';
+      return false;
+    }
+
+    if(typeof window.abrirCarrinhoPCMS === 'function') return window.abrirCarrinhoPCMS();
+    if(typeof window.abrirCarrinho === 'function') return window.abrirCarrinho();
+    return false;
+  }
+
+  window.abrirCarrinhoResponsivoMS = abrirCarrinhoCertoMS;
+
+  // Garante que clique no card sempre abra o detalhe, sem mexer nos botões internos.
+  document.addEventListener('click', function(e){
+    const card = e.target.closest('.card-produto');
+    if(!card) return;
+
+    if(
+      e.target.closest('button') ||
+      e.target.closest('a') ||
+      e.target.closest('.tamanhos') ||
+      e.target.closest('.btn-favorito') ||
+      e.target.closest('.avaliacao-produto')
+    ){
+      return;
+    }
+
+    if(typeof window.abrirProdutoDetalheCard === 'function'){
+      e.preventDefault();
+      window.abrirProdutoDetalheCard(card);
+    }
+  }, false);
+
+  // Comprar agora: salva o item do detalhe e abre o carrinho correto conforme o tamanho da tela.
+  document.addEventListener('click', function(e){
+    const btn = e.target.closest('.btn-comprar-agora');
+    if(!btn) return;
+
+    e.preventDefault();
+    e.stopImmediatePropagation();
+
+    if(typeof window.comprarAgoraDetalhe === 'function'){
+      window.comprarAgoraDetalhe();
+    }else if(typeof window.adicionarProdutoDetalhe === 'function'){
+      window.adicionarProdutoDetalhe();
+      setTimeout(abrirCarrinhoCertoMS, 80);
+    }else{
+      setTimeout(abrirCarrinhoCertoMS, 80);
+    }
+  }, true);
+})();

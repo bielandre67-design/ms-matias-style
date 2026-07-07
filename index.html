@@ -8,6 +8,20 @@
   <title>MS Matias Style</title>
 
   <link rel="stylesheet" href="style.css" />
+
+<style id="ms-cores-fix-css">
+/* ===== MS CORREÇÃO: cores do produto e carrinho com cor escolhida ===== */
+.cores-produto{margin:22px 0 18px;}
+.label-cor{font-size:15px;font-weight:800;margin:0 0 12px;color:#000;}
+.opcoes-cores{display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
+.cor-ms-btn{width:42px;height:42px;border-radius:50%;border:2px solid #ddd;cursor:pointer;transition:.2s;background:#ccc;box-shadow:0 4px 14px rgba(0,0,0,.10);position:relative;}
+.cor-ms-btn:hover{transform:scale(1.08);}
+.cor-ms-btn.ativa{border:4px solid #000;outline:3px solid #e8c84b;}
+.cor-ms-btn[data-cor="branco"]{border-color:#bbb;}
+.cor-selecionada-ms{font-size:13px;font-weight:700;margin-top:9px;color:#555;}
+.ms-cor-carrinho{display:block;font-size:13px;color:#555;margin:3px 0;}
+@media(max-width:768px){.cor-ms-btn{width:38px;height:38px}.opcoes-cores{gap:10px}}
+</style>
 </head>
 
 <body>
@@ -22,11 +36,32 @@
 
   <div class="icones-header">
 
-    <nav class="menu">
-  <a href="#inicio">INÍCIO</a>
-  <a href="#moletons">PRODUTOS⌄</a>
-  <a href="#categoriasHome">CATEGORIAS⌄</a>
-  <a href="javascript:void(0)" onclick="abrirFavoritos(); return false;">FAVORITOS</a>
+    <button class="btn-lupa-site" onclick="abrirBuscaMS()">
+  <span>⌕</span>
+</button>
+
+   <nav class="menu">
+
+  <a href="#inicio"
+     onclick="fecharProdutoDetalhe(); window.scrollTo({top:0, behavior:'smooth'});">
+     INÍCIO
+  </a>
+
+  <a href="#moletons"
+     onclick="fecharProdutoDetalhe();">
+     PRODUTOS⌄
+  </a>
+
+  <a href="#categoriasHome"
+     onclick="fecharProdutoDetalhe();">
+     CATEGORIAS⌄
+  </a>
+
+  <a href="javascript:void(0)"
+     onclick="fecharProdutoDetalhe(); abrirFavoritos(); return false;">
+     FAVORITOS
+  </a>
+
 </nav>
 
     <a href="javascript:void(0)" onclick="abrirFavoritos(); return false;" class="btn-topo btn-com-badge">
@@ -37,9 +72,7 @@
 
 </a>
 
-<a href="javascript:void(0)" onclick="abrirCarrinhoResponsivoMS(); return false;" class="btn-topo btn-com-badge">
-
-  <span class="icone-topo">🛍</span>
+<a href="javascript:void(0)" onclick="abrirCarrinhoResponsivoMS(); return false;" class="btn-topo btn-com-badge">  <span class="icone-topo">🛍</span>
 
   <span id="contadorCarrinho" class="badge-topo">0</span>
 
@@ -52,24 +85,32 @@
 </header>
 
 
-  <!-- HERO PC + MOBILE -->
-  <section class="hero-ms" id="inicio">
-    <div class="hero-conteudo">
-      <span class="hero-label">COLEÇÃO</span>
+  <!-- HERO PC + MOBILE - SLIDER MS -->
+  <section class="hero-ms hero-slider-ms" id="inicio" aria-label="Banners promocionais MS">
+    <div class="slides-hero-ms">
+      <img src="fundo novoo.png" class="slide-ms" alt="fundo novoo">
+      <img src="promocao-ms.png" class="slide-ms ativo" alt="Promoção MS">
+      <img src="modelo-conjunto-bege.jpeg" class="slide-ms" alt="Conjunto MS">
+      <img src="banner-ms10.png" class="slide-ms" alt="Cupom MS10">
+      <img src="modelo-conjunto-rosa.jpeg" class="slide-ms" alt="Conjunto MS">
+            
 
-      <h1>MOLETOM</h1>
+    </div>
 
-      <p>CONFORTO • ESTILO • ATITUDE</p>
+    <button class="seta-hero-ms seta-hero-esq" type="button" onclick="mudarSlideHeroMS(-1)" aria-label="Banner anterior">‹</button>
+    <button class="seta-hero-ms seta-hero-dir" type="button" onclick="mudarSlideHeroMS(1)" aria-label="Próximo banner">›</button>
 
-      <a 
-class="btn-banner"
-onclick="document.getElementById('moletons').scrollIntoView({behavior:'smooth'})">
+    <div class="bolinhas-hero-ms" aria-label="Indicadores do banner">
+      <button class="bolinha-hero-ms ativa" type="button" onclick="irSlideHeroMS(0)" aria-label="Banner 1"></button>
+      <button class="bolinha-hero-ms" type="button" onclick="irSlideHeroMS(1)" aria-label="Banner 2"></button>
+      <button class="bolinha-hero-ms" type="button" onclick="irSlideHeroMS(2)" aria-label="Banner 3"></button>
+            <button class="bolinha-hero-ms" type="button" onclick="irSlideHeroMS(3)" aria-label="Banner 4"></button>
+                        <button class="bolinha-hero-ms" type="button" onclick="irSlideHeroMS(4)" aria-label="Banner 5"></button>
 
-VER PRODUTOS →
 
-</a>
     </div>
   </section>
+
 
   <!-- BANNER MOBILE ANTIGO, MANTIDO PARA CELULAR -->
   <section class="banner-mobile">
@@ -94,6 +135,10 @@ VER PRODUTOS →
     </div>
   </section>
 <section class="categorias-home" id="categoriasHome">
+  <a href="#conjuntos" class="categoria-item">
+  <span>▣</span>
+  <p>Conjuntos</p>
+</a>
 
   <a href="#jaquetas" class="categoria-item">
     <span>◈</span>
@@ -115,6 +160,11 @@ VER PRODUTOS →
     <p>Camisetas</p>
   </a>
 
+  <a href="#camisetas-basicas" class="categoria-item">
+  <span>▣</span>
+  <p>Camisetas Básicas</p>
+</a>
+
   <a href="#calcas" class="categoria-item">
     <span>║</span>
     <p>Calças</p>
@@ -133,12 +183,32 @@ VER PRODUTOS →
 
     <div class="grid-produtos">
 
-   <div class="card-produto"
-   
-  data-nome="Moletom Rosa MS"
-  data-preco="1.00"
-  data-img="moletom-rosa.jpeg"
-  data-fotos="moletom-rosa.jpeg,modelo-rosa.jpeg">
+
+      <div class="card-produto"
+data-nome="Moletom Rosa MS"
+data-preco="99.90"
+data-precoantigo="180.00"
+data-img="moletom-rosa.jpeg"
+
+data-descricao="Tamanho	Altura	Largura	Manga
+P	64 cm	53 cm	59 cm
+M	66 cm	55 cm	60 cm
+G	68 cm	58 cm	61 cm
+GG	70 cm	61 cm	63 cm."
+data-detalhes="• Modelo: Moletom Canguru Masculino
+• Capuz: Ajustável com cordão
+• Bolso: Bolso canguru frontal
+• Punhos e barra: Ribana reforçada."
+data-composicao="• 75% Algodão
+• 25% Poliéster
+• Gramatura: 300g (moletom encorpado)."
+data-cuidados="• Lavar pelo avesso
+• Não usar alvejante
+• Lavar em água fria
+• Não passar ferro sobre a estampa
+• Secar à sombra"
+
+data-fotos="moletom-rosa.jpeg,modelo-moletom-rosa.png,modelo-de-costa-moletom-rosa.jpeg">
 <span class="selo-produto">NOVIDADE</span>
   <button class="btn-favorito" onclick="favoritarProduto(this, event)">
     ♡
@@ -149,32 +219,31 @@ VER PRODUTOS →
       <img src="moletom-rosa.jpeg"
       class="foto-normal">
 
-      <img src="modelo-rosa.jpeg"
+      <img src="modelo-moletom-rosa.png"
       class="foto-hover">
 
   </div>
         <h3>Moletom Rosa MS</h3>
 
-      <div class="avaliacao-produto">
-  <span onclick="avaliar(event, this, 1)">★</span>
-  <span onclick="avaliar(event, this, 2)">★</span>
-  <span onclick="avaliar(event, this, 3)">★</span>
-  <span onclick="avaliar(event, this, 4)">★</span>
-  <span onclick="avaliar(event, this, 5)">★</span>
+     <div class="avaliacao-produto" onclick="event.stopPropagation(); return false;">
+  <span onclick="event.stopPropagation(); avaliar(event,this,1); return false;">★</span>
+  <span onclick="event.stopPropagation(); avaliar(event,this,2); return false;">★</span>
+  <span onclick="event.stopPropagation(); avaliar(event,this,3); return false;">★</span>
+  <span onclick="event.stopPropagation(); avaliar(event,this,4); return false;">★</span>
+  <span onclick="event.stopPropagation(); avaliar(event,this,5); return false;">★</span>
 </div>
-
        <div class="preco-box">
 
   <span class="preco-antigo">
-    R$ 199,90
+    R$ 180.00
   </span>
 
   <p class="preco">
-    R$ 100
+    R$ 99,90
   </p>
 
   <span class="parcelamento">
-    em até 2x sem juros
+    em até 5x sem juros
   </span>
 
 </div>
@@ -190,7 +259,7 @@ VER PRODUTOS →
           class="btn-comprar"
           onclick="adicionarCarrinho(this)"
           data-nome="Moletom Rosa MS"
-          data-preco="1.00"
+          data-preco="99.90"
           data-img="moletom-rosa.jpeg">
 
           <span>Adicionar ao carrinho</span>
@@ -201,11 +270,29 @@ VER PRODUTOS →
       
 
      <div class="card-produto"
-     
 data-nome="Moletom Preto MS"
-data-preco="1.00"
+data-preco="99.90"
+data-precoantigo="180.00"
 data-img="MOLETOM-PRETO.jpeg"
-data-fotos="MOLETOM-PRETO.jpeg,modelo-preto.jpeg">
+data-fotos="MOLETOM-PRETO.jpeg,modelo-preto.jpeg"
+data-descricao="Tamanho	Altura	Largura	Manga
+P	64 cm	53 cm	59 cm
+M	66 cm	55 cm	60 cm
+G	68 cm	58 cm	61 cm
+GG	70 cm	61 cm	63 cm."
+data-detalhes="• Modelo: Moletom Canguru Masculino
+• Capuz: Ajustável com cordão
+• Bolso: Bolso canguru frontal
+• Punhos e barra: Ribana reforçada."
+data-composicao="• 75% Algodão
+• 25% Poliéster
+• Gramatura: 300g (moletom encorpado)."
+data-cuidados="• Lavar pelo avesso
+• Não usar alvejante
+• Lavar em água fria
+• Não passar ferro sobre a estampa
+• Secar à sombra">
+
 <span class="selo-produto">⚡LIMITADO</span>
 <button class="btn-favorito" onclick="favoritarProduto(this, event)">
 
@@ -228,15 +315,15 @@ data-fotos="MOLETOM-PRETO.jpeg,modelo-preto.jpeg">
        <div class="preco-box">
 
   <span class="preco-antigo">
-    R$ 199,90
+    R$ 180,90
   </span>
 
   <p class="preco">
-    R$ 100
+    R$ 99,90
   </p>
 
   <span class="parcelamento">
-    em até 2x sem juros
+    em até 5x sem juros
   </span>
 
 </div>
@@ -252,7 +339,7 @@ data-fotos="MOLETOM-PRETO.jpeg,modelo-preto.jpeg">
           class="btn-comprar"
           onclick="adicionarCarrinho(this)"
           data-nome="Moletom Preto MS"
-          data-preco="1.00"
+          data-preco="99.90"
           data-img="MOLETOM-PRETO.jpeg">
           
 
@@ -263,9 +350,33 @@ data-fotos="MOLETOM-PRETO.jpeg,modelo-preto.jpeg">
       </div>
       <div class="card-produto"
   data-nome="Moletom vinho MS"
-  data-preco="100.00"
-  data-img="moletom-cinza.jpeg"
-  data-fotos="moletom-cinza.jpeg,moletom-cinza-modelo.jpeg">
+  data-preco="99.90"
+  data-precoantigo="180.00"
+  data-img="moletom-vinho.jpeg"
+  data-fotos="moletom-vinho.jpeg,moletom-vinho-modelo.jpeg"
+  data-cores="preto,vinho,bege"
+
+data-fotos-preto="moletom-preto.jpeg,moletom-preto-modelo.jpeg"
+data-fotos-vinho="moletom-vinho.jpeg,moletom-vinho-modelo.jpeg"
+data-fotos-bege="moletom-bege.jpeg,moletom-bege-modelo.jpeg"
+  data-descricao="Tamanho	Altura	Largura	Manga
+P	64 cm	53 cm	59 cm
+M	66 cm	55 cm	60 cm
+G	68 cm	58 cm	61 cm
+GG	70 cm	61 cm	63 cm."
+data-detalhes="• Modelo: Moletom Canguru Masculino
+• Capuz: Ajustável com cordão
+• Bolso: Bolso canguru frontal
+• Punhos e barra: Ribana reforçada."
+data-composicao="• 75% Algodão
+• 25% Poliéster
+• Gramatura: 300g (moletom encorpado)."
+data-cuidados="• Lavar pelo avesso
+• Não usar alvejante
+• Lavar em água fria
+• Não passar ferro sobre a estampa
+• Secar à sombra">
+  
   <span class="selo-produto">⚡ LIMITADO</span>
 
   <button class="btn-favorito" onclick="favoritarProduto(this, event)">
@@ -289,15 +400,15 @@ data-fotos="MOLETOM-PRETO.jpeg,modelo-preto.jpeg">
   <div class="preco-box">
 
   <span class="preco-antigo">
-    R$ 199,90
+    R$ 180,90
   </span>
 
   <p class="preco">
-    R$ 100
+    R$ 99,90
   </p>
 
   <span class="parcelamento">
-    em até 2x sem juros
+    em até 5x sem juros
   </span>
 
 </div>
@@ -313,7 +424,8 @@ data-fotos="MOLETOM-PRETO.jpeg,modelo-preto.jpeg">
     class="btn-comprar"
     onclick="adicionarCarrinho(this)"
     data-nome="Moletom Vinho MS"
-    data-preco="100.00"
+    data-preco="99.90"
+    data-precoantigo="180.00"
     data-img="moletom-vinho.jpeg">
 
     <span>Adicionar ao carrinho</span>
@@ -323,16 +435,34 @@ data-fotos="MOLETOM-PRETO.jpeg,modelo-preto.jpeg">
 </div>
 <div class="card-produto"
   data-nome="Moleto-bege MS"
-  data-preco="100.00"
-  data-img="moletom-bege.png"
-  data-fotos="moletom-bege.png,modelo-moletom-bege.png">
+  data-preco="99.90"
+  data-precoantigo="180.00"
+  data-img="moletom-bege.jpeg"
+  data-fotos="moletom-bege.jpeg,modelo-moletom-bege.png"
+  data-descricao="Tamanho	Altura	Largura	Manga
+P	64 cm	53 cm	59 cm
+M	66 cm	55 cm	60 cm
+G	68 cm	58 cm	61 cm
+GG	70 cm	61 cm	63 cm."
+data-detalhes="• Modelo: Moletom Canguru Masculino
+• Capuz: Ajustável com cordão
+• Bolso: Bolso canguru frontal
+• Punhos e barra: Ribana reforçada."
+data-composicao="• 75% Algodão
+• 25% Poliéster
+• Gramatura: 300g (moletom encorpado)."
+data-cuidados="• Lavar pelo avesso
+• Não usar alvejante
+• Lavar em água fria
+• Não passar ferro sobre a estampa
+• Secar à sombra">
 <span class="selo-produto">⚡ LIMITADO</span>
   <button class="btn-favorito" onclick="favoritarProduto(this, event)">
   ♡
 </button>
 
   <div class="produto-img" onclick="abrirProdutoDetalheCard(this.closest('.card-produto'))">
-    <img src="moletom-bege.png" class="foto-normal">
+    <img src="moletom-bege.jpeg" class="foto-normal">
     <img src="modelo-moletom-bege.png" class="foto-hover">
   </div>
 
@@ -349,15 +479,15 @@ data-fotos="MOLETOM-PRETO.jpeg,modelo-preto.jpeg">
   <div class="preco-box">
 
   <span class="preco-antigo">
-    R$ 199,90
+    R$ 180,90
   </span>
 
   <p class="preco">
-    R$ 100
+    R$ 99,90
   </p>
 
   <span class="parcelamento">
-    em até 2x sem juros
+    em até 5x sem juros
   </span>
 
 </div>
@@ -373,8 +503,9 @@ data-fotos="MOLETOM-PRETO.jpeg,modelo-preto.jpeg">
     class="btn-comprar"
     onclick="adicionarCarrinho(this)"
     data-nome="Moletom Bege MS"
-    data-preco="100.00"
-    data-img="moletom-bege.png">
+    data-preco="99.90"
+    data-precoantigo="180,00"
+    data-img="moletom-bege.jpeg">
     
 
     <span>Adicionar ao carrinho</span>
@@ -384,9 +515,26 @@ data-fotos="MOLETOM-PRETO.jpeg,modelo-preto.jpeg">
 </div>
 <div class="card-produto"
   data-nome="Moletom Cinza MS"
-  data-preco="100.00"
+  data-preco="99.90"
   data-img="moletom-cinza.jpeg"
-  data-fotos="moletom-cinza.jpeg,moletom-cinza-modelo.jpeg">
+  data-fotos="moletom-cinza.jpeg,moletom-cinza-modelo.jpeg"
+  data-descricao="Tamanho	Altura	Largura	Manga
+P	64 cm	53 cm	59 cm
+M	66 cm	55 cm	60 cm
+G	68 cm	58 cm	61 cm
+GG	70 cm	61 cm	63 cm."
+data-detalhes="• Modelo: Moletom Canguru Masculino
+• Capuz: Ajustável com cordão
+• Bolso: Bolso canguru frontal
+• Punhos e barra: Ribana reforçada."
+data-composicao="• 75% Algodão
+• 25% Poliéster
+• Gramatura: 300g (moletom encorpado)."
+data-cuidados="• Lavar pelo avesso
+• Não usar alvejante
+• Lavar em água fria
+• Não passar ferro sobre a estampa
+• Secar à sombra">
   <span class="selo-produto">⚡ LIMITADO</span>
   <button class="btn-favorito" onclick="favoritarProduto(this, event)">
   ♡
@@ -409,15 +557,15 @@ data-fotos="MOLETOM-PRETO.jpeg,modelo-preto.jpeg">
   <div class="preco-box">
 
   <span class="preco-antigo">
-    R$ 199,90
+    R$ 180,90
   </span>
 
   <p class="preco">
-    R$ 100
+    R$ 99,90
   </p>
 
   <span class="parcelamento">
-    em até 2x sem juros
+    em até 5x sem juros
   </span>
 
 </div>
@@ -433,7 +581,8 @@ data-fotos="MOLETOM-PRETO.jpeg,modelo-preto.jpeg">
     class="btn-comprar"
     onclick="adicionarCarrinho(this)"
     data-nome="Moletom Cinza MS"
-    data-preco="100.00"
+    data-preco="99.90"
+    data-precoantigo="180.00"
     data-img="moletom-cinza.jpeg">
 
     <span>Adicionar ao carrinho</span>
@@ -443,9 +592,27 @@ data-fotos="MOLETOM-PRETO.jpeg,modelo-preto.jpeg">
 </div>
       <div class="card-produto"
 data-nome="Moletom BRANCO MS"
-data-preco="1.00"
+data-preco="99.90"
+data-precoantigo="180.00"
 data-img="moletom-branco.png"
-data-fotos="moletom-branco.png,modelo-branco.png">
+data-fotos="moletom-branco.png,modelo-moletom-branco.png"
+data-descricao="Tamanho	Altura	Largura	Manga
+P	64 cm	53 cm	59 cm
+M	66 cm	55 cm	60 cm
+G	68 cm	58 cm	61 cm
+GG	70 cm	61 cm	63 cm."
+data-detalhes="• Modelo: Moletom Canguru Masculino
+• Capuz: Ajustável com cordão
+• Bolso: Bolso canguru frontal
+• Punhos e barra: Ribana reforçada."
+data-composicao="• 75% Algodão
+• 25% Poliéster
+• Gramatura: 300g (moletom encorpado)."
+data-cuidados="• Lavar pelo avesso
+• Não usar alvejante
+• Lavar em água fria
+• Não passar ferro sobre a estampa
+• Secar à sombra">
 <span class="selo-produto">⚡ LIMITADO</span>
 <button class="btn-favorito" onclick="favoritarProduto(this, event)">
   ♡
@@ -476,15 +643,15 @@ alt="Modelo com Moletom BRANCO MS">
         <div class="preco-box">
 
   <span class="preco-antigo">
-    R$ 199,90
+    R$ 180,90
   </span>
 
   <p class="preco">
-    R$ 100
+    R$ 99,90
   </p>
 
   <span class="parcelamento">
-    em até 2x sem juros
+    em até 5x sem juros
   </span>
 
 </div>
@@ -500,7 +667,7 @@ alt="Modelo com Moletom BRANCO MS">
           class="btn-comprar"
           onclick="adicionarCarrinho(this)"
           data-nome="Moletom Off White MS"
-          data-preco="15.00"
+          data-preco="99.90"
           data-img="moletom-branco.png">
 
           <span>Adicionar ao carrinho</span>
@@ -508,8 +675,22 @@ alt="Modelo com Moletom BRANCO MS">
 
         </button>
       </div>
-      <div class="card-produto">
+<div class="card-produto"
+data-nome="Moletom Azul MS"
+data-preco="99.90"
+data-precoantigo="180.00"
+data-img="moletom-azul.png"
+data-fotos="moletom-azul.png,modelo-moletom-azul.png"
 
+data-descricao="Tamanho Altura Largura Manga | P 64 cm 53 cm 59 cm | M 66 cm 55 cm 60 cm | G 68 cm 58 cm 61 cm | GG 70 cm 61 cm 63 cm"
+
+data-detalhes="Moletom Canguru Masculino. Capuz ajustável com cordão. Bolso frontal. Ribana reforçada."
+
+data-composicao="75% Algodão. 25% Poliéster. Gramatura 300g."
+
+data-cuidados="Lavar pelo avesso. Não usar alvejante. Lavar em água fria. Não passar ferro sobre a estampa. Secar à sombra."
+
+onclick="abrirProdutoDetalheCard(this)">
   <span class="selo-produto">LIMITADO</span>
 
   <button class="btn-favorito">♡</button>
@@ -524,22 +705,22 @@ alt="Modelo com Moletom BRANCO MS">
 
   <h3>MOLETOM AZUL MS</h3>
 
-  <div class="avaliacao-produto">
+  <div class="avaliacao-produto" onclick="event.stopPropagation()">
 
-  <span onclick="avaliar(this,1)">★</span>
-  <span onclick="avaliar(this,2)">★</span>
-  <span onclick="avaliar(this,3)">★</span>
-  <span onclick="avaliar(this,4)">★</span>
-  <span onclick="avaliar(this,5)">★</span>
+  <span onclick="avaliar(event,this,1)">★</span>
+<span onclick="avaliar(event,this,2)">★</span>
+<span onclick="avaliar(event,this,3)">★</span>
+<span onclick="avaliar(event,this,4)">★</span>
+<span onclick="avaliar(event,this,5)">★</span>
 
 </div>
 
-  <p class="preco-antigo">R$ 199,90</p>
+  <p class="preco-antigo">R$ 180,90</p>
 
-  <div class="preco">R$ 100</div>
+  <div class="preco">R$ 99,90</div>
 
   <p class="parcelamento">
-    em até 2x sem juros
+    em até 5x sem juros
   </p>
 
   <div class="tamanhos">
@@ -558,7 +739,7 @@ alt="Modelo com Moletom BRANCO MS">
     class="btn-comprar"
     onclick="adicionarCarrinho(this)"
     data-nome="Moletom Azul MS"
-    data-preco="100"
+    data-preco="99.90"
     data-img="moletom-azul.png">
 
     <span>ADICIONAR AO CARRINHO</span>
@@ -589,9 +770,53 @@ alt="Modelo com Moletom BRANCO MS">
     <!-- CALÇA PRETA -->
     <div class="card-produto"
       data-nome="Calça Cargo Preta MS"
-      data-preco="149.90"
+      data-preco="79,99"
+      data-precoantigo="150.90"
       data-img="calca-preta.jpeg"
-      data-fotos="calca-preta.jpeg,calca-preta-modelo.jpeg">
+      data-fotos="calca-preta.jpeg,calca-preta-modelo.jpeg"
+      data-descricao=" 
+
+Tamanho  Altura	  Cintura
+ 
+P	      97 cm	    33,5 cm
+
+M	      99 cm    	36 cm
+
+G   	  101 cm   	38 cm
+
+GG	    103 cm   	40,5 cm" 
+
+
+
+data-detalhes="• Modelo: Calça de Moletom
+
+• Modelagem: Tradicional, com ótimo ajuste ao corpo
+
+• Bolsos: 2 bolsos frontais funcionais
+
+• Cintura: Elástico com cordão para ajuste" 
+
+
+
+data-composicao="• 75% Algodão.
+
+• 90% Algodão
+
+• 10% Poliéster" 
+
+
+
+data-cuidados="• Lavar pelo avesso.
+
+• Não usar alvejante
+
+• Não utilizar água quente
+
+• Não deixar de molho
+
+• Secar à sombra
+
+• Não passar ferro sobre a estampa">
       <span class="selo-produto">⚡ LIMITADO</span>
       <button class="btn-favorito" onclick="favoritarProduto(this, event)">
   ♡
@@ -618,15 +843,15 @@ alt="Modelo com Moletom BRANCO MS">
       <div class="preco-box">
 
         <span class="preco-antigo">
-          R$ 199,90
+          R$ 150,90
         </span>
 
         <p class="preco">
-          R$ 149
+          R$ 79,99
         </p>
 
         <span class="parcelamento">
-          em até 2x sem juros
+          em até 5x sem juros
         </span>
 
       </div>
@@ -642,7 +867,7 @@ alt="Modelo com Moletom BRANCO MS">
         class="btn-comprar"
         onclick="adicionarCarrinho(this)"
         data-nome="Calça Cargo Preta MS"
-        data-preco="149.90"
+        data-preco="79,99"
         data-img="calca-preta.jpeg">
 
         <span>Adicionar ao carrinho</span>
@@ -658,9 +883,53 @@ alt="Modelo com Moletom BRANCO MS">
     <!-- CALÇA BRANCA -->
     <div class="card-produto"
       data-nome="Calça Branca MS"
-      data-preco="149.90"
+      data-preco="79.99"
+      data-precoantigo="150.90"
       data-img="calca-branca.jpeg"
-      data-fotos="calca-branca.jpeg,calca-branca-modelo.jpeg">
+      data-fotos="calca-branca.jpeg,calca-branca-modelo.jpeg"
+      data-descricao=" 
+
+Tamanho	Altura	Cintura
+
+P	97 cm	33,5 cm
+
+M	99 cm	36 cm
+
+G	101 cm	38 cm
+
+GG	103 cm	40,5 cm" 
+
+
+
+data-detalhes="• Modelo: Calça de Moletom
+
+• Modelagem: Tradicional, com ótimo ajuste ao corpo
+
+• Bolsos: 2 bolsos frontais funcionais
+
+• Cintura: Elástico com cordão para ajuste" 
+
+
+
+data-composicao="• 75% Algodão.
+
+• 90% Algodão
+
+• 10% Poliéster" 
+
+
+
+data-cuidados="• Lavar pelo avesso.
+
+• Não usar alvejante
+
+• Não utilizar água quente
+
+• Não deixar de molho
+
+• Secar à sombra
+
+• Não passar ferro sobre a estampa">
       <span class="selo-produto">⚡ LIMITADO</span>
       <button class="btn-favorito" onclick="favoritarProduto(this, event)">
   ♡
@@ -687,15 +956,15 @@ alt="Modelo com Moletom BRANCO MS">
       <div class="preco-box">
 
         <span class="preco-antigo">
-          R$ 199,90
+          R$ 150,90
         </span>
 
         <p class="preco">
-          R$ 149
+          R$ 79,99
         </p>
 
         <span class="parcelamento">
-          em até 2x sem juros
+          em até 5x sem juros
         </span>
 
       </div>
@@ -711,7 +980,8 @@ alt="Modelo com Moletom BRANCO MS">
         class="btn-comprar"
         onclick="adicionarCarrinho(this)"
         data-nome="Calça Branca MS"
-        data-preco="149.90"
+        data-preco="79.99"
+        data-precoantigo="150.90"
         data-img="calca-branca.jpeg">
 
         <span>Adicionar ao carrinho</span>
@@ -727,9 +997,53 @@ alt="Modelo com Moletom BRANCO MS">
     <!-- CALÇA CINZA -->
     <div class="card-produto"
       data-nome="Calça Cinza MS"
-      data-preco="149.90"
+      data-preco="79.99"
+      data-precoantigo="150.90"
       data-img="calca-cinza.jpeg"
-      data-fotos="calca-cinza.jpeg,calca-cinza-modelo.jpeg">
+      data-fotos="calca-cinza.jpeg,calca-cinza-modelo.jpeg"
+      data-descricao=" 
+
+Tamanho	Altura	Cintura
+
+P	97 cm	33,5 cm
+
+M	99 cm	36 cm
+
+G	101 cm	38 cm
+
+GG	103 cm	40,5 cm" 
+
+
+
+data-detalhes="• Modelo: Calça de Moletom
+
+• Modelagem: Tradicional, com ótimo ajuste ao corpo
+
+• Bolsos: 2 bolsos frontais funcionais
+
+• Cintura: Elástico com cordão para ajuste" 
+
+
+
+data-composicao="• 75% Algodão.
+
+• 90% Algodão
+
+• 10% Poliéster" 
+
+
+
+data-cuidados="• Lavar pelo avesso.
+
+• Não usar alvejante
+
+• Não utilizar água quente
+
+• Não deixar de molho
+
+• Secar à sombra
+
+• Não passar ferro sobre a estampa">
       <span class="selo-produto">⚡ LIMITADO</span>
 
       <button class="btn-favorito" onclick="favoritarProduto(this, event)">
@@ -757,15 +1071,15 @@ alt="Modelo com Moletom BRANCO MS">
       <div class="preco-box">
 
         <span class="preco-antigo">
-          R$ 199,90
+          R$ 150,90
         </span>
 
         <p class="preco">
-          R$ 149
+          R$ 79,99
         </p>
 
         <span class="parcelamento">
-          em até 2x sem juros
+          em até 5x sem juros
         </span>
 
       </div>
@@ -781,7 +1095,8 @@ alt="Modelo com Moletom BRANCO MS">
         class="btn-comprar"
         onclick="adicionarCarrinho(this)"
         data-nome="Calça Cinza MS"
-        data-preco="149.90"
+        data-preco="79.99"
+        data-precoantigo="150.90"
         data-img="calca-cinza.jpeg">
         
 
@@ -794,6 +1109,222 @@ alt="Modelo com Moletom BRANCO MS">
       </button>
 
     </div>
+    <!-- CALÇA ROSA -->
+<div class="card-produto"
+data-nome="Calça Rosa MS"
+data-preco="79.99"
+data-precoantigo="150.90"
+data-img="calca-rosa.png"
+data-fotos="calca-rosa.png,calca-rosa-modelo.jpeg,calca-rosa-costa.jpeg"
+data-descricao=" 
+
+Tamanho	Altura	Cintura
+
+P	97 cm	33,5 cm
+
+M	99 cm	36 cm
+
+G	101 cm	38 cm
+
+GG	103 cm	40,5 cm" 
+
+
+
+data-detalhes="• Modelo: Calça de Moletom
+
+• Modelagem: Tradicional, com ótimo ajuste ao corpo
+
+• Bolsos: 2 bolsos frontais funcionais
+
+• Cintura: Elástico com cordão para ajuste" 
+
+
+
+data-composicao="• 75% Algodão.
+
+• 90% Algodão
+
+• 10% Poliéster" 
+
+
+
+data-cuidados="• Lavar pelo avesso.
+
+• Não usar alvejante
+
+• Não utilizar água quente
+
+• Não deixar de molho
+
+• Secar à sombra
+
+• Não passar ferro sobre a estampa">
+
+<span class="selo-produto">NOVIDADE</span>
+
+<button class="btn-favorito"
+onclick="favoritarProduto(this, event)">
+♡
+</button>
+
+<div class="produto-img"
+onclick="abrirProdutoDetalheCard(this.closest('.card-produto'))">
+
+<img src="calca-rosa.png" class="foto-normal">
+
+<img src="calca-rosa-modelo.jpeg" class="foto-hover">
+
+</div>
+
+<h3>CALÇA ROSA MS</h3>
+
+<div class="avaliacao-produto">
+<span onclick="avaliar(event, this, 1)">★</span>
+<span onclick="avaliar(event, this, 2)">★</span>
+<span onclick="avaliar(event, this, 3)">★</span>
+<span onclick="avaliar(event, this, 4)">★</span>
+<span onclick="avaliar(event, this, 5)">★</span>
+</div>
+
+<div class="preco-box">
+<span class="preco-antigo">R$ 150,90</span>
+
+<p class="preco">R$ 79,99</p>
+
+<span class="parcelamento">
+em até 5x sem juros
+</span>
+</div>
+
+<div class="tamanhos">
+<button onclick="selecionarTamanho(this,'P')">P</button>
+<button onclick="selecionarTamanho(this,'M')">M</button>
+<button onclick="selecionarTamanho(this,'G')">G</button>
+<button onclick="selecionarTamanho(this,'GG')">GG</button>
+</div>
+
+<button
+class="btn-comprar"
+onclick="adicionarCarrinho(this)"
+data-nome="Calça Rosa MS"
+data-preco="79.99"
+data-precoantigo="150.90"
+data-img="calca-rosa.png">
+
+<span>ADICIONAR AO CARRINHO</span>
+<span class="icone-btn-carrinho">🛒</span>
+
+</button>
+
+</div>
+<!-- CALÇA BEGE -->
+<div class="card-produto"
+data-nome="Calça Bege MS"
+data-preco="79.99"
+data-precoantigo="150.90"
+data-img="calca-bege.jpeg"
+data-fotos="calca-bege.jpeg,modelo-calca-bege.jpeg,modelo-costa-calca-bege.jpeg"
+data-descricao=" 
+
+Tamanho	Altura	Cintura
+
+P	97 cm	33,5 cm
+
+M	99 cm	36 cm
+
+G	101 cm	38 cm
+
+GG	103 cm	40,5 cm" 
+
+
+
+data-detalhes="• Modelo: Calça de Moletom
+
+• Modelagem: Tradicional, com ótimo ajuste ao corpo
+
+• Bolsos: 2 bolsos frontais funcionais
+
+• Cintura: Elástico com cordão para ajuste" 
+
+
+
+data-composicao="• 75% Algodão.
+
+• 90% Algodão
+
+• 10% Poliéster" 
+
+
+
+data-cuidados="• Lavar pelo avesso.
+
+• Não usar alvejante
+
+• Não utilizar água quente
+
+• Não deixar de molho
+
+• Secar à sombra
+
+• Não passar ferro sobre a estampa">
+
+<span class="selo-produto">LIMITADO</span>
+
+<button class="btn-favorito"
+onclick="favoritarProduto(this, event)">
+♡
+</button>
+
+<div class="produto-img"
+onclick="abrirProdutoDetalheCard(this.closest('.card-produto'))">
+
+<img src="calca-bege.jpeg" class="foto-normal">
+
+<img src="modelo-calca-bege.jpeg" class="foto-hover">
+
+</div>
+
+<h3>CALÇA BEGE MS</h3>
+
+<div class="avaliacao-produto">
+<span onclick="avaliar(event, this, 1)">★</span>
+<span onclick="avaliar(event, this, 2)">★</span>
+<span onclick="avaliar(event, this, 3)">★</span>
+<span onclick="avaliar(event, this, 4)">★</span>
+<span onclick="avaliar(event, this, 5)">★</span>
+</div>
+
+<div class="preco-box">
+<span class="preco-antigo">R$ 150,90</span>
+
+<p class="preco">R$ 79,99</p>
+
+<span class="parcelamento">
+em até 5x sem juros
+</span>
+</div>
+
+<div class="tamanhos">
+<button onclick="selecionarTamanho(this,'P')">P</button>
+<button onclick="selecionarTamanho(this,'M')">M</button>
+<button onclick="selecionarTamanho(this,'G')">G</button>
+<button onclick="selecionarTamanho(this,'GG')">GG</button>
+</div>
+
+<button
+class="btn-comprar"
+onclick="adicionarCarrinho(this)"
+data-nome="Calça Bege MS"
+data-preco="79.99"
+data-precoantigo="150.90"
+data-img="calca-bege.jpeg">
+
+<span>ADICIONAR AO CARRINHO</span>
+<span class="icone-btn-carrinho">🛒</span>
+
+</button>
+
+</div>
 
   </div>
 
@@ -815,7 +1346,8 @@ alt="Modelo com Moletom BRANCO MS">
     <!-- TOUCA -->
    <div class="card-produto"
 data-nome="Touca MS"
-data-preco="79"
+data-preco="29,90"
+data-precoantigo="50,90"
 data-img="touca-preta.png"
 data-fotos="touca-preta.png,touca-modelo-preto.png">
 <span class="selo-produto fogo">🔥 NOVIDADE</span>
@@ -841,9 +1373,9 @@ onclick="favoritarProduto(this, event)">
   <span onclick="avaliar(event, this, 5)">★</span>
 </div>
 
-      <p class="preco-antigo">R$ 119,90</p>
+      <p class="preco-antigo">R$ 50,90</p>
 
-      <p class="preco">R$ 79</p>
+      <p class="preco">R$ 29,90</p>
 
       <p>em até 2x sem juros</p>
 
@@ -853,7 +1385,8 @@ onclick="favoritarProduto(this, event)">
 
    <button class="btn-carrinho"
   data-nome="Touca MS"
-  data-preco="79"
+  data-preco="29,90"
+  data-precoantigo="50,90"
   data-img="touca-preta.png"
 
   
@@ -872,7 +1405,8 @@ onclick="favoritarProduto(this, event)">
     <!-- MEIA -->
    <div class="card-produto"
 data-nome="Meia MS Cano Alto"
-data-preco="29.90"
+data-preco="16,90"
+data-precoantigo="20,90"
 data-img="meia branca.png"
 data-fotos="meia branca.png,modelo meia.jpeg">
 <span class="selo-produto fogo">🔥 NOVIDADE</span>
@@ -898,8 +1432,8 @@ onclick="favoritarProduto(this, event)">
   <span onclick="avaliar(event, this, 5)">★</span>
 </div>
   
-<p class="preco-antigo">R$ 59,90</p>
-  <p class="preco">R$ 29,90</p>
+<p class="preco-antigo">R$ 20,90</p>
+  <p class="preco">R$ 16,90</p>
 
   <p>em até 2x sem juros</p>
   
@@ -912,7 +1446,8 @@ onclick="favoritarProduto(this, event)">
 
  <button class="btn-carrinho"
   data-nome="Meia MS Cano Alto"
-  data-preco="29.90"
+  data-preco="16,90"
+  data-precoantigo="20,90"
   data-img="meia branca.png"
   onclick="adicionarCarrinho(this)">
   <span>ADICIONAR AO CARRINHO</span>
@@ -978,7 +1513,7 @@ onclick="favoritarProduto(this, event)">
 data-nome="Corta Vento Branco MS"
 data-preco="159.90"
 data-img="Jaqueta Corta Vento Impermeável Masculina Branco.png"
-data-fotos="Jaqueta Corta Vento Impermeável Masculina Branco.png,modelo corta vento Branco.png">
+data-fotos="Jaqueta Corta Vento Impermeável Masculina Branco.png,modelo corta vento Branco.png,modelo corta vento branco aberto.png">
 <span class="selo-produto fogo">🔥 NOVIDADE</span>
 
 <button class="btn-favorito"
@@ -1086,9 +1621,9 @@ onclick="favoritarProduto(this, event)">
     <!-- PRETA -->
     <div class="card-produto"
     data-nome="Camiseta Oversized Preta"
-    data-preco="89.90"
+    data-preco="79.99"
     data-img="Camiseta Oversized Preta.jpeg"
-    data-fotos="Camiseta Oversized Preta.jpeg,Camiseta Oversized Preta Modelo.jpeg">
+    data-fotos="Camiseta Oversized Preta.jpeg,modelo Camiseta Oversized Preta.jpeg">
     <button class="btn-favorito" onclick="favoritarProduto(this, event)">
   ♡
 </button>
@@ -1113,12 +1648,12 @@ onclick="favoritarProduto(this, event)">
 </div>
 
       <div class="preco-box">
-        <span class="preco-antigo">R$ 129,90</span>
+        <span class="preco-antigo">R$ 99,99</span>
 
-        <p class="preco">R$ 89,90</p>
+        <p class="preco">R$ 79,99</p>
 
         <span class="parcelamento">
-          em até 2x sem juros
+          em até 5x sem juros
         </span>
       </div>
 
@@ -1133,7 +1668,7 @@ onclick="favoritarProduto(this, event)">
       class="btn-comprar"
       onclick="adicionarCarrinho(this)"
       data-nome="Camiseta Oversized Preta"
-      data-preco="89.90"
+      data-preco="79.99"
       data-img="Camiseta Oversized Preta.jpeg">
 
         <span>Adicionar ao carrinho</span>
@@ -1146,9 +1681,9 @@ onclick="favoritarProduto(this, event)">
     <!-- OFF WHITE -->
     <div class="card-produto"
     data-nome="Camiseta Oversized Off White"
-    data-preco="89.90"
+    data-preco="79.99"  
     data-img="Camiseta Oversized Off-White.jpeg"
-    data-fotos="Camiseta Oversized Off-White.jpeg,Camiseta Oversized Off-White Modelo.jpeg">
+    data-fotos="Camiseta Oversized Off-White.jpeg,modelo Camiseta Oversized Off-White.jpeg">
     <button class="btn-favorito" onclick="favoritarProduto(this, event)">
   ♡
 </button>
@@ -1173,12 +1708,12 @@ onclick="favoritarProduto(this, event)">
 </div>
 
       <div class="preco-box">
-        <span class="preco-antigo">R$ 129,90</span>
+        <span class="preco-antigo">R$ 99,99</span>
 
-        <p class="preco">R$ 89,90</p>
+        <p class="preco">R$ 79,99</p>
 
         <span class="parcelamento">
-          em até 2x sem juros
+          em até 5x sem juros
         </span>
       </div>
 
@@ -1197,7 +1732,7 @@ onclick="favoritarProduto(this, event)">
 class="btn-comprar"
 onclick="adicionarCarrinho(this)"
 data-nome="Camiseta Oversized Off White"
-data-preco="89.90"
+data-preco="79.99"
 data-img="Camiseta Oversized Off-White.jpeg">
 
 <span>Adicionar ao carrinho</span>
@@ -1210,9 +1745,9 @@ data-img="Camiseta Oversized Off-White.jpeg">
     <!-- MARROM -->
     <div class="card-produto"
     data-nome="Camiseta Oversized Marrom"
-    data-preco="89.90"
+    data-preco="79.99"
     data-img="Camiseta Oversized Marrom.jpeg"
-    data-fotos="Camiseta Oversized Marrom.jpeg,Camiseta Oversized Marrom Modelo.jpeg">
+    data-fotos="Camiseta Oversized Marrom.jpeg,modelo Camiseta Oversized Marrom.jpeg">
     <button class="btn-favorito" onclick="favoritarProduto(this, event)"></button>
       <div class="produto-img"
       onclick="abrirProdutoDetalheCard(this.closest('.card-produto'))">
@@ -1234,12 +1769,12 @@ data-img="Camiseta Oversized Off-White.jpeg">
 </div>
 
       <div class="preco-box">
-        <span class="preco-antigo">R$ 129,90</span>
+        <span class="preco-antigo">R$99,99</span>
 
-        <p class="preco">R$ 89,90</p>
+        <p class="preco">R$ 79,99</p>
 
         <span class="parcelamento">
-          em até 2x sem juros
+          em até 5x sem juros
         </span>
       </div>
 
@@ -1254,7 +1789,7 @@ data-img="Camiseta Oversized Off-White.jpeg">
       class="btn-comprar"
       onclick="adicionarCarrinho(this)"
       data-nome="Camiseta Oversized Marrom"
-      data-preco="89.90"
+      data-preco="79.99"
       data-img="Camiseta Oversized Marrom.jpeg">
       
 
@@ -1268,9 +1803,9 @@ data-img="Camiseta Oversized Off-White.jpeg">
     <!-- BRANCA -->
     <div class="card-produto"
     data-nome="Camiseta Oversized Branca"
-    data-preco="89.90"
+    data-preco="79.99"
     data-img="Camiseta Oversized Bege.jpeg"
-    data-fotos="Camiseta Oversized Bege.jpeg,Camiseta Oversized Bege Modelo.jpeg">
+    data-fotos="Camiseta Oversized Bege.jpeg,modelo Camiseta Oversized Bege.jpeg">
     <button class="btn-favorito" onclick="favoritarProduto(this, event)">
   ♡
 </button>
@@ -1294,12 +1829,12 @@ data-img="Camiseta Oversized Off-White.jpeg">
   <span onclick="avaliar(event, this, 5)">★</span>
 </div>
       <div class="preco-box">
-        <span class="preco-antigo">R$ 129,90</span>
+        <span class="preco-antigo">R$99,99</span>
 
-        <p class="preco">R$ 89,90</p>
+        <p class="preco">R$ 79,99</p>
 
         <span class="parcelamento">
-          em até 2x sem juros
+          em até 5x sem juros
         </span>
       </div>
 
@@ -1314,12 +1849,168 @@ data-img="Camiseta Oversized Off-White.jpeg">
 class="btn-comprar"
 onclick="adicionarCarrinho(this)"
 data-nome="Camiseta Oversized Branca"
-data-preco="89.90"
+data-preco="79.99"
 data-img="Camiseta Oversized Bege.jpeg">
 
 <span>ADICIONAR AO CARRINHO 🛒</span>
 
 </button>
+
+
+    </div>
+    
+
+  </div>
+
+</section>
+
+<!-- CAMISETAS BÁSICAS -->
+<section class="produtos" id="camisetas-basicas">
+
+  <div class="titulo-section">
+    <p>Produtos</p>
+    <h2>Camisetas Básicas</h2>
+  </div>
+
+  <div class="grid-produtos">
+
+    <!-- CAMISETA BÁSICA PRETA -->
+    <div class="card-produto produto-em-breve"
+      data-nome="Camiseta Básica Preta"
+      data-img="camisa preta.jpeg,modelo camisa preta.jpeg">
+
+
+      <div class="produto-img" onclick="abrirProdutoDetalheCard(this.closest('.card-produto'))">
+        <img src="camisa preta.jpeg" class="foto-normal">
+        <img src="modelo Camisa Preta.jpeg" class="foto-hover">
+      </div>
+
+      <h3>Camiseta Básica Preta</h3>
+
+      <div class="avaliacao-produto">
+        <span onclick="avaliar(event,this,1)">★</span>
+        <span onclick="avaliar(event,this,2)">★</span>
+        <span onclick="avaliar(event,this,3)">★</span>
+        <span onclick="avaliar(event,this,4)">★</span>
+        <span onclick="avaliar(event,this,5)">★</span>
+      </div>
+
+      <div class="produto-indisponivel">
+        <span>✨ LANÇAMENTO EM BREVE</span>
+        <p>As camisetas básicas da MS estarão disponíveis em breve.</p>
+      </div>
+
+    </div>
+
+    <!-- CAMISETA BÁSICA BRANCA -->
+    <div class="card-produto produto-em-breve"
+      data-nome="Camiseta Básica Branca"
+      data-img="camisa branca.jpeg,modelo Camisa Branca.jpeg">
+
+
+      <div class="produto-img" onclick="abrirProdutoDetalheCard(this.closest('.card-produto'))">
+        <img src="camisa branca.jpeg" class="foto-normal">
+        <img src="modelo Camisa Branca.jpeg" class="foto-hover">
+      </div>
+
+      <h3>Camiseta Básica Branca</h3>
+
+      <div class="avaliacao-produto">
+        <span onclick="avaliar(event,this,1)">★</span>
+        <span onclick="avaliar(event,this,2)">★</span>
+        <span onclick="avaliar(event,this,3)">★</span>
+        <span onclick="avaliar(event,this,4)">★</span>
+        <span onclick="avaliar(event,this,5)">★</span>
+      </div>
+
+      <div class="produto-indisponivel">
+        <span>✨ LANÇAMENTO EM BREVE</span>
+        <p>As camisetas básicas da MS estarão disponíveis em breve.</p>
+      </div>
+
+    </div>
+
+    <!-- CAMISETA BÁSICA BEGE -->
+    <div class="card-produto produto-em-breve"
+      data-nome="Camiseta Básica Bege"
+      data-img="camisa bege.jpeg,modelo de Camisa Bege.jpeg">
+
+
+      <div class="produto-img" onclick="abrirProdutoDetalheCard(this.closest('.card-produto'))">
+        <img src="camisa bege.jpeg" class="foto-normal">
+        <img src="modelo de Camisa Bege.jpeg" class="foto-hover">
+      </div>
+
+      <h3>Camiseta Básica Bege</h3>
+
+      <div class="avaliacao-produto">
+        <span onclick="avaliar(event,this,1)">★</span>
+        <span onclick="avaliar(event,this,2)">★</span>
+        <span onclick="avaliar(event,this,3)">★</span>
+        <span onclick="avaliar(event,this,4)">★</span>
+        <span onclick="avaliar(event,this,5)">★</span>
+      </div>
+
+      <div class="produto-indisponivel">
+        <span>✨ LANÇAMENTO EM BREVE</span>
+        <p>As camisetas básicas da MS estarão disponíveis em breve.</p>
+      </div>
+
+    </div>
+
+    <!-- CAMISETA BÁSICA VERMELHA -->
+   <div class="card-produto produto-em-breve"
+      data-nome="Camiseta Básica Vermelha"
+      data-img="camisa vermelha.jpeg,mode camisa vermelha.jpeg">
+
+
+      <div class="produto-img" onclick="abrirProdutoDetalheCard(this.closest('.card-produto'))">
+        <img src="camisa vermelha.jpeg" class="foto-normal">
+        <img src="mode camisa vermelha.jpeg" class="foto-hover">
+      </div>
+
+      <h3>Camiseta Básica Vermelha</h3>
+
+      <div class="avaliacao-produto">
+        <span onclick="avaliar(event,this,1)">★</span>
+        <span onclick="avaliar(event,this,2)">★</span>
+        <span onclick="avaliar(event,this,3)">★</span>
+        <span onclick="avaliar(event,this,4)">★</span>
+        <span onclick="avaliar(event,this,5)">★</span>
+      </div>
+
+      <div class="produto-indisponivel">
+        <span>✨ LANÇAMENTO EM BREVE</span>
+        <p>As camisetas básicas da MS estarão disponíveis em breve.</p>
+      </div>
+
+    </div>
+
+    <!-- CAMISETA BÁSICA ROSA -->
+    <div class="card-produto produto-em-breve"
+      data-nome="Camiseta Básica Rosa"
+      data-img="camisa rosa.jpeg,modelo camisa rosa.jpeg">
+
+
+      <div class="produto-img" onclick="abrirProdutoDetalheCard(this.closest('.card-produto'))">
+        <img src="camisa rosa.jpeg" class="foto-normal">
+        <img src="modelo camisa rosa.jpeg" class="foto-hover">
+      </div>
+
+      <h3>Camiseta Básica Rosa</h3>
+
+      <div class="avaliacao-produto">
+        <span onclick="avaliar(event,this,1)">★</span>
+        <span onclick="avaliar(event,this,2)">★</span>
+        <span onclick="avaliar(event,this,3)">★</span>
+        <span onclick="avaliar(event,this,4)">★</span>
+        <span onclick="avaliar(event,this,5)">★</span>
+      </div>
+
+      <div class="produto-indisponivel">
+        <span>✨ LANÇAMENTO EM BREVE</span>
+        <p>As camisetas básicas da MS estarão disponíveis em breve.</p>
+      </div>
 
     </div>
 
@@ -1328,15 +2019,280 @@ data-img="Camiseta Oversized Bege.jpeg">
 </section>
 
 
+
+
+<!-- CONJUNTOS -->
+<section class="produtos" id="conjuntos">
+
+  <div class="titulo-section">
+    <p>Produtos</p>
+    <h2>Conjuntos MS</h2>
+  </div>
+
+  <div class="grid-produtos">
+
+    <!-- CONJUNTO branco --> 
+    <div class="card-produto"
+      data-nome="Conjunto-branco"
+      data-preco="89.90"
+      data-img="conjunto-branco.jpeg"
+      data-fotos="conjunto-branco.jpeg,modelo-conjunto-branco.jpeg">
+      
+
+      <span class="selo-produto">NOVIDADE</span>
+
+      <button class="btn-favorito" onclick="favoritarProduto(this, event)">
+        ♡
+      </button>
+
+      <div class="produto-img"
+        onclick="abrirProdutoDetalheCard(this.closest('.card-produto'))">
+
+        <img src="conjunto-branco.jpeg" class="foto-normal">
+
+        <img src="modelo-conjuto-branco.jpeg" class="foto-hover">
+
+      </div>
+
+      <h3>Conjunto Branco MS</h3>
+
+      <div class="avaliacao-produto">
+        <span onclick="avaliar(event, this, 1)">★</span>
+        <span onclick="avaliar(event, this, 2)">★</span>
+        <span onclick="avaliar(event, this, 3)">★</span>
+        <span onclick="avaliar(event, this, 4)">★</span>
+        <span onclick="avaliar(event, this, 5)">★</span>
+      </div>
+
+      <div class="preco-box">
+        <span class="preco-antigo">R$ 180,90</span>
+        <p class="preco">R$ 89,90</p>
+        <span class="parcelamento">em até 5x sem juros</span>
+      </div>
+
+      <div class="tamanhos">
+        <button onclick="selecionarTamanho(this,'P')">P</button>
+        <button onclick="selecionarTamanho(this,'M')">M</button>
+        <button onclick="selecionarTamanho(this,'G')">G</button>
+        <button onclick="selecionarTamanho(this,'GG')">GG</button>
+      </div>
+
+      <button
+        class="btn-comprar"
+        onclick="adicionarCarrinho(this)"
+        data-nome="Conjunto Branco MS"
+        data-preco="89.90"
+        data-img="conjunto-branco.jpeg">
+
+        <span>ADICIONAR AO CARRINHO</span>
+        <span class="icone-btn-carrinho">🛒</span>
+
+      </button>
+      
+
+    </div>
+    <!-- CONJUNTO PRETO -->
+<div class="card-produto"
+data-nome="Conjunto Preto MS"
+data-preco="89.90"
+data-img="conjunto-preto.jpeg"
+data-fotos="conjunto-preto.jpeg,modelo-conjunto-preto.jpeg">
+
+<span class="selo-produto">NOVIDADE</span>
+
+<button class="btn-favorito"
+onclick="favoritarProduto(this, event)">
+♡
+</button>
+
+<div class="produto-img"
+onclick="abrirProdutoDetalheCard(this.closest('.card-produto'))">
+
+<img src="conjunto-preto.jpeg" class="foto-normal">
+
+<img src="modelo-conjunto-preto.jpeg"
+class="foto-hover">
+
 </div>
 
+<h3>CONJUNTO PRETO MS</h3>
+
+<div class="avaliacao-produto">
+<span onclick="avaliar(event, this, 1)">★</span>
+<span onclick="avaliar(event, this, 2)">★</span>
+<span onclick="avaliar(event, this, 3)">★</span>
+<span onclick="avaliar(event, this, 4)">★</span>
+<span onclick="avaliar(event, this, 5)">★</span>
+</div>
+
+<div class="preco-box">
+<span class="preco-antigo">R$ 180,90</span>
+
+<p class="preco">R$ 89,90</p>
+
+<span class="parcelamento">
+em até 5x sem juros
+</span>
+</div>
+
+<div class="tamanhos">
+<button onclick="selecionarTamanho(this,'P')">P</button>
+<button onclick="selecionarTamanho(this,'M')">M</button>
+<button onclick="selecionarTamanho(this,'G')">G</button>
+<button onclick="selecionarTamanho(this,'GG')">GG</button>
+</div>
+
+<button
+class="btn-comprar"
+onclick="adicionarCarrinho(this)"
+data-nome="Conjunto Preto MS"
+data-preco="89,90"
+data-img="conjunto-preto.jpeg">
+
+<span>ADICIONAR AO CARRINHO</span>
+<span class="icone-btn-carrinho">🛒</span>
+
+</button>
+
+
+
+</div>
+<!-- CONJUNTO ROSA -->
+<div class="card-produto"
+data-nome="Conjunto Rosa MS"
+data-preco="89.90"
+data-img="conjunto-rosa.jpeg"
+data-fotos="conjunto-rosa.jpeg,modelo-conjunto-rosa.jpeg">
+
+<span class="selo-produto">NOVIDADE</span>
+
+<button class="btn-favorito"
+onclick="favoritarProduto(this, event)">
+♡
+</button>
+
+<div class="produto-img"
+onclick="abrirProdutoDetalheCard(this.closest('.card-produto'))">
+
+<img src="conjunto-rosa.jpeg" class="foto-normal">
+
+<img src="modelo-conjunto-rosa.jpeg"
+class="foto-hover">
+
+</div>
+
+<h3>CONJUNTO ROSA MS</h3>
+
+<div class="avaliacao-produto">
+<span onclick="avaliar(event, this, 1)">★</span>
+<span onclick="avaliar(event, this, 2)">★</span>
+<span onclick="avaliar(event, this, 3)">★</span>
+<span onclick="avaliar(event, this, 4)">★</span>
+<span onclick="avaliar(event, this, 5)">★</span>
+</div>
+
+<div class="preco-box">
+<span class="preco-antigo">R$ 180,90</span>
+
+<p class="preco">R$ 89,90</p>
+
+<span class="parcelamento">
+em até 5x sem juros
+</span>
+</div>
+
+<div class="tamanhos">
+<button onclick="selecionarTamanho(this,'P')">P</button>
+<button onclick="selecionarTamanho(this,'M')">M</button>
+<button onclick="selecionarTamanho(this,'G')">G</button>
+<button onclick="selecionarTamanho(this,'GG')">GG</button>
+</div>
+
+<button
+class="btn-comprar"
+onclick="adicionarCarrinho(this)"
+data-nome="Conjunto Rosa MS"
+data-preco="89,90"
+data-img="conjunto-rosa.jpeg">
+
+<span>ADICIONAR AO CARRINHO</span>
+<span class="icone-btn-carrinho">🛒</span>
+
+</button>
+
+</div>
+<!-- CONJUNTO BEGE  -->
+<div class="card-produto"
+data-nome="Conjunto BEGE MS"
+data-preco="89.90"
+data-img="conjunto-bege.jpeg"
+data-fotos="conjunto-bege.jpeg,modelo-conjunto-bege.jpeg">
+
+<span class="selo-produto">LIMITADO</span>
+
+<button class="btn-favorito"
+onclick="favoritarProduto(this, event)">
+♡
+</button>
+
+<div class="produto-img"
+onclick="abrirProdutoDetalheCard(this.closest('.card-produto'))">
+
+<img src="conjunto-bege.jpeg" class="foto-normal">
+
+<img src="modelo-conjunto-bege.jpeg"
+class="foto-hover">
+
+</div>
+
+<h3>CONJUNTO BEGE MS</h3>
+
+<div class="avaliacao-produto">
+<span onclick="avaliar(event, this, 1)">★</span>
+<span onclick="avaliar(event, this, 2)">★</span>
+<span onclick="avaliar(event, this, 3)">★</span>
+<span onclick="avaliar(event, this, 4)">★</span>
+<span onclick="avaliar(event, this, 5)">★</span>
+</div>
+
+<div class="preco-box">
+<span class="preco-antigo">R$ 180.90</span>
+
+<p class="preco">R$ 89.90</p>
+
+<span class="parcelamento">
+em até 5x sem juros
+</span>
+</div>
+
+<div class="tamanhos">
+<button onclick="selecionarTamanho(this,'P')">P</button>
+<button onclick="selecionarTamanho(this,'M')">M</button>
+<button onclick="selecionarTamanho(this,'G')">G</button>
+<button onclick="selecionarTamanho(this,'GG')">GG</button>
+</div>
+
+<button
+class="btn-comprar"
+onclick="adicionarCarrinho(this)"
+data-nome="Conjunto BEGE MS"
+data-preco="159.90"
+data-img="conjunto-bege.jpeg">
+
+<span>ADICIONAR AO CARRINHO</span>
+<span class="icone-btn-carrinho">🛒</span>
+
+</button>
+
+</div>
+    
+
   </div>
+
 </section>
 
-   
 
-  </div>
-</section>
+
   <!-- MODAL CONTATO -->
   <div class="modal-contato" id="modalContato">
     <div class="box-contato">
@@ -1500,118 +2456,6 @@ data-img="Camiseta Oversized Bege.jpeg">
     </div>
   </div>
 
-  <!-- DETALHE DO PRODUTO MOBILE -->
-  <!-- DETALHE DO PRODUTO MOBILE -->
-
-<div class="produto-detalhe" id="produtoDetalhe">
-  <button class="fechar-detalhe" onclick="fecharProdutoDetalhe()">
-✕
-</button>
-
-  <button class="voltar-produto" onclick="fecharProdutoDetalhe()">
-    ←
-  </button>
-
-  <div class="detalhe-container">
-
-    <div class="galeria-lateral">
-
-      <div class="miniaturas-detalhe" id="miniaturasDetalhe"></div>
-
-      <div class="imagem-principal">
-
-      
-
-        <button class="seta-galeria esquerda" onclick="trocarFotoDetalhe(-1)">
-          ❮
-        </button>
-
-        <img id="detalheImg" src="" alt="Produto">
-
-        <button class="seta-galeria direita" onclick="trocarFotoDetalhe(1)">
-          ❯
-        </button>
-
-      </div>
-
-     
-
-    </div>
-
-    <div class="info-detalhe">
-
-      <p class="tag-detalhe">MS MATIAS STYLE</p>
-
-      <h2 id="detalheNome"></h2>
-
-      <p class="descricao-detalhe">
-        Produto premium MS, feito para conforto e estilo no dia a dia.
-      </p>
-
-      <div class="avaliacao-detalhe">
-        ★★★★★ <span>4.9 • 248 avaliações</span>
-        <b>✔ Tamanho fiel</b>
-      </div>
-
-      <p class="detalhe-preco" id="detalhePreco"></p>
-
-      <p class="parcelamento-detalhe">
-        💳 Até 3x de R$ 33,33 sem juros
-      </p>
-
-      <div class="beneficios-detalhe">
-        <div>🌿 <strong>Algodão premium</strong><span>Tecido macio</span></div>
-        <div>👕 <strong>Caimento oversized</strong><span>Modelagem moderna</span></div>
-       
-       
-      </div>
-
-      <p class="label-tamanho">Escolha o tamanho</p>
-
-      <div class="tamanhos detalhe-tamanhos">
-        <button onclick="selecionarTamanho(this, 'P')">P</button>
-        <button onclick="selecionarTamanho(this, 'M')">M</button>
-        <button onclick="selecionarTamanho(this, 'G')">G</button>
-        <button onclick="selecionarTamanho(this, 'GG')">GG</button>
-      </div>
-
-    
-
-      <button class="btn-detalhe-carrinho" onclick="adicionarProdutoDetalhe()">
-        🛒 ADICIONAR AO CARRINHO
-      </button>
-
-      <button class="btn-comprar-agora" onclick="comprarAgoraDetalhe()">
-  ⚡ COMPRAR AGORA
-  <span>Receba antes de todos</span>
-</button>
-   
-
-      <div class="descricao-acordeon">
-        <details open>
-          <summary>DESCRIÇÃO DO PRODUTO</summary>
-          <p>Moletom premium MS, desenvolvido com tecido de alta qualidade para máximo conforto e estilo.</p>
-        </details>
-
-        <details>
-          <summary>DETALHES DO PRODUTO</summary>
-          <p>Logo MS, costura reforçada, acabamento premium e caimento moderno.</p>
-        </details>
-
-        <details>
-          <summary>COMPOSIÇÃO</summary>
-          <p>Algodão, poliéster e elastano para conforto, durabilidade e elasticidade.</p>
-        </details>
-
-        <details>
-          <summary>CUIDADOS COM A PEÇA</summary>
-          <p>Lavar do avesso, não usar alvejante e secar à sombra.</p>
-        </details>
-      </div>
-
-    </div>
-
-  </div>
 
 </div>
 <script src="script.js"></script>
@@ -1620,43 +2464,353 @@ data-img="Camiseta Oversized Bege.jpeg">
   <img src="logo.png" alt="MS">
   <span>Produto adicionado ao carrinho</span>
 </div>
+<!-- MODAL PRODUTO PC -->
+<div class="produto-detalhe" id="produtoDetalhe">
+
+  <div class="barra-beneficios-topo">
+    <span>🚚 FRETE PARA TODO O BRASIL</span>
+    <span>💳 PARCELE EM ATÉ 3X SEM JUROS</span>
+    <span>🔁 TROCA GARANTIDA EM ATÉ 7 DIAS</span>
+  </div>
+
+  <button class="fechar-detalhe" onclick="fecharProdutoDetalhe()">×</button>
+
+  <div class="produto-detalhe-page">
+
+    <div class="breadcrumb-produto">
+      <span>Início</span>
+      <span>›</span>
+      <span>Moletom</span>
+      <span>›</span>
+      <strong id="breadcrumbNome">Produto MS</strong>
+    </div>
+
+    <div class="produto-layout-novo">
+
+      <!-- MINIATURAS -->
+      <div class="galeria-produto-nova">
+
+        <button class="thumb-seta">⌃</button>
+
+        <div class="miniaturas-detalhe" id="miniaturasDetalhe"></div>
+
+        <button class="thumb-seta">⌄</button>
+
+      </div>
+
+      <!-- IMAGEM -->
+      <div class="imagem-produto-nova">
+
+        <img id="detalheImg" src="" alt="Produto" onclick="abrirZoom()">
+
+        
+
+      </div>
+
+      <!-- INFO -->
+      <div class="info-produto-nova">
+
+        <p class="tag-detalhe">MS MATIAS STYLE</p>
+
+        <h2 id="detalheNome"></h2>
+
+        <div class="avaliacao-detalhe">
+          <span class="estrelas">★★★★★</span>
+        
+        </div>
+
+        <span class="preco-antigo" id="detalhePrecoAntigo"></span>
+
+<span class="preco-antigo"></span>
+
+<p class="preco-detalhe" id="detalhePreco"></p>
+
+<p class="parcelamento-detalhe">
+  💳 Até 3x sem juros
+</p>
+
+        <hr>
+
+       <div class="cores-produto" id="coresProdutoDetalhe">
+    <p class="label-cor">Selecione a cor</p>
+    <div class="opcoes-cores" id="opcoesCoresDetalhe"></div>
+</div>
+
+
+<p>Selecione o tamanho</p>
+
+        <div class="tamanhos-detalhe">
+
+          <button class="tamanho-btn"
+onclick="selecionarTamanho(this, 'P')">
+P
+</button>
+
+          <button class="tamanho-btn"
+onclick="selecionarTamanho(this, 'M')">
+M
+</button>
+
+          <button class="tamanho-btn"
+onclick="selecionarTamanho(this, 'G')">
+G
+</button>
+
+          <button class="tamanho-btn"
+onclick="selecionarTamanho(this, 'GG')">
+GG
+</button>
+
+        </div>
+        <div class="controle-qtd">
+  <button onclick="alterarQtdDetalhe(-1)">−</button>
+  <span id="qtdProdutoDetalhe">1</span>
+  <button onclick="alterarQtdDetalhe(1)">+</button>
+
+</div>
+
+        <!-- COMPRAR -->
+       <button class="btn-comprar-agora"
+onclick="comprarAgoraDetalhe(); return false;">
+
+⚡ COMPRAR AGORA
+
+<span> COMPRA AGORA</span>
+
+</button>
+
+        <!-- CARRINHO -->
+        <button class="btn-add-carrinho-detalhe"
+onclick="adicionarProdutoDetalhe(); return false;">
+
+🛍️ ADICIONAR AO CARRINHO
+
+</button>
+
+      </div>
+
+    </div>
+
+    <!-- BENEFICIOS -->
+    <div class="beneficios-produto-baixo">
+
+      <div>
+        <strong>🚚 Entrega rastreada</strong>
+        <p>Acompanhe seu pedido até sua casa</p>
+      </div>
+
+      <div>
+        <strong>🔁 Troca garantida</strong>
+        <p>Até 7 dias após o recebimento</p>
+      </div>
+
+      <div>
+        <strong>🛡️ Compra segura</strong>
+        <p>Seus dados protegidos com segurança</p>
+      </div>
+
+    </div>
+
+<div class="menu-descricao-produto">
+
+  <div class="aba-info">
+  <button class="titulo-info" onclick="toggleInfo(this)">
+    TABELA DE MEDIDAS
+  </button>
+
+  <div class="conteudo-info">
+    <span id="descricaoProduto"></span>
+  </div>
+</div>
+
+<div class="aba-info">
+  <button class="titulo-info" onclick="toggleInfo(this)">
+    DETALHES DO PRODUTO
+  </button>
+
+  <div class="conteudo-info">
+    <span id="detalhesProduto"></span>
+  </div>
+</div>
+
+<div class="aba-info">
+  <button class="titulo-info" onclick="toggleInfo(this)">
+    COMPOSIÇÃO
+  </button>
+
+  <div class="conteudo-info">
+    <span id="composicaoProduto"></span>
+  </div>
+</div>
+
+<div class="aba-info">
+  <button class="titulo-info" onclick="toggleInfo(this)">
+    CUIDADOS COM A PEÇA
+  </button>
+
+  <div class="conteudo-info">
+    <span id="cuidadosProduto"></span>
+  </div>
+</div>
+  
+
+
+</div> <!-- fecha menu-descricao-produto -->
+
+<section class="recomendados-ms">
+  <div class="recomendados-topo-ms">
+    <h3>VOCÊ PODE GOSTAR DESSES TAMBÉM</h3>
+    <button type="button">Ver mais ›</button>
+  </div>
+
+  <div class="recomendados-lista-ms">
+    <article class="recomendado-card-ms" onclick="abrirRecomendadoMS('Jaqueta Azul MS',89.90,'jaqueta azul.png','jaqueta azul.png,modelo jaqueta azul.png')">
+  <button type="button" class="rec-fav-ms">♡</button>
+  <img src="jaqueta azul.png">
+  <div><h4>Jaqueta Azul MS</h4><strong>R$ 89,90</strong><p>Até 5x sem juros</p></div>
+</article>
+
+    <article class="recomendado-card-ms" onclick="abrirRecomendadoMS('Moletom Branco MS',100,'moletom-branco.png','moletom-branco.png,modelo-offwhite.png')">
+      <button type="button" class="rec-fav-ms">♡</button>
+      <img src="moletom-branco.png">
+      <div><h4>Moletom Branco MS</h4><strong>R$ 89,90</strong><p>Até 5x sem juros</p></div>
+    </article>
+
+    <article class="recomendado-card-ms" onclick="abrirRecomendadoMS('Moletom Bege MS',89.90,'moletom-bege.jpeg','moletom-bege.jpeg,modelo-moletom-bege.png')">
+      <button type="button" class="rec-fav-ms">♡</button>
+      <img src="moletom-bege.jpeg">
+      <div><h4>Moletom Bege MS</h4><strong>R$ 89,90</strong><p>Até 5x sem juros</p></div>
+    </article>
+
+    <article class="recomendado-card-ms" onclick="abrirRecomendadoMS('Moletom Azul MS',100,'moletom-azul.png','modelo-moletom-azul.png,moletom-azul.png')">
+      <button type="button" class="rec-fav-ms">♡</button>
+      <img src="moletom-azul.png">
+      <div><h4>Moletom Azul MS</h4><strong>R$ 89,90</strong><p>Até 5x sem juros</p></div>
+    </article>
+
+    
+
+<article class="recomendado-card-ms"
+  onclick="abrirRecomendadoMS('Conjunto Preto MS',100,'conjunto-preto.jpeg','conjunto-preto.JPEG,modelo-conjunto-preto.jpeg')">
+  <button type="button" class="rec-fav-ms">♡</button>
+  <img src="conjunto-preto.jpeg">
+  <div>
+    <h4>Conjunto Preto MS</h4>
+    <strong>R$ 100,00</strong>
+    <p>Até 3x sem juros</p>
+  </div>
+</article>
+  </div>
+</section>
+
+<footer class="rodape-detalhe-ms">
+  <div>
+    <strong>MS MATIAS STYLE</strong>
+    <p>Atendimento ao cliente</p>
+    <p>WhatsApp: (51) 99339-5884</p>
+    <p>matiasstlyeofc@gmail.com</p>
+  </div>
+
+  <div>
+    <strong>INSTITUCIONAL</strong>
+    <a>Sobre nós</a>
+    <a>Trocas e devoluções</a>
+    <a>Política de privacidade</a>
+  </div>
+
+  
+
+  <div>
+    <strong>COMPRA 100% SEGURA</strong>
+    <div class="pagamentos-ms">
+  <span>💳 Visa</span>
+  <span>💳 Mastercard</span>
+  <span>⚡ Pix</span>
+  <span>🏦 Boleto</span>
+</div>
+
+<div class="footer-copy">
+  © 2024 MS Matias Style • 
+</div>
+
+  </div> <!-- fecha coluna compra segura -->
+
+</footer>
+
+<div class="ms-final-banner">
+  ✨ Obrigado por visitar a MS Matias Style
+</div>
+
+</div> <!-- fecha produto-detalhe-page -->
+</div> <!-- fecha produtoDetalhe -->
+
 <!-- MODAL PRODUTO MOBILE -->
 <div class="produto-detalhe-mobile" id="produtoDetalheMobile">
+
   <div class="detalhe-topo">
+
     <button onclick="fecharDetalheMobile()">‹</button>
+
     <button id="favoritoDetalhe">♡</button>
+
   </div>
 
   <div class="detalhe-img">
-    <img id="detalheImg" src="">
+    <img id="detalheImgMobile" src="">
   </div>
 
-  <h2 class="detalhe-nome" id="detalheNome"></h2>
-  <p class="detalhe-preco" id="detalhePreco"></p>
-  <span class="detalhe-parcela">em até 2x sem juros</span>
+  <h2 class="detalhe-nome" id="detalheNomeMobile"></h2>
+
+  <p class="detalhe-preco" id="detalhePrecoMobile"></p>
+
+  <span class="detalhe-parcela">
+    em até 2x sem juros
+  </span>
 
   <p class="detalhe-label">Tamanho</p>
+
   <div class="detalhe-tamanhos">
-    <button onclick="selecionarTamanhoDetalhe(this,'P')">P</button>
-    <button onclick="selecionarTamanhoDetalhe(this,'M')">M</button>
-    <button onclick="selecionarTamanhoDetalhe(this,'G')">G</button>
-    <button onclick="selecionarTamanhoDetalhe(this,'GG')">GG</button>
+
+    <button onclick="selecionarTamanhoDetalhe(this,'P')">
+      P
+    </button>
+
+    <button onclick="selecionarTamanhoDetalhe(this,'M')">
+      M
+    </button>
+
+    <button onclick="selecionarTamanhoDetalhe(this,'G')">
+      G
+    </button>
+
+    <button onclick="selecionarTamanhoDetalhe(this,'GG')">
+      GG
+    </button>
+
   </div>
 
-  <button class="detalhe-comprar" onclick="comprarProdutoDetalheMobile()">
-    🛍️ Adicionar ao carrinho
-  </button>
+  <button class="detalhe-comprar"
+onclick="comprarProdutoDetalheMobile()">
+
+🛍️ Adicionar ao carrinho
+
+</button>
+
 </div>
 
+<!-- MENU MOBILE -->
 <nav class="menu-mobile-ms">
 
   <!-- INICIO -->
   <a href="#inicio" class="ativo">
+
     <span>⌂</span>
+
     Início
+
   </a>
 
-  <!-- CATEGORIAS NO MEIO -->
+  <!-- CATEGORIAS -->
   <a href="#categoriasHome" class="btn-menu-mobile">
 
     <div class="icone-grid">
@@ -1670,15 +2824,18 @@ data-img="Camiseta Oversized Bege.jpeg">
 
   </a>
 
-  <!-- CARRINHO NA DIREITA -->
+  <!-- CARRINHO -->
   <a href="#"
 onclick="abrirCarrinhoMobileMS(); return false;"
 class="btn-topo btn-com-badge">
 
 <span>🛒</span>
 
-<span id="contadorCarrinho" class="badge-topo">
+<span id="contadorCarrinho"
+class="badge-topo">
+
 0
+
 </span>
 
 Carrinho
@@ -1686,6 +2843,8 @@ Carrinho
 </a>
 
 </nav>
+
+
 <div class="menu-lateral-mobile" id="menuLateralMobile">
 
   <button class="fechar-menu-mobile"
@@ -1722,9 +2881,19 @@ Carrinho
   </a>
 
   <a href="#calcas"
-  onclick="fecharMenuMobile()">
-  Calças
-  </a>
+   onclick="fecharMenuMobile()">
+   Calças
+</a>
+
+<a href="#camisetas-basicas"
+   onclick="fecharMenuMobile()">
+   Camisetas Básicas
+</a>
+
+<a href="#conjuntos"
+   onclick="fecharMenuMobile()">
+   Conjuntos
+</a>
 
   <div class="menu-contato-mobile">
 
@@ -1824,9 +2993,9 @@ onclick="window.scrollTo({top:0, behavior:'smooth'})">
   </div>
 
   <div class="cmms-etapas">
-    <span class="ativo" id="cmmsStep1">1<br>Produtos</span>
-    <span id="cmmsStep2">2<br>Frete</span>
-    <span id="cmmsStep3">3<br>Pagamento</span>
+    <span class="ativo" id="cmmsStep1">1 Produtos</span>
+    <span id="cmmsStep2">2 Frete</span>
+    <span id="cmmsStep3">3 Pagamento</span>
   </div>
 
   <div id="cmmsEtapaProdutos" class="cmms-etapa ativa">
@@ -1849,7 +3018,7 @@ onclick="window.scrollTo({top:0, behavior:'smooth'})">
   </div>
 
   <div id="cmmsEtapaFrete" class="cmms-etapa">
-    <label>Digite seu CEP</label>
+    
 
 <input
   id="cepCheckout"
@@ -2153,5 +3322,90 @@ window.voltarFreteMS = function(){
 <div id="toastMS" class="toast-ms">
   🛒 Produto adicionado ao carrinho
 </div>
+<div id="toastMS" class="toast-ms"></div>
+
+<script>
+/* ===== CORREÇÃO MS: carrinho certo no PC e mobile ===== */
+(function(){
+  function abrirCarrinhoPCMS(){
+    var carrinhoMobile = document.getElementById('carrinhoMobileMS');
+    if (carrinhoMobile) {
+      carrinhoMobile.style.display = 'none';
+      carrinhoMobile.classList.remove('ativo');
+    }
+
+    var fundoMobile = document.getElementById('fundoCarrinhoMobileMS');
+    if (fundoMobile) {
+      fundoMobile.style.display = 'none';
+      fundoMobile.classList.remove('ativo');
+    }
+
+    var fundo = document.getElementById('fundoCarrinho');
+    var carrinho = document.getElementById('carrinho');
+
+    if (fundo) {
+      fundo.style.display = 'block';
+      fundo.classList.add('ativo');
+    }
+
+    if (carrinho) {
+      carrinho.style.display = 'block';
+      carrinho.classList.add('ativo');
+      carrinho.classList.add('aberto');
+    }
+
+    if (typeof atualizarCarrinho === 'function') atualizarCarrinho();
+    if (typeof carregarCarrinho === 'function') carregarCarrinho();
+    if (typeof irCarrinhoPC === 'function') irCarrinhoPC();
+  }
+
+  window.abrirCarrinhoPCMS = abrirCarrinhoPCMS;
+
+  window.abrirCarrinhoResponsivoMS = function(){
+    if (window.innerWidth <= 768) {
+      if (typeof window.abrirCarrinhoMobileMS === 'function') {
+        window.abrirCarrinhoMobileMS();
+      }
+    } else {
+      abrirCarrinhoPCMS();
+    }
+  };
+
+  window.abrirCarrinhoMS = window.abrirCarrinhoResponsivoMS;
+})();
+</script>
+<div id="zoomModal" class="zoom-modal" onclick="fecharZoom()">
+  <span class="fechar-zoom">✕</span>
+  <img id="zoomImg" src="">
+</div>
+
+<div id="msAlerta" class="ms-alerta">
+  <div class="ms-alerta-box">
+    <img src="logo.png" alt="MS">
+    <h3>MS Matias Style</h3>
+    <p id="msAlertaTexto"></p>
+
+    <button onclick="fecharAlertaMS()">
+      OK
+    </button>
+  </div>
+</div>
+
+<div id="toastCarrinhoMS" class="ms-toast-sucesso">
+  🛒 Produto adicionado ao carrinho
+</div>
+
+<script id="fix-fechar-carrinho-mobile-ms">
+window.fecharCarrinhoMobileMS = function(){
+  var modal = document.getElementById("carrinhoMobileMS");
+  if(modal){
+    modal.classList.remove("ativo");
+    modal.style.display = "none";
+    modal.style.visibility = "hidden";
+    modal.style.opacity = "0";
+    modal.style.pointerEvents = "none";
+  }
+};
+</script>
 </body>
 </html>
