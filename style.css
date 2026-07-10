@@ -14236,3 +14236,225 @@ body{
     line-height:1.5;
     margin:0;
 }
+/* ===============================
+   CHECKOUT MOBILE MS - PROFISSIONAL
+   Correção: dados completos do cliente + visual responsivo
+   =============================== */
+@media (max-width: 768px){
+  .checkout-ms{
+    width:100%;
+    min-height:100vh;
+    padding:18px 14px 110px;
+    background:linear-gradient(180deg,#080808 0%,#121212 42%,#f5f5f5 42%,#f5f5f5 100%);
+  }
+
+  .checkout-ms > h2{
+    color:#fff;
+    font-size:22px;
+    letter-spacing:-.03em;
+    margin:16px 0 14px;
+  }
+
+  .voltar-checkout{
+    width:42px;
+    height:42px;
+    border-radius:16px;
+    border:1px solid rgba(255,255,255,.18);
+    background:rgba(255,255,255,.08);
+    color:#fff;
+    backdrop-filter:blur(14px);
+    box-shadow:0 14px 35px rgba(0,0,0,.22);
+  }
+
+  .etapas{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:8px;
+    margin:0 0 16px;
+  }
+
+  .etapas span{
+    padding:11px 6px;
+    border-radius:999px;
+    background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.12);
+    color:rgba(255,255,255,.72);
+    font-size:12px;
+    text-align:center;
+    transition:.25s ease;
+  }
+
+  .etapas span.ativo{
+    background:linear-gradient(135deg,#d7b46a,#fff1b8);
+    color:#111;
+    border-color:rgba(255,255,255,.45);
+    box-shadow:0 12px 30px rgba(215,180,106,.25);
+    font-weight:800;
+  }
+
+  .etapa-checkout{
+    display:none;
+    background:rgba(255,255,255,.86);
+    border:1px solid rgba(0,0,0,.08);
+    border-radius:24px;
+    padding:16px;
+    box-shadow:0 20px 50px rgba(0,0,0,.18);
+    backdrop-filter:blur(18px);
+  }
+
+  .etapa-checkout.ativa{ display:block; }
+
+  .entrega-box h3,
+  .resumo-checkout h3,
+  .pagamento-box h3{
+    margin:0 0 14px;
+    color:#141414;
+    font-size:18px;
+    letter-spacing:-.03em;
+  }
+
+  .entrega-box input,
+  .cep-box input,
+  .linha-endereco input{
+    width:100%;
+    height:48px;
+    border-radius:14px;
+    border:1px solid rgba(0,0,0,.10);
+    background:#fff;
+    padding:0 14px;
+    font-size:14px;
+    outline:none;
+    margin-bottom:10px;
+    box-shadow:inset 0 1px 0 rgba(0,0,0,.02);
+  }
+
+  .entrega-box input:focus,
+  .cep-box input:focus,
+  .linha-endereco input:focus{
+    border-color:#d7b46a;
+    box-shadow:0 0 0 4px rgba(215,180,106,.18);
+  }
+
+  .cep-box{
+    display:grid;
+    grid-template-columns:1fr auto;
+    gap:8px;
+    align-items:start;
+  }
+
+  .btn-frete{
+    height:48px;
+    padding:0 14px;
+    border:0;
+    border-radius:14px;
+    background:#111;
+    color:#fff;
+    font-weight:800;
+    white-space:nowrap;
+  }
+
+  .linha-endereco{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+  }
+
+  .frete-opcao{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    padding:14px;
+    margin:8px 0;
+    border-radius:16px;
+    background:#fff;
+    border:1px solid rgba(0,0,0,.08);
+    box-shadow:0 10px 24px rgba(0,0,0,.06);
+  }
+
+  .frete-opcao.selecionado{
+    border-color:#d7b46a;
+    background:linear-gradient(135deg,#fffaf0,#ffffff);
+    box-shadow:0 14px 34px rgba(215,180,106,.20);
+  }
+
+  .resumo-checkout{
+    margin-top:14px;
+    background:#fff;
+    border:1px solid rgba(0,0,0,.08);
+    border-radius:20px;
+    padding:14px;
+  }
+
+  .resumo-checkout p{
+    display:flex;
+    justify-content:space-between;
+    gap:12px;
+    margin:8px 0;
+    color:#333;
+  }
+
+  .resumo-checkout p strong{ color:#111; }
+
+  .conferencia-pagamento{
+    display:grid;
+    gap:7px;
+  }
+
+  .conferencia-pagamento h4{
+    margin:0 0 8px;
+    font-size:15px;
+    color:#111;
+  }
+
+  .conferencia-pagamento p{
+    display:block;
+    margin:0;
+    font-size:13px;
+    line-height:1.35;
+    color:#444;
+  }
+
+  .pagamento-box{
+    margin-top:14px;
+    padding:16px;
+    border-radius:20px;
+    background:linear-gradient(135deg,#111,#242424);
+    color:#fff;
+    box-shadow:0 18px 40px rgba(0,0,0,.18);
+  }
+
+  .pagamento-box h3{ color:#fff; }
+  .pagamento-box p{ color:rgba(255,255,255,.75); }
+
+  .btn-continuar,
+  .btn-checkout,
+  .btn-finalizar{
+    width:100%;
+    min-height:52px;
+    border:0;
+    border-radius:16px;
+    margin-top:14px;
+    background:linear-gradient(135deg,#111,#2b2b2b);
+    color:#fff;
+    font-weight:900;
+    letter-spacing:.01em;
+    box-shadow:0 16px 35px rgba(0,0,0,.22);
+  }
+
+  .btn-finalizar{
+    background:linear-gradient(135deg,#d7b46a,#fff0b5);
+    color:#111;
+  }
+
+  .btn-limpar{
+    width:100%;
+    min-height:46px;
+    border:1px solid rgba(0,0,0,.10);
+    border-radius:14px;
+    margin-top:10px;
+    background:#fff;
+    color:#222;
+    font-weight:800;
+  }
+}

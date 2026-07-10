@@ -55,6 +55,7 @@ Continuar
   required
   oninput="formatarWhatsapp(this)"
 >
+        <input type="email" id="emailClienteMobile" placeholder="E-mail (opcional)">
 
         <div class="cep-box">
           <input type="text" id="cepCheckout" placeholder="Digite seu CEP">
@@ -73,7 +74,11 @@ Continuar
           <input type="text" id="bairroCliente" placeholder="Bairro">
         </div>
 
-        <input type="text" id="cidadeCliente" placeholder="Cidade">
+        <input type="text" id="complementoCliente" placeholder="Complemento (opcional)">
+        <div class="linha-endereco">
+          <input type="text" id="cidadeCliente" placeholder="Cidade">
+          <input type="text" id="estadoCliente" placeholder="UF" maxlength="2">
+        </div>
       </div>
 
       <div class="resumo-checkout">
@@ -113,17 +118,58 @@ class="btn-finalizar"
 >
 Finalizar compra
 </button>
+</form>
 
 <script>
-function enviarMercadoPago(){
+function pegarValor(id){
+  return document.getElementById(id)?.value?.trim() || "";
+}
+
+function montarPedidoMobileMS(){
   const carrinho = JSON.parse(localStorage.getItem("carrinho")) || [];
   const valorFrete = Number(localStorage.getItem("valorFreteMS")) || 0;
+  const freteSelecionado = JSON.parse(localStorage.getItem("freteSelecionadoMS") || "null");
 
-  document.getElementById("pedidoMercadoPago").value = JSON.stringify({
+  return {
+    origem: "mobile",
     items: carrinho,
-    valorFrete: valorFrete
-  });
+    valorFrete,
+    freteSelecionado,
+    nome: pegarValor("nomeClienteMobile"),
+    telefone: pegarValor("telefoneClienteMobile"),
+    whatsapp: pegarValor("telefoneClienteMobile"),
+    email: pegarValor("emailClienteMobile"),
+    cep: pegarValor("cepCheckout"),
+    rua: pegarValor("ruaCliente"),
+    numero: pegarValor("numeroCasa"),
+    complemento: pegarValor("complementoCliente"),
+    bairro: pegarValor("bairroCliente"),
+    cidade: pegarValor("cidadeCliente"),
+    estado: pegarValor("estadoCliente")
+  };
+}
 
+function enviarMercadoPago(){
+  const pedido = montarPedidoMobileMS();
+
+  if(!pedido.items.length){
+    alert("Carrinho vazio.");
+    return;
+  }
+
+  if(!pedido.nome || pedido.telefone.replace(/\D/g, "").length < 10){
+    alert("Preencha nome e WhatsApp antes de finalizar.");
+    mostrarEtapa("etapaEntrega");
+    return;
+  }
+
+  if(!pedido.cep || !pedido.rua || !pedido.numero || !pedido.bairro || !pedido.cidade || !pedido.estado){
+    alert("Preencha o endereço completo antes de finalizar.");
+    mostrarEtapa("etapaEntrega");
+    return;
+  }
+
+  document.getElementById("pedidoMercadoPago").value = JSON.stringify(pedido);
   document.getElementById("formMercadoPago").submit();
 }
 

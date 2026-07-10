@@ -159,6 +159,12 @@ renderCarrinhoMobileMS();
   mostrarToastMS();
 }
 
+
+// Compatibilidade: alguns botões antigos chamam adicionarAoCarrinho(this)
+function adicionarAoCarrinho(botao) {
+  return adicionarCarrinho(botao);
+}
+
 function adicionarProdutoDetalhe() {
 
   console.log("Quantidade escolhida:", quantidadeDetalhe);
@@ -360,20 +366,24 @@ function atualizarTotaisMobile() {
   if (resumoPagamentoMobile) {
     const nome = document.getElementById("nomeClienteMobile")?.value || "";
     const telefone = document.getElementById("telefoneClienteMobile")?.value || "";
+    const email = document.getElementById("emailClienteMobile")?.value || "";
     const cep = document.getElementById("cepCheckout")?.value || "";
     const rua = document.getElementById("ruaCliente")?.value || "";
     const numero = document.getElementById("numeroCasa")?.value || "";
+    const complemento = document.getElementById("complementoCliente")?.value || "";
     const bairro = document.getElementById("bairroCliente")?.value || "";
     const cidade = document.getElementById("cidadeCliente")?.value || "";
+    const estado = document.getElementById("estadoCliente")?.value || "";
 
     resumoPagamentoMobile.innerHTML = `
       <div class="conferencia-pagamento">
         <h4>Dados da entrega</h4>
         <p><strong>Nome:</strong> ${nome}</p>
         <p><strong>WhatsApp:</strong> ${telefone}</p>
-        <p><strong>Endereço:</strong> ${rua}, ${numero}</p>
+        ${email ? `<p><strong>E-mail:</strong> ${email}</p>` : ""}
+        <p><strong>Endereço:</strong> ${rua}, ${numero}${complemento ? ` - ${complemento}` : ""}</p>
         <p><strong>Bairro:</strong> ${bairro}</p>
-        <p><strong>Cidade:</strong> ${cidade}</p>
+        <p><strong>Cidade/UF:</strong> ${cidade} - ${estado}</p>
         <p><strong>CEP:</strong> ${cep}</p>
         <p><strong>Frete:</strong> ${dinheiro(valorFrete)}</p>
       </div>
@@ -454,8 +464,47 @@ function irEntrega() {
   atualizarTexto("tituloEtapa", "Entrega");
 }
 
+
+function salvarDadosClienteMobileMS() {
+  const dados = {
+    nome: document.getElementById("nomeClienteMobile")?.value?.trim() || "",
+    telefone: document.getElementById("telefoneClienteMobile")?.value?.trim() || "",
+    email: document.getElementById("emailClienteMobile")?.value?.trim() || "",
+    cep: document.getElementById("cepCheckout")?.value?.trim() || "",
+    rua: document.getElementById("ruaCliente")?.value?.trim() || "",
+    numero: document.getElementById("numeroCasa")?.value?.trim() || "",
+    complemento: document.getElementById("complementoCliente")?.value?.trim() || "",
+    bairro: document.getElementById("bairroCliente")?.value?.trim() || "",
+    cidade: document.getElementById("cidadeCliente")?.value?.trim() || "",
+    estado: document.getElementById("estadoCliente")?.value?.trim() || ""
+  };
+  localStorage.setItem("dadosClienteMS", JSON.stringify(dados));
+  return dados;
+}
+
+function restaurarDadosClienteMobileMS() {
+  const dados = JSON.parse(localStorage.getItem("dadosClienteMS") || "{}");
+  const mapa = {
+    nomeClienteMobile: dados.nome,
+    telefoneClienteMobile: dados.telefone,
+    emailClienteMobile: dados.email,
+    cepCheckout: dados.cep,
+    ruaCliente: dados.rua,
+    numeroCasa: dados.numero,
+    complementoCliente: dados.complemento,
+    bairroCliente: dados.bairro,
+    cidadeCliente: dados.cidade,
+    estadoCliente: dados.estado
+  };
+  Object.entries(mapa).forEach(([id, valor]) => {
+    const el = document.getElementById(id);
+    if (el && valor) el.value = valor;
+  });
+}
+
 function irPagamento() {
 
+  const nome = document.getElementById("nomeClienteMobile")?.value.trim();
   const cep = document.getElementById("cepCheckout")?.value.trim();
   const whats = document.getElementById("telefoneClienteMobile")?.value.trim();
   const rua = document.getElementById("ruaCliente")?.value.trim();
@@ -463,6 +512,11 @@ function irPagamento() {
   const bairro = document.getElementById("bairroCliente")?.value.trim();
   const cidade = document.getElementById("cidadeCliente")?.value.trim();
   const estado = document.getElementById("estadoCliente")?.value.trim();
+
+  if (!nome || nome.length < 3) {
+    alert("Preencha seu nome completo.");
+    return;
+  }
 
   if (!cep || cep.replace(/\D/g, "").length < 8) {
     alert("Preencha o CEP corretamente.");
@@ -484,7 +538,9 @@ function irPagamento() {
     return;
   }
 
+  salvarDadosClienteMobileMS();
   mostrarEtapa("etapaPagamento");
+  atualizarTotaisMobile();
 
   const carrinho = JSON.parse(localStorage.getItem("carrinho")) || [];
 
@@ -494,11 +550,11 @@ function irPagamento() {
 
   const total = subtotal + Number(valorFrete || 0);
 
-  document.getElementById("fretePagamentoMobile").innerText =
-    dinheiro(valorFrete);
+  const fretePagamentoMobile = document.getElementById("fretePagamentoMobile");
+  if (fretePagamentoMobile) fretePagamentoMobile.innerText = dinheiro(valorFrete);
 
-  document.getElementById("totalPagamentoMobile").innerText =
-    dinheiro(total);
+  const totalPagamentoMobile = document.getElementById("totalPagamentoMobile");
+  if (totalPagamentoMobile) totalPagamentoMobile.innerText = dinheiro(total);
 
 }
 function voltarCheckoutMobile() {
@@ -1061,7 +1117,7 @@ async function finalizarCompra(event) {
       return false;
     }
 
-    window.location.replace(dados.init_point);
+    window.open(dados.init_point, "_blank");
     return false;
 
   } catch (erro) {
@@ -2190,10 +2246,14 @@ async function buscarEnderecoCheckout() {
     return;
   }
 
-  document.getElementById("ruaClienteMobile").value = dados.logradouro || "";
-  document.getElementById("bairroClienteMobile").value = dados.bairro || "";
-  document.getElementById("cidadeClienteMobile").value = dados.localidade || "";
-  document.getElementById("estadoClienteMobile").value = dados.uf || "";
+  const rua = document.getElementById("ruaCliente");
+  const bairro = document.getElementById("bairroCliente");
+  const cidade = document.getElementById("cidadeCliente");
+  const estado = document.getElementById("estadoCliente");
+  if (rua) rua.value = dados.logradouro || "";
+  if (bairro) bairro.value = dados.bairro || "";
+  if (cidade) cidade.value = dados.localidade || "";
+  if (estado) estado.value = dados.uf || "";
 }
 function atualizarResumoPagamentoMS() {
   const carrinho = JSON.parse(localStorage.getItem("carrinho")) || [];
@@ -3732,7 +3792,7 @@ function trocarCorDetalhe(card, cor, botao) {
   }
 
   function baseDoNomeMS(nome){
-    let base = ' ' + normalizarMS(nome).replace(/\bms\b/g,'') + ' ';
+    let base = ' ' + normalizarMS(nome).replace(/\bmoleto\b/g,'moletom').replace(/\bms\b/g,'') + ' ';
     PALAVRAS_COR_MS.forEach(cor => {
       base = base.replace(new RegExp('\\b' + normalizarMS(cor) + '\\b','g'), ' ');
     });
@@ -3779,15 +3839,26 @@ function trocarCorDetalhe(card, cor, botao) {
 
     coresExtras.forEach(cor => {
       if(usados.has(cor)) return;
+
+      // Se existir um card real dessa cor, usa ele para não deixar o nome errado
+      // Ex.: clicar na cor Bege não pode manter o título Moletom Vinho MS.
+      const cardDaCor = cardsDoMesmoProdutoMS(cardAtual).find(c => {
+        const corCard = c.dataset.cor || corDoNomeMS(c.dataset.nome || '');
+        return corCard === cor;
+      });
+
       const chave = 'fotos' + cor.charAt(0).toUpperCase() + cor.slice(1);
-      const fotos = String(cardAtual?.dataset?.[chave] || '').split(',').map(f=>f.trim()).filter(Boolean);
+      const fotos = cardDaCor
+        ? fotosDoCardMS(cardDaCor)
+        : String(cardAtual?.dataset?.[chave] || '').split(',').map(f=>f.trim()).filter(Boolean);
+
       if(!fotos.length) return;
       usados.add(cor);
       variacoes.push({
         cor,
         label: MAPA_CORES_MS[cor]?.label || cor,
         hex: MAPA_CORES_MS[cor]?.hex || '#cccccc',
-        card: cardAtual,
+        card: cardDaCor || cardAtual,
         fotos
       });
     });
@@ -4237,3 +4308,1186 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }, true);
 })();
+
+/* =========================================================
+   CORREÇÃO DIRETA MERCADO PAGO MS
+   Garante que qualquer botão final do checkout chame o backend.
+   ========================================================= */
+(function(){
+  function msApiBaseFinal(){
+    if (window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost") {
+      return "http://127.0.0.1:3000";
+    }
+    return window.API_BASE || (typeof API_BASE !== "undefined" ? API_BASE : "");
+  }
+
+  function msNormalizarItensPagamento(lista){
+    return (lista || []).map(function(item){
+      return {
+        nome: item.nome || item.title || "Produto MS",
+        title: item.nome || item.title || "Produto MS",
+        preco: Number(item.preco || item.unit_price || item.valor || 0),
+        unit_price: Number(item.preco || item.unit_price || item.valor || 0),
+        quantidade: Number(item.quantidade || item.quantity || 1),
+        quantity: Number(item.quantidade || item.quantity || 1),
+        tamanho: item.tamanho || "",
+        imagem: item.imagem || item.img || ""
+      };
+    });
+  }
+
+  async function finalizarCompraMPCorrigido(event){
+    if(event){
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation?.();
+    }
+
+    try{
+      if(typeof carregarCarrinho === "function") carregarCarrinho();
+      var lista = JSON.parse(localStorage.getItem("carrinho") || "[]");
+      if(!lista.length && Array.isArray(window.carrinho)) lista = window.carrinho;
+      if(!lista.length && typeof carrinho !== "undefined" && Array.isArray(carrinho)) lista = carrinho;
+
+      if(!lista || !lista.length){
+        alert("Seu carrinho está vazio.");
+        return false;
+      }
+
+      if(typeof atualizarCarrinho === "function") atualizarCarrinho();
+      if(typeof mostrarLoadingCheckout === "function") mostrarLoadingCheckout();
+
+      var apiBase = msApiBaseFinal();
+      if(!apiBase){
+        alert("API_BASE não encontrado. Confira o endereço do backend.");
+        return false;
+      }
+
+      console.log("MS PAGAMENTO: chamando", apiBase + "/criar-pagamento");
+
+      var resposta = await fetch(apiBase + "/criar-pagamento", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: msNormalizarItensPagamento(lista),
+          carrinho: msNormalizarItensPagamento(lista),
+          valorFrete: Number(window.valorFrete || valorFrete || localStorage.getItem("valorFreteMS") || 0),
+          freteSelecionado: window.freteSelecionado || freteSelecionado || JSON.parse(localStorage.getItem("freteSelecionadoMS") || "null"),
+          desconto: Number(window.desconto || desconto || 0),
+          totalComFrete: Number(window.totalComFrete || totalComFrete || 0)
+        })
+      });
+
+      var texto = await resposta.text();
+      var dados = {};
+      try { dados = JSON.parse(texto); } catch(e) { dados = { raw: texto }; }
+
+      console.log("MS PAGAMENTO: resposta", resposta.status, dados);
+
+      if(!resposta.ok){
+        if(typeof esconderLoadingCheckout === "function") esconderLoadingCheckout();
+        alert("Erro no backend do pagamento: " + resposta.status + ". Veja o Console.");
+        return false;
+      }
+
+      var link = dados.init_point || dados.sandbox_init_point || dados.url || dados.link;
+      if(!link){
+        if(typeof esconderLoadingCheckout === "function") esconderLoadingCheckout();
+        alert("Mercado Pago não gerou link. Veja o Console.");
+        return false;
+      }
+
+      window.location.href = link;
+      return false;
+
+    }catch(erro){
+      console.error("ERRO FINAL MERCADO PAGO MS:", erro);
+      if(typeof esconderLoadingCheckout === "function") esconderLoadingCheckout();
+      alert("Não consegui iniciar o Mercado Pago. Veja o Console.");
+      return false;
+    }
+  }
+
+  window.finalizarCompra = finalizarCompraMPCorrigido;
+  window.finalizarCompraFinal = finalizarCompraMPCorrigido;
+  window.finalizarPagamento = finalizarCompraMPCorrigido;
+  window.pagarMercadoPago = finalizarCompraMPCorrigido;
+  window.msFinalizarPagamento = finalizarCompraMPCorrigido;
+
+  document.addEventListener("click", function(e){
+    var alvo = e.target.closest("button, a, input[type='button'], input[type='submit']");
+    if(!alvo) return;
+
+    var texto = ((alvo.innerText || alvo.value || alvo.getAttribute("aria-label") || alvo.id || alvo.className || "") + "").toLowerCase();
+    var ehPagamento =
+      texto.includes("mercado pago") ||
+      texto.includes("pagar") ||
+      texto.includes("finalizar compra") ||
+      texto.includes("finalizar pedido") ||
+      texto.includes("confirmar pagamento");
+
+    if(!ehPagamento) return;
+
+    var dentroCheckout = alvo.closest("#carrinho, #carrinhoMobileMS, #checkoutMobile, .checkout-mobile, .carrinho, .carrinho-lateral, .modal-carrinho");
+    if(!dentroCheckout && !texto.includes("mercado pago")) return;
+
+    finalizarCompraMPCorrigido(e);
+  }, true);
+
+  console.log("Correção Mercado Pago MS carregada.");
+})();
+
+/* =========================================================
+   CORREÇÃO FINAL - CONJUNTO BRANCO / QUANTIDADE NO DETALHE
+   Impede o produto de duplicar/multiplicar ao clicar novamente.
+   Quando o mesmo produto/tamanho/cor já existe, atualiza para a
+   quantidade escolhida na tela em vez de somar por cima.
+   ========================================================= */
+(function(){
+  function msTexto(el){ return (el && el.innerText ? el.innerText : '').trim(); }
+  function msNumero(valor){
+    if(typeof pegarPrecoNumero === 'function') return pegarPrecoNumero(valor);
+    return Number(String(valor || '0').replace(/[^0-9,\.]/g,'').replace('.', '').replace(',', '.')) || 0;
+  }
+  function msQtdDetalheCorrigida(){
+    const el = document.getElementById('qtdProdutoDetalhe') || document.getElementById('quantidadeDetalhe');
+    const qtd = Number(msTexto(el) || window.quantidadeDetalhe || 1);
+    return qtd > 0 ? qtd : 1;
+  }
+  function msTamanhoDetalheCorrigido(){
+    const detalhe = document.getElementById('produtoDetalhe');
+    const ativo = detalhe?.querySelector('.tamanhos-detalhe button.ativo, .detalhe-tamanhos button.ativo, .tamanho-btn.ativo');
+    return detalhe?.dataset?.tamanho || msTexto(ativo) || '';
+  }
+  function msProdutoDetalheCorrigido(){
+    const detalhe = document.getElementById('produtoDetalhe');
+    const card = window.msProdutoCardAtual;
+    const variacao = window.msProdutoVariacaoAtual;
+    const tamanho = msTamanhoDetalheCorrigido();
+
+    if(!tamanho){
+      alert('Escolha um tamanho antes de adicionar ao carrinho.');
+      return null;
+    }
+
+    const nomeTela = msTexto(document.getElementById('detalheNome'));
+    const nome = card?.dataset?.nome || produtoDetalheAtual?.nome || nomeTela || 'Produto MS';
+    const preco = msNumero(card?.dataset?.preco || produtoDetalheAtual?.preco || msTexto(document.getElementById('detalhePreco')) || 0);
+    const imagem = window.msImagemSelecionada || variacao?.fotos?.[0] || card?.dataset?.img || produtoDetalheAtual?.img || document.getElementById('detalheImg')?.getAttribute('src') || '';
+    const cor = window.msCorSelecionada || variacao?.label || msTexto(document.getElementById('corSelecionadaDetalhe')).replace('Cor selecionada:', '').trim() || 'Única';
+
+    return {
+      nome: nome,
+      preco: preco,
+      imagem: imagem,
+      img: imagem,
+      tamanho: tamanho,
+      cor: cor,
+      quantidade: msQtdDetalheCorrigida()
+    };
+  }
+  function msSalvarDetalheCorrigido(){
+    const item = msProdutoDetalheCorrigido();
+    if(!item) return false;
+
+    let lista = [];
+    try { lista = JSON.parse(localStorage.getItem('carrinho')) || []; } catch(e){ lista = []; }
+
+    const i = lista.findIndex(p =>
+      p.nome === item.nome &&
+      p.tamanho === item.tamanho &&
+      (p.cor || '') === (item.cor || '')
+    );
+
+    if(i >= 0){
+      lista[i] = {
+        ...lista[i],
+        ...item,
+        quantidade: item.quantidade
+      };
+    }else{
+      lista.push(item);
+    }
+
+    localStorage.setItem('carrinho', JSON.stringify(lista));
+    window.carrinho = lista;
+    try { carrinho = lista; } catch(e){}
+
+    if(typeof atualizarCarrinho === 'function') atualizarCarrinho();
+    if(typeof atualizarTudo === 'function') atualizarTudo();
+    if(typeof atualizarBadgeCarrinho === 'function') atualizarBadgeCarrinho();
+    if(typeof atualizarContador === 'function') atualizarContador();
+    if(typeof renderCarrinhoMobileMS === 'function') renderCarrinhoMobileMS();
+
+    if(typeof avisoCarrinhoPremium === 'function') avisoCarrinhoPremium('Produto atualizado no carrinho.');
+    return true;
+  }
+
+  const abrirAntigo = window.abrirProdutoDetalheCard;
+  window.abrirProdutoDetalheCard = function(card){
+    window.quantidadeDetalhe = 1;
+    try { quantidadeDetalhe = 1; } catch(e){}
+    const q1 = document.getElementById('qtdProdutoDetalhe');
+    const q2 = document.getElementById('quantidadeDetalhe');
+    if(q1) q1.innerText = '1';
+    if(q2) q2.innerText = '1';
+    if(card && card.dataset && card.dataset.nome === 'Conjunto-branco'){
+      card.dataset.nome = 'Conjunto Branco MS';
+    }
+    return abrirAntigo.call(this, card);
+  };
+
+  window.adicionarProdutoDetalhe = function(){
+    return msSalvarDetalheCorrigido();
+  };
+
+  window.comprarAgoraDetalhe = function(){
+    if(!msSalvarDetalheCorrigido()) return false;
+    setTimeout(function(){
+      if(window.innerWidth <= 768){
+        if(typeof window.abrirCarrinhoMobileMS === 'function') window.abrirCarrinhoMobileMS();
+        else if(typeof window.abrirCarrinhoMS === 'function') window.abrirCarrinhoMS();
+        else if(typeof window.abrirCarrinhoMobile === 'function') window.abrirCarrinhoMobile();
+        else if(typeof window.abrirCarrinho === 'function') window.abrirCarrinho();
+        else window.location.href = 'carrinho.html';
+      }else{
+        if(typeof window.abrirCarrinhoPCMS === 'function') window.abrirCarrinhoPCMS();
+        else if(typeof window.abrirCarrinhoMS === 'function') window.abrirCarrinhoMS();
+        else if(typeof window.abrirCarrinho === 'function') window.abrirCarrinho();
+      }
+    }, 50);
+    return false;
+  };
+})();
+
+
+
+/* ===== FIX DEFINITIVO - PRODUTOS RECOMENDADOS / SLIDER ===== */
+(function(){
+  function msPrecoSlider(valor){
+    if(typeof valor === "number") return valor;
+    return Number(String(valor || "0")
+      .replace("R$","")
+      .replace(/\./g,"")
+      .replace(",",".")
+      .replace(/[^0-9.]/g,"")) || 0;
+  }
+
+  function msDinheiroSlider(valor){
+    const n = msPrecoSlider(valor);
+    return n.toLocaleString("pt-BR", { style:"currency", currency:"BRL" });
+  }
+
+  function msResetDetalheSlider(){
+    window.quantidadeDetalhe = 1;
+    try{ quantidadeDetalhe = 1; }catch(e){}
+
+    const q1 = document.getElementById("qtdProdutoDetalhe");
+    const q2 = document.getElementById("quantidadeDetalhe");
+    if(q1) q1.innerText = "1";
+    if(q2) q2.innerText = "1";
+
+    const detalhe = document.getElementById("produtoDetalhe");
+    if(detalhe){
+      detalhe.dataset.tamanho = "";
+      detalhe.dataset.cor = "";
+      detalhe.querySelectorAll(".tamanho-btn, .tamanhos-detalhe button, .detalhe-tamanhos button")
+        .forEach(btn => btn.classList.remove("ativo"));
+    }
+  }
+
+  window.abrirRecomendadoMS = function(nome, preco, img, fotos, cor){
+    msResetDetalheSlider();
+
+    const precoFinal = msPrecoSlider(preco);
+    const corFinal = cor || "unica";
+
+    window.produtoDetalheAtual = {
+      nome: nome,
+      preco: precoFinal,
+      precoAntigo: null,
+      img: img,
+      imagem: img,
+      cor: corFinal
+    };
+
+    try{
+      produtoDetalheAtual = window.produtoDetalheAtual;
+    }catch(e){}
+
+    window.fotosDetalhe = String(fotos || img)
+      .split(",")
+      .map(f => f.trim())
+      .filter(Boolean);
+
+    try{
+      fotosDetalhe = window.fotosDetalhe;
+      fotoAtualDetalhe = 0;
+    }catch(e){}
+
+    const detalhe = document.getElementById("produtoDetalhe");
+    const detalheImg = document.getElementById("detalheImg");
+    const detalheNome = document.getElementById("detalheNome");
+    const detalhePreco = document.getElementById("detalhePreco");
+    const breadcrumbNome = document.getElementById("breadcrumbNome");
+    const precoAntigo = document.getElementById("detalhePrecoAntigo");
+    const miniaturas = document.getElementById("miniaturasDetalhe");
+
+    if(detalheImg) detalheImg.src = window.fotosDetalhe[0] || img;
+    if(detalheNome) detalheNome.innerText = nome;
+    if(detalhePreco) detalhePreco.innerText = msDinheiroSlider(precoFinal);
+    if(breadcrumbNome) breadcrumbNome.innerText = nome;
+    if(precoAntigo) precoAntigo.innerText = "";
+
+    if(typeof montarCorUnicaRecomendado === "function"){
+      montarCorUnicaRecomendado(corFinal);
+    }
+
+    if(miniaturas){
+      miniaturas.innerHTML = "";
+      window.fotosDetalhe.forEach(function(foto, index){
+        const thumb = document.createElement("img");
+        thumb.src = foto;
+        if(index === 0) thumb.classList.add("ativa");
+        thumb.onclick = function(event){
+          event.stopPropagation();
+          if(detalheImg) detalheImg.src = foto;
+          miniaturas.querySelectorAll("img").forEach(el => el.classList.remove("ativa"));
+          thumb.classList.add("ativa");
+          try{ fotoAtualDetalhe = index; }catch(e){}
+        };
+        miniaturas.appendChild(thumb);
+      });
+    }
+
+    const desc = document.getElementById("descricaoProduto");
+    const det = document.getElementById("detalhesProduto");
+    const comp = document.getElementById("composicaoProduto");
+    const cuid = document.getElementById("cuidadosProduto");
+    if(desc) desc.innerText = "";
+    if(det) det.innerText = "Peça MS Matias Style com caimento moderno, acabamento reforçado e visual premium para o dia a dia.";
+    if(comp) comp.innerText = "Composição informada conforme lote do fornecedor.";
+    if(cuid) cuid.innerText = "Lavar do avesso, não usar alvejante e secar à sombra.";
+
+    if(detalhe){
+      detalhe.classList.add("ativo");
+      detalhe.style.display = "block";
+      detalhe.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+})();
+
+
+
+
+/* =========================================================
+   FIX REAL - SLIDER "VOCÊ PODE GOSTAR"
+   Resolve:
+   1) produto recomendado abrindo com nome/preço de outro produto;
+   2) carrinho usando card antigo;
+   3) quantidade multiplicando;
+   4) clique do coração abrindo produto.
+   ========================================================= */
+(function(){
+  function dinheiroMS(valor){
+    const n = Number(String(valor || "0").replace("R$","").replace(/\./g,"").replace(",",".").replace(/[^0-9.]/g,"")) || 0;
+    return n.toLocaleString("pt-BR", {style:"currency", currency:"BRL"});
+  }
+
+  function numeroMS(valor){
+    if(typeof valor === "number") return valor;
+    return Number(String(valor || "0").replace("R$","").replace(/\./g,"").replace(",",".").replace(/[^0-9.]/g,"")) || 0;
+  }
+
+  function textoMS(el){
+    return (el && el.innerText ? el.innerText : "").trim();
+  }
+
+  function qtdDetalheMS(){
+    const el = document.getElementById("qtdProdutoDetalhe") || document.getElementById("quantidadeDetalhe");
+    const n = Number(textoMS(el) || window.quantidadeDetalhe || 1);
+    return n > 0 ? n : 1;
+  }
+
+  function tamanhoDetalheMS(){
+    const detalhe = document.getElementById("produtoDetalhe");
+    const ativo = detalhe?.querySelector(".tamanhos-detalhe button.ativo, .detalhe-tamanhos button.ativo, .tamanho-btn.ativo");
+    return detalhe?.dataset?.tamanho || textoMS(ativo);
+  }
+
+  function corNomeMS(cor){
+    const mapa = {
+      preto:"Preto", branco:"Branco", bege:"Bege", rosa:"Rosa",
+      vinho:"Vinho", cinza:"Cinza", azul:"Azul", unica:"Única"
+    };
+    return mapa[String(cor || "unica").toLowerCase()] || cor || "Única";
+  }
+
+  function resetDetalheMS(){
+    window.quantidadeDetalhe = 1;
+    try{ quantidadeDetalhe = 1; }catch(e){}
+
+    const q1 = document.getElementById("qtdProdutoDetalhe");
+    const q2 = document.getElementById("quantidadeDetalhe");
+    if(q1) q1.innerText = "1";
+    if(q2) q2.innerText = "1";
+
+    const detalhe = document.getElementById("produtoDetalhe");
+    if(detalhe){
+      detalhe.dataset.tamanho = "";
+      detalhe.querySelectorAll(".tamanhos-detalhe button, .detalhe-tamanhos button, .tamanho-btn")
+        .forEach(btn => btn.classList.remove("ativo"));
+    }
+  }
+
+  function abrirSliderCard(card){
+    if(!card) return false;
+
+    const nome = card.dataset.nome;
+    const preco = numeroMS(card.dataset.preco);
+    const img = card.dataset.img;
+    const fotos = String(card.dataset.fotos || img).split(",").map(f => f.trim()).filter(Boolean);
+    const cor = card.dataset.cor || "unica";
+
+    resetDetalheMS();
+
+    window.msDetalheVeioSlider = true;
+    window.msProdutoCardAtual = null;
+    window.msProdutoVariacaoAtual = null;
+    window.msImagemSelecionada = fotos[0] || img;
+    window.msCorSelecionada = corNomeMS(cor);
+
+    const obj = {
+      nome: nome,
+      preco: preco,
+      precoAntigo: null,
+      img: img,
+      imagem: img,
+      cor: corNomeMS(cor)
+    };
+
+    window.produtoDetalheAtual = obj;
+    try{ produtoDetalheAtual = obj; }catch(e){}
+
+    window.fotosDetalhe = fotos;
+    try{
+      fotosDetalhe = fotos;
+      fotoAtualDetalhe = 0;
+    }catch(e){}
+
+    const detalhe = document.getElementById("produtoDetalhe");
+    const detalheImg = document.getElementById("detalheImg");
+    const detalheNome = document.getElementById("detalheNome");
+    const detalhePreco = document.getElementById("detalhePreco");
+    const breadcrumbNome = document.getElementById("breadcrumbNome");
+    const miniaturas = document.getElementById("miniaturasDetalhe");
+    const corTexto = document.getElementById("corSelecionadaDetalhe");
+
+    if(detalheImg) detalheImg.src = fotos[0] || img;
+    if(detalheNome) detalheNome.innerText = nome;
+    if(detalhePreco) detalhePreco.innerText = dinheiroMS(preco);
+    if(breadcrumbNome) breadcrumbNome.innerText = nome;
+    if(corTexto) corTexto.innerText = "Cor selecionada: " + corNomeMS(cor);
+
+    if(typeof montarCorUnicaRecomendado === "function"){
+      montarCorUnicaRecomendado(cor);
+    }
+
+    if(miniaturas){
+      miniaturas.innerHTML = "";
+      fotos.forEach(function(foto, index){
+        const thumb = document.createElement("img");
+        thumb.src = foto;
+        if(index === 0) thumb.classList.add("ativa");
+        thumb.onclick = function(event){
+          event.stopPropagation();
+          window.msImagemSelecionada = foto;
+          if(detalheImg) detalheImg.src = foto;
+          miniaturas.querySelectorAll("img").forEach(el => el.classList.remove("ativa"));
+          thumb.classList.add("ativa");
+          try{ fotoAtualDetalhe = index; }catch(e){}
+        };
+        miniaturas.appendChild(thumb);
+      });
+    }
+
+    const desc = document.getElementById("descricaoProduto");
+    const det = document.getElementById("detalhesProduto");
+    const comp = document.getElementById("composicaoProduto");
+    const cuid = document.getElementById("cuidadosProduto");
+    if(desc) desc.innerText = "";
+    if(det) det.innerText = "Peça MS Matias Style com caimento moderno, acabamento reforçado e visual premium para o dia a dia.";
+    if(comp) comp.innerText = "Composição informada conforme lote do fornecedor.";
+    if(cuid) cuid.innerText = "Lavar do avesso, não usar alvejante e secar à sombra.";
+
+    if(detalhe){
+      detalhe.dataset.cor = corNomeMS(cor);
+      detalhe.classList.add("ativo");
+      detalhe.style.display = "block";
+      detalhe.scrollTo({top:0, behavior:"smooth"});
+    }
+
+    return false;
+  }
+
+  window.abrirRecomendadoMS = function(nome, preco, img, fotos, cor){
+    const fake = document.createElement("article");
+    fake.dataset.nome = nome;
+    fake.dataset.preco = preco;
+    fake.dataset.img = img;
+    fake.dataset.fotos = fotos || img;
+    fake.dataset.cor = cor || "unica";
+    return abrirSliderCard(fake);
+  };
+
+  const abrirCardAntigo = window.abrirProdutoDetalheCard;
+  window.abrirProdutoDetalheCard = function(card){
+    window.msDetalheVeioSlider = false;
+    return abrirCardAntigo ? abrirCardAntigo.call(this, card) : undefined;
+  };
+
+  document.addEventListener("click", function(e){
+    const fav = e.target.closest(".recomendado-card-ms .rec-fav-ms");
+    if(fav){
+      e.preventDefault();
+      e.stopPropagation();
+      try{ favoritarProduto(fav, e); }catch(err){}
+      return false;
+    }
+
+    const card = e.target.closest(".recomendado-card-ms");
+    if(!card) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+    abrirSliderCard(card);
+    return false;
+  }, true);
+
+  function salvarItemSlider(){
+    if(!window.msDetalheVeioSlider) return null;
+
+    const atual = window.produtoDetalheAtual || (typeof produtoDetalheAtual !== "undefined" ? produtoDetalheAtual : null);
+    if(!atual) return false;
+
+    const tamanho = tamanhoDetalheMS();
+    if(!tamanho){
+      alert("Escolha um tamanho antes de adicionar ao carrinho.");
+      return false;
+    }
+
+    const item = {
+      nome: atual.nome,
+      preco: numeroMS(atual.preco),
+      imagem: window.msImagemSelecionada || atual.img || atual.imagem,
+      img: window.msImagemSelecionada || atual.img || atual.imagem,
+      tamanho: tamanho,
+      cor: window.msCorSelecionada || atual.cor || "Única",
+      quantidade: qtdDetalheMS()
+    };
+
+    let lista = [];
+    try{ lista = JSON.parse(localStorage.getItem("carrinho")) || []; }catch(e){ lista = []; }
+
+    const i = lista.findIndex(p =>
+      p.nome === item.nome &&
+      p.tamanho === item.tamanho &&
+      String(p.cor || "") === String(item.cor || "")
+    );
+
+    if(i >= 0){
+      lista[i] = {...lista[i], ...item, quantidade:item.quantidade};
+    }else{
+      lista.push(item);
+    }
+
+    localStorage.setItem("carrinho", JSON.stringify(lista));
+    window.carrinho = lista;
+    try{ carrinho = lista; }catch(e){}
+
+    if(typeof atualizarCarrinho === "function") atualizarCarrinho();
+    if(typeof atualizarTudo === "function") atualizarTudo();
+    if(typeof atualizarBadgeCarrinho === "function") atualizarBadgeCarrinho();
+    if(typeof atualizarContador === "function") atualizarContador();
+    if(typeof renderCarrinhoMobileMS === "function") renderCarrinhoMobileMS();
+    if(typeof avisoCarrinhoPremium === "function") avisoCarrinhoPremium("Produto adicionado ao carrinho.");
+
+    return true;
+  }
+
+  const addAntigo = window.adicionarProdutoDetalhe;
+  window.adicionarProdutoDetalhe = function(){
+    const r = salvarItemSlider();
+    if(r !== null) return r;
+    return addAntigo ? addAntigo.apply(this, arguments) : false;
+  };
+
+  const comprarAntigo = window.comprarAgoraDetalhe;
+  window.comprarAgoraDetalhe = function(){
+    const r = salvarItemSlider();
+    if(r === null){
+      return comprarAntigo ? comprarAntigo.apply(this, arguments) : false;
+    }
+    if(!r) return false;
+
+    setTimeout(function(){
+      if(window.innerWidth <= 768){
+        if(typeof window.abrirCarrinhoMobileMS === "function") window.abrirCarrinhoMobileMS();
+        else if(typeof window.abrirCarrinhoMS === "function") window.abrirCarrinhoMS();
+        else if(typeof window.abrirCarrinho === "function") window.abrirCarrinho();
+        else window.location.href = "carrinho.html";
+      }else{
+        if(typeof window.abrirCarrinhoPCMS === "function") window.abrirCarrinhoPCMS();
+        else if(typeof window.abrirCarrinhoMS === "function") window.abrirCarrinhoMS();
+        else if(typeof window.abrirCarrinho === "function") window.abrirCarrinho();
+      }
+    }, 50);
+
+    return false;
+  };
+
+  console.log("FIX REAL SLIDER RECOMENDADOS carregado.");
+})();
+
+
+/* =========================================================
+   CORREÇÃO FINAL MS - PREÇO / COR / SLIDER
+   Colocado por último para sobrescrever os fixes antigos.
+   ========================================================= */
+function pegarPrecoNumero(preco){
+  if(typeof preco === 'number') return preco;
+  let valor = String(preco || '0').replace('R$','').replace(/\s/g,'').trim();
+  if(!valor) return 0;
+  if(valor.includes(',')){
+    valor = valor.replace(/\./g,'').replace(',','.');
+  }else{
+    valor = valor.replace(/[^0-9.]/g,'');
+  }
+  return parseFloat(valor) || 0;
+}
+
+function dinheiro(valor){
+  return pegarPrecoNumero(valor).toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+}
+
+(function(){
+  const nomesCoresMS = {
+    preto:'Preto', branco:'Branco', bege:'Bege', rosa:'Rosa',
+    vinho:'Vinho', cinza:'Cinza', azul:'Azul', unica:'Única'
+  };
+
+  function corNomeMS(cor){
+    return nomesCoresMS[String(cor || 'unica').toLowerCase()] || cor || 'Única';
+  }
+
+  function resetDetalheFinalMS(){
+    window.quantidadeDetalhe = 1;
+    try{ quantidadeDetalhe = 1; }catch(e){}
+
+    const q1 = document.getElementById('qtdProdutoDetalhe');
+    const q2 = document.getElementById('quantidadeDetalhe');
+    if(q1) q1.innerText = '1';
+    if(q2) q2.innerText = '1';
+
+    const detalhe = document.getElementById('produtoDetalhe');
+    if(detalhe){
+      detalhe.dataset.tamanho = '';
+      detalhe.querySelectorAll('.tamanhos-detalhe button, .detalhe-tamanhos button, .tamanho-btn')
+        .forEach(btn => btn.classList.remove('ativo'));
+    }
+  }
+
+  function setCorFinalMS(cor){
+    const corKey = String(cor || 'unica').toLowerCase();
+    const nomeCor = corNomeMS(corKey);
+
+    if(typeof montarCorUnicaRecomendado === 'function'){
+      montarCorUnicaRecomendado(corKey);
+    }
+
+    const t1 = document.getElementById('corSelecionadaDetalhe');
+    const t2 = document.getElementById('corSelecionadaMS');
+    if(t1) t1.innerText = 'Cor selecionada: ' + nomeCor;
+    if(t2) t2.innerText = 'Cor selecionada: ' + nomeCor;
+
+    const detalhe = document.getElementById('produtoDetalhe');
+    if(detalhe) detalhe.dataset.cor = nomeCor;
+    window.msCorSelecionada = nomeCor;
+  }
+
+  function montarMiniaturasFinalMS(fotos){
+    const miniaturas = document.getElementById('miniaturasDetalhe');
+    const detalheImg = document.getElementById('detalheImg');
+    if(!miniaturas) return;
+
+    miniaturas.innerHTML = '';
+    fotos.forEach((foto, index) => {
+      const thumb = document.createElement('img');
+      thumb.src = foto;
+      if(index === 0) thumb.classList.add('ativa');
+      thumb.onclick = function(event){
+        event.stopPropagation();
+        if(detalheImg) detalheImg.src = foto;
+        window.msImagemSelecionada = foto;
+        miniaturas.querySelectorAll('img').forEach(img => img.classList.remove('ativa'));
+        thumb.classList.add('ativa');
+        try{ fotoAtualDetalhe = index; }catch(e){}
+      };
+      miniaturas.appendChild(thumb);
+    });
+  }
+
+  window.abrirRecomendadoMS = function(nome, preco, img, fotos, cor = 'unica'){
+    resetDetalheFinalMS();
+
+    const precoFinal = pegarPrecoNumero(preco);
+    const listaFotos = String(fotos || img).split(',').map(f => f.trim()).filter(Boolean);
+    const imagemFinal = listaFotos[0] || img;
+    const nomeCor = corNomeMS(cor);
+
+    window.msDetalheVeioSlider = true;
+    window.msImagemSelecionada = imagemFinal;
+
+    window.produtoDetalheAtual = {
+      nome: nome,
+      preco: precoFinal,
+      precoAntigo: null,
+      img: img,
+      imagem: imagemFinal,
+      cor: nomeCor
+    };
+    try{ produtoDetalheAtual = window.produtoDetalheAtual; }catch(e){}
+
+    window.fotosDetalhe = listaFotos;
+    try{
+      fotosDetalhe = listaFotos;
+      fotoAtualDetalhe = 0;
+    }catch(e){}
+
+    const detalhe = document.getElementById('produtoDetalhe');
+    const detalheImg = document.getElementById('detalheImg');
+    const detalheNome = document.getElementById('detalheNome');
+    const detalhePreco = document.getElementById('detalhePreco');
+    const breadcrumbNome = document.getElementById('breadcrumbNome');
+    const precoAntigo = document.querySelector('#produtoDetalhe .preco-antigo') || document.getElementById('detalhePrecoAntigo');
+
+    if(detalheImg) detalheImg.src = imagemFinal;
+    if(detalheNome) detalheNome.innerText = nome;
+    if(detalhePreco) detalhePreco.innerText = dinheiro(precoFinal);
+    if(breadcrumbNome) breadcrumbNome.innerText = nome;
+    if(precoAntigo) precoAntigo.innerText = '';
+
+    setCorFinalMS(cor);
+    montarMiniaturasFinalMS(listaFotos);
+
+    if(detalhe){
+      detalhe.classList.add('ativo');
+      detalhe.style.display = 'block';
+      detalhe.scrollTo({top:0, behavior:'smooth'});
+    }
+
+    return false;
+  };
+
+  function abrirCardSliderFinal(card){
+    return window.abrirRecomendadoMS(
+      card.dataset.nome,
+      card.dataset.preco,
+      card.dataset.img,
+      card.dataset.fotos || card.dataset.img,
+      card.dataset.cor || 'unica'
+    );
+  }
+
+  document.addEventListener('click', function(e){
+    const fav = e.target.closest('.recomendado-card-ms .rec-fav-ms');
+    if(fav){
+      e.preventDefault();
+      e.stopPropagation();
+      if(typeof favoritarProduto === 'function') favoritarProduto(fav, e);
+      return false;
+    }
+
+    const card = e.target.closest('.recomendado-card-ms');
+    if(!card) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+    abrirCardSliderFinal(card);
+    return false;
+  }, true);
+
+  function quantidadeFinalMS(){
+    const el = document.getElementById('qtdProdutoDetalhe') || document.getElementById('quantidadeDetalhe');
+    const n = Number((el && el.innerText) || window.quantidadeDetalhe || 1);
+    return n > 0 ? n : 1;
+  }
+
+  function tamanhoFinalMS(){
+    const detalhe = document.getElementById('produtoDetalhe');
+    const ativo = detalhe?.querySelector('.tamanhos-detalhe button.ativo, .detalhe-tamanhos button.ativo, .tamanho-btn.ativo');
+    return detalhe?.dataset?.tamanho || (ativo ? ativo.innerText.trim() : '');
+  }
+
+  function addSliderCarrinhoFinalMS(){
+    if(!window.msDetalheVeioSlider) return null;
+
+    const p = window.produtoDetalheAtual || (typeof produtoDetalheAtual !== 'undefined' ? produtoDetalheAtual : null);
+    if(!p) return false;
+
+    const tamanho = tamanhoFinalMS();
+    if(!tamanho){
+      alert('Escolha um tamanho antes de adicionar ao carrinho.');
+      return false;
+    }
+
+    const item = {
+      nome: p.nome,
+      preco: pegarPrecoNumero(p.preco),
+      img: window.msImagemSelecionada || p.imagem || p.img,
+      imagem: window.msImagemSelecionada || p.imagem || p.img,
+      tamanho: tamanho,
+      cor: window.msCorSelecionada || p.cor || 'Única',
+      quantidade: quantidadeFinalMS()
+    };
+
+    let lista = [];
+    try{ lista = JSON.parse(localStorage.getItem('carrinho')) || []; }catch(e){ lista = []; }
+
+    const idx = lista.findIndex(x =>
+      x.nome === item.nome &&
+      x.tamanho === item.tamanho &&
+      String(x.cor || '') === String(item.cor || '')
+    );
+
+    if(idx >= 0){
+      lista[idx].quantidade = item.quantidade;
+      lista[idx].preco = item.preco;
+      lista[idx].img = item.img;
+      lista[idx].imagem = item.imagem;
+    }else{
+      lista.push(item);
+    }
+
+    localStorage.setItem('carrinho', JSON.stringify(lista));
+    window.carrinho = lista;
+    try{ carrinho = lista; }catch(e){}
+
+    if(typeof atualizarCarrinho === 'function') atualizarCarrinho();
+    if(typeof atualizarTudo === 'function') atualizarTudo();
+    if(typeof atualizarBadgeCarrinho === 'function') atualizarBadgeCarrinho();
+    if(typeof renderCarrinhoMobileMS === 'function') renderCarrinhoMobileMS();
+    if(typeof mostrarToastMS === 'function') mostrarToastMS();
+
+    return true;
+  }
+
+  const addDetalheAntigoFinal = window.adicionarProdutoDetalhe;
+  window.adicionarProdutoDetalhe = function(){
+    const r = addSliderCarrinhoFinalMS();
+    if(r !== null) return r;
+    return addDetalheAntigoFinal ? addDetalheAntigoFinal.apply(this, arguments) : false;
+  };
+
+  const comprarAntigoFinal = window.comprarAgoraDetalhe;
+  window.comprarAgoraDetalhe = function(){
+    const r = addSliderCarrinhoFinalMS();
+    if(r === null){
+      return comprarAntigoFinal ? comprarAntigoFinal.apply(this, arguments) : false;
+    }
+    if(!r) return false;
+
+    setTimeout(() => {
+      if(window.innerWidth <= 768){
+        if(typeof abrirCarrinhoMobileMS === 'function') abrirCarrinhoMobileMS();
+        else if(typeof abrirCarrinho === 'function') abrirCarrinho();
+      }else{
+        if(typeof abrirCarrinhoPCMS === 'function') abrirCarrinhoPCMS();
+        else if(typeof abrirCarrinho === 'function') abrirCarrinho();
+      }
+    }, 50);
+    return false;
+  };
+
+  console.log('Correção final MS preço/cor/slider carregada');
+})();
+
+/* =========================================================
+   ESTOQUE ONLINE REAL - MS MATIAS STYLE
+   Liga cliente + carrinho + checkout ao servidor.
+   Não remove funções antigas: só trava estoque por cima.
+   ========================================================= */
+(function(){
+  const API_ESTOQUE_MS = (typeof API_BASE !== "undefined" ? API_BASE : "http://127.0.0.1:3000");
+
+  function textoLimpoMS(v){ return String(v || "").trim(); }
+
+  function numeroMS(v){
+    if(typeof v === "number") return v;
+    let s = String(v || "0").replace("R$","").replace(/\s/g,"").trim();
+    if(s.includes(",")) s = s.replace(/\./g,"").replace(",",".");
+    else s = s.replace(/[^0-9.]/g,"");
+    return Number(s) || 0;
+  }
+
+  function corPeloNomeMS(nome){
+    const n = String(nome || "").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+    if(n.includes("preto") || n.includes("preta")) return "Preto";
+    if(n.includes("branco") || n.includes("branca") || n.includes("off white")) return "Branco";
+    if(n.includes("bege")) return "Bege";
+    if(n.includes("azul")) return "Azul";
+    if(n.includes("rosa")) return "Rosa";
+    if(n.includes("cinza")) return "Cinza";
+    if(n.includes("vinho") || n.includes("bordo")) return "Vinho";
+    if(n.includes("marrom")) return "Marrom";
+    return "Única";
+  }
+
+
+  function gerarSkuMS(item){
+    function norm(v){ return String(v || "").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim(); }
+    const nome = norm(item?.nome || item?.produto || "produto");
+    const corTxt = norm(item?.cor || corPeloNomeMS(item?.nome || item?.produto || ""));
+    const tam = String(item?.tamanho || "unico").toUpperCase().trim();
+    let tipo = "PROD";
+    if(nome.includes("moletom")) tipo = "MOL";
+    else if(nome.includes("jaqueta") || nome.includes("corta vento")) tipo = "JAQ";
+    else if(nome.includes("conjunto")) tipo = "CON";
+    else if(nome.includes("camiseta") && nome.includes("oversized")) tipo = "OVR";
+    else if(nome.includes("camiseta")) tipo = "CAM";
+    else if(nome.includes("calca")) tipo = "CAL";
+    else if(nome.includes("touca")) tipo = "TOU";
+    else if(nome.includes("meia")) tipo = "MEI";
+    const mapa = {preto:"PT",preta:"PT",branco:"BR",branca:"BR",bege:"BG",azul:"AZ",rosa:"RS",cinza:"CZ",vinho:"VN",bordo:"VN",marrom:"MR",offwhite:"OW",unica:"UN",unico:"UN"};
+    const corKey = corTxt.replace(/\s+/g,"");
+    const cor = mapa[corKey] || (corKey.slice(0,3).toUpperCase() || "UN");
+    return `MS-${tipo}-${cor}-${tam || "UN"}`.replace(/[^A-Z0-9-]/g,"");
+  }
+
+  function itemProntoMS(item){
+    const pronto = {
+      nome: textoLimpoMS(item?.nome || item?.produto || "Produto MS"),
+      preco: numeroMS(item?.preco || 0),
+      imagem: item?.imagem || item?.img || "",
+      img: item?.img || item?.imagem || "",
+      tamanho: textoLimpoMS(item?.tamanho || "Único").toUpperCase(),
+      cor: textoLimpoMS(item?.cor || corPeloNomeMS(item?.nome || item?.produto || "")),
+      quantidade: Math.max(1, Number(item?.quantidade || 1))
+    };
+    pronto.sku = textoLimpoMS(item?.sku || item?.SKU || gerarSkuMS(pronto)).toUpperCase();
+    return pronto;
+  }
+
+  function chaveItemMS(item){
+    const i = itemProntoMS(item);
+    return String(i.sku || gerarSkuMS(i)).toUpperCase();
+  }
+
+  function qtdNoCarrinhoMS(item){
+    const alvo = chaveItemMS(item);
+    let lista = [];
+    try{ lista = JSON.parse(localStorage.getItem("carrinho")) || []; }catch(e){ lista = []; }
+    return lista.reduce((total, p) => chaveItemMS(p) === alvo ? total + Number(p.quantidade || 1) : total, 0);
+  }
+
+  async function buscarDisponivelMS(item){
+    const resp = await fetch(`${API_ESTOQUE_MS}/estoque/disponivel`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(itemProntoMS(item))
+    });
+    const dados = await resp.json().catch(() => ({}));
+    if(!resp.ok) throw new Error(dados.mensagem || "Erro ao consultar estoque.");
+    return dados;
+  }
+
+  async function podeAdicionarMS(item, qtdNova){
+    const pronto = itemProntoMS(item);
+    const info = await buscarDisponivelMS(pronto);
+
+    if(!info.cadastrado){
+      alert(`${pronto.nome} / ${pronto.cor} / ${pronto.tamanho} ainda não tem estoque cadastrado no painel admin.`);
+      return false;
+    }
+
+    const jaNoCarrinho = qtdNoCarrinhoMS(pronto);
+    const pedidoTotal = jaNoCarrinho + Math.max(1, Number(qtdNova || 1));
+
+    if(pedidoTotal > Number(info.disponivel || 0)){
+      const restante = Math.max(0, Number(info.disponivel || 0) - jaNoCarrinho);
+      if(restante <= 0){
+        alert(`Estoque insuficiente. Você já adicionou todas as unidades disponíveis de ${pronto.nome} ${pronto.cor} ${pronto.tamanho}.`);
+      }else{
+        alert(`Temos apenas ${restante} unidade(s) disponível(is) de ${pronto.nome} ${pronto.cor} ${pronto.tamanho}.`);
+      }
+      return false;
+    }
+
+    return true;
+  }
+
+  function pegarItemDoCardMS(arg1, arg2, arg3, arg4){
+    let botao, nome, preco, imagem;
+    if(typeof arg1 === "string"){
+      nome = arg1;
+      preco = arg2;
+      imagem = arg3;
+      botao = arg4;
+    }else{
+      botao = arg1;
+    }
+    const card = botao && typeof botao.closest === "function" ? botao.closest(".card-produto") : null;
+    if(card){
+      nome = nome || card.dataset.nome || card.querySelector("h3")?.innerText || "Produto MS";
+      preco = preco || card.dataset.preco || card.querySelector(".preco")?.innerText || 0;
+      imagem = imagem || card.dataset.img || card.querySelector("img")?.getAttribute("src") || "";
+    }
+    const tamanhoAtivo = card?.querySelector(".tamanhos button.ativo");
+    const tamanho = textoLimpoMS(card?.dataset.tamanho || tamanhoAtivo?.innerText);
+    return itemProntoMS({ nome, preco, imagem, img: imagem, tamanho, cor: corPeloNomeMS(nome), quantidade: Math.max(1, Number(window.quantidadeDetalhe || 1)) });
+  }
+
+  function salvarEAtualizarMS(lista){
+    localStorage.setItem("carrinho", JSON.stringify(lista));
+    window.carrinho = lista;
+    try{ carrinho = lista; }catch(e){}
+    if(typeof atualizarBadgeCarrinho === "function") atualizarBadgeCarrinho();
+    if(typeof atualizarTudo === "function") atualizarTudo();
+    if(typeof renderCarrinhoMobileMS === "function") renderCarrinhoMobileMS();
+    if(typeof atualizarCarrinho === "function") atualizarCarrinho();
+  }
+
+  const addOriginalMS = window.adicionarCarrinho;
+  window.adicionarCarrinho = async function(arg1, arg2, arg3, arg4){
+    const item = pegarItemDoCardMS(arg1, arg2, arg3, arg4);
+    const botao = typeof arg1 === "string" ? arg4 : arg1;
+
+    if(!item.tamanho || item.tamanho === "ÚNICO" && botao?.closest?.(".card-produto")?.querySelector(".tamanhos")){
+      alert("Escolha um tamanho antes de adicionar ao carrinho.");
+      return false;
+    }
+
+    if(!(await podeAdicionarMS(item, item.quantidade))) return false;
+
+    let lista = [];
+    try{ lista = JSON.parse(localStorage.getItem("carrinho")) || []; }catch(e){ lista = []; }
+    const idx = lista.findIndex(p => chaveItemMS(p) === chaveItemMS(item));
+    if(idx >= 0){
+      lista[idx].quantidade = Number(lista[idx].quantidade || 1) + item.quantidade;
+    }else{
+      lista.push(item);
+    }
+
+    salvarEAtualizarMS(lista);
+
+    if(typeof animarProdutoParaCarrinho === "function" && botao) animarProdutoParaCarrinho(botao);
+    if(typeof mostrarToastMS === "function") mostrarToastMS();
+    return true;
+  };
+
+  window.adicionarAoCarrinho = function(botao){ return window.adicionarCarrinho(botao); };
+
+  window.adicionarProdutoDetalhe = async function(){
+    const detalhe = document.getElementById("produtoDetalhe");
+    const atual = window.produtoDetalheAtual || (typeof produtoDetalheAtual !== "undefined" ? produtoDetalheAtual : null);
+    if(!detalhe || !atual) return false;
+
+    const ativo = detalhe.querySelector(".tamanhos-detalhe button.ativo, .detalhe-tamanhos button.ativo, .tamanho-btn.ativo");
+    const tamanho = textoLimpoMS(detalhe.dataset.tamanho || ativo?.innerText);
+    if(!tamanho){
+      alert("Escolha um tamanho antes de adicionar ao carrinho.");
+      return false;
+    }
+
+    const qtd = Math.max(1, Number(window.quantidadeDetalhe || (typeof quantidadeDetalhe !== "undefined" ? quantidadeDetalhe : 1) || 1));
+    const item = itemProntoMS({
+      nome: atual.nome,
+      preco: atual.preco,
+      imagem: atual.img || atual.imagem,
+      img: atual.img || atual.imagem,
+      tamanho,
+      cor: atual.cor || detalhe.dataset.cor || corPeloNomeMS(atual.nome),
+      quantidade: qtd
+    });
+
+    if(!(await podeAdicionarMS(item, qtd))) return false;
+
+    let lista = [];
+    try{ lista = JSON.parse(localStorage.getItem("carrinho")) || []; }catch(e){ lista = []; }
+    const idx = lista.findIndex(p => chaveItemMS(p) === chaveItemMS(item));
+    if(idx >= 0) lista[idx].quantidade = Number(lista[idx].quantidade || 1) + item.quantidade;
+    else lista.push(item);
+
+    salvarEAtualizarMS(lista);
+    if(typeof avisoCarrinhoPremium === "function") avisoCarrinhoPremium();
+    else if(typeof mostrarToastMS === "function") mostrarToastMS();
+    return true;
+  };
+
+  window.aumentarQuantidade = async function(index){
+    let lista = [];
+    try{ lista = JSON.parse(localStorage.getItem("carrinho")) || []; }catch(e){ lista = []; }
+    if(!lista[index]) return false;
+    const item = itemProntoMS(lista[index]);
+    if(!(await podeAdicionarMS(item, 1))) return false;
+    lista[index].quantidade = Number(lista[index].quantidade || 1) + 1;
+    salvarEAtualizarMS(lista);
+    return true;
+  };
+
+  window.alterarQuantidadeMobile = function(index, valor){
+    if(valor > 0) return window.aumentarQuantidade(index);
+    if(typeof diminuirQuantidade === "function") return diminuirQuantidade(index);
+  };
+
+  const finalizarOriginalMS = window.finalizarCompra;
+  window.finalizarCompra = async function(event){
+    if(event){ event.preventDefault(); event.stopPropagation(); }
+    let lista = [];
+    try{ lista = JSON.parse(localStorage.getItem("carrinho")) || []; }catch(e){ lista = []; }
+    if(!lista.length){
+      alert("Seu carrinho está vazio.");
+      return false;
+    }
+
+    try{
+      const resp = await fetch(`${API_ESTOQUE_MS}/estoque/validar-carrinho`, {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({items: lista})
+      });
+      const dados = await resp.json().catch(() => ({}));
+      if(!resp.ok){
+        alert(dados.mensagem || "Estoque insuficiente para finalizar a compra.");
+        return false;
+      }
+    }catch(erro){
+      alert("Não consegui validar o estoque agora. Confira se o servidor está ligado.");
+      console.error(erro);
+      return false;
+    }
+
+    return finalizarOriginalMS ? finalizarOriginalMS.call(this, event) : false;
+  };
+
+  window.comprarAgoraDetalhe = async function(){
+    const ok = await window.adicionarProdutoDetalhe();
+    if(!ok) return false;
+    if(typeof abrirCarrinhoMS === "function") abrirCarrinhoMS();
+    else if(typeof abrirCarrinho === "function") abrirCarrinho();
+    return false;
+  };
+
+  window.msConsultarEstoque = buscarDisponivelMS;
+  console.log("Estoque online real conectado no cliente.");
+})();
+
+
+// MOBILE CHECKOUT MS - restaura dados digitados se o cliente voltar de etapa
+document.addEventListener("DOMContentLoaded", () => {
+  if (document.querySelector(".checkout-ms")) {
+    restaurarDadosClienteMobileMS();
+    atualizarCarrinho();
+    atualizarTotaisMobile();
+  }
+});

@@ -1,117 +1,403 @@
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>Painel ADM - MS</title>
-
   <link rel="stylesheet" href="admin.css">
-
+  <script>document.documentElement.setAttribute("data-theme", localStorage.getItem("temaAdminMS") || "escuro");</script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 </head>
-</head>
-
 <body>
-
 <script>
   if (localStorage.getItem("adminLogado") !== "sim") {
     window.location.href = "login.html";
   }
 </script>
 
-<header>
-
-  <div class="logo-admin">
-    <img src="logo.png" alt="Logo MS">
-    <div>
-      <h1>Painel ADM</h1>
-      <p>MS Matias Style</p>
-    </div>
-  </div>
-
-  <div class="acoes-topo">
-    <button onclick="atualizarPedidos()">Atualizar</button>
-
-    <button class="btn-sair" onclick="logoutADM()">
-      Sair
-    </button>
-  </div>
-
-</header>
-
-<main>
-
-  <section class="cards-resumo">
-    <div class="card">
-      <span>Total de pedidos</span>
-      <strong id="totalPedidos">0</strong>
+<div class="admin-shell">
+  <aside class="sidebar-ms">
+    <div class="brand-ms">
+      <img src="logo.png" alt="Logo MS" onerror="this.style.display='none'">
+      <div>
+        <strong>MS Matias Style</strong>
+        <span>Painel Administrativo</span>
+      </div>
     </div>
 
-    <div class="card">
-      <span>Pagos</span>
-      <strong id="totalPagos">0</strong>
+    <nav class="menu-ms">
+      <button class="ms-tab ativa" onclick="abrirAbaMS('visao', this)"><span>⌂</span> Dashboard</button>
+      <button class="ms-tab" onclick="abrirAbaMS('estoqueAba', this)"><span>◇</span> Estoque</button>
+      <button class="ms-tab" onclick="abrirAbaMS('pedidosAba', this)"><span>◌</span> Pedidos</button>
+      <button class="ms-tab" onclick="abrirAbaMS('relatoriosAba', this)"><span>▥</span> Relatórios</button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="theme-toggle-ms" onclick="alternarTemaMS()"><span id="iconeTemaSidebarMS">🌙</span> Tema</button>
+      <button onclick="carregarTudoMS()">Atualizar</button>
+      <button class="btn-sair" onclick="logoutADM()">Sair</button>
     </div>
+  </aside>
 
-    <div class="card">
-      <span>Pendentes</span>
-      <strong id="totalPendentes">0</strong>
-    </div>
-  </section>
-<section class="filtros-admin">
+  <main class="main-ms">
+    <header class="topbar-ms">
+      <div>
+        <p class="eyebrow-ms">MS Matias Style</p>
+        <h1 id="tituloPaginaMS">Dashboard</h1>
+        <span class="subtop-ms">Controle completo da loja</span>
+      </div>
+      <div class="acoes-topo">
+        <button class="theme-toggle-ms" onclick="alternarTemaMS()" title="Trocar tema"><span id="iconeTemaMS">🌙</span><span id="textoTemaMS">Escuro</span></button>
+        <button onclick="carregarTudoMS()">Atualizar</button>
+        <button class="btn-sair" onclick="logoutADM()">Sair</button>
+      </div>
+    </header>
 
-  <input
-    id="pesquisaCliente"
-    type="text"
-    placeholder="Pesquisar por nome do cliente..."
-    oninput="carregarPedidos()"
-  >
+    <section id="visao" class="ms-painel ativa">
+      <section class="cards-resumo cards-resumo-ms">
+        <div class="card"><div class="card-icon-ms">▣</div><span>Total de pedidos</span><strong id="totalPedidos">0</strong><small>Pedidos recebidos</small></div>
+        <div class="card"><div class="card-icon-ms">✓</div><span>Pagos</span><strong id="totalPagos">0</strong><small>Pedidos confirmados</small></div>
+        <div class="card"><div class="card-icon-ms">⌛</div><span>Pendentes</span><strong id="totalPendentes">0</strong><small>Aguardando pagamento</small></div>
+        <div class="card"><div class="card-icon-ms">R$</div><span>Faturamento hoje</span><strong id="faturamentoHoje">R$ 0,00</strong><small>Somente pagos</small></div>
+      </section>
 
-  <input
-    id="filtroData"
-    type="date"
-    onchange="carregarPedidos()"
-  >
+      <section class="grid-dashboard-ms">
+        <div class="painel-card-ms grafico-admin">
+          <div class="card-header-ms"><div><h2>Vendas dos últimos 7 dias</h2><p>Resumo rápido da loja</p></div></div>
+          <canvas id="graficoVendas" height="120"></canvas>
+        </div>
+        <div class="painel-card-ms">
+          <div class="card-header-ms"><div><h2>Resumo do estoque</h2><p>Raio-x do armário MS</p></div></div>
+          <div class="mini-stats-ms">
+            <div><span>Itens em estoque</span><strong id="dashItensEstoque">0</strong></div>
+            <div><span>Estoque baixo</span><strong id="dashEstoqueBaixo">0</strong></div>
+            <div><span>Esgotados</span><strong id="dashEsgotados">0</strong></div>
+          </div>
+        </div>
+      </section>
+    </section>
 
-  <div class="card faturamento-dia">
-    <span>Faturamento de hoje</span>
-    <strong id="faturamentoHoje">R$ 0,00</strong>
-  </div>
+    <section id="estoqueAba" class="ms-painel">
+      <div class="page-title-ms">
+        <div>
+          <h2>Estoque</h2>
+          <p>Escolha o produto, altere as quantidades por cor e tamanho, depois salve. Sem digitar produto ou cor.</p>
+        </div>
+        <button class="btn-dark-ms" onclick="salvarGradeEstoqueMS()">Salvar alterações</button>
+      </div>
 
-</section>
+      <section class="cards-resumo estoque-cards-ms">
+        <div class="card"><span>Produtos cadastrados</span><strong id="cardProdutosEstoque">0</strong><small>Modelos da loja</small></div>
+        <div class="card"><span>Itens em estoque</span><strong id="cardItensEstoque">0</strong><small>Somando P, M, G e GG</small></div>
+        <div class="card"><span>Estoque baixo</span><strong id="cardBaixoEstoque">0</strong><small>3 unidades ou menos</small></div>
+        <div class="card"><span>Esgotados</span><strong id="cardSemEstoque">0</strong><small>Zerados</small></div>
+      </section>
 
-<section class="grafico-admin">
-  <h2>Vendas dos últimos 7 dias</h2>
-  <canvas id="graficoVendas" height="120"></canvas>
-</section>
-  <section>
-    <h2>Pedidos</h2>
+      <section class="estoque-layout-ms">
+        <div class="painel-card-ms estoque-principal-ms">
+          <div class="filtros-estoque-ms">
+            <label>Categoria
+              <select id="filtroCategoriaMS" onchange="renderGradeEstoqueMS()">
+                <option value="todas">Todas</option>
+              </select>
+            </label>
+            <label>Produto
+              <select id="filtroProdutoMS" onchange="renderGradeEstoqueMS()">
+                <option value="todos">Todos</option>
+              </select>
+            </label>
+            <label>Pesquisar
+              <input id="pesquisaEstoqueMS" placeholder="Moletom, bege, azul..." oninput="renderGradeEstoqueMS()">
+            </label>
+          </div>
 
-    <div class="abas-pedidos">
-      <button class="aba-pedido ativa" onclick="filtrarPedidos('todos', this)">
-        Todos
-      </button>
+          <div class="tabela-wrap-ms">
+            <table class="estoque-lista grade-estoque-ms">
+              <thead>
+                <tr>
+                  <th>Produto</th>
+                  <th>Cor</th>
+                  <th>P</th>
+                  <th>M</th>
+                  <th>G</th>
+                  <th>GG</th>
+                  <th>Total</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="listaEstoqueMS"><tr><td colspan="8">Carregando estoque...</td></tr></tbody>
+            </table>
+          </div>
+          <div class="legenda-ms"><span class="dot ok"></span> Normal <span class="dot baixo"></span> Baixo <span class="dot zero"></span> Sem estoque</div>
+        </div>
 
-      <button class="aba-pedido" onclick="filtrarPedidos('pendente', this)">
-        Novos pedidos <span id="qtdNovos">0</span>
-      </button>
+        <aside class="painel-card-ms alertas-ms">
+          <div class="card-header-ms">
+            <div><h2>Alertas de estoque</h2><p>Itens que precisam de atenção</p></div>
+          </div>
+          <div id="alertasEstoqueMS" class="alerta-lista-ms">Carregando...</div>
+        </aside>
+      </section>
+    </section>
 
-      <button class="aba-pedido" onclick="filtrarPedidos('pago', this)">
-        Pagos <span id="qtdPagosAba">0</span>
-      </button>
+    <section id="pedidosAba" class="ms-painel">
+      <div class="page-title-ms"><div><h2>Pedidos</h2><p>Controle os pedidos da loja.</p></div></div>
+      <section class="filtros-admin">
+        <input id="pesquisaCliente" type="text" placeholder="Pesquisar por nome do cliente..." oninput="carregarPedidos()">
+        <input id="filtroData" type="date" onchange="carregarPedidos()">
+      </section>
+      <div class="abas-pedidos">
+        <button class="aba-pedido ativa" onclick="filtrarPedidos('todos', this)">Todos</button>
+        <button class="aba-pedido" onclick="filtrarPedidos('pendente', this)">Novos pedidos <span id="qtdNovos">0</span></button>
+        <button class="aba-pedido" onclick="filtrarPedidos('pago', this)">Pagos <span id="qtdPagosAba">0</span></button>
+        <button class="aba-pedido" onclick="filtrarPedidos('enviado', this)">Enviados <span id="qtdEnviados">0</span></button>
+        <button class="aba-pedido" onclick="filtrarPedidos('excluidos', this)">🗑️ Lixeira</button>
+      </div>
+      <div id="pedidos" class="lista"></div>
+    </section>
 
-      <button class="aba-pedido" onclick="filtrarPedidos('enviado', this)">
-        Enviados <span id="qtdEnviados">0</span>
-      </button>
-    </div>
-
-    <div id="pedidos" class="lista"></div>
-  </section>
-
-</main>
+    <section id="relatoriosAba" class="ms-painel">
+      <div class="page-title-ms"><div><h2>Relatórios</h2><p>Resumo simples para acompanhar a loja.</p></div></div>
+      <section class="cards-resumo">
+        <div class="card"><span>Pedidos</span><strong id="relTotalPedidos">0</strong><small>Total geral</small></div>
+        <div class="card"><span>Pagos</span><strong id="relPagos">0</strong><small>Confirmados</small></div>
+        <div class="card"><span>Estoque total</span><strong id="relEstoque">0</strong><small>Itens disponíveis</small></div>
+      </section>
+    </section>
+  </main>
+</div>
 
 <script src="admin.js"></script>
+<script>
+const API_ADMIN_MS = "http://127.0.0.1:3000";
+const TAMANHOS_MS = ["P", "M", "G", "GG"];
+const CATALOGO_MS = [
+  { categoria:"Roupas", produto:"Moletom", tipo:"MOL", cores:["Preto","Branco","Bege","Azul","Rosa","Vinho"] },
+  { categoria:"Roupas", produto:"Jaqueta", tipo:"JAQ", cores:["Preto","Branco","Azul"] },
+  { categoria:"Camisetas", produto:"Camiseta Oversized", tipo:"OVR", cores:["Preto","Marrom","Off White","Bege"] },
+  { categoria:"Camisetas", produto:"Camiseta Básica", tipo:"CBA", cores:["Preto","Branco","Bege","Vermelho","Rosa"] },
+  { categoria:"Roupas", produto:"Conjunto", tipo:"CON", cores:["Branco","Preto","Rosa","Bege"] },
+  { categoria:"Roupas", produto:"Calça", tipo:"CAL", cores:["Preto","Bege","Cinza","Rosa","Branco"] }
+];
+const COD_COR_MS = {"Preto":"PT","Branco":"BR","Bege":"BG","Azul":"AZ","Rosa":"RS","Vinho":"VN","Marrom":"MR","Off White":"OW","Vermelho":"VM","Cinza":"CZ"};
+let estoqueServidorMS = [];
+let alteracoesEstoqueMS = new Map();
 
+function abrirAbaMS(id, btn){
+  document.querySelectorAll('.ms-painel').forEach(p => p.classList.remove('ativa'));
+  document.getElementById(id)?.classList.add('ativa');
+  document.querySelectorAll('.ms-tab').forEach(b => b.classList.remove('ativa'));
+  btn?.classList.add('ativa');
+  const titulos = {visao:'Dashboard', estoqueAba:'Estoque', pedidosAba:'Pedidos', relatoriosAba:'Relatórios'};
+  const titulo = document.getElementById('tituloPaginaMS');
+  if(titulo) titulo.innerText = titulos[id] || 'Painel ADM';
+  if(id === 'estoqueAba') carregarEstoqueMS();
+}
+
+function skuMS(produto, cor, tamanho){
+  const item = CATALOGO_MS.find(p => p.produto === produto);
+  const tipo = item?.tipo || 'PROD';
+  const corCod = COD_COR_MS[cor] || String(cor).slice(0,3).toUpperCase();
+  return `MS-${tipo}-${corCod}-${tamanho}`;
+}
+
+function normalizarMS(v){
+  return String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+}
+
+function itemEstoque(produto, cor, tamanho){
+  const sku = skuMS(produto, cor, tamanho);
+  const encontrado = estoqueServidorMS.find(i => String(i.sku || '').toUpperCase() === sku);
+  return encontrado || { sku, nome: produto, cor, tamanho, quantidade: 0, reservado: 0, disponivel: 0 };
+}
+
+function quantidadeMS(produto, cor, tamanho){
+  const sku = skuMS(produto, cor, tamanho);
+  if(alteracoesEstoqueMS.has(sku)) return Number(alteracoesEstoqueMS.get(sku).quantidade || 0);
+  return Number(itemEstoque(produto, cor, tamanho).quantidade || 0);
+}
+
+function popularFiltrosEstoqueMS(){
+  const cat = document.getElementById('filtroCategoriaMS');
+  const prod = document.getElementById('filtroProdutoMS');
+  if(cat && cat.options.length <= 1){
+    [...new Set(CATALOGO_MS.map(i => i.categoria))].forEach(c => cat.insertAdjacentHTML('beforeend', `<option value="${c}">${c}</option>`));
+  }
+  if(prod && prod.options.length <= 1){
+    CATALOGO_MS.forEach(i => prod.insertAdjacentHTML('beforeend', `<option value="${i.produto}">${i.produto}</option>`));
+  }
+}
+
+async function carregarEstoqueMS(){
+  popularFiltrosEstoqueMS();
+  try{
+    const resp = await fetch(`${API_ADMIN_MS}/estoque?t=${Date.now()}`);
+    estoqueServidorMS = await resp.json();
+  }catch(e){
+    estoqueServidorMS = [];
+    const corpo = document.getElementById('listaEstoqueMS');
+    if(corpo) corpo.innerHTML = '<tr><td colspan="8">Não consegui carregar o estoque. Ligue o servidor Node e acesse pelo http://localhost:3000/admin.html</td></tr>';
+    return;
+  }
+  renderGradeEstoqueMS();
+}
+
+function statusLinha(total){
+  if(total <= 0) return '<span class="badge-zero">Esgotado</span>';
+  if(total <= 3) return '<span class="badge-baixo">Baixo</span>';
+  return '<span class="badge-ok">Normal</span>';
+}
+
+function classeQtd(qtd){
+  qtd = Number(qtd || 0);
+  if(qtd <= 0) return 'qtd-zero';
+  if(qtd <= 3) return 'qtd-baixo';
+  return 'qtd-ok';
+}
+
+function renderGradeEstoqueMS(){
+  const corpo = document.getElementById('listaEstoqueMS');
+  if(!corpo) return;
+  const filtroCat = document.getElementById('filtroCategoriaMS')?.value || 'todas';
+  const filtroProduto = document.getElementById('filtroProdutoMS')?.value || 'todos';
+  const busca = normalizarMS(document.getElementById('pesquisaEstoqueMS')?.value || '');
+  let linhas = [];
+  CATALOGO_MS.forEach(prod => {
+    if(filtroCat !== 'todas' && prod.categoria !== filtroCat) return;
+    if(filtroProduto !== 'todos' && prod.produto !== filtroProduto) return;
+    prod.cores.forEach(cor => {
+      const textoBusca = normalizarMS(`${prod.produto} ${cor} ${prod.categoria}`);
+      if(busca && !textoBusca.includes(busca)) return;
+      const total = TAMANHOS_MS.reduce((s,t) => s + quantidadeMS(prod.produto, cor, t), 0);
+      linhas.push(`
+        <tr>
+          <td><strong>${prod.produto}</strong><small>${prod.categoria}</small></td>
+          <td><span class="bolinha-cor ${normalizarMS(cor).replace(/\s/g,'-')}"></span>${cor}</td>
+          ${TAMANHOS_MS.map(t => {
+            const qtd = quantidadeMS(prod.produto, cor, t);
+            const sku = skuMS(prod.produto, cor, t);
+            return `<td><input class="qtd-input-ms ${classeQtd(qtd)}" type="number" min="0" value="${qtd}" data-sku="${sku}" data-produto="${prod.produto}" data-cor="${cor}" data-tamanho="${t}" onchange="alterarQtdEstoqueMS(this)" oninput="alterarQtdEstoqueMS(this)"></td>`;
+          }).join('')}
+          <td><strong class="total-linha-ms">${total}</strong></td>
+          <td>${statusLinha(total)}</td>
+        </tr>
+      `);
+    });
+  });
+  corpo.innerHTML = linhas.join('') || '<tr><td colspan="8">Nenhum item encontrado.</td></tr>';
+  atualizarCardsEstoqueMS();
+  renderAlertasEstoqueMS();
+}
+
+function alterarQtdEstoqueMS(input){
+  const quantidade = Math.max(0, Number(input.value || 0));
+  input.value = quantidade;
+  input.classList.remove('qtd-ok','qtd-baixo','qtd-zero');
+  input.classList.add(classeQtd(quantidade));
+  alteracoesEstoqueMS.set(input.dataset.sku, {
+    sku: input.dataset.sku,
+    nome: input.dataset.produto,
+    cor: input.dataset.cor,
+    tamanho: input.dataset.tamanho,
+    quantidade
+  });
+  const tr = input.closest('tr');
+  if(tr){
+    const total = [...tr.querySelectorAll('.qtd-input-ms')].reduce((s, el) => s + Number(el.value || 0), 0);
+    tr.querySelector('.total-linha-ms').innerText = total;
+    tr.lastElementChild.innerHTML = statusLinha(total);
+  }
+  atualizarCardsEstoqueMS();
+  renderAlertasEstoqueMS();
+}
+
+function todosItensCatalogoMS(){
+  const itens = [];
+  CATALOGO_MS.forEach(p => p.cores.forEach(cor => TAMANHOS_MS.forEach(tamanho => {
+    itens.push({ sku: skuMS(p.produto, cor, tamanho), nome: p.produto, cor, tamanho, quantidade: quantidadeMS(p.produto, cor, tamanho) });
+  })));
+  return itens;
+}
+
+function atualizarCardsEstoqueMS(){
+  const itens = todosItensCatalogoMS();
+  const total = itens.reduce((s,i) => s + Number(i.quantidade || 0), 0);
+  const baixo = itens.filter(i => i.quantidade > 0 && i.quantidade <= 3).length;
+  const zero = itens.filter(i => i.quantidade <= 0).length;
+  const produtos = CATALOGO_MS.length;
+  const ids = {
+    cardProdutosEstoque: produtos, cardItensEstoque: total, cardBaixoEstoque: baixo, cardSemEstoque: zero,
+    dashItensEstoque: total, dashEstoqueBaixo: baixo, dashEsgotados: zero, relEstoque: total
+  };
+  Object.entries(ids).forEach(([id,val]) => { const el = document.getElementById(id); if(el) el.innerText = val; });
+}
+
+function renderAlertasEstoqueMS(){
+  const box = document.getElementById('alertasEstoqueMS');
+  if(!box) return;
+  const alertas = todosItensCatalogoMS()
+    .filter(i => Number(i.quantidade || 0) <= 3)
+    .sort((a,b) => Number(a.quantidade||0) - Number(b.quantidade||0))
+    .slice(0, 12);
+  if(!alertas.length){ box.innerHTML = '<p class="sem-alerta-ms">Tudo tranquilo no estoque.</p>'; return; }
+  box.innerHTML = alertas.map(i => `
+    <div class="alerta-item-ms">
+      <div><strong>${i.nome} ${i.cor} - ${i.tamanho}</strong><span>${i.quantidade <= 0 ? 'Sem estoque' : 'Apenas ' + i.quantidade + ' unidade(s)'}</span></div>
+      <em class="${i.quantidade <= 0 ? 'zero' : 'baixo'}">${i.quantidade <= 0 ? 'Esgotado' : 'Baixo'}</em>
+    </div>
+  `).join('');
+}
+
+async function salvarGradeEstoqueMS(){
+  if(!alteracoesEstoqueMS.size){ alert('Nenhuma alteração para salvar.'); return; }
+  const botao = event?.target;
+  const textoOriginal = botao?.innerText;
+  if(botao) botao.innerText = 'Salvando...';
+  try{
+    for(const item of alteracoesEstoqueMS.values()){
+      const resp = await fetch(`${API_ADMIN_MS}/estoque`, {
+        method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(item)
+      });
+      if(!resp.ok) throw new Error('Erro ao salvar ' + item.sku);
+    }
+    alteracoesEstoqueMS.clear();
+    await carregarEstoqueMS();
+    alert('Estoque salvo com sucesso.');
+  }catch(e){
+    alert('Não consegui salvar. Veja se o servidor Node está ligado.');
+  }finally{
+    if(botao) botao.innerText = textoOriginal || 'Salvar alterações';
+  }
+}
+
+
+function aplicarTemaMS(tema){
+  const escolhido = tema === 'escuro' ? 'escuro' : 'claro';
+  document.documentElement.setAttribute('data-theme', escolhido);
+  localStorage.setItem('temaAdminMS', escolhido);
+  const ehEscuro = escolhido === 'escuro';
+  const icone = document.getElementById('iconeTemaMS');
+  const texto = document.getElementById('textoTemaMS');
+  const iconeSide = document.getElementById('iconeTemaSidebarMS');
+  if(icone) icone.innerText = ehEscuro ? '☀️' : '🌙';
+  if(texto) texto.innerText = ehEscuro ? 'Claro' : 'Escuro';
+  if(iconeSide) iconeSide.innerText = ehEscuro ? '☀️' : '🌙';
+}
+function alternarTemaMS(){
+  const atual = document.documentElement.getAttribute('data-theme') || 'claro';
+  aplicarTemaMS(atual === 'escuro' ? 'claro' : 'escuro');
+}
+
+function carregarTudoMS(){
+  if(window.atualizarPedidos) window.atualizarPedidos();
+  carregarEstoqueMS();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  aplicarTemaMS(localStorage.getItem('temaAdminMS') || 'escuro');
+  popularFiltrosEstoqueMS();
+  setTimeout(carregarTudoMS, 400);
+});
+</script>
 </body>
 </html>

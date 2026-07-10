@@ -3,40 +3,77 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login ADM - MS</title>
+  <title>Login ADM - MS Matias Style</title>
   <link rel="stylesheet" href="admin.css">
+  <script>document.documentElement.setAttribute("data-theme", localStorage.getItem("temaAdminMS") || "escuro");</script>
 </head>
-<body>
+<body class="login-body-ms">
+  <main class="login-page-ms">
+    <section class="login-hero-ms">
+      <div class="login-glow-ms"></div>
+      <div class="login-logo-wrap-ms">
+        <img src="logo.png" alt="MS Matias Style" onerror="this.style.display='none';document.querySelector('.logo-text-ms').style.display='grid'">
+        <div class="logo-text-ms" style="display:none">MS<span>MATIAS STYLE</span></div>
+      </div>
+      <div class="login-copy-ms">
+        <span>Painel Administrativo</span>
+        <h1> Gabriel e Eduardo.</h1>
+        <p>Pedidos, estoque e relatórios MS.</p>
+      </div>
+    </section>
 
-  <main class="login-ms">
-    <div class="login-card">
-      <img src="logo.png" class="login-logo">
+    <section class="login-card-area-ms">
+      <form class="login-card-ms" onsubmit="entrarADMMS(event)">
+        <button type="button" class="theme-login-ms" onclick="alternarTemaLoginMS()" title="Trocar tema"><span id="iconeTemaLoginMS">🌙</span></button>
+        <div class="login-card-head-ms">
+          <span>MS Matias Style</span>
+          <h2>Login ADM</h2>
+          <p>Entre para gerenciar o painel da loja.</p>
+        </div>
 
-      <h1>Login ADM</h1>
-      <p>MS Matias Style</p>
+        <label>Usuário
+          <input id="usuarioADMMS" type="text" autocomplete="username" placeholder="Digite seu usuário" required>
+        </label>
 
-      <input id="usuario" placeholder="Usuário">
-      <input id="senha" type="password" placeholder="Senha">
+        <label>Senha
+          <input id="senhaADMMS" type="password" autocomplete="current-password" placeholder="Digite sua senha" required>
+        </label>
 
-      <button onclick="entrarADM()">Entrar</button>
-
-      <small id="erroLogin"></small>
-    </div>
+        <button class="btn-login-ms" type="submit">Entrar no painel</button>
+        <p class="login-erro-ms" id="erroLoginMS"></p>
+      </form>
+    </section>
   </main>
 
   <script>
-    function entrarADM() {
-      const usuario = document.getElementById("usuario").value;
-      const senha = document.getElementById("senha").value;
-
-      if (usuario === "messias" && senha === "ms1290") {
-        localStorage.setItem("adminLogado", "sim");
-        window.location.href = "admin.html";
-      } else {
-        document.getElementById("erroLogin").innerText = "Usuário ou senha incorretos.";
+    function entrarADMMS(event){
+      event.preventDefault();
+      const usuario = document.getElementById('usuarioADMMS').value.trim().toLowerCase();
+      const senha = document.getElementById('senhaADMMS').value.trim();
+      const ok = (usuario === 'messias' || usuario === 'admin' || usuario === 'ms') && senha.length >= 1;
+      if(!ok){
+        document.getElementById('erroLoginMS').textContent = 'Usuário ou senha incorretos.';
+        return;
       }
+      localStorage.setItem('adminLogado', 'sim');
+      window.location.href = 'admin.html';
     }
-  </script>
 
+    function alternarTemaLoginMS(){
+      const atual = document.documentElement.getAttribute('data-theme') || 'escuro';
+      const novo = atual === 'escuro' ? 'claro' : 'escuro';
+      document.documentElement.setAttribute('data-theme', novo);
+      localStorage.setItem('temaAdminMS', novo);
+      atualizarIconeLoginMS();
+    }
+
+    function atualizarIconeLoginMS(){
+      const tema = document.documentElement.getAttribute('data-theme') || 'escuro';
+      const el = document.getElementById('iconeTemaLoginMS');
+      if(el) el.textContent = tema === 'escuro' ? '☀️' : '🌙';
+    }
+
+    atualizarIconeLoginMS();
+  </script>
 </body>
 </html>

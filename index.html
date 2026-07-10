@@ -22,6 +22,89 @@
 .ms-cor-carrinho{display:block;font-size:13px;color:#555;margin:3px 0;}
 @media(max-width:768px){.cor-ms-btn{width:38px;height:38px}.opcoes-cores{gap:10px}}
 </style>
+<!-- FIX SLIDER RECOMENDADOS MS -->
+
+<style>
+.recomendados-lista-ms{
+  overflow-x:auto;
+  overflow-y:hidden;
+  padding:0 10px 18px;
+  scroll-snap-type:x mandatory;
+}
+.recomendado-card-ms{
+  flex:0 0 300px;
+  scroll-snap-align:start;
+  cursor:pointer;
+}
+.recomendado-card-ms img{
+  width:100%;
+  height:260px;
+  object-fit:cover;
+  object-position:center;
+}
+.recomendado-card-ms h4{
+  white-space:normal;
+  overflow:visible;
+  text-overflow:clip;
+}
+@media(max-width:768px){
+  .recomendado-card-ms{ flex-basis:240px; }
+  .recomendado-card-ms img{ height:220px; }
+}
+</style>
+
+
+<style>
+/* FIX DEFINITIVO SLIDER RECOMENDADOS */
+.recomendados-lista-ms{
+  display:flex !important;
+  gap:24px !important;
+  overflow-x:auto !important;
+  overflow-y:hidden !important;
+  padding:0 10px 20px !important;
+  scroll-snap-type:x mandatory;
+}
+
+.recomendado-card-ms{
+  flex:0 0 310px !important;
+  min-width:310px !important;
+  max-width:310px !important;
+  overflow:hidden !important;
+  border-radius:18px !important;
+  cursor:pointer !important;
+  background:#fff !important;
+  scroll-snap-align:start;
+}
+
+.recomendado-card-ms img{
+  width:100% !important;
+  height:260px !important;
+  object-fit:contain !important;
+  object-position:center !important;
+  background:#050505 !important;
+  display:block !important;
+}
+
+.recomendado-card-ms h4{
+  width:100% !important;
+  white-space:normal !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+  line-height:1.2 !important;
+}
+
+@media(max-width:768px){
+  .recomendado-card-ms{
+    flex-basis:240px !important;
+    min-width:240px !important;
+    max-width:240px !important;
+  }
+  .recomendado-card-ms img{
+    height:220px !important;
+  }
+}
+</style>
+
 </head>
 
 <body>
@@ -271,6 +354,7 @@ data-fotos="moletom-rosa.jpeg,modelo-moletom-rosa.png,modelo-de-costa-moletom-ro
 
      <div class="card-produto"
 data-nome="Moletom Preto MS"
+data-cor="preto"
 data-preco="99.90"
 data-precoantigo="180.00"
 data-img="MOLETOM-PRETO.jpeg"
@@ -298,7 +382,7 @@ data-cuidados="• Lavar pelo avesso
 
   ♡
 </button>
-        <div class="produto-img">
+        <div class="produto-img" onclick="abrirProdutoDetalheCard(this.closest('.card-produto'))">
           <img src="MOLETOM-PRETO.jpeg" class="foto-normal" alt="Moletom Preto MS">
           <img src="modelo-preto.jpeg" class="foto-hover" alt="Modelo com Moletom Preto MS">
         </div>
@@ -349,7 +433,8 @@ data-cuidados="• Lavar pelo avesso
         </button>
       </div>
       <div class="card-produto"
-  data-nome="Moletom vinho MS"
+  data-nome="Moletom Vinho MS"
+  data-cor="vinho"
   data-preco="99.90"
   data-precoantigo="180.00"
   data-img="moletom-vinho.jpeg"
@@ -358,7 +443,7 @@ data-cuidados="• Lavar pelo avesso
 
 data-fotos-preto="moletom-preto.jpeg,moletom-preto-modelo.jpeg"
 data-fotos-vinho="moletom-vinho.jpeg,moletom-vinho-modelo.jpeg"
-data-fotos-bege="moletom-bege.jpeg,moletom-bege-modelo.jpeg"
+data-fotos-bege="moletom-bege.jpeg,modelo-moletom-bege.png"
   data-descricao="Tamanho	Altura	Largura	Manga
 P	64 cm	53 cm	59 cm
 M	66 cm	55 cm	60 cm
@@ -434,7 +519,8 @@ data-cuidados="• Lavar pelo avesso
 
 </div>
 <div class="card-produto"
-  data-nome="Moleto-bege MS"
+  data-nome="Moletom Bege MS"
+  data-cor="bege"
   data-preco="99.90"
   data-precoantigo="180.00"
   data-img="moletom-bege.jpeg"
@@ -769,7 +855,7 @@ onclick="abrirProdutoDetalheCard(this)">
 
     <!-- CALÇA PRETA -->
     <div class="card-produto"
-      data-nome="Calça Cargo Preta MS"
+      data-nome="Calça Preta MS"
       data-preco="79,99"
       data-precoantigo="150.90"
       data-img="calca-preta.jpeg"
@@ -831,7 +917,7 @@ data-cuidados="• Lavar pelo avesso.
 
       </div>
 
-      <h3>Calça Cargo Preta MS</h3>
+      <h3>Calça Preta MS</h3>
       <div class="avaliacao-produto">
   <span onclick="avaliar(event, this, 1)">★</span>
   <span onclick="avaliar(event, this, 2)">★</span>
@@ -866,7 +952,7 @@ data-cuidados="• Lavar pelo avesso.
       <button
         class="btn-comprar"
         onclick="adicionarCarrinho(this)"
-        data-nome="Calça Cargo Preta MS"
+        data-nome="Calça Preta MS"
         data-preco="79,99"
         data-img="calca-preta.jpeg">
 
@@ -1459,26 +1545,26 @@ onclick="favoritarProduto(this, event)">
   </div>
 
 </section>
-<section class="secao-produtos">
+<section class="produtos secao-produtos" id="jaquetas">
 
   <div class="topo-secao">
-    <section class="produtos" id="jaquetas">
     <h2 class="titulo-secao">JAQUETAS MS</h2>
     <div class="linha-titulo"></div>
   </div>
 
   <div class="grid-produtos">
 
+    <!-- JAQUETA AZUL -->
     <div class="card-produto"
-data-nome="Jaqueta MS Azul"
-data-preco="159.90"
-data-img="jaqueta azul.png"
-data-fotos="jaqueta azul.png,modelo jaqueta azul.png">
-<span class="selo-produto fogo">🔥NOVIDADE</span>
-<button class="btn-favorito"
-onclick="favoritarProduto(this, event)">
-♡
-</button>
+      data-nome="Jaqueta MS Azul"
+      data-preco="159.90"
+      data-img="jaqueta azul.png"
+      data-fotos="jaqueta azul.png,modelo jaqueta azul.png">
+
+      <span class="selo-produto fogo">🔥 NOVIDADE</span>
+
+      <button class="btn-favorito" onclick="favoritarProduto(this, event)">♡</button>
+
       <div class="produto-img">
         <img src="jaqueta azul.png" class="img-principal" alt="Jaqueta MS Azul">
         <img src="modelo jaqueta azul.png" class="img-hover" alt="Modelo usando Jaqueta MS Azul">
@@ -1486,16 +1572,16 @@ onclick="favoritarProduto(this, event)">
 
       <h3>JAQUETA MS AZUL</h3>
 
-<div class="avaliacao-produto">
-  <span onclick="avaliar(event, this, 1)">★</span>
-  <span onclick="avaliar(event, this, 2)">★</span>
-  <span onclick="avaliar(event, this, 3)">★</span>
-  <span onclick="avaliar(event, this, 4)">★</span>
-  <span onclick="avaliar(event, this, 5)">★</span>
-</div>
+      <div class="avaliacao-produto">
+        <span onclick="avaliar(event, this, 1)">★</span>
+        <span onclick="avaliar(event, this, 2)">★</span>
+        <span onclick="avaliar(event, this, 3)">★</span>
+        <span onclick="avaliar(event, this, 4)">★</span>
+        <span onclick="avaliar(event, this, 5)">★</span>
+      </div>
 
-<p class="preco-antigo">R$ 199,90</p>
-<p class="preco">R$ 159,90</p>
+      <p class="preco-antigo">R$ 199,90</p>
+      <p class="preco">R$ 159,90</p>
 
       <div class="tamanhos">
         <button onclick="selecionarTamanho(this,'P')">P</button>
@@ -1504,39 +1590,40 @@ onclick="favoritarProduto(this, event)">
         <button onclick="selecionarTamanho(this,'GG')">GG</button>
       </div>
 
-      <button class="btn-comprar" onclick="adicionarCarrinho('Jaqueta MS Azul',159.90,'jaqueta azul.png',this)">
+      <button class="btn-comprar" onclick="event.stopPropagation(); adicionarCarrinho(this)">
         ADICIONAR AO CARRINHO 🛒
       </button>
+
     </div>
 
+    <!-- JAQUETA BRANCA -->
     <div class="card-produto"
-data-nome="Corta Vento Branco MS"
-data-preco="159.90"
-data-img="Jaqueta Corta Vento Impermeável Masculina Branco.png"
-data-fotos="Jaqueta Corta Vento Impermeável Masculina Branco.png,modelo corta vento Branco.png,modelo corta vento branco aberto.png">
-<span class="selo-produto fogo">🔥 NOVIDADE</span>
+      data-nome="Jaqueta MS Branca"
+      data-preco="159.90"
+      data-img="Jaqueta Corta Vento Impermeável Masculina Branco.png"
+      data-fotos="Jaqueta Corta Vento Impermeável Masculina Branco.png,modelo corta vento Branco.png,modelo corta vento branco aberto.png">
 
-<button class="btn-favorito"
-onclick="favoritarProduto(this, event)">
-♡
-</button>
+      <span class="selo-produto fogo">🔥 NOVIDADE</span>
+
+      <button class="btn-favorito" onclick="favoritarProduto(this, event)">♡</button>
+
       <div class="produto-img">
-        <img src="Jaqueta Corta Vento Impermeável Masculina Branco.png" class="img-principal" alt="Corta Vento Branco">
-        <img src="modelo corta vento Branco.png" class="img-hover" alt="Modelo usando Corta Vento Branco">
+        <img src="Jaqueta Corta Vento Impermeável Masculina Branco.png" class="img-principal" alt="Jaqueta MS Branca">
+        <img src="modelo corta vento Branco.png" class="img-hover" alt="Modelo usando Jaqueta MS Branca">
       </div>
 
-     <h3>JAQUETA MS BRANCA</h3>
+      <h3>JAQUETA MS BRANCA</h3>
 
-<div class="avaliacao-produto">
-  <span onclick="avaliar(event, this, 1)">★</span>
-  <span onclick="avaliar(event, this, 2)">★</span>
-  <span onclick="avaliar(event, this, 3)">★</span>
-  <span onclick="avaliar(event, this, 4)">★</span>
-  <span onclick="avaliar(event, this, 5)">★</span>
-</div>
+      <div class="avaliacao-produto">
+        <span onclick="avaliar(event, this, 1)">★</span>
+        <span onclick="avaliar(event, this, 2)">★</span>
+        <span onclick="avaliar(event, this, 3)">★</span>
+        <span onclick="avaliar(event, this, 4)">★</span>
+        <span onclick="avaliar(event, this, 5)">★</span>
+      </div>
 
-<p class="preco-antigo">R$ 199,90</p>
-<p class="preco">R$ 159,90</p>
+      <p class="preco-antigo">R$ 199,90</p>
+      <p class="preco">R$ 159,90</p>
 
       <div class="tamanhos">
         <button onclick="selecionarTamanho(this,'P')">P</button>
@@ -1545,70 +1632,59 @@ onclick="favoritarProduto(this, event)">
         <button onclick="selecionarTamanho(this,'GG')">GG</button>
       </div>
 
-      <button class="btn-comprar" onclick="adicionarCarrinho('Corta Vento Branco',169.90,'Jaqueta Corta Vento Impermeável Masculina Branco.png',this)">
+      <button class="btn-comprar" onclick="event.stopPropagation(); adicionarCarrinho(this)">
         ADICIONAR AO CARRINHO 🛒
       </button>
+
     </div>
+
     <!-- JAQUETA PRETA -->
-<div class="card-produto"
-data-nome="Jaqueta MS Preta"
-data-preco="159.90"
-data-img="jaqueta preta.png"
-data-fotos="jaqueta preta.png,modelo jaqueta preta.jpeg">
-<span class="selo-produto fogo">🔥 NOVIDADE</span>
+    <div class="card-produto"
+      data-nome="Jaqueta MS Preta"
+      data-preco="189.00"
+      data-img="jaqueta preta.png"
+      data-fotos="jaqueta preta.png,modelo jaqueta preta.jpeg">
 
-<button class="btn-favorito"
-onclick="favoritarProduto(this, event)">
-♡
-</button>
+      <span class="selo-produto fogo">🔥 NOVIDADE</span>
 
-  <div class="produto-img">
+      <button class="btn-favorito" onclick="favoritarProduto(this, event)">♡</button>
 
-    <!-- FOTO NORMAL -->
-    <img src="jaqueta preta.png" class="img-principal">
+      <div class="produto-img">
+        <img src="jaqueta preta.png" class="img-principal" alt="Jaqueta MS Preta">
+        <img src="modelo jaqueta preta.jpeg" class="img-hover" alt="Modelo usando Jaqueta MS Preta">
+      </div>
 
-    <!-- FOTO MODELO -->
-    <img src="modelo jaqueta preta.jpeg" class="img-hover">
+      <h3>JAQUETA MS PRETA</h3>
+
+      <div class="avaliacao-produto">
+        <span onclick="avaliar(event, this, 1)">★</span>
+        <span onclick="avaliar(event, this, 2)">★</span>
+        <span onclick="avaliar(event, this, 3)">★</span>
+        <span onclick="avaliar(event, this, 4)">★</span>
+        <span onclick="avaliar(event, this, 5)">★</span>
+      </div>
+
+      <p class="preco-antigo">R$ 249,90</p>
+      <p class="preco">R$ 189,00</p>
+      <p>em até 2x sem juros</p>
+
+      <div class="tamanhos">
+        <button onclick="selecionarTamanho(this,'P')">P</button>
+        <button onclick="selecionarTamanho(this,'M')">M</button>
+        <button onclick="selecionarTamanho(this,'G')">G</button>
+        <button onclick="selecionarTamanho(this,'GG')">GG</button>
+      </div>
+
+      <button class="btn-comprar" onclick="event.stopPropagation(); adicionarCarrinho(this)">
+        ADICIONAR AO CARRINHO 🛒
+      </button>
+
+    </div>
 
   </div>
-
-  <h3>JAQUETA MS PRETA</h3>
-
-  <div class="avaliacao-produto">
-  <span onclick="avaliar(event, this, 1)">★</span>
-  <span onclick="avaliar(event, this, 2)">★</span>
-  <span onclick="avaliar(event, this, 3)">★</span>
-  <span onclick="avaliar(event, this, 4)">★</span>
-  <span onclick="avaliar(event, this, 5)">★</span>
-</div>
-
-  <p class="preco-antigo">R$ 249,90</p>
-
-  <p class="preco">R$ 189</p>
-
-  <p>em até 2x sem juros</p>
-
-  <!-- TAMANHOS -->
-  <div class="tamanhos">
-
-    <button onclick="selecionarTamanho(this, 'P')">
-      P
-    </button>
-
-    <button onclick="selecionarTamanho(this, 'M')">
-      M
-    </button>
-
-    <button onclick="selecionarTamanho(this, 'G')">
-      G
-    </button>
-
-    <button onclick="selecionarTamanho(this, 'GG')">
-      GG
-    </button>
-      </div>
 </section>
- <!-- CAMISETAS OVERSIZED -->
+
+<!-- CAMISETAS OVERSIZED -->
 <section class="produtos" id="camisetas">
 
   <div class="titulo-section">
@@ -2033,8 +2109,8 @@ data-img="Camiseta Oversized Bege.jpeg">
 
     <!-- CONJUNTO branco --> 
     <div class="card-produto"
-      data-nome="Conjunto-branco"
-      data-preco="89.90"
+      data-nome="Conjunto Branco MS"
+      data-preco="140,90"
       data-img="conjunto-branco.jpeg"
       data-fotos="conjunto-branco.jpeg,modelo-conjunto-branco.jpeg">
       
@@ -2050,7 +2126,7 @@ data-img="Camiseta Oversized Bege.jpeg">
 
         <img src="conjunto-branco.jpeg" class="foto-normal">
 
-        <img src="modelo-conjuto-branco.jpeg" class="foto-hover">
+        <img src="modelo-conjunto-branco.jpeg" class="foto-hover">
 
       </div>
 
@@ -2065,8 +2141,8 @@ data-img="Camiseta Oversized Bege.jpeg">
       </div>
 
       <div class="preco-box">
-        <span class="preco-antigo">R$ 180,90</span>
-        <p class="preco">R$ 89,90</p>
+        <span class="preco-antigo">R$ 280,90</span>
+        <p class="preco">R$ 140,90</p>
         <span class="parcelamento">em até 5x sem juros</span>
       </div>
 
@@ -2081,7 +2157,7 @@ data-img="Camiseta Oversized Bege.jpeg">
         class="btn-comprar"
         onclick="adicionarCarrinho(this)"
         data-nome="Conjunto Branco MS"
-        data-preco="89.90"
+        data-preco="140,90"
         data-img="conjunto-branco.jpeg">
 
         <span>ADICIONAR AO CARRINHO</span>
@@ -2094,7 +2170,7 @@ data-img="Camiseta Oversized Bege.jpeg">
     <!-- CONJUNTO PRETO -->
 <div class="card-produto"
 data-nome="Conjunto Preto MS"
-data-preco="89.90"
+data-preco="140,90"
 data-img="conjunto-preto.jpeg"
 data-fotos="conjunto-preto.jpeg,modelo-conjunto-preto.jpeg">
 
@@ -2126,9 +2202,9 @@ class="foto-hover">
 </div>
 
 <div class="preco-box">
-<span class="preco-antigo">R$ 180,90</span>
+<span class="preco-antigo">R$ 280,90</span>
 
-<p class="preco">R$ 89,90</p>
+<p class="preco">R$ 140,90</p>
 
 <span class="parcelamento">
 em até 5x sem juros
@@ -2146,7 +2222,7 @@ em até 5x sem juros
 class="btn-comprar"
 onclick="adicionarCarrinho(this)"
 data-nome="Conjunto Preto MS"
-data-preco="89,90"
+data-preco="140,90"
 data-img="conjunto-preto.jpeg">
 
 <span>ADICIONAR AO CARRINHO</span>
@@ -2160,7 +2236,7 @@ data-img="conjunto-preto.jpeg">
 <!-- CONJUNTO ROSA -->
 <div class="card-produto"
 data-nome="Conjunto Rosa MS"
-data-preco="89.90"
+data-preco="140,90"
 data-img="conjunto-rosa.jpeg"
 data-fotos="conjunto-rosa.jpeg,modelo-conjunto-rosa.jpeg">
 
@@ -2192,9 +2268,9 @@ class="foto-hover">
 </div>
 
 <div class="preco-box">
-<span class="preco-antigo">R$ 180,90</span>
+<span class="preco-antigo">R$ 280,90</span>
 
-<p class="preco">R$ 89,90</p>
+<p class="preco">R$ 140,90</p>
 
 <span class="parcelamento">
 em até 5x sem juros
@@ -2212,7 +2288,7 @@ em até 5x sem juros
 class="btn-comprar"
 onclick="adicionarCarrinho(this)"
 data-nome="Conjunto Rosa MS"
-data-preco="89,90"
+data-preco="140,90"
 data-img="conjunto-rosa.jpeg">
 
 <span>ADICIONAR AO CARRINHO</span>
@@ -2224,7 +2300,7 @@ data-img="conjunto-rosa.jpeg">
 <!-- CONJUNTO BEGE  -->
 <div class="card-produto"
 data-nome="Conjunto BEGE MS"
-data-preco="89.90"
+data-preco="140,90"
 data-img="conjunto-bege.jpeg"
 data-fotos="conjunto-bege.jpeg,modelo-conjunto-bege.jpeg">
 
@@ -2256,9 +2332,9 @@ class="foto-hover">
 </div>
 
 <div class="preco-box">
-<span class="preco-antigo">R$ 180.90</span>
+<span class="preco-antigo">R$ 280,90</span>
 
-<p class="preco">R$ 89.90</p>
+<p class="preco">R$ 140,90</p>
 
 <span class="parcelamento">
 em até 5x sem juros
@@ -2276,7 +2352,7 @@ em até 5x sem juros
 class="btn-comprar"
 onclick="adicionarCarrinho(this)"
 data-nome="Conjunto BEGE MS"
-data-preco="159.90"
+data-preco="140,90"
 data-img="conjunto-bege.jpeg">
 
 <span>ADICIONAR AO CARRINHO</span>
@@ -2663,44 +2739,67 @@ onclick="adicionarProdutoDetalhe(); return false;">
     <button type="button">Ver mais ›</button>
   </div>
 
+  
+  
   <div class="recomendados-lista-ms">
-    <article class="recomendado-card-ms" onclick="abrirRecomendadoMS('Jaqueta Azul MS',89.90,'jaqueta azul.png','jaqueta azul.png,modelo jaqueta azul.png')">
-  <button type="button" class="rec-fav-ms">♡</button>
-  <img src="jaqueta azul.png">
-  <div><h4>Jaqueta Azul MS</h4><strong>R$ 89,90</strong><p>Até 5x sem juros</p></div>
-</article>
 
-    <article class="recomendado-card-ms" onclick="abrirRecomendadoMS('Moletom Branco MS',100,'moletom-branco.png','moletom-branco.png,modelo-offwhite.png')">
+    <article class="recomendado-card-ms"
+      data-nome="Jaqueta MS Azul"
+      data-preco="159.90"
+      data-img="jaqueta azul.png"
+      data-fotos="jaqueta azul.png,modelo jaqueta azul.png"
+      data-cor="azul">
       <button type="button" class="rec-fav-ms">♡</button>
-      <img src="moletom-branco.png">
+      <img src="jaqueta azul.png" alt="Jaqueta MS Azul">
+      <div><h4>Jaqueta MS Azul</h4><strong>R$ 159,90</strong><p>Até 3x sem juros</p></div>
+    </article>
+
+    <article class="recomendado-card-ms"
+      data-nome="Moletom Branco MS"
+      data-preco="89.90"
+      data-img="moletom-branco.png"
+      data-fotos="moletom-branco.png,modelo-offwhite.png"
+      data-cor="branco">
+      <button type="button" class="rec-fav-ms">♡</button>
+      <img src="moletom-branco.png" alt="Moletom Branco MS">
       <div><h4>Moletom Branco MS</h4><strong>R$ 89,90</strong><p>Até 5x sem juros</p></div>
     </article>
 
-    <article class="recomendado-card-ms" onclick="abrirRecomendadoMS('Moletom Bege MS',89.90,'moletom-bege.jpeg','moletom-bege.jpeg,modelo-moletom-bege.png')">
+    <article class="recomendado-card-ms"
+      data-nome="Moletom Bege MS"
+      data-preco="89.90"
+      data-img="moletom-bege.jpeg"
+      data-fotos="moletom-bege.jpeg,modelo-moletom-bege.png"
+      data-cor="bege">
       <button type="button" class="rec-fav-ms">♡</button>
-      <img src="moletom-bege.jpeg">
+      <img src="moletom-bege.jpeg" alt="Moletom Bege MS">
       <div><h4>Moletom Bege MS</h4><strong>R$ 89,90</strong><p>Até 5x sem juros</p></div>
     </article>
 
-    <article class="recomendado-card-ms" onclick="abrirRecomendadoMS('Moletom Azul MS',100,'moletom-azul.png','modelo-moletom-azul.png,moletom-azul.png')">
+    <article class="recomendado-card-ms"
+      data-nome="Moletom Azul MS"
+      data-preco="89.90"
+      data-img="moletom-azul.png"
+      data-fotos="moletom-azul.png,modelo-moletom-azul.png"
+      data-cor="azul">
       <button type="button" class="rec-fav-ms">♡</button>
-      <img src="moletom-azul.png">
+      <img src="moletom-azul.png" alt="Moletom Azul MS">
       <div><h4>Moletom Azul MS</h4><strong>R$ 89,90</strong><p>Até 5x sem juros</p></div>
     </article>
 
-    
+    <article class="recomendado-card-ms"
+      data-nome="Conjunto Preto MS"
+      data-preco="159.90"
+      data-img="conjunto-preto.jpeg"
+      data-fotos="conjunto-preto.jpeg,modelo-conjunto-preto.jpeg"
+      data-cor="preto">
+      <button type="button" class="rec-fav-ms">♡</button>
+      <img src="conjunto-preto.jpeg" alt="Conjunto Preto MS">
+      <div><h4>Conjunto Preto MS</h4><strong>R$ 159,90</strong><p>Até 3x sem juros</p></div>
+    </article>
 
-<article class="recomendado-card-ms"
-  onclick="abrirRecomendadoMS('Conjunto Preto MS',100,'conjunto-preto.jpeg','conjunto-preto.JPEG,modelo-conjunto-preto.jpeg')">
-  <button type="button" class="rec-fav-ms">♡</button>
-  <img src="conjunto-preto.jpeg">
-  <div>
-    <h4>Conjunto Preto MS</h4>
-    <strong>R$ 100,00</strong>
-    <p>Até 3x sem juros</p>
   </div>
-</article>
-  </div>
+
 </section>
 
 <footer class="rodape-detalhe-ms">
