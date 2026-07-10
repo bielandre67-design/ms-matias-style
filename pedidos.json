@@ -2767,7 +2767,7 @@
       }
     ],
     "total": 416.20000000000005,
-    "status": "aguardando pagamento",
+    "status": "pago",
     "data": "07/07/2026, 21:36:13"
   },
   {
@@ -2787,94 +2787,10 @@
         "title": "Moletom Preto MS",
         "preco": 99.9,
         "unit_price": 99.9,
-        "quantidade": 2,
-        "quantity": 2,
-        "tamanho": "M",
+        "quantidade": 1,
+        "quantity": 1,
+        "tamanho": "P",
         "imagem": "MOLETOM-PRETO.jpeg"
-      },
-      {
-        "nome": "Moleto-bege MS",
-        "title": "Moleto-bege MS",
-        "preco": 99.9,
-        "unit_price": 99.9,
-        "quantidade": 2,
-        "quantity": 2,
-        "tamanho": "M",
-        "imagem": "moletom-bege.jpeg"
-      }
-    ],
-    "total": 414.19,
-    "status": "aguardando pagamento",
-    "data": "07/07/2026, 21:38:54"
-  },
-  {
-    "id": 82,
-    "nome": "",
-    "telefone": "",
-    "cep": "",
-    "rua": "",
-    "numero": "",
-    "complemento": "",
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "produtos": [
-      {
-        "nome": "Moletom Preto MS",
-        "title": "Moletom Preto MS",
-        "preco": 99.9,
-        "unit_price": 99.9,
-        "quantidade": 2,
-        "quantity": 2,
-        "tamanho": "M",
-        "imagem": "MOLETOM-PRETO.jpeg"
-      },
-      {
-        "nome": "Moleto-bege MS",
-        "title": "Moleto-bege MS",
-        "preco": 99.9,
-        "unit_price": 99.9,
-        "quantidade": 2,
-        "quantity": 2,
-        "tamanho": "M",
-        "imagem": "moletom-bege.jpeg"
-      }
-    ],
-    "total": 414.19,
-    "status": "aguardando pagamento",
-    "data": "07/07/2026, 21:40:49"
-  },
-  {
-    "id": 83,
-    "nome": "",
-    "telefone": "",
-    "cep": "",
-    "rua": "",
-    "numero": "",
-    "complemento": "",
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "produtos": [
-      {
-        "nome": "Moletom Preto MS",
-        "title": "Moletom Preto MS",
-        "preco": 99.9,
-        "unit_price": 99.9,
-        "quantidade": 2,
-        "quantity": 2,
-        "tamanho": "M",
-        "imagem": "MOLETOM-PRETO.jpeg"
-      },
-      {
-        "nome": "Moleto-bege MS",
-        "title": "Moleto-bege MS",
-        "preco": 99.9,
-        "unit_price": 99.9,
-        "quantidade": 2,
-        "quantity": 2,
-        "tamanho": "M",
-        "imagem": "moletom-bege.jpeg"
       }
     ],
     "frete": {
@@ -2882,50 +2798,9 @@
       "preco": 16.6,
       "prazo": 4
     },
-    "total": 416.20000000000005,
-    "status": "aguardando pagamento",
-    "data": "07/07/2026, 21:48:20"
-  },
-  {
-    "id": 84,
-    "nome": "",
-    "telefone": "",
-    "cep": "",
-    "rua": "",
-    "numero": "",
-    "complemento": "",
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "produtos": [
-      {
-        "nome": "Moletom Preto MS",
-        "title": "Moletom Preto MS",
-        "preco": 99.9,
-        "unit_price": 99.9,
-        "quantidade": 2,
-        "quantity": 2,
-        "tamanho": "M",
-        "imagem": "MOLETOM-PRETO.jpeg"
-      },
-      {
-        "nome": "Moleto-bege MS",
-        "title": "Moleto-bege MS",
-        "preco": 99.9,
-        "unit_price": 99.9,
-        "quantidade": 2,
-        "quantity": 2,
-        "tamanho": "M",
-        "imagem": "moletom-bege.jpeg"
-      }
-    ],
-    "frete": {
-      "nome": "Correios - SEDEX",
-      "preco": 14.59,
-      "prazo": 2
-    },
-    "total": 414.19,
-    "status": "aguardando pagamento",
-    "data": "07/07/2026, 21:53:59"
+    "total": 106.50999999999999,
+    "status": "pago",
+    "data": "10/07/2026, 16:21:28",
+    "estoqueBaixado": true
   }
 ]

@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS app_state (
+  chave VARCHAR(100) PRIMARY KEY,
+  dados JSONB NOT NULL DEFAULT '[]'::jsonb,
+  atualizado_em TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);

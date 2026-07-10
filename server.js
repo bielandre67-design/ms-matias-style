@@ -4,11 +4,78 @@ require("dotenv").config();
 const { MercadoPagoConfig, Preference } = require("mercadopago");
 const fs = require("fs");
 const path = require("path");
+const { Pool } = require("pg");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const caminhoPedidos = path.join(__dirname, "pedidos.json");
 const caminhoPedidosExcluidos = path.join(__dirname, "pedidos_excluidos.json");
+// PostgreSQL é opcional no computador e obrigatório no Render após configurar DATABASE_URL.
+// A estrutura atual da loja continua igual: os arquivos JSON funcionam como cache local,
+// enquanto o PostgreSQL passa a ser a fonte permanente dos dados.
+const databaseUrl = process.env.DATABASE_URL || "";
+const pool = databaseUrl
+  ? new Pool({
+      connectionString: databaseUrl,
+      ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false
+    })
+  : null;
+
+const arquivosPersistidosMS = new Map();
+
+function chaveBancoMS(caminho) {
+  return path.basename(caminho, path.extname(caminho));
+}
+
+async function salvarNoPostgresMS(caminho, dados) {
+  if (!pool) return;
+  const chave = chaveBancoMS(caminho);
+  try {
+    await pool.query(
+      `INSERT INTO app_state (chave, dados, atualizado_em)
+       VALUES ($1, $2::jsonb, NOW())
+       ON CONFLICT (chave) DO UPDATE
+       SET dados = EXCLUDED.dados, atualizado_em = NOW()`,
+      [chave, JSON.stringify(dados)]
+    );
+  } catch (erro) {
+    console.error(`Erro ao salvar ${chave} no PostgreSQL:`, erro.message);
+  }
+}
+
+async function iniciarPostgresMS() {
+  if (!pool) {
+    console.warn("AVISO: DATABASE_URL não configurada. Usando arquivos JSON locais.");
+    return;
+  }
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS app_state (
+      chave VARCHAR(100) PRIMARY KEY,
+      dados JSONB NOT NULL DEFAULT '[]'::jsonb,
+      atualizado_em TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+
+  for (const [caminho, padrao] of arquivosPersistidosMS.entries()) {
+    const chave = chaveBancoMS(caminho);
+    const resultado = await pool.query("SELECT dados FROM app_state WHERE chave = $1", [chave]);
+
+    if (resultado.rows.length) {
+      fs.writeFileSync(caminho, JSON.stringify(resultado.rows[0].dados, null, 2));
+    } else {
+      let dadosIniciais = padrao;
+      if (fs.existsSync(caminho)) {
+        try { dadosIniciais = JSON.parse(fs.readFileSync(caminho, "utf8")); } catch (_) {}
+      }
+      await salvarNoPostgresMS(caminho, dadosIniciais);
+      fs.writeFileSync(caminho, JSON.stringify(dadosIniciais, null, 2));
+    }
+  }
+
+  console.log("PostgreSQL conectado e dados sincronizados.");
+}
+
 
 app.use(cors());
 app.use(express.json({ limit: "2mb" }));
@@ -41,7 +108,7 @@ function lerPedidos() {
 }
 
 function salvarPedidos(pedidos) {
-  fs.writeFileSync(caminhoPedidos, JSON.stringify(pedidos, null, 2));
+  salvarJSON(caminhoPedidos, pedidos);
 }
 
 function lerPedidosExcluidos() {
@@ -57,7 +124,7 @@ function lerPedidosExcluidos() {
 }
 
 function salvarPedidosExcluidos(pedidos) {
-  fs.writeFileSync(caminhoPedidosExcluidos, JSON.stringify(pedidos, null, 2));
+  salvarJSON(caminhoPedidosExcluidos, pedidos);
 }
 
 const accessToken = process.env.MERCADO_PAGO_ACCESS_TOKEN || "";
@@ -220,6 +287,7 @@ const caminhoEstoque = path.join(__dirname, "estoque.json");
 const caminhoReservas = path.join(__dirname, "reservas_estoque.json");
 
 function garantirArquivoJSON(caminho, padrao) {
+  arquivosPersistidosMS.set(caminho, padrao);
   if (!fs.existsSync(caminho)) {
     fs.writeFileSync(caminho, JSON.stringify(padrao, null, 2));
   }
@@ -237,6 +305,7 @@ function lerJSON(caminho, padrao) {
 
 function salvarJSON(caminho, dados) {
   fs.writeFileSync(caminho, JSON.stringify(dados, null, 2));
+  void salvarNoPostgresMS(caminho, dados);
 }
 
 function normalizarTextoMS(valor) {
@@ -1302,10 +1371,27 @@ app.use((erro, req, res, next) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
-  console.log(`Loja local: http://localhost:${PORT}`);
-  console.log(`Painel local: http://localhost:${PORT}/admin.html`);
-  if (!accessToken) console.warn("AVISO: MERCADO_PAGO_ACCESS_TOKEN não configurado.");
-  if (!process.env.MELHOR_ENVIO_TOKEN) console.warn("AVISO: MELHOR_ENVIO_TOKEN não configurado.");
-});
+async function iniciarServidorMS() {
+  // Registra os arquivos que já fazem parte do sistema atual.
+  garantirArquivoJSON(caminhoPedidos, []);
+  garantirArquivoJSON(caminhoPedidosExcluidos, []);
+  garantirArquivoJSON(caminhoEstoque, []);
+  garantirArquivoJSON(caminhoReservas, []);
+
+  try {
+    await iniciarPostgresMS();
+  } catch (erro) {
+    console.error("Falha ao iniciar PostgreSQL:", erro.message);
+    process.exit(1);
+  }
+
+  app.listen(PORT, () => {
+    console.log(`Servidor rodando na porta ${PORT}`);
+    console.log(`Loja local: http://localhost:${PORT}`);
+    console.log(`Painel local: http://localhost:${PORT}/admin.html`);
+    if (!accessToken) console.warn("AVISO: MERCADO_PAGO_ACCESS_TOKEN não configurado.");
+    if (!process.env.MELHOR_ENVIO_TOKEN) console.warn("AVISO: MELHOR_ENVIO_TOKEN não configurado.");
+  });
+}
+
+iniciarServidorMS();
