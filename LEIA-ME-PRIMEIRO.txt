@@ -1,33 +1,23 @@
-MS MATIAS STYLE - PRIMEIRA ETAPA NEON
+MS MATIAS STYLE - ETAPA 4
 
-ARQUIVOS PARA SUBSTITUIR:
-1. server.js
-2. package.json
-3. script.js
-4. admin.js
-5. index.html
+O QUE MUDOU
+- A loja agora carrega o catálogo diretamente do PostgreSQL.
+- Produto cadastrado no painel aparece na loja.
+- Produto editado muda na loja.
+- Produto excluído ou desativado some da loja.
+- O HTML antigo só aparece como reserva se o servidor/banco estiver indisponível.
+- Não é mais necessário editar o index.html para cadastrar roupas.
 
-NO RENDER, CONFIRA AS VARIÁVEIS:
-- DATABASE_URL = conexão do Neon
-- MERCADO_PAGO_ACCESS_TOKEN = token de produção
-- FRONTEND_URL = https://ms-matias-style.vercel.app
-- BACKEND_URL = URL do seu serviço no Render
-- NODE_ENV = production
-
-O QUE ESTA VERSÃO FAZ:
-- Cria tabela produtos no PostgreSQL.
-- Cria tabela estoque_variantes no PostgreSQL.
-- Mantém as rotas antigas para não quebrar o site.
-- Migra o estoque JSON existente para a tabela na primeira inicialização.
-- Carrega o estoque do banco quando o servidor reinicia.
-- Mantém cópia local apenas como cache de compatibilidade.
-
-TESTE LOCAL:
-1. Coloque todos os arquivos na mesma pasta do projeto.
-2. Crie um arquivo .env usando .env.example como modelo.
-3. Execute: npm install
-4. Execute: npm start
+COMO INSTALAR
+1. Substitua os arquivos correspondentes da sua pasta pelos arquivos deste ZIP.
+2. Preserve o seu arquivo .env atual. Não substitua nem publique o .env.
+3. Pare o servidor com Ctrl+C.
+4. Rode: npm start
 5. Abra: http://localhost:3000
+6. Abra o painel: http://localhost:3000/admin.html
 
-IMPORTANTE:
-Não envie o arquivo .env para GitHub. Ele contém senhas e tokens.
+TESTE
+- Cadastre um produto no painel.
+- Atualize a loja.
+- Edite o preço e atualize a loja novamente.
+- Exclua o produto e confirme que ele desapareceu.

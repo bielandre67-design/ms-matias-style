@@ -1,0 +1,12 @@
+ATUALIZAÇÃO DO CATÁLOGO POSTGRESQL
+
+1. Mantenha o arquivo .env que já está na sua pasta atual.
+2. Substitua os arquivos do projeto pelos arquivos deste pacote.
+3. No terminal, pare o servidor com Ctrl+C.
+4. Execute: npm install
+5. Execute: npm start
+6. Abra: http://localhost:3000
+
+O catálogo agora troca os cards dentro das seções existentes, preservando o visual,
+os títulos, as categorias, os botões de tamanho, favoritos e adicionar ao carrinho.
+Se a API ficar indisponível, o catálogo antigo permanece visível como reserva.

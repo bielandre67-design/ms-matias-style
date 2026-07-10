@@ -5493,75 +5493,151 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
-// PRODUTOS DINÂMICOS MS -------------------------------------------------------
-// Mantém o HTML atual intacto, mas permite controlar preço e visibilidade pelo painel.
+// CATÁLOGO 100% VINDO DO POSTGRESQL -------------------------------------------
+// O HTML antigo fica apenas como reserva. Quando a API responde, os cards da
+// página são substituídos pelo catálogo salvo no painel administrativo.
 (function(){
-  const API_PRODUTOS_MS = (location.hostname==='localhost'||location.hostname==='127.0.0.1')
-    ? 'http://localhost:3000' : 'https://ms-matias-style.onrender.com';
-  const normalizar=v=>String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
-  const numero=v=>Number(String(v??0).replace(',','.'))||0;
-  const moeda=v=>numero(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
-  function cardsUnicos(){
-    const mapa=new Map();
-    document.querySelectorAll('.card-produto[data-nome]').forEach(card=>{
-      const nome=card.dataset.nome?.trim(); if(!nome) return;
-      const chave=normalizar(nome); if(mapa.has(chave)) return;
-      const fotos=String(card.dataset.fotos||card.dataset.img||'').split(',').map(x=>x.trim()).filter(Boolean);
-      const secao=card.closest('section');
-      mapa.set(chave,{chave,nome,categoria:secao?.querySelector('.titulo-section h2')?.textContent?.trim()||'Roupas',
-        preco:numero(card.dataset.preco),precoAntigo:card.dataset.precoantigo?numero(card.dataset.precoantigo):null,
-        imagem:card.dataset.img||fotos[0]||'',imagens:fotos,descricao:card.dataset.descricao||''});
-    }); return [...mapa.values()];
-  }
-  async function sincronizarEAplicar(){
-    try{
-      const catalogo=cardsUnicos();
-      await fetch(`${API_PRODUTOS_MS}/produtos/sincronizar-catalogo`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({produtos:catalogo})});
-      const r=await fetch(`${API_PRODUTOS_MS}/produtos?t=${Date.now()}`); if(!r.ok) return;
-      const produtos=await r.json(); const mapa=new Map(produtos.map(p=>[p.chave,p]));
-      document.querySelectorAll('.card-produto[data-nome]').forEach(card=>{
-        const p=mapa.get(normalizar(card.dataset.nome)); if(!p) return;
-        card.dataset.preco=Number(p.preco).toFixed(2);
-        if(p.precoAntigo!=null) card.dataset.precoantigo=Number(p.precoAntigo).toFixed(2);
-        card.style.display=p.ativo?'':'none';
-        card.querySelectorAll('[data-preco]').forEach(el=>el.dataset.preco=Number(p.preco).toFixed(2));
-        const botao=card.querySelector('.btn-comprar'); if(botao) botao.dataset.preco=Number(p.preco).toFixed(2);
-        const preco=card.querySelector('.preco'); if(preco) preco.textContent=moeda(p.preco);
-        const antigo=card.querySelector('.preco-antigo');
-        if(antigo){ antigo.textContent=p.precoAntigo!=null?moeda(p.precoAntigo):''; antigo.style.display=p.precoAntigo!=null?'':'none'; }
-        let selo=card.querySelector('.selo-produto');
-        if(p.promocao){ if(!selo){ selo=document.createElement('span'); selo.className='selo-produto'; card.prepend(selo); } selo.textContent='PROMOÇÃO'; }
-        else if(p.destaque){ if(!selo){ selo=document.createElement('span'); selo.className='selo-produto'; card.prepend(selo); } selo.textContent='DESTAQUE'; }
-      });
-      window.produtosBancoMS=produtos;
-      console.log('Produtos PostgreSQL aplicados na loja:',produtos.length);
-    }catch(e){ console.warn('Loja abriu com o catálogo local; banco de produtos indisponível.',e.message); }
-  }
-  document.addEventListener('DOMContentLoaded',sincronizarEAplicar);
-})();
+  const API = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+    ? 'http://localhost:3000'
+    : 'https://ms-matias-style.onrender.com';
 
-// RENDERIZA PRODUTOS NOVOS CADASTRADOS PELO PAINEL ---------------------------
-(function(){
-  const API=(location.hostname==='localhost'||location.hostname==='127.0.0.1')?'http://localhost:3000':'https://ms-matias-style.onrender.com';
-  const norm=v=>String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
-  const moeda=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
-  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  function cardProduto(p){
-    const fotos=(p.imagens?.length?p.imagens:[p.imagem]).filter(Boolean);
-    const tamanhos=(Array.isArray(p.tamanhos)&&p.tamanhos.length?p.tamanhos:['P','M','G','GG']);
-    return `<div class="card-produto produto-banco-ms" data-id-banco="${p.id}" data-nome="${esc(p.nome)}" data-preco="${Number(p.preco).toFixed(2)}" data-precoantigo="${p.precoAntigo??''}" data-img="${esc(p.imagem||fotos[0]||'')}" data-fotos="${esc(fotos.join(','))}" data-descricao="${esc(p.descricao||'')}">
-      ${p.promocao?'<span class="selo-produto">PROMOÇÃO</span>':p.destaque?'<span class="selo-produto">DESTAQUE</span>':''}
-      <button class="btn-favorito" onclick="favoritarProduto(this,event)">♡</button>
-      <div class="produto-img" onclick="abrirProdutoDetalheCard(this.closest('.card-produto'))"><img src="${esc(p.imagem||fotos[0]||'logo.png')}" class="foto-normal" onerror="this.src='logo.png'"><img src="${esc(fotos[1]||p.imagem||fotos[0]||'logo.png')}" class="foto-hover" onerror="this.src='logo.png'"></div>
-      <h3>${esc(p.nome)}</h3><div class="preco-box">${p.precoAntigo!=null?`<span class="preco-antigo">${moeda(p.precoAntigo)}</span>`:''}<p class="preco">${moeda(p.preco)}</p><span class="parcelamento">em até 5x sem juros</span></div>
-      <div class="tamanhos">${tamanhos.map(t=>`<button onclick="selecionarTamanho(this,'${esc(t)}')">${esc(t)}</button>`).join('')}</div>
+  const esc = valor => String(valor ?? '').replace(/[&<>"']/g, caractere => ({
+    '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+  }[caractere]));
+
+  const normalizar = valor => String(valor || '')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase().replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+
+  const moeda = valor => Number(valor || 0).toLocaleString('pt-BR', {
+    style: 'currency', currency: 'BRL'
+  });
+
+  function informacoesCategoria(categoria){
+    const texto = String(categoria || 'Roupas').trim();
+    const chave = normalizar(texto);
+
+    if (chave.includes('moletom')) return { id:'moletons', titulo:'MOLETONS MS', subtitulo:'COLEÇÃO' };
+    if (chave.includes('calca')) return { id:'calcas', titulo:'CALÇAS MS', subtitulo:'COLEÇÃO' };
+    if (chave.includes('acessor') || chave.includes('touca') || chave.includes('meia')) return { id:'toucas', titulo:'ACESSÓRIOS MS', subtitulo:'COLEÇÃO' };
+    if (chave.includes('oversized')) return { id:'camisetas', titulo:'Camisetas Oversized', subtitulo:'COLEÇÃO' };
+    if (chave.includes('basica')) return { id:'camisetas-basicas', titulo:'Camisetas Básicas', subtitulo:'COLEÇÃO' };
+    if (chave.includes('conjunto')) return { id:'conjuntos', titulo:'Conjuntos MS', subtitulo:'COLEÇÃO' };
+    if (chave.includes('jaqueta')) return { id:'jaquetas', titulo:'Jaquetas MS', subtitulo:'COLEÇÃO' };
+
+    return {
+      id: `categoria-${chave || 'roupas'}`,
+      titulo: texto,
+      subtitulo: 'PRODUTOS'
+    };
+  }
+
+  function fotosProduto(produto){
+    const lista = Array.isArray(produto.imagens) ? produto.imagens : [];
+    return [...new Set([produto.imagem, ...lista].map(v => String(v || '').trim()).filter(Boolean))];
+  }
+
+  function cardProduto(produto){
+    const fotos = fotosProduto(produto);
+    const fotoPrincipal = fotos[0] || 'logo.png';
+    const fotoHover = fotos[1] || fotoPrincipal;
+    const tamanhos = Array.isArray(produto.tamanhos) && produto.tamanhos.length
+      ? produto.tamanhos : ['P','M','G','GG'];
+    const cores = Array.isArray(produto.cores) ? produto.cores : [];
+    const preco = Number(produto.preco || 0);
+    const antigo = produto.precoAntigo == null ? null : Number(produto.precoAntigo);
+
+    return `<div class="card-produto produto-banco-ms"
+      data-id-banco="${produto.id}"
+      data-chave="${esc(produto.chave || normalizar(produto.nome))}"
+      data-nome="${esc(produto.nome)}"
+      data-preco="${preco.toFixed(2)}"
+      data-precoantigo="${antigo == null ? '' : antigo.toFixed(2)}"
+      data-img="${esc(fotoPrincipal)}"
+      data-fotos="${esc(fotos.join(','))}"
+      data-descricao="${esc(produto.descricao || '')}"
+      data-cores="${esc(cores.join(','))}"
+      data-tamanhos="${esc(tamanhos.join(','))}">
+
+      ${produto.promocao
+        ? '<span class="selo-produto">PROMOÇÃO</span>'
+        : produto.destaque ? '<span class="selo-produto">DESTAQUE</span>' : ''}
+
+      <button class="btn-favorito" onclick="favoritarProduto(this,event)" aria-label="Favoritar produto">♡</button>
+
+      <div class="produto-img" onclick="abrirProdutoDetalheCard(this.closest('.card-produto'))">
+        <img src="${esc(fotoPrincipal)}" class="foto-normal" alt="${esc(produto.nome)}" onerror="this.src='logo.png'">
+        <img src="${esc(fotoHover)}" class="foto-hover" alt="${esc(produto.nome)}" onerror="this.src='logo.png'">
+      </div>
+
+      <h3>${esc(produto.nome)}</h3>
+      <div class="preco-box">
+        ${antigo != null && antigo > preco ? `<span class="preco-antigo">${moeda(antigo)}</span>` : ''}
+        <p class="preco">${moeda(preco)}</p>
+        <span class="parcelamento">em até 5x sem juros</span>
+      </div>
+
+      <div class="tamanhos">
+        ${tamanhos.map(tamanho => `<button type="button" onclick="selecionarTamanho(this,'${esc(tamanho)}')">${esc(tamanho)}</button>`).join('')}
+      </div>
     </div>`;
   }
-  async function inserirNovos(){
-    try{const r=await fetch(`${API}/produtos?ativos=true&t=${Date.now()}`);if(!r.ok)return;const ps=await r.json();const existentes=new Set([...document.querySelectorAll('.card-produto[data-nome]')].map(c=>norm(c.dataset.nome)));const novos=ps.filter(p=>!existentes.has(p.chave||norm(p.nome)));if(!novos.length)return;
-      let sec=document.getElementById('produtosPainelMS');if(!sec){sec=document.createElement('section');sec.className='produtos';sec.id='produtosPainelMS';sec.innerHTML='<div class="titulo-section"><p>Novidades</p><h2>Produtos novos</h2></div><div class="grid-produtos"></div>';const alvo=document.querySelector('footer')||document.body.lastElementChild;document.body.insertBefore(sec,alvo);}
-      sec.querySelector('.grid-produtos').insertAdjacentHTML('beforeend',novos.map(cardProduto).join(''));
-    }catch(e){console.warn('Produtos novos não carregados:',e.message)}
+
+  function montarCatalogo(produtos){
+    const grupos = new Map();
+
+    produtos.forEach(produto => {
+      const info = informacoesCategoria(produto.categoria);
+      if (!grupos.has(info.id)) grupos.set(info.id, { info, produtos: [] });
+      grupos.get(info.id).produtos.push(produto);
+    });
+
+    const catalogo = document.createElement('div');
+    catalogo.id = 'catalogoBancoMS';
+
+    grupos.forEach(({info, produtos: itens}) => {
+      const secao = document.createElement('section');
+      secao.className = 'produtos categoria-banco-ms';
+      secao.id = info.id;
+      secao.innerHTML = `
+        <div class="titulo-section">
+          <p>${esc(info.subtitulo)}</p>
+          <h2>${esc(info.titulo)}</h2>
+        </div>
+        <div class="grid-produtos">${itens.map(cardProduto).join('')}</div>`;
+      catalogo.appendChild(secao);
+    });
+
+    return catalogo;
   }
-  document.addEventListener('DOMContentLoaded',()=>setTimeout(inserirNovos,500));
+
+  async function carregarCatalogoBanco(){
+    const secoesAntigas = [...document.querySelectorAll('section.produtos')];
+    const primeiraSecao = secoesAntigas[0];
+    if (!primeiraSecao) return;
+
+    try {
+      const resposta = await fetch(`${API}/produtos?ativos=true&t=${Date.now()}`, {
+        headers: { 'Accept': 'application/json' },
+        cache: 'no-store'
+      });
+
+      if (!resposta.ok) throw new Error(`API respondeu ${resposta.status}`);
+      const produtos = await resposta.json();
+      if (!Array.isArray(produtos)) throw new Error('Resposta de produtos inválida');
+
+      const catalogo = montarCatalogo(produtos);
+      primeiraSecao.parentNode.insertBefore(catalogo, primeiraSecao);
+      secoesAntigas.forEach(secao => secao.remove());
+
+      window.produtosBancoMS = produtos;
+      document.dispatchEvent(new CustomEvent('catalogoMSCarregado', { detail: produtos }));
+      console.log(`Catálogo PostgreSQL carregado: ${produtos.length} produto(s).`);
+    } catch (erro) {
+      console.warn('Banco indisponível. Mantendo o catálogo local como reserva.', erro.message);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', carregarCatalogoBanco);
 })();
