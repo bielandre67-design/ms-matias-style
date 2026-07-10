@@ -7,7 +7,9 @@ let valorFrete = Number(localStorage.getItem("valorFreteMS")) || 0;
 let desconto = 0;
 let totalComFrete = 0;
 let freteSelecionado = JSON.parse(localStorage.getItem("freteSelecionadoMS")) || null;
-const API_BASE = window.location.origin;
+const API_BASE = (location.hostname === "localhost" || location.hostname === "127.0.0.1")
+  ? "http://localhost:3000"
+  : "https://ms-matias-style.onrender.com";
 
 function salvarCarrinho() {
   localStorage.setItem("carrinho", JSON.stringify(carrinho));
@@ -5606,7 +5608,7 @@ document.addEventListener("DOMContentLoaded", () => {
       <button
         type="button"
         class="btn-comprar"
-        onclick="adicionarCarrinho(this)"
+        onclick="window.adicionarCarrinho(this)"
         data-nome="${esc(produto.nome)}"
         data-preco="${preco.toFixed(2)}"
         data-img="${esc(fotoPrincipal)}">
