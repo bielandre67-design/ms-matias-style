@@ -5602,6 +5602,17 @@ document.addEventListener("DOMContentLoaded", () => {
       <div class="tamanhos">
         ${tamanhos.map(tamanho => `<button type="button" onclick="selecionarTamanho(this,'${esc(tamanho)}')">${esc(tamanho)}</button>`).join('')}
       </div>
+
+      <button
+        type="button"
+        class="btn-comprar"
+        onclick="adicionarCarrinho(this)"
+        data-nome="${esc(produto.nome)}"
+        data-preco="${preco.toFixed(2)}"
+        data-img="${esc(fotoPrincipal)}">
+        <span>Adicionar ao carrinho</span>
+        <span class="icone-btn-carrinho">🛒</span>
+      </button>
     </div>`;
   }
 
