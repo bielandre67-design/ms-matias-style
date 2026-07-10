@@ -1,0 +1,21 @@
+ATUALIZAÇÃO DO ESTOQUE - MS MATIAS STYLE
+
+O que mudou:
+- A aba Estoque agora carrega automaticamente todos os produtos cadastrados.
+- Cores e tamanhos vêm do cadastro completo do produto.
+- Quando cores não estiverem preenchidas, a cor é identificada pelo nome do produto.
+- Toucas, meias e acessórios podem usar o tamanho ÚNICO.
+- Ao cadastrar, editar ou excluir um produto, o estoque é sincronizado automaticamente.
+- Quantidades existentes são preservadas pelo SKU correspondente.
+- Variantes que não pertencem mais a produtos ativos são removidas do estoque.
+
+COMO INSTALAR
+1. Mantenha o seu arquivo .env atual.
+2. Extraia este ZIP por cima da pasta do projeto.
+3. No terminal da pasta, execute:
+   npm install
+   git add .
+   git commit -m "Sincroniza produtos e estoque"
+   git push origin main
+4. Aguarde o Render e a Vercel atualizarem.
+5. Abra o painel e clique em Estoque. A primeira abertura fará a sincronização.

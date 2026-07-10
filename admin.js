@@ -7,7 +7,7 @@
   const buscaCliente = document.getElementById("buscaPedido") || document.querySelector('input[placeholder*="cliente" i]');
   const filtroData = document.getElementById("dataPedido") || document.querySelector('input[type="date"]');
 
-  const API_BASE = (location.hostname === '127.0.0.1' || location.hostname === 'localhost') ? 'http://localhost:3000' : 'https://ms-matias-style.onrender.com';
+  const API_BASE = location.port === "5500" || location.protocol === "file:" ? "http://localhost:3000" : "";
   const API_PEDIDOS = `${API_BASE}/pedidos`;
   const API_EXCLUIDOS = `${API_BASE}/pedidos-excluidos`;
 
@@ -727,7 +727,7 @@ Equipe MS Matias Style 🤍`;
 
 // GERENCIADOR DE PRODUTOS MS -------------------------------------------------
 (function(){
-  const API = (location.hostname === '127.0.0.1' || location.hostname === 'localhost') ? 'http://localhost:3000' : 'https://ms-matias-style.onrender.com';
+  const API = (location.port === '5500' || location.protocol === 'file:') ? 'http://localhost:3000' : '';
   let produtos = [];
   const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const num = v => Number(String(v ?? 0).replace(',','.')) || 0;
@@ -738,7 +738,7 @@ Equipe MS Matias Style 🤍`;
     const nav = document.querySelector('.menu-ms, nav');
     if(nav){
       const b=document.createElement('button');
-      b.type='button'; b.className='ms-tab'; b.innerHTML='＋ Cadastrar produto';
+      b.type='button'; b.className='ms-tab'; b.innerHTML='📦 Produtos';
       b.onclick=()=>abrirProdutosMS(); nav.appendChild(b);
     }
     const main=document.querySelector('main, .conteudo-admin, .admin-main, .main-content') || document.body;
