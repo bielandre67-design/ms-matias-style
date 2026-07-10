@@ -7,7 +7,9 @@
   const buscaCliente = document.getElementById("buscaPedido") || document.querySelector('input[placeholder*="cliente" i]');
   const filtroData = document.getElementById("dataPedido") || document.querySelector('input[type="date"]');
 
-  const API_BASE = location.port === "5500" || location.protocol === "file:" ? "http://localhost:3000" : "";
+  const API_BASE = (location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.port === "5500" || location.protocol === "file:")
+    ? "http://localhost:3000"
+    : "https://ms-matias-style.onrender.com";
   const API_PEDIDOS = `${API_BASE}/pedidos`;
   const API_EXCLUIDOS = `${API_BASE}/pedidos-excluidos`;
 
@@ -727,7 +729,9 @@ Equipe MS Matias Style 🤍`;
 
 // GERENCIADOR DE PRODUTOS MS -------------------------------------------------
 (function(){
-  const API = (location.port === '5500' || location.protocol === 'file:') ? 'http://localhost:3000' : '';
+  const API = (location.hostname === 'localhost' || location.hostname === '127.0.0.1' || location.port === '5500' || location.protocol === 'file:')
+    ? 'http://localhost:3000'
+    : 'https://ms-matias-style.onrender.com';
   let produtos = [];
   const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const num = v => Number(String(v ?? 0).replace(',','.')) || 0;
