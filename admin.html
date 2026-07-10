@@ -169,7 +169,10 @@
 
 <script src="admin.js"></script>
 <script>
-const API_ADMIN_MS = "http://127.0.0.1:3000";
+const API_ADMIN_MS =
+  location.hostname === "127.0.0.1" || location.hostname === "localhost"
+    ? "http://localhost:3000"
+    : location.origin;
 const TAMANHOS_MS = ["P", "M", "G", "GG"];
 const CATALOGO_MS = [
   { categoria:"Roupas", produto:"Moletom", tipo:"MOL", cores:["Preto","Branco","Bege","Azul","Rosa","Vinho"] },
@@ -236,7 +239,9 @@ async function carregarEstoqueMS(){
   }catch(e){
     estoqueServidorMS = [];
     const corpo = document.getElementById('listaEstoqueMS');
-    if(corpo) corpo.innerHTML = '<tr><td colspan="8">Não consegui carregar o estoque. Ligue o servidor Node e acesse pelo http://localhost:3000/admin.html</td></tr>';
+    if (corpo) {
+      corpo.innerHTML = '<tr><td colspan="8">Não consegui carregar o estoque. Atualize a página e tente novamente.</td></tr>';
+    }
     return;
   }
   renderGradeEstoqueMS();
