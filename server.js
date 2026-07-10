@@ -11,8 +11,15 @@ const caminhoPedidos = path.join(__dirname, "pedidos.json");
 const caminhoPedidosExcluidos = path.join(__dirname, "pedidos_excluidos.json");
 
 app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: "2mb" }));
+app.use(express.urlencoded({ extended: true, limit: "2mb" }));
+
+// Entrega os arquivos da loja e do painel pelo próprio Node.
+// Assim, use http://localhost:3000/admin.html em vez do Live Server.
+app.use(express.static(__dirname, {
+  index: "index.html",
+  extensions: ["html"]
+}));
 
 // Log para confirmar que o front chegou no backend
 app.use((req, res, next) => {
@@ -55,9 +62,15 @@ function salvarPedidosExcluidos(pedidos) {
 
 const accessToken = process.env.MERCADO_PAGO_ACCESS_TOKEN || "";
 
-const client = new MercadoPagoConfig({
-  accessToken
-});
+function garantirMercadoPagoConfigurado() {
+  if (!accessToken) {
+    const erro = new Error("MERCADO_PAGO_ACCESS_TOKEN não está configurado no .env/Render.");
+    erro.statusCode = 500;
+    throw erro;
+  }
+}
+
+const client = new MercadoPagoConfig({ accessToken });
 
 function montarItensMercadoPago(carrinhoItems, valorFrete, freteSelecionado) {
   const items = carrinhoItems
@@ -90,6 +103,7 @@ function montarItensMercadoPago(carrinhoItems, valorFrete, freteSelecionado) {
 }
 
 async function criarPreferenciaMP({ carrinhoItems, valorFrete, freteSelecionado, idPedido }) {
+  garantirMercadoPagoConfigurado();
   const items = montarItensMercadoPago(carrinhoItems, valorFrete, freteSelecionado);
 
   if (!items.length) {
@@ -102,18 +116,23 @@ async function criarPreferenciaMP({ carrinhoItems, valorFrete, freteSelecionado,
 
   const preference = new Preference(client);
 
-  const resposta = await preference.create({
-    body: {
-      external_reference: String(idPedido),
-      items,
-      back_urls: {
-        success: "https://ms-matias-style.vercel.app/sucesso.html",
-        failure: "https://ms-matias-style.vercel.app/erro.html",
-        pending: "https://ms-matias-style.vercel.app/pendente.html"
-      },
-      auto_return: "approved"
-    }
-  });
+  const frontendUrl = (process.env.FRONTEND_URL || "https://ms-matias-style.vercel.app").replace(/\/$/, "");
+  const backendUrl = (process.env.BACKEND_URL || "").replace(/\/$/, "");
+
+  const bodyPreferencia = {
+    external_reference: String(idPedido),
+    items,
+    back_urls: {
+      success: `${frontendUrl}/sucesso.html`,
+      failure: `${frontendUrl}/erro.html`,
+      pending: `${frontendUrl}/pendente.html`
+    },
+    auto_return: "approved"
+  };
+
+  if (backendUrl) bodyPreferencia.notification_url = `${backendUrl}/webhook`;
+
+  const resposta = await preference.create({ body: bodyPreferencia });
 
   console.log("RESPOSTA MERCADO PAGO:", resposta);
 
@@ -135,7 +154,13 @@ async function criarPreferenciaMP({ carrinhoItems, valorFrete, freteSelecionado,
 
 app.post("/calcular-frete", async (req, res) => {
   try {
-    const { cep } = req.body;
+    const cep = apenasNumerosMS(req.body?.cep);
+    if (cep.length !== 8) {
+      return res.status(400).json({ erro: true, mensagem: "Informe um CEP válido com 8 números." });
+    }
+    if (!process.env.MELHOR_ENVIO_TOKEN) {
+      return res.status(500).json({ erro: true, mensagem: "MELHOR_ENVIO_TOKEN não está configurado." });
+    }
 
     const response = await fetch("https://www.melhorenvio.com.br/api/v2/me/shipment/calculate", {
       method: "POST",
@@ -168,7 +193,13 @@ app.post("/calcular-frete", async (req, res) => {
 
     const data = await response.json();
     console.log("STATUS MELHOR ENVIO:", response.status);
-    console.log("RESPOSTA MELHOR ENVIO:", data);
+    if (!response.ok) {
+      return res.status(response.status).json({
+        erro: true,
+        mensagem: data?.message || "O Melhor Envio recusou o cálculo do frete.",
+        detalhes: data
+      });
+    }
     res.json(data);
   } catch (error) {
     console.error("ERRO FRETE:", error);
@@ -984,6 +1015,11 @@ app.post("/pedidos/:id/consultar-rastreio", async (req, res) => {
 });
 
 
+function proximoIdPedidoMS(pedidos) {
+  const ids = (pedidos || []).map((p) => Number(p.id) || 0);
+  return ids.length ? Math.max(...ids) + 1 : 1;
+}
+
 app.post("/criar-pagamento", async (req, res) => {
   try {
     console.log("ENTROU NO /criar-pagamento");
@@ -1028,7 +1064,7 @@ app.post("/criar-pagamento", async (req, res) => {
     const totalPedido = subtotal - valorDesconto + valorFrete;
 
     const pedidos = lerPedidos();
-    const idPedido = pedidos.length + 1;
+    const idPedido = proximoIdPedidoMS(pedidos);
     const agoraBrasil = new Date().toLocaleString("pt-BR", {
       timeZone: "America/Sao_Paulo",
       hour12: false
@@ -1126,7 +1162,7 @@ app.post("/checkout-mp", async (req, res) => {
     const totalPedido = subtotal - valorDesconto + valorFrete;
 
     const pedidos = lerPedidos();
-    const idPedido = pedidos.length ? Math.max(...pedidos.map(p => Number(p.id) || 0)) + 1 : 1;
+    const idPedido = proximoIdPedidoMS(pedidos);
     const agoraBrasil = new Date().toLocaleString("pt-BR", {
       timeZone: "America/Sao_Paulo",
       hour12: false
@@ -1237,33 +1273,39 @@ app.post("/webhook", async (req, res) => {
   }
 });
 
-app.get("/gerar-token", async (req, res) => {
-  try {
-    const code = "def50200faff2d821faa4b37752058e3c0832c67abfe0e659ddda2a22b335509c3f3dc4ae2528d9995714e1df50da53e70c9766b691bc43b114ca16d4bd01567ae4842dac8232f7f0ce4124d59f44e756751aaf7adfa3eed317a0fbcd8e768dd09bbb636f8f0d985e3e0620f0619a3a44f5823a736f47f2adeec1b1738e20e812004990e2dc022d6558e8615d56a2c5154aa35aeb5acf63059da65cab3d4f364c4595687cc5821b2c03e52e614e9efd78dad22bef73fe0e60692eb159993656993c750cfce5304886fb07bed43b7318b85cb6263f2f522b2bea98aee037d03ade0023de71fcc187b5bd65f165f005b4940521643aa585e3b5fb967cd08fad12fea8a3b60f9305357096bcb780fa375a3f0b0c094617dc73263395c4cde89fd416a0b6a4b9dc05a6df8527dd19101a49215be71dc9f4432eb192a704a5346311efd46f91e2ff5421b806a4ab0b43fc4aa8e95a62c0c6ae16fb303e5aefad143a8613b391bec91c5f085455e1a8db34d376ed9eb98a985c02a9d77238a3055acf5fd77a53c1313501b902c";
+// A antiga rota /gerar-token foi removida por segurança.
+// Nunca deixe client_secret ou authorization code gravados no código-fonte.
 
-    const response = await fetch("https://www.melhorenvio.com.br/oauth/token", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        grant_type: "authorization_code",
-        client_id: "24991",
-        client_secret: "Q8ZeuUJ9C4DJgHTR2QWDc78Et2DyLUQ6Q2lFsWQB",
-        redirect_uri: "https://ms-matias-style.vercel.app",
-        code
-      })
-    });
+app.get("/health", (req, res) => {
+  res.json({
+    ok: true,
+    servico: "MS Matias Style API",
+    porta: PORT,
+    mercadoPagoConfigurado: Boolean(accessToken),
+    melhorEnvioConfigurado: Boolean(process.env.MELHOR_ENVIO_TOKEN)
+  });
+});
 
-    const data = await response.json();
-    console.log(data);
-    res.json(data);
-  } catch (erro) {
-    console.error("Erro ao gerar token:", erro);
-    res.status(500).json({ erro: true, mensagem: erro.message });
-  }
+// Resposta JSON para rotas de API inexistentes.
+app.use((req, res, next) => {
+  if (["GET", "HEAD"].includes(req.method) && !req.path.startsWith("/api/")) return next();
+  return res.status(404).json({ erro: true, mensagem: "Rota não encontrada." });
+});
+
+// Tratamento final para erros inesperados.
+app.use((erro, req, res, next) => {
+  console.error("ERRO NÃO TRATADO:", erro);
+  if (res.headersSent) return next(erro);
+  res.status(erro.statusCode || erro.status || 500).json({
+    erro: true,
+    mensagem: erro.message || "Erro interno do servidor."
+  });
 });
 
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
+  console.log(`Loja local: http://localhost:${PORT}`);
+  console.log(`Painel local: http://localhost:${PORT}/admin.html`);
+  if (!accessToken) console.warn("AVISO: MERCADO_PAGO_ACCESS_TOKEN não configurado.");
+  if (!process.env.MELHOR_ENVIO_TOKEN) console.warn("AVISO: MELHOR_ENVIO_TOKEN não configurado.");
 });
