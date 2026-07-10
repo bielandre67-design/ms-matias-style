@@ -5514,20 +5514,41 @@ document.addEventListener("DOMContentLoaded", () => {
     style: 'currency', currency: 'BRL'
   });
 
-  function informacoesCategoria(categoria){
-    const texto = String(categoria || 'Roupas').trim();
-    const chave = normalizar(texto);
+  const ORDEM_CATEGORIAS_MS = [
+    'moletons',
+    'calcas',
+    'toucas',
+    'jaquetas',
+    'camisetas',
+    'camisetas-basicas',
+    'conjuntos'
+  ];
 
-    if (chave.includes('moletom')) return { id:'moletons', titulo:'MOLETONS MS', subtitulo:'COLEÇÃO' };
-    if (chave.includes('calca')) return { id:'calcas', titulo:'CALÇAS MS', subtitulo:'COLEÇÃO' };
-    if (chave.includes('acessor') || chave.includes('touca') || chave.includes('meia')) return { id:'toucas', titulo:'ACESSÓRIOS MS', subtitulo:'COLEÇÃO' };
-    if (chave.includes('oversized')) return { id:'camisetas', titulo:'Camisetas Oversized', subtitulo:'COLEÇÃO' };
-    if (chave.includes('basica')) return { id:'camisetas-basicas', titulo:'Camisetas Básicas', subtitulo:'COLEÇÃO' };
-    if (chave.includes('conjunto')) return { id:'conjuntos', titulo:'Conjuntos MS', subtitulo:'COLEÇÃO' };
-    if (chave.includes('jaqueta')) return { id:'jaquetas', titulo:'Jaquetas MS', subtitulo:'COLEÇÃO' };
+  function informacoesCategoria(produto){
+    const texto = String(produto?.categoria || 'Roupas').trim();
+    const categoria = normalizar(texto);
+    const nome = normalizar(produto?.nome || '');
+
+    // O nome do produto desempata categorias cadastradas de forma genérica
+    // ou com mais de um tipo, impedindo jaquetas de caírem em Moletons.
+    if (nome.includes('jaqueta') || nome.includes('corta-vento')) return { id:'jaquetas', titulo:'Jaquetas MS', subtitulo:'COLEÇÃO' };
+    if (nome.includes('moletom')) return { id:'moletons', titulo:'MOLETONS MS', subtitulo:'COLEÇÃO' };
+    if (nome.includes('calca')) return { id:'calcas', titulo:'CALÇAS MS', subtitulo:'COLEÇÃO' };
+    if (nome.includes('touca') || nome.includes('meia')) return { id:'toucas', titulo:'ACESSÓRIOS MS', subtitulo:'COLEÇÃO' };
+    if (nome.includes('oversized')) return { id:'camisetas', titulo:'Camisetas Oversized', subtitulo:'COLEÇÃO' };
+    if (nome.includes('basica')) return { id:'camisetas-basicas', titulo:'Camisetas Básicas', subtitulo:'COLEÇÃO' };
+    if (nome.includes('conjunto')) return { id:'conjuntos', titulo:'Conjuntos MS', subtitulo:'COLEÇÃO' };
+
+    if (categoria.includes('jaqueta') || categoria.includes('corta-vento')) return { id:'jaquetas', titulo:'Jaquetas MS', subtitulo:'COLEÇÃO' };
+    if (categoria.includes('moletom')) return { id:'moletons', titulo:'MOLETONS MS', subtitulo:'COLEÇÃO' };
+    if (categoria.includes('calca')) return { id:'calcas', titulo:'CALÇAS MS', subtitulo:'COLEÇÃO' };
+    if (categoria.includes('acessor') || categoria.includes('touca') || categoria.includes('meia')) return { id:'toucas', titulo:'ACESSÓRIOS MS', subtitulo:'COLEÇÃO' };
+    if (categoria.includes('oversized')) return { id:'camisetas', titulo:'Camisetas Oversized', subtitulo:'COLEÇÃO' };
+    if (categoria.includes('basica')) return { id:'camisetas-basicas', titulo:'Camisetas Básicas', subtitulo:'COLEÇÃO' };
+    if (categoria.includes('conjunto')) return { id:'conjuntos', titulo:'Conjuntos MS', subtitulo:'COLEÇÃO' };
 
     return {
-      id: `categoria-${chave || 'roupas'}`,
+      id: `categoria-${categoria || 'roupas'}`,
       titulo: texto,
       subtitulo: 'PRODUTOS'
     };
@@ -5588,7 +5609,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const grupos = new Map();
 
     produtos.forEach(produto => {
-      const info = informacoesCategoria(produto.categoria);
+      const info = informacoesCategoria(produto);
       if (!grupos.has(info.id)) grupos.set(info.id, { info, produtos: [] });
       grupos.get(info.id).produtos.push(produto);
     });
@@ -5596,7 +5617,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const catalogo = document.createElement('div');
     catalogo.id = 'catalogoBancoMS';
 
-    grupos.forEach(({info, produtos: itens}) => {
+    const gruposOrdenados = [...grupos.values()].sort((a, b) => {
+      const posicaoA = ORDEM_CATEGORIAS_MS.indexOf(a.info.id);
+      const posicaoB = ORDEM_CATEGORIAS_MS.indexOf(b.info.id);
+      const ordemA = posicaoA === -1 ? ORDEM_CATEGORIAS_MS.length : posicaoA;
+      const ordemB = posicaoB === -1 ? ORDEM_CATEGORIAS_MS.length : posicaoB;
+      return ordemA - ordemB;
+    });
+
+    gruposOrdenados.forEach(({info, produtos: itens}) => {
       const secao = document.createElement('section');
       secao.className = 'produtos categoria-banco-ms';
       secao.id = info.id;
@@ -5640,4 +5669,44 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   document.addEventListener('DOMContentLoaded', carregarCatalogoBanco);
+})();
+
+
+/* ===== ETAPA 2 - CONTROLE UNICO DOS CARDS ===== */
+(function(){
+  function ehControleInternoMS(alvo){
+    return Boolean(alvo.closest(
+      'button, a, .tamanhos, .tamanhos-detalhe, .detalhe-tamanhos, ' +
+      '.btn-favorito, .avaliacao-produto, input, select, textarea'
+    ));
+  }
+
+  document.addEventListener('click', function(evento){
+    const card = evento.target.closest('.card-produto');
+    if(!card || ehControleInternoMS(evento.target)) return;
+
+    // Interrompe os vários listeners antigos para o detalhe não abrir duas vezes.
+    evento.preventDefault();
+    evento.stopPropagation();
+    evento.stopImmediatePropagation();
+
+    // Produtos marcados como lançamento não devem abrir o modal.
+    if(card.classList.contains('produto-em-breve')){
+      if(typeof avisoCarrinhoPremium === 'function'){
+        avisoCarrinhoPremium('Este produto será lançado em breve.');
+      }
+      return false;
+    }
+
+    // Normaliza dados antes de abrir, evitando foto ou nome de outro card.
+    const titulo = card.querySelector('h3')?.innerText?.trim();
+    const imagem = card.querySelector('.produto-img img, img.img-principal, img.foto-normal')?.getAttribute('src');
+    if(!card.dataset.nome && titulo) card.dataset.nome = titulo;
+    if(!card.dataset.img && imagem) card.dataset.img = imagem;
+
+    if(typeof window.abrirProdutoDetalheCard === 'function'){
+      window.abrirProdutoDetalheCard(card);
+    }
+    return false;
+  }, true);
 })();

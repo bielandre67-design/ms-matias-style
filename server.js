@@ -1486,62 +1486,6 @@ function produtoRespostaMS(row) {
   };
 }
 
-
-function coresProdutoEstoqueMS(produto) {
-  const cores = Array.isArray(produto?.cores) ? produto.cores.map(c => String(c || "").trim()).filter(Boolean) : [];
-  return cores.length ? [...new Set(cores)] : [corPeloNomeMS(produto?.nome || "")];
-}
-
-function tamanhosProdutoEstoqueMS(produto) {
-  const tamanhos = Array.isArray(produto?.tamanhos) ? produto.tamanhos.map(t => String(t || "").trim().toUpperCase()).filter(Boolean) : [];
-  if (tamanhos.length) return [...new Set(tamanhos)];
-  const nome = normalizarTextoMS(produto?.nome || "");
-  if (nome.includes("touca") || nome.includes("meia") || nome.includes("acessorio")) return ["ÚNICO"];
-  return ["P", "M", "G", "GG"];
-}
-
-async function sincronizarEstoqueComProdutosMS() {
-  if (!pool) return { produtos: 0, variantes: 0 };
-  const resultado = await pool.query("SELECT * FROM produtos WHERE ativo = TRUE ORDER BY id");
-  const produtos = resultado.rows.map(produtoRespostaMS);
-  const estoqueAtual = lerEstoqueMS();
-  const porSku = new Map(estoqueAtual.map(item => [chaveEstoqueMS(item), item]));
-  const novoEstoque = [];
-  const usados = new Set();
-
-  for (const produto of produtos) {
-    for (const cor of coresProdutoEstoqueMS(produto)) {
-      for (const tamanho of tamanhosProdutoEstoqueMS(produto)) {
-        const base = prepararItemEstoqueMS({ nome: produto.nome, cor, tamanho, quantidade: 1 });
-        const sku = chaveEstoqueMS(base);
-        if (usados.has(sku)) continue;
-        usados.add(sku);
-        const anterior = porSku.get(sku);
-        novoEstoque.push({
-          sku,
-          produtoId: produto.id,
-          nome: produto.nome,
-          categoria: produto.categoria,
-          cor,
-          tamanho,
-          quantidade: Math.max(0, Number(anterior?.quantidade || 0)),
-          atualizadoEm: anterior?.atualizadoEm || new Date().toISOString()
-        });
-      }
-    }
-  }
-
-  salvarEstoqueMS(novoEstoque);
-  return { produtos: produtos.length, variantes: novoEstoque.length };
-}
-
-app.post("/estoque/sincronizar-produtos", async (req, res, next) => {
-  try {
-    const resumo = await sincronizarEstoqueComProdutosMS();
-    res.json({ ok: true, ...resumo });
-  } catch (erro) { next(erro); }
-});
-
 app.get("/produtos", async (req, res, next) => {
   if (!pool) return res.json([]);
   try {
@@ -1599,7 +1543,6 @@ app.post("/produtos", async (req, res, next) => {
        JSON.stringify(Array.isArray(p.cores)?p.cores:[]),JSON.stringify(Array.isArray(p.tamanhos)?p.tamanhos:['P','M','G','GG']),p.ativo!==false,
        Boolean(p.destaque),Boolean(p.promocao)]
     );
-    await sincronizarEstoqueComProdutosMS();
     res.json({ ok:true, produto:produtoRespostaMS(resultado.rows[0]) });
   } catch (erro) { next(erro); }
 });
@@ -1622,14 +1565,13 @@ app.put("/produtos/:id", async (req, res, next) => {
        p.tamanhos==null?null:JSON.stringify(Array.isArray(p.tamanhos)?p.tamanhos:[])]
     );
     if(!resultado.rowCount) return res.status(404).json({erro:true,mensagem:"Produto não encontrado."});
-    await sincronizarEstoqueComProdutosMS();
     res.json({ok:true,produto:produtoRespostaMS(resultado.rows[0])});
   } catch(erro){ next(erro); }
 });
 
 app.delete("/produtos/:id", async (req,res,next)=>{
   if (!pool) return res.status(503).json({ erro: true, mensagem: "PostgreSQL não configurado." });
-  try { await pool.query("DELETE FROM produtos WHERE id=$1",[req.params.id]); await sincronizarEstoqueComProdutosMS(); res.json({ok:true}); }
+  try { await pool.query("DELETE FROM produtos WHERE id=$1",[req.params.id]); res.json({ok:true}); }
   catch(erro){ next(erro); }
 });
 

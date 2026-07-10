@@ -136,7 +136,18 @@
 
           <div class="tabela-wrap-ms">
             <table class="estoque-lista grade-estoque-ms">
-              <thead id="cabecalhoEstoqueMS"></thead>
+              <thead>
+                <tr>
+                  <th>Produto</th>
+                  <th>Cor</th>
+                  <th>P</th>
+                  <th>M</th>
+                  <th>G</th>
+                  <th>GG</th>
+                  <th>Total</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
               <tbody id="listaEstoqueMS"><tr><td colspan="8">Carregando estoque...</td></tr></tbody>
             </table>
           </div>
@@ -185,54 +196,16 @@ const API_ADMIN_MS =
   location.hostname === "127.0.0.1" || location.hostname === "localhost"
     ? "http://localhost:3000"
     : location.origin;
-let TAMANHOS_MS = ["P", "M", "G", "GG"];
-let CATALOGO_MS = [];
-const COD_COR_MS = {"Preto":"PT","Branco":"BR","Bege":"BG","Azul":"AZ","Rosa":"RS","Vinho":"VN","Marrom":"MR","Off White":"OW","Vermelho":"VM","Cinza":"CZ","Única":"UN"};
-
-function tipoProdutoMS(nome){
-  const n = normalizarMS(nome);
-  if(n.includes('moletom')) return 'MOL';
-  if(n.includes('jaqueta') || n.includes('corta vento')) return 'JAQ';
-  if(n.includes('conjunto')) return 'CON';
-  if(n.includes('oversized')) return 'OVR';
-  if(n.includes('camiseta')) return 'CAM';
-  if(n.includes('calca')) return 'CAL';
-  if(n.includes('touca')) return 'TOU';
-  if(n.includes('meia')) return 'MEI';
-  return 'PROD';
-}
-
-function corPeloNomeAdminMS(nome){
-  const n = normalizarMS(nome);
-  if(n.includes('preto') || n.includes('preta')) return 'Preto';
-  if(n.includes('off white')) return 'Off White';
-  if(n.includes('branco') || n.includes('branca')) return 'Branco';
-  if(n.includes('bege')) return 'Bege';
-  if(n.includes('azul')) return 'Azul';
-  if(n.includes('rosa')) return 'Rosa';
-  if(n.includes('cinza')) return 'Cinza';
-  if(n.includes('vinho') || n.includes('bordo')) return 'Vinho';
-  if(n.includes('marrom')) return 'Marrom';
-  if(n.includes('vermelho') || n.includes('vermelha')) return 'Vermelho';
-  return 'Única';
-}
-
-async function carregarCatalogoDinamicoMS(){
-  const r = await fetch(`${API_ADMIN_MS}/produtos?t=${Date.now()}`);
-  if(!r.ok) throw new Error('Não foi possível carregar os produtos.');
-  const produtos = await r.json();
-  CATALOGO_MS = produtos.filter(p => p.ativo !== false).map(p => {
-    const cores = Array.isArray(p.cores) && p.cores.length ? [...new Set(p.cores.map(String))] : [corPeloNomeAdminMS(p.nome)];
-    let tamanhos = Array.isArray(p.tamanhos) && p.tamanhos.length ? [...new Set(p.tamanhos.map(t => String(t).toUpperCase()))] : ['P','M','G','GG'];
-    const n = normalizarMS(p.nome);
-    if((n.includes('touca') || n.includes('meia')) && !(Array.isArray(p.tamanhos) && p.tamanhos.length)) tamanhos = ['ÚNICO'];
-    return { id:p.id, categoria:p.categoria || 'Roupas', produto:p.nome, tipo:tipoProdutoMS(p.nome), cores, tamanhos };
-  });
-  TAMANHOS_MS = [...new Set(CATALOGO_MS.flatMap(p => p.tamanhos))];
-  const ordem = ['P','M','G','GG','ÚNICO'];
-  TAMANHOS_MS.sort((a,b) => (ordem.indexOf(a) < 0 ? 99 : ordem.indexOf(a)) - (ordem.indexOf(b) < 0 ? 99 : ordem.indexOf(b)));
-}
-
+const TAMANHOS_MS = ["P", "M", "G", "GG"];
+const CATALOGO_MS = [
+  { categoria:"Roupas", produto:"Moletom", tipo:"MOL", cores:["Preto","Branco","Bege","Azul","Rosa","Vinho"] },
+  { categoria:"Roupas", produto:"Jaqueta", tipo:"JAQ", cores:["Preto","Branco","Azul"] },
+  { categoria:"Camisetas", produto:"Camiseta Oversized", tipo:"OVR", cores:["Preto","Marrom","Off White","Bege"] },
+  { categoria:"Camisetas", produto:"Camiseta Básica", tipo:"CBA", cores:["Preto","Branco","Bege","Vermelho","Rosa"] },
+  { categoria:"Roupas", produto:"Conjunto", tipo:"CON", cores:["Branco","Preto","Rosa","Bege"] },
+  { categoria:"Roupas", produto:"Calça", tipo:"CAL", cores:["Preto","Bege","Cinza","Rosa","Branco"] }
+];
+const COD_COR_MS = {"Preto":"PT","Branco":"BR","Bege":"BG","Azul":"AZ","Rosa":"RS","Vinho":"VN","Marrom":"MR","Off White":"OW","Vermelho":"VM","Cinza":"CZ"};
 let estoqueServidorMS = [];
 let alteracoesEstoqueMS = new Map();
 
@@ -274,25 +247,18 @@ function quantidadeMS(produto, cor, tamanho){
 function popularFiltrosEstoqueMS(){
   const cat = document.getElementById('filtroCategoriaMS');
   const prod = document.getElementById('filtroProdutoMS');
-  if(cat){
-    const atual=cat.value; cat.innerHTML='<option value="todas">Todas</option>';
-    [...new Set(CATALOGO_MS.map(i => i.categoria))].forEach(c => cat.insertAdjacentHTML('beforeend', `<option value="${escaparAdminMS(c)}">${escaparAdminMS(c)}</option>`));
-    if([...cat.options].some(o=>o.value===atual)) cat.value=atual;
+  if(cat && cat.options.length <= 1){
+    [...new Set(CATALOGO_MS.map(i => i.categoria))].forEach(c => cat.insertAdjacentHTML('beforeend', `<option value="${c}">${c}</option>`));
   }
-  if(prod){
-    const atual=prod.value; prod.innerHTML='<option value="todos">Todos</option>';
-    CATALOGO_MS.forEach(i => prod.insertAdjacentHTML('beforeend', `<option value="${escaparAdminMS(i.produto)}">${escaparAdminMS(i.produto)}</option>`));
-    if([...prod.options].some(o=>o.value===atual)) prod.value=atual;
+  if(prod && prod.options.length <= 1){
+    CATALOGO_MS.forEach(i => prod.insertAdjacentHTML('beforeend', `<option value="${i.produto}">${i.produto}</option>`));
   }
 }
 
 async function carregarEstoqueMS(){
+  popularFiltrosEstoqueMS();
   try{
-    await carregarCatalogoDinamicoMS();
-    await fetch(`${API_ADMIN_MS}/estoque/sincronizar-produtos`, {method:'POST'});
-    popularFiltrosEstoqueMS();
     const resp = await fetch(`${API_ADMIN_MS}/estoque?t=${Date.now()}`);
-    if(!resp.ok) throw new Error('Falha ao carregar estoque');
     estoqueServidorMS = await resp.json();
   }catch(e){
     estoqueServidorMS = [];
@@ -324,8 +290,6 @@ function renderGradeEstoqueMS(){
   const filtroCat = document.getElementById('filtroCategoriaMS')?.value || 'todas';
   const filtroProduto = document.getElementById('filtroProdutoMS')?.value || 'todos';
   const busca = normalizarMS(document.getElementById('pesquisaEstoqueMS')?.value || '');
-  const cab=document.getElementById('cabecalhoEstoqueMS');
-  if(cab) cab.innerHTML=`<tr><th>Produto</th><th>Cor</th>${TAMANHOS_MS.map(t=>`<th>${t}</th>`).join('')}<th>Total</th><th>Status</th></tr>`;
   let linhas = [];
   CATALOGO_MS.forEach(prod => {
     if(filtroCat !== 'todas' && prod.categoria !== filtroCat) return;
@@ -333,16 +297,15 @@ function renderGradeEstoqueMS(){
     prod.cores.forEach(cor => {
       const textoBusca = normalizarMS(`${prod.produto} ${cor} ${prod.categoria}`);
       if(busca && !textoBusca.includes(busca)) return;
-      const total = prod.tamanhos.reduce((s,t) => s + quantidadeMS(prod.produto, cor, t), 0);
+      const total = TAMANHOS_MS.reduce((s,t) => s + quantidadeMS(prod.produto, cor, t), 0);
       linhas.push(`
         <tr>
           <td><strong>${prod.produto}</strong><small>${prod.categoria}</small></td>
           <td><span class="bolinha-cor ${normalizarMS(cor).replace(/\s/g,'-')}"></span>${cor}</td>
           ${TAMANHOS_MS.map(t => {
-            if(!prod.tamanhos.includes(t)) return `<td><span style="opacity:.35">—</span></td>`;
             const qtd = quantidadeMS(prod.produto, cor, t);
             const sku = skuMS(prod.produto, cor, t);
-            return `<td><input class="qtd-input-ms ${classeQtd(qtd)}" type="number" min="0" value="${qtd}" data-sku="${sku}" data-produto="${escaparAdminMS(prod.produto)}" data-cor="${escaparAdminMS(cor)}" data-tamanho="${t}" onchange="alterarQtdEstoqueMS(this)" oninput="alterarQtdEstoqueMS(this)"></td>`;
+            return `<td><input class="qtd-input-ms ${classeQtd(qtd)}" type="number" min="0" value="${qtd}" data-sku="${sku}" data-produto="${prod.produto}" data-cor="${cor}" data-tamanho="${t}" onchange="alterarQtdEstoqueMS(this)" oninput="alterarQtdEstoqueMS(this)"></td>`;
           }).join('')}
           <td><strong class="total-linha-ms">${total}</strong></td>
           <td>${statusLinha(total)}</td>
@@ -350,7 +313,7 @@ function renderGradeEstoqueMS(){
       `);
     });
   });
-  corpo.innerHTML = linhas.join('') || `<tr><td colspan="${TAMANHOS_MS.length+4}">Nenhum item encontrado.</td></tr>`;
+  corpo.innerHTML = linhas.join('') || '<tr><td colspan="8">Nenhum item encontrado.</td></tr>';
   atualizarCardsEstoqueMS();
   renderAlertasEstoqueMS();
 }
@@ -379,7 +342,7 @@ function alterarQtdEstoqueMS(input){
 
 function todosItensCatalogoMS(){
   const itens = [];
-  CATALOGO_MS.forEach(p => p.cores.forEach(cor => p.tamanhos.forEach(tamanho => {
+  CATALOGO_MS.forEach(p => p.cores.forEach(cor => TAMANHOS_MS.forEach(tamanho => {
     itens.push({ sku: skuMS(p.produto, cor, tamanho), nome: p.produto, cor, tamanho, quantidade: quantidadeMS(p.produto, cor, tamanho) });
   })));
   return itens;
