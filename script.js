@@ -7,7 +7,7 @@ let valorFrete = Number(localStorage.getItem("valorFreteMS")) || 0;
 let desconto = 0;
 let totalComFrete = 0;
 let freteSelecionado = JSON.parse(localStorage.getItem("freteSelecionadoMS")) || null;
-const API_BASE = "http://127.0.0.1:3000";
+const API_BASE = window.location.origin;
 
 function salvarCarrinho() {
   localStorage.setItem("carrinho", JSON.stringify(carrinho));
@@ -710,7 +710,7 @@ async function calcularFrete() {
   if (resultadoFrete) resultadoFrete.innerHTML = "Calculando frete...";
 
   try {
-    const resposta = await fetch("http://127.0.0.1:3000/calcular-frete", {
+    const resposta = await fetch(`${API_BASE}/calcular-frete`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ cep })
@@ -786,7 +786,7 @@ async function calcularFreteCheckout() {
       if (estado) estado.value = dadosCep.uf || "";
     }
 
-    const resposta = await fetch("http://127.0.0.1:3000/calcular-frete", {
+    const resposta = await fetch(`${API_BASE}/calcular-frete`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ cep })
