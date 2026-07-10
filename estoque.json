@@ -1,1 +1,18 @@
-[]
+[
+  {
+    "sku": "MS-MOL-PT-P",
+    "nome": "Moletom",
+    "cor": "Preto",
+    "tamanho": "P",
+    "quantidade": 0,
+    "atualizadoEm": "2026-07-10T19:23:49.380Z"
+  },
+  {
+    "sku": "MS-MOL-BR-P",
+    "nome": "Moletom",
+    "cor": "Branco",
+    "tamanho": "P",
+    "quantidade": 1,
+    "atualizadoEm": "2026-07-10T19:08:44.281Z"
+  }
+]
