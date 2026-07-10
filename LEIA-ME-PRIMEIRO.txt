@@ -1,0 +1,33 @@
+MS MATIAS STYLE - PRIMEIRA ETAPA NEON
+
+ARQUIVOS PARA SUBSTITUIR:
+1. server.js
+2. package.json
+3. script.js
+4. admin.js
+5. index.html
+
+NO RENDER, CONFIRA AS VARIÁVEIS:
+- DATABASE_URL = conexão do Neon
+- MERCADO_PAGO_ACCESS_TOKEN = token de produção
+- FRONTEND_URL = https://ms-matias-style.vercel.app
+- BACKEND_URL = URL do seu serviço no Render
+- NODE_ENV = production
+
+O QUE ESTA VERSÃO FAZ:
+- Cria tabela produtos no PostgreSQL.
+- Cria tabela estoque_variantes no PostgreSQL.
+- Mantém as rotas antigas para não quebrar o site.
+- Migra o estoque JSON existente para a tabela na primeira inicialização.
+- Carrega o estoque do banco quando o servidor reinicia.
+- Mantém cópia local apenas como cache de compatibilidade.
+
+TESTE LOCAL:
+1. Coloque todos os arquivos na mesma pasta do projeto.
+2. Crie um arquivo .env usando .env.example como modelo.
+3. Execute: npm install
+4. Execute: npm start
+5. Abra: http://localhost:3000
+
+IMPORTANTE:
+Não envie o arquivo .env para GitHub. Ele contém senhas e tokens.

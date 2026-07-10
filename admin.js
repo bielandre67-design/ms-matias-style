@@ -724,3 +724,84 @@ Equipe MS Matias Style 🤍`;
   window.carregarPedidos = carregarPedidos;
   window.atualizarPedidos = carregarPedidos;
 })();
+
+// GERENCIADOR DE PRODUTOS MS -------------------------------------------------
+(function(){
+  const API = (location.port === '5500' || location.protocol === 'file:') ? 'http://localhost:3000' : '';
+  let produtos = [];
+  const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const num = v => Number(String(v ?? 0).replace(',','.')) || 0;
+  const moeda = v => num(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+
+  function criarInterface(){
+    if(document.getElementById('abaProdutosMS')) return;
+    const nav = document.querySelector('.menu-ms, nav');
+    if(nav){
+      const b=document.createElement('button');
+      b.type='button'; b.className='ms-tab'; b.innerHTML='📦 Produtos';
+      b.onclick=()=>abrirProdutosMS(); nav.appendChild(b);
+    }
+    const main=document.querySelector('main, .conteudo-admin, .admin-main, .main-content') || document.body;
+    const sec=document.createElement('section');
+    sec.id='abaProdutosMS'; sec.style.display='none';
+    sec.innerHTML=`
+      <style>
+      #abaProdutosMS{padding:24px;color:#f4f4f4}.ms-prod-head{display:flex;justify-content:space-between;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:20px}
+      .ms-prod-head h2{margin:0;font-size:28px}.ms-prod-btn{border:0;border-radius:14px;padding:12px 18px;font-weight:900;cursor:pointer;background:#d8ad43;color:#111}
+      .ms-prod-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}.ms-prod-card{background:#14171d;border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:16px;display:grid;grid-template-columns:76px 1fr;gap:14px}
+      .ms-prod-card img{width:76px;height:96px;object-fit:cover;border-radius:12px;background:#222}.ms-prod-card h3{margin:0 0 7px}.ms-prod-meta{font-size:13px;color:#aaa}.ms-prod-acoes{grid-column:1/-1;display:flex;gap:8px}.ms-prod-acoes button{flex:1;border:1px solid rgba(255,255,255,.13);background:#20242d;color:white;border-radius:12px;padding:10px;cursor:pointer}
+      .ms-prod-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;background:#14171d;border:1px solid rgba(255,255,255,.1);padding:18px;border-radius:20px;margin-bottom:18px}.ms-prod-form label{display:grid;gap:6px;font-size:13px;font-weight:800}.ms-prod-form input,.ms-prod-form textarea{background:#0f1116;color:white;border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:11px}.ms-prod-form textarea{min-height:85px;resize:vertical}.ms-prod-full{grid-column:1/-1}.ms-checks{display:flex;gap:16px;align-items:center;flex-wrap:wrap}.ms-checks label{display:flex;grid-auto-flow:column;align-items:center}.ms-form-actions{display:flex;gap:10px}.ms-msg{padding:11px 13px;border-radius:12px;background:#20242d;margin-bottom:14px;display:none}@media(max-width:700px){.ms-prod-form{grid-template-columns:1fr}.ms-prod-full{grid-column:auto}}
+      </style>
+      <div class="ms-prod-head"><div><h2>Produtos</h2><div class="ms-prod-meta">Cadastre e edite sem mexer no HTML.</div></div><button class="ms-prod-btn" onclick="novoProdutoMS()">+ Novo produto</button></div>
+      <div id="msgProdutoMS" class="ms-msg"></div>
+      <form id="formProdutoMS" class="ms-prod-form" style="display:none">
+        <input type="hidden" id="produtoIdMS">
+        <label>Nome<input id="produtoNomeMS" required></label><label>Categoria<input id="produtoCategoriaMS" value="Roupas"></label>
+        <label>Preço<input id="produtoPrecoMS" type="number" step="0.01" min="0" required></label><label>Preço antigo<input id="produtoPrecoAntigoMS" type="number" step="0.01" min="0"></label>
+        <label class="ms-prod-full">Imagem principal<input id="produtoImagemMS" placeholder="ex.: moletom-preto.jpeg ou URL"></label>
+        <label class="ms-prod-full">Outras imagens, separadas por vírgula<input id="produtoImagensMS"></label>
+        <label class="ms-prod-full">Descrição<textarea id="produtoDescricaoMS"></textarea></label>
+        <label>Cores, separadas por vírgula<input id="produtoCoresMS" placeholder="Preto, Bege, Rosa"></label><label>Tamanhos, separados por vírgula<input id="produtoTamanhosMS" value="P, M, G, GG"></label>
+        <label class="ms-prod-full">Quantidade inicial por variação<input id="produtoQuantidadeMS" type="number" min="0" value="0"><small class="ms-prod-meta">Ex.: 3 cria 3 unidades para cada combinação de cor e tamanho.</small></label>
+        <div class="ms-checks ms-prod-full"><label><input id="produtoAtivoMS" type="checkbox" checked> Ativo</label><label><input id="produtoDestaqueMS" type="checkbox"> Destaque</label><label><input id="produtoPromocaoMS" type="checkbox"> Promoção</label></div>
+        <div class="ms-form-actions ms-prod-full"><button class="ms-prod-btn" type="submit">Salvar produto</button><button type="button" onclick="cancelarProdutoMS()">Cancelar</button></div>
+      </form>
+      <div id="listaProdutosMS" class="ms-prod-grid"></div>`;
+    main.appendChild(sec);
+    document.getElementById('formProdutoMS').addEventListener('submit', salvarProdutoMS);
+  }
+
+  function esconderOutrasAbas(){
+    document.querySelectorAll('main > section, .conteudo-admin > section, .admin-main > section').forEach(s=>{if(s.id!=='abaProdutosMS') s.style.display='none';});
+  }
+  window.abrirProdutosMS=async function(){ criarInterface(); esconderOutrasAbas(); document.getElementById('abaProdutosMS').style.display='block'; await carregarProdutosMS(); };
+  window.novoProdutoMS=function(){
+    document.getElementById('formProdutoMS').reset(); document.getElementById('produtoIdMS').value=''; document.getElementById('produtoCategoriaMS').value='Roupas'; document.getElementById('produtoAtivoMS').checked=true; document.getElementById('formProdutoMS').style.display='grid'; scrollTo({top:0,behavior:'smooth'});
+  };
+  window.cancelarProdutoMS=function(){ document.getElementById('formProdutoMS').style.display='none'; };
+  function msg(t,erro=false){const e=document.getElementById('msgProdutoMS');e.textContent=t;e.style.display='block';e.style.background=erro?'#4a1820':'#1d3b2a';setTimeout(()=>e.style.display='none',3500)}
+  async function carregarProdutosMS(){
+    const box=document.getElementById('listaProdutosMS'); box.innerHTML='Carregando...';
+    try{const r=await fetch(`${API}/produtos?t=${Date.now()}`); if(!r.ok) throw new Error(); produtos=await r.json(); render();}
+    catch(e){box.innerHTML='Não consegui carregar os produtos. Confira se o servidor está ligado.';}
+  }
+  function render(){
+    const box=document.getElementById('listaProdutosMS');
+    if(!produtos.length){box.innerHTML='<p>Nenhum produto cadastrado ainda.</p>';return;}
+    box.innerHTML=produtos.map(p=>`<article class="ms-prod-card"><img src="${esc(p.imagem||'logo.png')}" onerror="this.src='logo.png'"><div><h3>${esc(p.nome)}</h3><div class="ms-prod-meta">${esc(p.categoria)} · ${moeda(p.preco)}</div><div class="ms-prod-meta">${p.ativo?'Ativo':'Oculto'}${p.destaque?' · Destaque':''}${p.promocao?' · Promoção':''}</div></div><div class="ms-prod-acoes"><button onclick="editarProdutoMS(${p.id})">Editar</button><button onclick="excluirProdutoMS(${p.id})">Excluir</button></div></article>`).join('');
+  }
+  window.editarProdutoMS=function(id){
+    const p=produtos.find(x=>x.id===id); if(!p)return; novoProdutoMS();
+    produtoIdMS.value=p.id; produtoNomeMS.value=p.nome||''; produtoCategoriaMS.value=p.categoria||''; produtoPrecoMS.value=p.preco||0; produtoPrecoAntigoMS.value=p.precoAntigo??''; produtoImagemMS.value=p.imagem||''; produtoImagensMS.value=(p.imagens||[]).join(', '); produtoDescricaoMS.value=p.descricao||''; produtoCoresMS.value=(p.cores||[]).join(', '); produtoTamanhosMS.value=(p.tamanhos||['P','M','G','GG']).join(', '); produtoQuantidadeMS.value=0; produtoAtivoMS.checked=!!p.ativo; produtoDestaqueMS.checked=!!p.destaque; produtoPromocaoMS.checked=!!p.promocao;
+  };
+  async function salvarProdutoMS(ev){
+    ev.preventDefault(); const id=produtoIdMS.value;
+    const body={nome:produtoNomeMS.value.trim(),categoria:produtoCategoriaMS.value.trim()||'Roupas',preco:num(produtoPrecoMS.value),precoAntigo:produtoPrecoAntigoMS.value===''?null:num(produtoPrecoAntigoMS.value),imagem:produtoImagemMS.value.trim(),imagens:produtoImagensMS.value.split(',').map(x=>x.trim()).filter(Boolean),descricao:produtoDescricaoMS.value.trim(),cores:produtoCoresMS.value.split(',').map(x=>x.trim()).filter(Boolean),tamanhos:produtoTamanhosMS.value.split(',').map(x=>x.trim().toUpperCase()).filter(Boolean),ativo:produtoAtivoMS.checked,destaque:produtoDestaqueMS.checked,promocao:produtoPromocaoMS.checked};
+    try{const r=await fetch(id?`${API}/produtos/${id}`:`${API}/produtos`,{method:id?'PUT':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const d=await r.json();if(!r.ok)throw new Error(d.mensagem||'Erro ao salvar'); const qtd=Math.max(0,num(produtoQuantidadeMS.value)); if(qtd>0){const cores=body.cores.length?body.cores:['Única'];const tamanhos=body.tamanhos.length?body.tamanhos:['ÚNICO'];for(const cor of cores){for(const tamanho of tamanhos){await fetch(`${API}/estoque`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome:body.nome,cor,tamanho,quantidade:qtd})});}}}cancelarProdutoMS();msg(qtd>0?'Produto e estoque salvos.':'Produto salvo.');await carregarProdutosMS();}catch(e){msg(e.message,true)}
+  }
+  window.excluirProdutoMS=async function(id){
+    if(!confirm('Excluir este produto?'))return;
+    try{const r=await fetch(`${API}/produtos/${id}`,{method:'DELETE'});if(!r.ok)throw new Error();msg('Produto excluído.');await carregarProdutosMS();}catch(e){msg('Não consegui excluir.',true)}
+  };
+  document.addEventListener('DOMContentLoaded',criarInterface);
+})();

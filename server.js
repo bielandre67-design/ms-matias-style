@@ -14,12 +14,22 @@ const caminhoPedidosExcluidos = path.join(__dirname, "pedidos_excluidos.json");
 // A estrutura atual da loja continua igual: os arquivos JSON funcionam como cache local,
 // enquanto o PostgreSQL passa a ser a fonte permanente dos dados.
 const databaseUrl = process.env.DATABASE_URL || "";
+const usaSSLPostgresMS = databaseUrl && !/localhost|127\.0\.0\.1/i.test(databaseUrl);
 const pool = databaseUrl
   ? new Pool({
       connectionString: databaseUrl,
-      ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false
+      ssl: usaSSLPostgresMS ? { rejectUnauthorized: false } : false,
+      connectionTimeoutMillis: 10000,
+      idleTimeoutMillis: 30000,
+      max: Number(process.env.PG_POOL_MAX || 5)
     })
   : null;
+
+if (pool) {
+  pool.on("error", (erro) => {
+    console.error("Erro inesperado na conexão PostgreSQL:", erro.message);
+  });
+}
 
 const arquivosPersistidosMS = new Map();
 
@@ -68,6 +78,8 @@ async function iniciarPostgresMS() {
       imagem TEXT,
       imagens JSONB NOT NULL DEFAULT '[]'::jsonb,
       descricao TEXT,
+      cores JSONB NOT NULL DEFAULT '[]'::jsonb,
+      tamanhos JSONB NOT NULL DEFAULT '["P","M","G","GG"]'::jsonb,
       ativo BOOLEAN NOT NULL DEFAULT TRUE,
       destaque BOOLEAN NOT NULL DEFAULT FALSE,
       promocao BOOLEAN NOT NULL DEFAULT FALSE,
@@ -75,6 +87,37 @@ async function iniciarPostgresMS() {
       atualizado_em TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `);
+
+  await pool.query(`ALTER TABLE produtos ADD COLUMN IF NOT EXISTS cores JSONB NOT NULL DEFAULT '[]'::jsonb`);
+  await pool.query(`ALTER TABLE produtos ADD COLUMN IF NOT EXISTS tamanhos JSONB NOT NULL DEFAULT '["P","M","G","GG"]'::jsonb`);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS estoque_variantes (
+      sku VARCHAR(100) PRIMARY KEY,
+      nome VARCHAR(180) NOT NULL,
+      cor VARCHAR(80) NOT NULL DEFAULT 'Única',
+      tamanho VARCHAR(20) NOT NULL DEFAULT 'ÚNICO',
+      quantidade INTEGER NOT NULL DEFAULT 0 CHECK (quantidade >= 0),
+      atualizado_em TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS reservas_estoque (
+      id BIGSERIAL PRIMARY KEY,
+      pedido_id VARCHAR(80) NOT NULL,
+      sku VARCHAR(100) NOT NULL,
+      nome VARCHAR(180) NOT NULL,
+      cor VARCHAR(80) NOT NULL DEFAULT 'Única',
+      tamanho VARCHAR(20) NOT NULL DEFAULT 'ÚNICO',
+      quantidade INTEGER NOT NULL CHECK (quantidade > 0),
+      status VARCHAR(30) NOT NULL DEFAULT 'reservado',
+      criado_em TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      expira_em TIMESTAMPTZ NOT NULL
+    )
+  `);
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_reservas_estoque_sku_status ON reservas_estoque (sku, status)`);
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_reservas_estoque_expira_em ON reservas_estoque (expira_em)`);
 
   for (const [caminho, padrao] of arquivosPersistidosMS.entries()) {
     const chave = chaveBancoMS(caminho);
@@ -327,6 +370,49 @@ function salvarJSON(caminho, dados) {
   void salvarNoPostgresMS(caminho, dados);
 }
 
+async function sincronizarTabelaEstoqueMS(lista) {
+  if (!pool) return;
+  const clientDB = await pool.connect();
+  try {
+    await clientDB.query("BEGIN");
+    for (const item of Array.isArray(lista) ? lista : []) {
+      const pronto = prepararItemEstoqueMS(item);
+      await clientDB.query(
+        `INSERT INTO estoque_variantes (sku, nome, cor, tamanho, quantidade, atualizado_em)
+         VALUES ($1,$2,$3,$4,$5,NOW())
+         ON CONFLICT (sku) DO UPDATE SET
+           nome=EXCLUDED.nome, cor=EXCLUDED.cor, tamanho=EXCLUDED.tamanho,
+           quantidade=EXCLUDED.quantidade, atualizado_em=NOW()`,
+        [pronto.sku, pronto.nome, pronto.cor, pronto.tamanho, Math.max(0, Number(item.quantidade || 0))]
+      );
+    }
+    const skus = (Array.isArray(lista) ? lista : []).map(item => prepararItemEstoqueMS(item).sku);
+    if (skus.length) await clientDB.query("DELETE FROM estoque_variantes WHERE NOT (sku = ANY($1::text[]))", [skus]);
+    else await clientDB.query("DELETE FROM estoque_variantes");
+    await clientDB.query("COMMIT");
+  } catch (erro) {
+    await clientDB.query("ROLLBACK");
+    console.error("Erro ao sincronizar tabela de estoque:", erro.message);
+  } finally {
+    clientDB.release();
+  }
+}
+
+async function carregarEstoqueDaTabelaMS() {
+  if (!pool) return;
+  const resultado = await pool.query(
+    `SELECT sku, nome, cor, tamanho, quantidade, atualizado_em AS "atualizadoEm"
+     FROM estoque_variantes ORDER BY nome, cor, tamanho`
+  );
+  if (resultado.rows.length) {
+    fs.writeFileSync(caminhoEstoque, JSON.stringify(resultado.rows, null, 2));
+    await salvarNoPostgresMS(caminhoEstoque, resultado.rows);
+    return;
+  }
+  const local = lerEstoqueMS();
+  if (local.length) await sincronizarTabelaEstoqueMS(local);
+}
+
 function normalizarTextoMS(valor) {
   return String(valor || "")
     .normalize("NFD")
@@ -394,7 +480,9 @@ function lerEstoqueMS() {
 }
 
 function salvarEstoqueMS(lista) {
-  salvarJSON(caminhoEstoque, Array.isArray(lista) ? lista : []);
+  const dados = Array.isArray(lista) ? lista : [];
+  salvarJSON(caminhoEstoque, dados);
+  void sincronizarTabelaEstoqueMS(dados);
 }
 
 function limparReservasVencidasMS() {
@@ -1391,7 +1479,8 @@ function produtoRespostaMS(row) {
     categoria: row.categoria, preco: Number(row.preco || 0),
     precoAntigo: row.preco_antigo == null ? null : Number(row.preco_antigo),
     imagem: row.imagem || "", imagens: Array.isArray(row.imagens) ? row.imagens : [],
-    descricao: row.descricao || "", ativo: Boolean(row.ativo),
+    descricao: row.descricao || "", cores: Array.isArray(row.cores) ? row.cores : [],
+    tamanhos: Array.isArray(row.tamanhos) ? row.tamanhos : ['P','M','G','GG'], ativo: Boolean(row.ativo),
     destaque: Boolean(row.destaque), promocao: Boolean(row.promocao),
     criadoEm: row.criado_em, atualizadoEm: row.atualizado_em
   };
@@ -1441,16 +1530,17 @@ app.post("/produtos", async (req, res, next) => {
     if (!nome) return res.status(400).json({ erro: true, mensagem: "Informe o nome do produto." });
     const chave = chaveProdutoMS(p.chave || nome);
     const resultado = await pool.query(
-      `INSERT INTO produtos (chave,nome,categoria,preco,preco_antigo,imagem,imagens,descricao,ativo,destaque,promocao)
-       VALUES ($1,$2,$3,$4,$5,$6,$7::jsonb,$8,$9,$10,$11)
+      `INSERT INTO produtos (chave,nome,categoria,preco,preco_antigo,imagem,imagens,descricao,cores,tamanhos,ativo,destaque,promocao)
+       VALUES ($1,$2,$3,$4,$5,$6,$7::jsonb,$8,$9::jsonb,$10::jsonb,$11,$12,$13)
        ON CONFLICT (chave) DO UPDATE SET nome=EXCLUDED.nome,categoria=EXCLUDED.categoria,
        preco=EXCLUDED.preco,preco_antigo=EXCLUDED.preco_antigo,imagem=EXCLUDED.imagem,
-       imagens=EXCLUDED.imagens,descricao=EXCLUDED.descricao,ativo=EXCLUDED.ativo,
+       imagens=EXCLUDED.imagens,descricao=EXCLUDED.descricao,cores=EXCLUDED.cores,tamanhos=EXCLUDED.tamanhos,ativo=EXCLUDED.ativo,
        destaque=EXCLUDED.destaque,promocao=EXCLUDED.promocao,atualizado_em=NOW()
        RETURNING *`,
       [chave,nome,String(p.categoria||"Roupas").slice(0,80),Number(p.preco)||0,
        p.precoAntigo==null||p.precoAntigo===""?null:Number(p.precoAntigo),String(p.imagem||""),
-       JSON.stringify(Array.isArray(p.imagens)?p.imagens:[]),String(p.descricao||""),p.ativo!==false,
+       JSON.stringify(Array.isArray(p.imagens)?p.imagens:[]),String(p.descricao||""),
+       JSON.stringify(Array.isArray(p.cores)?p.cores:[]),JSON.stringify(Array.isArray(p.tamanhos)?p.tamanhos:['P','M','G','GG']),p.ativo!==false,
        Boolean(p.destaque),Boolean(p.promocao)]
     );
     res.json({ ok:true, produto:produtoRespostaMS(resultado.rows[0]) });
@@ -1465,11 +1555,14 @@ app.put("/produtos/:id", async (req, res, next) => {
       `UPDATE produtos SET nome=COALESCE($2,nome),categoria=COALESCE($3,categoria),
        preco=COALESCE($4,preco),preco_antigo=$5,imagem=COALESCE($6,imagem),
        descricao=COALESCE($7,descricao),ativo=COALESCE($8,ativo),destaque=COALESCE($9,destaque),
-       promocao=COALESCE($10,promocao),atualizado_em=NOW() WHERE id=$1 RETURNING *`,
+       promocao=COALESCE($10,promocao),imagens=COALESCE($11::jsonb,imagens),cores=COALESCE($12::jsonb,cores),tamanhos=COALESCE($13::jsonb,tamanhos),atualizado_em=NOW() WHERE id=$1 RETURNING *`,
       [req.params.id,p.nome==null?null:String(p.nome).trim(),p.categoria==null?null:String(p.categoria),
        p.preco==null?null:Number(p.preco),p.precoAntigo==null||p.precoAntigo===""?null:Number(p.precoAntigo),
        p.imagem==null?null:String(p.imagem),p.descricao==null?null:String(p.descricao),
-       p.ativo==null?null:Boolean(p.ativo),p.destaque==null?null:Boolean(p.destaque),p.promocao==null?null:Boolean(p.promocao)]
+       p.ativo==null?null:Boolean(p.ativo),p.destaque==null?null:Boolean(p.destaque),p.promocao==null?null:Boolean(p.promocao),
+       p.imagens==null?null:JSON.stringify(Array.isArray(p.imagens)?p.imagens:[]),
+       p.cores==null?null:JSON.stringify(Array.isArray(p.cores)?p.cores:[]),
+       p.tamanhos==null?null:JSON.stringify(Array.isArray(p.tamanhos)?p.tamanhos:[])]
     );
     if(!resultado.rowCount) return res.status(404).json({erro:true,mensagem:"Produto não encontrado."});
     res.json({ok:true,produto:produtoRespostaMS(resultado.rows[0])});
@@ -1507,6 +1600,7 @@ async function iniciarServidorMS() {
 
   try {
     await iniciarPostgresMS();
+    await carregarEstoqueDaTabelaMS();
   } catch (erro) {
     console.error("Falha ao iniciar PostgreSQL:", erro.message);
     process.exit(1);

@@ -1,124 +1,124 @@
 [
   {
     "id": 83,
-    "nome": "",
-    "telefone": "",
     "cep": "",
     "rua": "",
-    "numero": "",
-    "complemento": "",
+    "data": "07/07/2026, 21:48:20",
+    "nome": "",
+    "frete": {
+      "nome": "Jadlog - .Package",
+      "prazo": 4,
+      "preco": 16.6
+    },
+    "total": 416.20000000000005,
     "bairro": "",
     "cidade": "",
     "estado": "",
+    "numero": "",
+    "status": "aguardando pagamento",
     "produtos": [
       {
         "nome": "Moletom Preto MS",
-        "title": "Moletom Preto MS",
         "preco": 99.9,
-        "unit_price": 99.9,
-        "quantidade": 2,
-        "quantity": 2,
+        "title": "Moletom Preto MS",
+        "imagem": "MOLETOM-PRETO.jpeg",
         "tamanho": "M",
-        "imagem": "MOLETOM-PRETO.jpeg"
+        "quantity": 2,
+        "quantidade": 2,
+        "unit_price": 99.9
       },
       {
         "nome": "Moleto-bege MS",
-        "title": "Moleto-bege MS",
         "preco": 99.9,
-        "unit_price": 99.9,
-        "quantidade": 2,
-        "quantity": 2,
+        "title": "Moleto-bege MS",
+        "imagem": "moletom-bege.jpeg",
         "tamanho": "M",
-        "imagem": "moletom-bege.jpeg"
+        "quantity": 2,
+        "quantidade": 2,
+        "unit_price": 99.9
       }
     ],
-    "frete": {
-      "nome": "Jadlog - .Package",
-      "preco": 16.6,
-      "prazo": 4
-    },
-    "total": 416.20000000000005,
-    "status": "aguardando pagamento",
-    "data": "07/07/2026, 21:48:20",
+    "telefone": "",
     "excluidoEm": "10/07/2026, 16:10:53",
+    "complemento": "",
     "excluidoTimestamp": "2026-07-10T19:10:53.453Z"
   },
   {
     "id": 82,
-    "nome": "",
-    "telefone": "",
     "cep": "",
     "rua": "",
-    "numero": "",
-    "complemento": "",
+    "data": "07/07/2026, 21:40:49",
+    "nome": "",
+    "total": 414.19,
     "bairro": "",
     "cidade": "",
     "estado": "",
+    "numero": "",
+    "status": "aguardando pagamento",
     "produtos": [
       {
         "nome": "Moletom Preto MS",
-        "title": "Moletom Preto MS",
         "preco": 99.9,
-        "unit_price": 99.9,
-        "quantidade": 2,
-        "quantity": 2,
+        "title": "Moletom Preto MS",
+        "imagem": "MOLETOM-PRETO.jpeg",
         "tamanho": "M",
-        "imagem": "MOLETOM-PRETO.jpeg"
+        "quantity": 2,
+        "quantidade": 2,
+        "unit_price": 99.9
       },
       {
         "nome": "Moleto-bege MS",
-        "title": "Moleto-bege MS",
         "preco": 99.9,
-        "unit_price": 99.9,
-        "quantidade": 2,
-        "quantity": 2,
+        "title": "Moleto-bege MS",
+        "imagem": "moletom-bege.jpeg",
         "tamanho": "M",
-        "imagem": "moletom-bege.jpeg"
+        "quantity": 2,
+        "quantidade": 2,
+        "unit_price": 99.9
       }
     ],
-    "total": 414.19,
-    "status": "aguardando pagamento",
-    "data": "07/07/2026, 21:40:49",
+    "telefone": "",
     "excluidoEm": "10/07/2026, 16:10:56",
+    "complemento": "",
     "excluidoTimestamp": "2026-07-10T19:10:56.713Z"
   },
   {
     "id": 81,
-    "nome": "",
-    "telefone": "",
     "cep": "",
     "rua": "",
-    "numero": "",
-    "complemento": "",
+    "data": "07/07/2026, 21:38:54",
+    "nome": "",
+    "total": 414.19,
     "bairro": "",
     "cidade": "",
     "estado": "",
+    "numero": "",
+    "status": "aguardando pagamento",
     "produtos": [
       {
         "nome": "Moletom Preto MS",
-        "title": "Moletom Preto MS",
         "preco": 99.9,
-        "unit_price": 99.9,
-        "quantidade": 2,
-        "quantity": 2,
+        "title": "Moletom Preto MS",
+        "imagem": "MOLETOM-PRETO.jpeg",
         "tamanho": "M",
-        "imagem": "MOLETOM-PRETO.jpeg"
+        "quantity": 2,
+        "quantidade": 2,
+        "unit_price": 99.9
       },
       {
         "nome": "Moleto-bege MS",
-        "title": "Moleto-bege MS",
         "preco": 99.9,
-        "unit_price": 99.9,
-        "quantidade": 2,
-        "quantity": 2,
+        "title": "Moleto-bege MS",
+        "imagem": "moletom-bege.jpeg",
         "tamanho": "M",
-        "imagem": "moletom-bege.jpeg"
+        "quantity": 2,
+        "quantidade": 2,
+        "unit_price": 99.9
       }
     ],
-    "total": 414.19,
-    "status": "aguardando pagamento",
-    "data": "07/07/2026, 21:38:54",
+    "telefone": "",
     "excluidoEm": "10/07/2026, 16:11:00",
+    "complemento": "",
     "excluidoTimestamp": "2026-07-10T19:11:00.384Z"
   }
 ]

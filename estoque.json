@@ -1,18 +1,50 @@
 [
   {
+    "cor": "Preto",
     "sku": "MS-MOL-PT-P",
     "nome": "Moletom",
-    "cor": "Preto",
     "tamanho": "P",
-    "quantidade": 0,
-    "atualizadoEm": "2026-07-10T19:23:49.380Z"
+    "quantidade": 1,
+    "atualizadoEm": "2026-07-10T21:26:06.698Z"
   },
   {
+    "cor": "Branco",
     "sku": "MS-MOL-BR-P",
     "nome": "Moletom",
-    "cor": "Branco",
     "tamanho": "P",
     "quantidade": 1,
     "atualizadoEm": "2026-07-10T19:08:44.281Z"
+  },
+  {
+    "sku": "MS-MOL-VER-P",
+    "nome": "moletom",
+    "cor": "verde",
+    "tamanho": "P",
+    "quantidade": 5,
+    "atualizadoEm": "2026-07-10T21:58:49.874Z"
+  },
+  {
+    "sku": "MS-MOL-VER-M",
+    "nome": "moletom",
+    "cor": "verde",
+    "tamanho": "M",
+    "quantidade": 5,
+    "atualizadoEm": "2026-07-10T21:58:49.884Z"
+  },
+  {
+    "sku": "MS-MOL-VER-G",
+    "nome": "moletom",
+    "cor": "verde",
+    "tamanho": "G",
+    "quantidade": 5,
+    "atualizadoEm": "2026-07-10T21:58:49.890Z"
+  },
+  {
+    "sku": "MS-MOL-VER-GG",
+    "nome": "moletom",
+    "cor": "verde",
+    "tamanho": "GG",
+    "quantidade": 5,
+    "atualizadoEm": "2026-07-10T21:58:49.896Z"
   }
 ]

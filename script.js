@@ -5539,3 +5539,29 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   document.addEventListener('DOMContentLoaded',sincronizarEAplicar);
 })();
+
+// RENDERIZA PRODUTOS NOVOS CADASTRADOS PELO PAINEL ---------------------------
+(function(){
+  const API=(location.hostname==='localhost'||location.hostname==='127.0.0.1')?'http://localhost:3000':'https://ms-matias-style.onrender.com';
+  const norm=v=>String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+  const moeda=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  function cardProduto(p){
+    const fotos=(p.imagens?.length?p.imagens:[p.imagem]).filter(Boolean);
+    const tamanhos=(Array.isArray(p.tamanhos)&&p.tamanhos.length?p.tamanhos:['P','M','G','GG']);
+    return `<div class="card-produto produto-banco-ms" data-id-banco="${p.id}" data-nome="${esc(p.nome)}" data-preco="${Number(p.preco).toFixed(2)}" data-precoantigo="${p.precoAntigo??''}" data-img="${esc(p.imagem||fotos[0]||'')}" data-fotos="${esc(fotos.join(','))}" data-descricao="${esc(p.descricao||'')}">
+      ${p.promocao?'<span class="selo-produto">PROMOÇÃO</span>':p.destaque?'<span class="selo-produto">DESTAQUE</span>':''}
+      <button class="btn-favorito" onclick="favoritarProduto(this,event)">♡</button>
+      <div class="produto-img" onclick="abrirProdutoDetalheCard(this.closest('.card-produto'))"><img src="${esc(p.imagem||fotos[0]||'logo.png')}" class="foto-normal" onerror="this.src='logo.png'"><img src="${esc(fotos[1]||p.imagem||fotos[0]||'logo.png')}" class="foto-hover" onerror="this.src='logo.png'"></div>
+      <h3>${esc(p.nome)}</h3><div class="preco-box">${p.precoAntigo!=null?`<span class="preco-antigo">${moeda(p.precoAntigo)}</span>`:''}<p class="preco">${moeda(p.preco)}</p><span class="parcelamento">em até 5x sem juros</span></div>
+      <div class="tamanhos">${tamanhos.map(t=>`<button onclick="selecionarTamanho(this,'${esc(t)}')">${esc(t)}</button>`).join('')}</div>
+    </div>`;
+  }
+  async function inserirNovos(){
+    try{const r=await fetch(`${API}/produtos?ativos=true&t=${Date.now()}`);if(!r.ok)return;const ps=await r.json();const existentes=new Set([...document.querySelectorAll('.card-produto[data-nome]')].map(c=>norm(c.dataset.nome)));const novos=ps.filter(p=>!existentes.has(p.chave||norm(p.nome)));if(!novos.length)return;
+      let sec=document.getElementById('produtosPainelMS');if(!sec){sec=document.createElement('section');sec.className='produtos';sec.id='produtosPainelMS';sec.innerHTML='<div class="titulo-section"><p>Novidades</p><h2>Produtos novos</h2></div><div class="grid-produtos"></div>';const alvo=document.querySelector('footer')||document.body.lastElementChild;document.body.insertBefore(sec,alvo);}
+      sec.querySelector('.grid-produtos').insertAdjacentHTML('beforeend',novos.map(cardProduto).join(''));
+    }catch(e){console.warn('Produtos novos não carregados:',e.message)}
+  }
+  document.addEventListener('DOMContentLoaded',()=>setTimeout(inserirNovos,500));
+})();
