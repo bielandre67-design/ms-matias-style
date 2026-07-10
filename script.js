@@ -5491,3 +5491,51 @@ document.addEventListener("DOMContentLoaded", () => {
     atualizarTotaisMobile();
   }
 });
+
+
+// PRODUTOS DINÂMICOS MS -------------------------------------------------------
+// Mantém o HTML atual intacto, mas permite controlar preço e visibilidade pelo painel.
+(function(){
+  const API_PRODUTOS_MS = (location.hostname==='localhost'||location.hostname==='127.0.0.1')
+    ? 'http://localhost:3000' : 'https://ms-matias-style.onrender.com';
+  const normalizar=v=>String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+  const numero=v=>Number(String(v??0).replace(',','.'))||0;
+  const moeda=v=>numero(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+  function cardsUnicos(){
+    const mapa=new Map();
+    document.querySelectorAll('.card-produto[data-nome]').forEach(card=>{
+      const nome=card.dataset.nome?.trim(); if(!nome) return;
+      const chave=normalizar(nome); if(mapa.has(chave)) return;
+      const fotos=String(card.dataset.fotos||card.dataset.img||'').split(',').map(x=>x.trim()).filter(Boolean);
+      const secao=card.closest('section');
+      mapa.set(chave,{chave,nome,categoria:secao?.querySelector('.titulo-section h2')?.textContent?.trim()||'Roupas',
+        preco:numero(card.dataset.preco),precoAntigo:card.dataset.precoantigo?numero(card.dataset.precoantigo):null,
+        imagem:card.dataset.img||fotos[0]||'',imagens:fotos,descricao:card.dataset.descricao||''});
+    }); return [...mapa.values()];
+  }
+  async function sincronizarEAplicar(){
+    try{
+      const catalogo=cardsUnicos();
+      await fetch(`${API_PRODUTOS_MS}/produtos/sincronizar-catalogo`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({produtos:catalogo})});
+      const r=await fetch(`${API_PRODUTOS_MS}/produtos?t=${Date.now()}`); if(!r.ok) return;
+      const produtos=await r.json(); const mapa=new Map(produtos.map(p=>[p.chave,p]));
+      document.querySelectorAll('.card-produto[data-nome]').forEach(card=>{
+        const p=mapa.get(normalizar(card.dataset.nome)); if(!p) return;
+        card.dataset.preco=Number(p.preco).toFixed(2);
+        if(p.precoAntigo!=null) card.dataset.precoantigo=Number(p.precoAntigo).toFixed(2);
+        card.style.display=p.ativo?'':'none';
+        card.querySelectorAll('[data-preco]').forEach(el=>el.dataset.preco=Number(p.preco).toFixed(2));
+        const botao=card.querySelector('.btn-comprar'); if(botao) botao.dataset.preco=Number(p.preco).toFixed(2);
+        const preco=card.querySelector('.preco'); if(preco) preco.textContent=moeda(p.preco);
+        const antigo=card.querySelector('.preco-antigo');
+        if(antigo){ antigo.textContent=p.precoAntigo!=null?moeda(p.precoAntigo):''; antigo.style.display=p.precoAntigo!=null?'':'none'; }
+        let selo=card.querySelector('.selo-produto');
+        if(p.promocao){ if(!selo){ selo=document.createElement('span'); selo.className='selo-produto'; card.prepend(selo); } selo.textContent='PROMOÇÃO'; }
+        else if(p.destaque){ if(!selo){ selo=document.createElement('span'); selo.className='selo-produto'; card.prepend(selo); } selo.textContent='DESTAQUE'; }
+      });
+      window.produtosBancoMS=produtos;
+      console.log('Produtos PostgreSQL aplicados na loja:',produtos.length);
+    }catch(e){ console.warn('Loja abriu com o catálogo local; banco de produtos indisponível.',e.message); }
+  }
+  document.addEventListener('DOMContentLoaded',sincronizarEAplicar);
+})();

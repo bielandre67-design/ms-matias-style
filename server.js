@@ -57,6 +57,25 @@ async function iniciarPostgresMS() {
     )
   `);
 
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS produtos (
+      id BIGSERIAL PRIMARY KEY,
+      chave VARCHAR(180) UNIQUE NOT NULL,
+      nome VARCHAR(180) NOT NULL,
+      categoria VARCHAR(80) NOT NULL DEFAULT 'Roupas',
+      preco NUMERIC(10,2) NOT NULL DEFAULT 0,
+      preco_antigo NUMERIC(10,2),
+      imagem TEXT,
+      imagens JSONB NOT NULL DEFAULT '[]'::jsonb,
+      descricao TEXT,
+      ativo BOOLEAN NOT NULL DEFAULT TRUE,
+      destaque BOOLEAN NOT NULL DEFAULT FALSE,
+      promocao BOOLEAN NOT NULL DEFAULT FALSE,
+      criado_em TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      atualizado_em TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+
   for (const [caminho, padrao] of arquivosPersistidosMS.entries()) {
     const chave = chaveBancoMS(caminho);
     const resultado = await pool.query("SELECT dados FROM app_state WHERE chave = $1", [chave]);
@@ -1353,6 +1372,114 @@ app.get("/health", (req, res) => {
     mercadoPagoConfigurado: Boolean(accessToken),
     melhorEnvioConfigurado: Boolean(process.env.MELHOR_ENVIO_TOKEN)
   });
+});
+
+
+// PRODUTOS NO POSTGRESQL ------------------------------------------------------
+// Esta API é compatível com o catálogo HTML atual. O front sincroniza os cards
+// existentes uma única vez e, depois, preços/visibilidade são controlados aqui.
+function chaveProdutoMS(valor) {
+  return String(valor || "")
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase().replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "").slice(0, 180);
+}
+
+function produtoRespostaMS(row) {
+  return {
+    id: Number(row.id), chave: row.chave, nome: row.nome,
+    categoria: row.categoria, preco: Number(row.preco || 0),
+    precoAntigo: row.preco_antigo == null ? null : Number(row.preco_antigo),
+    imagem: row.imagem || "", imagens: Array.isArray(row.imagens) ? row.imagens : [],
+    descricao: row.descricao || "", ativo: Boolean(row.ativo),
+    destaque: Boolean(row.destaque), promocao: Boolean(row.promocao),
+    criadoEm: row.criado_em, atualizadoEm: row.atualizado_em
+  };
+}
+
+app.get("/produtos", async (req, res, next) => {
+  if (!pool) return res.json([]);
+  try {
+    const apenasAtivos = String(req.query.ativos || "").toLowerCase() === "true";
+    const sql = `SELECT * FROM produtos ${apenasAtivos ? "WHERE ativo = TRUE" : ""} ORDER BY id`;
+    const resultado = await pool.query(sql);
+    res.json(resultado.rows.map(produtoRespostaMS));
+  } catch (erro) { next(erro); }
+});
+
+app.post("/produtos/sincronizar-catalogo", async (req, res, next) => {
+  if (!pool) return res.status(503).json({ erro: true, mensagem: "PostgreSQL não configurado." });
+  const produtos = Array.isArray(req.body?.produtos) ? req.body.produtos : [];
+  if (!produtos.length) return res.json({ ok: true, inseridos: 0 });
+  try {
+    let inseridos = 0;
+    for (const p of produtos.slice(0, 500)) {
+      const nome = String(p.nome || "").trim();
+      if (!nome) continue;
+      const chave = chaveProdutoMS(p.chave || nome);
+      const preco = Number(String(p.preco ?? 0).replace(",", ".")) || 0;
+      const precoAntigo = p.precoAntigo == null || p.precoAntigo === "" ? null : Number(String(p.precoAntigo).replace(",", "."));
+      const imagens = Array.isArray(p.imagens) ? p.imagens.filter(Boolean).slice(0, 12) : [];
+      const r = await pool.query(
+        `INSERT INTO produtos (chave,nome,categoria,preco,preco_antigo,imagem,imagens,descricao)
+         VALUES ($1,$2,$3,$4,$5,$6,$7::jsonb,$8)
+         ON CONFLICT (chave) DO NOTHING RETURNING id`,
+        [chave, nome, String(p.categoria || "Roupas").slice(0,80), preco, Number.isFinite(precoAntigo) ? precoAntigo : null,
+         String(p.imagem || imagens[0] || ""), JSON.stringify(imagens), String(p.descricao || "")]
+      );
+      if (r.rowCount) inseridos++;
+    }
+    res.json({ ok: true, inseridos });
+  } catch (erro) { next(erro); }
+});
+
+app.post("/produtos", async (req, res, next) => {
+  if (!pool) return res.status(503).json({ erro: true, mensagem: "PostgreSQL não configurado." });
+  try {
+    const p = req.body || {};
+    const nome = String(p.nome || "").trim();
+    if (!nome) return res.status(400).json({ erro: true, mensagem: "Informe o nome do produto." });
+    const chave = chaveProdutoMS(p.chave || nome);
+    const resultado = await pool.query(
+      `INSERT INTO produtos (chave,nome,categoria,preco,preco_antigo,imagem,imagens,descricao,ativo,destaque,promocao)
+       VALUES ($1,$2,$3,$4,$5,$6,$7::jsonb,$8,$9,$10,$11)
+       ON CONFLICT (chave) DO UPDATE SET nome=EXCLUDED.nome,categoria=EXCLUDED.categoria,
+       preco=EXCLUDED.preco,preco_antigo=EXCLUDED.preco_antigo,imagem=EXCLUDED.imagem,
+       imagens=EXCLUDED.imagens,descricao=EXCLUDED.descricao,ativo=EXCLUDED.ativo,
+       destaque=EXCLUDED.destaque,promocao=EXCLUDED.promocao,atualizado_em=NOW()
+       RETURNING *`,
+      [chave,nome,String(p.categoria||"Roupas").slice(0,80),Number(p.preco)||0,
+       p.precoAntigo==null||p.precoAntigo===""?null:Number(p.precoAntigo),String(p.imagem||""),
+       JSON.stringify(Array.isArray(p.imagens)?p.imagens:[]),String(p.descricao||""),p.ativo!==false,
+       Boolean(p.destaque),Boolean(p.promocao)]
+    );
+    res.json({ ok:true, produto:produtoRespostaMS(resultado.rows[0]) });
+  } catch (erro) { next(erro); }
+});
+
+app.put("/produtos/:id", async (req, res, next) => {
+  if (!pool) return res.status(503).json({ erro: true, mensagem: "PostgreSQL não configurado." });
+  try {
+    const p=req.body||{};
+    const resultado=await pool.query(
+      `UPDATE produtos SET nome=COALESCE($2,nome),categoria=COALESCE($3,categoria),
+       preco=COALESCE($4,preco),preco_antigo=$5,imagem=COALESCE($6,imagem),
+       descricao=COALESCE($7,descricao),ativo=COALESCE($8,ativo),destaque=COALESCE($9,destaque),
+       promocao=COALESCE($10,promocao),atualizado_em=NOW() WHERE id=$1 RETURNING *`,
+      [req.params.id,p.nome==null?null:String(p.nome).trim(),p.categoria==null?null:String(p.categoria),
+       p.preco==null?null:Number(p.preco),p.precoAntigo==null||p.precoAntigo===""?null:Number(p.precoAntigo),
+       p.imagem==null?null:String(p.imagem),p.descricao==null?null:String(p.descricao),
+       p.ativo==null?null:Boolean(p.ativo),p.destaque==null?null:Boolean(p.destaque),p.promocao==null?null:Boolean(p.promocao)]
+    );
+    if(!resultado.rowCount) return res.status(404).json({erro:true,mensagem:"Produto não encontrado."});
+    res.json({ok:true,produto:produtoRespostaMS(resultado.rows[0])});
+  } catch(erro){ next(erro); }
+});
+
+app.delete("/produtos/:id", async (req,res,next)=>{
+  if (!pool) return res.status(503).json({ erro: true, mensagem: "PostgreSQL não configurado." });
+  try { await pool.query("DELETE FROM produtos WHERE id=$1",[req.params.id]); res.json({ok:true}); }
+  catch(erro){ next(erro); }
 });
 
 // Resposta JSON para rotas de API inexistentes.

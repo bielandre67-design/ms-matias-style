@@ -27,6 +27,7 @@
 
     <nav class="menu-ms">
       <button class="ms-tab ativa" onclick="abrirAbaMS('visao', this)"><span>⌂</span> Dashboard</button>
+      <button class="ms-tab" onclick="abrirAbaMS('produtosAba', this)"><span>▦</span> Produtos</button>
       <button class="ms-tab" onclick="abrirAbaMS('estoqueAba', this)"><span>◇</span> Estoque</button>
       <button class="ms-tab" onclick="abrirAbaMS('pedidosAba', this)"><span>◌</span> Pedidos</button>
       <button class="ms-tab" onclick="abrirAbaMS('relatoriosAba', this)"><span>▥</span> Relatórios</button>
@@ -73,6 +74,28 @@
             <div><span>Estoque baixo</span><strong id="dashEstoqueBaixo">0</strong></div>
             <div><span>Esgotados</span><strong id="dashEsgotados">0</strong></div>
           </div>
+        </div>
+      </section>
+    </section>
+
+
+    <section id="produtosAba" class="ms-painel">
+      <div class="page-title-ms">
+        <div><h2>Produtos</h2><p>Altere preço, promoção, destaque e visibilidade sem abrir o VS Code.</p></div>
+        <button class="btn-dark-ms" onclick="carregarProdutosAdminMS()">Atualizar lista</button>
+      </div>
+      <section class="painel-card-ms" style="margin-bottom:18px">
+        <div class="filtros-estoque-ms">
+          <label>Pesquisar<input id="pesquisaProdutosMS" placeholder="Nome ou categoria" oninput="renderProdutosAdminMS()"></label>
+          <label>Status<select id="filtroProdutosAtivosMS" onchange="renderProdutosAdminMS()"><option value="todos">Todos</option><option value="ativos">Ativos</option><option value="ocultos">Ocultos</option></select></label>
+        </div>
+      </section>
+      <section class="painel-card-ms">
+        <div class="tabela-wrap-ms">
+          <table class="estoque-lista grade-estoque-ms">
+            <thead><tr><th>Produto</th><th>Categoria</th><th>Preço</th><th>Preço antigo</th><th>Promoção</th><th>Destaque</th><th>Visível</th><th>Ação</th></tr></thead>
+            <tbody id="listaProdutosAdminMS"><tr><td colspan="8">Carregando produtos...</td></tr></tbody>
+          </table>
         </div>
       </section>
     </section>
@@ -191,10 +214,11 @@ function abrirAbaMS(id, btn){
   document.getElementById(id)?.classList.add('ativa');
   document.querySelectorAll('.ms-tab').forEach(b => b.classList.remove('ativa'));
   btn?.classList.add('ativa');
-  const titulos = {visao:'Dashboard', estoqueAba:'Estoque', pedidosAba:'Pedidos', relatoriosAba:'Relatórios'};
+  const titulos = {visao:'Dashboard', produtosAba:'Produtos', estoqueAba:'Estoque', pedidosAba:'Pedidos', relatoriosAba:'Relatórios'};
   const titulo = document.getElementById('tituloPaginaMS');
   if(titulo) titulo.innerText = titulos[id] || 'Painel ADM';
   if(id === 'estoqueAba') carregarEstoqueMS();
+  if(id === 'produtosAba') carregarProdutosAdminMS();
 }
 
 function skuMS(produto, cor, tamanho){
@@ -376,6 +400,55 @@ async function salvarGradeEstoqueMS(){
 }
 
 
+// GERENCIAMENTO DE PRODUTOS NO POSTGRESQL
+let produtosAdminMS = [];
+function moedaAdminMS(v){ return Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
+function escaparAdminMS(v){ return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
+async function carregarProdutosAdminMS(){
+  const corpo=document.getElementById('listaProdutosAdminMS');
+  if(corpo) corpo.innerHTML='<tr><td colspan="8">Carregando...</td></tr>';
+  try{
+    const r=await fetch(`${API_ADMIN_MS}/produtos?t=${Date.now()}`);
+    if(!r.ok) throw new Error('Falha ao carregar produtos');
+    produtosAdminMS=await r.json(); renderProdutosAdminMS();
+  }catch(e){ if(corpo) corpo.innerHTML='<tr><td colspan="8">Não consegui carregar os produtos.</td></tr>'; }
+}
+function renderProdutosAdminMS(){
+  const corpo=document.getElementById('listaProdutosAdminMS'); if(!corpo) return;
+  const busca=normalizarMS(document.getElementById('pesquisaProdutosMS')?.value);
+  const filtro=document.getElementById('filtroProdutosAtivosMS')?.value||'todos';
+  const lista=produtosAdminMS.filter(p=>{
+    const okBusca=!busca||normalizarMS(`${p.nome} ${p.categoria}`).includes(busca);
+    const okStatus=filtro==='todos'||(filtro==='ativos'&&p.ativo)||(filtro==='ocultos'&&!p.ativo);
+    return okBusca&&okStatus;
+  });
+  if(!lista.length){ corpo.innerHTML='<tr><td colspan="8">Nenhum produto encontrado.</td></tr>'; return; }
+  corpo.innerHTML=lista.map(p=>`<tr data-produto-id="${p.id}">
+    <td><strong>${escaparAdminMS(p.nome)}</strong></td><td>${escaparAdminMS(p.categoria)}</td>
+    <td><input type="number" step="0.01" min="0" class="prod-preco-ms" value="${Number(p.preco||0).toFixed(2)}" style="width:105px"></td>
+    <td><input type="number" step="0.01" min="0" class="prod-preco-antigo-ms" value="${p.precoAntigo==null?'':Number(p.precoAntigo).toFixed(2)}" style="width:105px"></td>
+    <td><input type="checkbox" class="prod-promocao-ms" ${p.promocao?'checked':''}></td>
+    <td><input type="checkbox" class="prod-destaque-ms" ${p.destaque?'checked':''}></td>
+    <td><input type="checkbox" class="prod-ativo-ms" ${p.ativo?'checked':''}></td>
+    <td><button class="btn-dark-ms" onclick="salvarProdutoLinhaMS(${p.id},this)">Salvar</button></td></tr>`).join('');
+}
+async function salvarProdutoLinhaMS(id,botao){
+  const linha=document.querySelector(`tr[data-produto-id="${id}"]`); if(!linha) return;
+  const corpo={preco:Number(linha.querySelector('.prod-preco-ms').value||0),
+    precoAntigo:linha.querySelector('.prod-preco-antigo-ms').value,
+    promocao:linha.querySelector('.prod-promocao-ms').checked,
+    destaque:linha.querySelector('.prod-destaque-ms').checked,
+    ativo:linha.querySelector('.prod-ativo-ms').checked};
+  const original=botao.innerText; botao.innerText='Salvando...'; botao.disabled=true;
+  try{ const r=await fetch(`${API_ADMIN_MS}/produtos/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(corpo)});
+    if(!r.ok) throw new Error('Falha ao salvar'); const dados=await r.json();
+    const i=produtosAdminMS.findIndex(p=>p.id===id); if(i>=0) produtosAdminMS[i]=dados.produto;
+    botao.innerText='Salvo ✓'; setTimeout(()=>botao.innerText=original,1200);
+  }catch(e){ alert('Não consegui salvar o produto.'); botao.innerText=original; }
+  finally{ botao.disabled=false; }
+}
+
+
 function aplicarTemaMS(tema){
   const escolhido = tema === 'escuro' ? 'escuro' : 'claro';
   document.documentElement.setAttribute('data-theme', escolhido);
@@ -396,6 +469,7 @@ function alternarTemaMS(){
 function carregarTudoMS(){
   if(window.atualizarPedidos) window.atualizarPedidos();
   carregarEstoqueMS();
+  carregarProdutosAdminMS();
 }
 
 document.addEventListener('DOMContentLoaded', () => {

@@ -1,0 +1,15 @@
+MS MATIAS STYLE - FASE 1 POSTGRESQL
+
+Substitua somente estes arquivos no projeto:
+- server.js
+- admin.html
+- script.js
+
+O index.html foi incluído apenas como cópia do arquivo enviado e não precisa ser substituído.
+Depois execute:
+git add .
+git commit -m "Produtos no PostgreSQL"
+git push
+
+Após o Render ficar Live, abra a loja uma vez. O catálogo atual será importado automaticamente para o PostgreSQL.
+Depois abra Painel ADM > Produtos para alterar preço, promoção, destaque e visibilidade.
