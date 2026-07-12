@@ -1,271 +1,117 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Carrinho - MS</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#050505">
+  <title>Carrinho | MS Matias Style</title>
+  <style>
+    :root{--bg:#050505;--card:#0d0d0d;--line:#7b5d0b;--gold:#e1b92f;--text:#fff;--muted:#b9b9b9;--danger:#ff3f70}
+    *{box-sizing:border-box} html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif}
+    button,input{font:inherit} button{cursor:pointer}
+    .ms-cart{width:min(100%,520px);min-height:100vh;margin:auto;padding:24px 18px 40px;background:#050505}
+    .ms-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}.ms-head h1{font-size:28px;margin:0}.ms-close{width:48px;height:48px;border-radius:50%;border:1px solid var(--gold);background:transparent;color:var(--gold);font-size:26px}
+    .ms-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:22px}.ms-step{border:1px solid var(--line);border-radius:14px;padding:14px 6px;text-align:center;font-weight:800;font-size:13px;color:#fff}.ms-step.active{background:var(--gold);color:#050505;border-color:var(--gold)}
+    .ms-panel{display:none}.ms-panel.active{display:block}
+    .ms-list{display:grid;gap:14px}.ms-item{border:1px solid var(--line);border-radius:22px;padding:15px;display:grid;grid-template-columns:92px 1fr;gap:14px;background:var(--card)}
+    .ms-item img{width:92px;height:118px;object-fit:cover;border-radius:14px;background:#111}.ms-info h3{font-size:17px;margin:1px 0 7px}.ms-info p{margin:3px 0;color:var(--muted);font-size:14px}.ms-price{display:block;color:var(--gold);font-size:25px;margin-top:8px}
+    .ms-actions{grid-column:1/-1;display:flex;align-items:center;justify-content:flex-end;gap:12px;margin-top:4px}.ms-qty{display:flex;align-items:center;gap:10px}.ms-qty button{width:38px;height:38px;border-radius:50%;border:1px solid var(--gold);background:#050505;color:var(--gold);font-size:24px;line-height:1}.ms-qty span{min-width:38px;height:38px;display:grid;place-items:center;border-radius:10px;background:#151515;font-weight:800}.ms-remove{border:0;background:transparent;color:var(--danger);font-weight:800;margin-left:auto}
+    .ms-empty{padding:48px 20px;text-align:center;border:1px dashed var(--line);border-radius:20px;color:var(--muted)}
+    .ms-summary{margin-top:18px;border:1px solid var(--line);border-radius:22px;padding:20px;background:var(--card)}.ms-row{display:flex;justify-content:space-between;gap:16px;margin:10px 0;color:var(--muted)}.ms-row strong{color:#fff}.ms-row.total{border-top:1px solid #333;padding-top:16px;margin-top:16px;font-size:19px}.ms-row.total strong{font-size:30px;color:var(--gold)}
+    .ms-btn{width:100%;border:0;border-radius:16px;padding:17px 16px;font-weight:900;margin-top:12px;background:var(--gold);color:#050505}.ms-btn.secondary{background:transparent;color:var(--danger);border:2px solid var(--danger)}.ms-btn.back{background:#151515;color:#fff;border:1px solid #333}
+    .ms-form{display:grid;gap:12px}.ms-form input{width:100%;border:1px solid #4b3b0b;background:#111;color:#fff;border-radius:14px;padding:15px;outline:0}.ms-form input:focus{border-color:var(--gold)}.ms-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.ms-title{font-size:20px;margin:0 0 14px}
+    .ms-shipping{display:grid;gap:10px;margin-top:14px}.ms-ship{border:1px solid #4b3b0b;border-radius:14px;padding:14px;display:flex;justify-content:space-between;gap:10px;background:#101010}.ms-ship.selected{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}.ms-ship small{color:var(--muted)}
+    .ms-review{display:grid;gap:10px}.ms-review-item{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid #282828}.ms-note{color:var(--muted);line-height:1.5}.ms-loading{display:none;text-align:center;color:var(--muted);padding:12px}.ms-loading.active{display:block}
+    @media(max-width:390px){.ms-cart{padding-left:12px;padding-right:12px}.ms-item{grid-template-columns:78px 1fr}.ms-item img{width:78px;height:102px}.ms-head h1{font-size:24px}.ms-step{font-size:12px}}
+  </style>
 </head>
+<body>
+<main class="ms-cart">
+  <header class="ms-head"><h1 id="pageTitle">Meu carrinho</h1><button class="ms-close" type="button" aria-label="Voltar à loja" onclick="voltarLoja()">×</button></header>
+  <nav class="ms-steps" aria-label="Etapas da compra">
+    <div class="ms-step active" data-step="1">1 Produtos</div><div class="ms-step" data-step="2">2 Frete</div><div class="ms-step" data-step="3">3 Pagamento</div>
+  </nav>
 
-<body class="pagina-carrinho-mobile">
-  <main class="checkout-ms">
+  <section class="ms-panel active" id="step1">
+    <div id="cartList" class="ms-list"></div>
+    <div class="ms-summary"><div class="ms-row total"><span>Total</span><strong id="cartTotal">R$ 0,00</strong></div><button class="ms-btn" id="toShipping">Continuar</button><button class="ms-btn secondary" id="clearCart">Limpar carrinho</button></div>
+  </section>
 
-    <button type="button" class="voltar-checkout" onclick="voltarCheckoutMobile()">‹</button>
-
-    <h2 id="tituloEtapa">Carrinho</h2>
-
-    <div class="etapas">
-      <span class="ativo" data-num="1">Carrinho</span>
-      <span data-num="2">Entrega</span>
-      <span data-num="3">Pagamento</span>
+  <section class="ms-panel" id="step2">
+    <h2 class="ms-title">Dados de entrega</h2>
+    <div class="ms-form">
+      <input id="customerName" placeholder="Nome completo" autocomplete="name">
+      <input id="customerPhone" placeholder="WhatsApp com DDD" inputmode="tel" autocomplete="tel">
+      <input id="customerEmail" placeholder="E-mail (opcional)" type="email" autocomplete="email">
+      <input id="zip" placeholder="CEP" inputmode="numeric" maxlength="9" autocomplete="postal-code">
+      <button class="ms-btn" id="calcShipping">Calcular frete</button>
+      <div id="loadingShipping" class="ms-loading">Calculando opções de entrega...</div>
+      <div id="shippingOptions" class="ms-shipping"></div>
+      <input id="street" placeholder="Rua / Avenida" autocomplete="address-line1">
+      <div class="ms-grid"><input id="number" placeholder="Número"><input id="district" placeholder="Bairro"></div>
+      <input id="complement" placeholder="Complemento (opcional)" autocomplete="address-line2">
+      <div class="ms-grid"><input id="city" placeholder="Cidade" autocomplete="address-level2"><input id="state" placeholder="UF" maxlength="2" autocomplete="address-level1"></div>
     </div>
+    <div class="ms-summary"><div class="ms-row"><span>Subtotal</span><strong id="shippingSubtotal">R$ 0,00</strong></div><div class="ms-row"><span>Frete</span><strong id="shippingValue">R$ 0,00</strong></div><div class="ms-row total"><span>Total</span><strong id="shippingTotal">R$ 0,00</strong></div><button class="ms-btn" id="toPayment">Continuar para pagamento</button><button class="ms-btn back" data-back="1">Voltar aos produtos</button></div>
+  </section>
 
-    <section id="etapaCarrinho" class="etapa-checkout ativa">
-      <div id="listaCarrinhoMobile"></div>
-
-      <div class="resumo-checkout">
-        <p><span>Subtotal</span><strong id="subtotal1">R$ 0,00</strong></p>
-        <p><span>Total</span><strong id="total1">R$ 0,00</strong></p>
-      </div>
-
-     <button 
-type="button"
-class="btn-continuar"
-onclick="irEntrega()">
-
-Continuar
-
-</button>
-
-      <button class="btn-limpar" onclick="limparCarrinhoMobile()">
-        Limpar carrinho
-      </button>
-    </section>
-
-    <section id="etapaEntrega" class="etapa-checkout">
-      <div class="entrega-box">
-        <h3>Entrega</h3>
-
-        <input type="text" id="nomeClienteMobile" placeholder="Seu nome completo">
-        <input 
-  type="tel"
-  id="telefoneClienteMobile"
-  placeholder="WhatsApp com DDD"
-  maxlength="15"
-  required
-  oninput="formatarWhatsapp(this)"
->
-        <input type="email" id="emailClienteMobile" placeholder="E-mail (opcional)">
-
-        <div class="cep-box">
-          <input type="text" id="cepCheckout" placeholder="Digite seu CEP">
-
-          <button class="btn-frete" onclick="calcularFreteCheckout()">
-            Calcular frete
-          </button>
-        </div>
-
-        <div id="opcoesFreteCheckout"></div>
-
-        <input type="text" id="ruaCliente" placeholder="Rua / Avenida">
-
-        <div class="linha-endereco">
-          <input type="text" id="numeroCasa" placeholder="Número">
-          <input type="text" id="bairroCliente" placeholder="Bairro">
-        </div>
-
-        <input type="text" id="complementoCliente" placeholder="Complemento (opcional)">
-        <div class="linha-endereco">
-          <input type="text" id="cidadeCliente" placeholder="Cidade">
-          <input type="text" id="estadoCliente" placeholder="UF" maxlength="2">
-        </div>
-      </div>
-
-      <div class="resumo-checkout">
-        <p><span>Subtotal</span><strong id="subtotalCheckout">R$ 0,00</strong></p>
-        <p><span>Frete</span><strong id="freteResumo">R$ 0,00</strong></p>
-        <p><span>Total</span><strong id="totalCheckout">R$ 0,00</strong></p>
-      </div>
-
-      <button type="button" class="btn-checkout" onclick="irPagamento()">
-        Continuar para pagamento
-      </button>
-    </section>
-
-   <section id="etapaPagamento" class="etapa-checkout">
-  <div class="resumo-checkout">
-    <h3>Resumo do pedido</h3>
-    <div id="resumoPagamentoMobile"></div>
-
-    <p>
-      <span>Total</span>
-      <strong id="totalPagamentoMobile">R$ 0,00</strong>
-    </p>
-  </div>
-
-  <div class="pagamento-box">
-    <h3>Pagamento</h3>
-    <p>Você será redirecionado para o Mercado Pago para finalizar sua compra.</p>
-  </div>
-
-  <form id="formMercadoPago" action="http://localhost:3000/checkout-mp" method="POST">
-  <input type="hidden" name="pedido" id="pedidoMercadoPago">
-
-  <button
-type="button"
-id="btnFinalizarPagamento"
-class="btn-finalizar"
->
-Finalizar compra
-</button>
-</form>
-
-<script>
-function pegarValor(id){
-  return document.getElementById(id)?.value?.trim() || "";
-}
-
-function montarPedidoMobileMS(){
-  const carrinho = JSON.parse(localStorage.getItem("carrinho")) || [];
-  const valorFrete = Number(localStorage.getItem("valorFreteMS")) || 0;
-  const freteSelecionado = JSON.parse(localStorage.getItem("freteSelecionadoMS") || "null");
-
-  return {
-    origem: "mobile",
-    items: carrinho,
-    valorFrete,
-    freteSelecionado,
-    nome: pegarValor("nomeClienteMobile"),
-    telefone: pegarValor("telefoneClienteMobile"),
-    whatsapp: pegarValor("telefoneClienteMobile"),
-    email: pegarValor("emailClienteMobile"),
-    cep: pegarValor("cepCheckout"),
-    rua: pegarValor("ruaCliente"),
-    numero: pegarValor("numeroCasa"),
-    complemento: pegarValor("complementoCliente"),
-    bairro: pegarValor("bairroCliente"),
-    cidade: pegarValor("cidadeCliente"),
-    estado: pegarValor("estadoCliente")
-  };
-}
-
-function enviarMercadoPago(){
-  const pedido = montarPedidoMobileMS();
-
-  if(!pedido.items.length){
-    alert("Carrinho vazio.");
-    return;
-  }
-
-  if(!pedido.nome || pedido.telefone.replace(/\D/g, "").length < 10){
-    alert("Preencha nome e WhatsApp antes de finalizar.");
-    mostrarEtapa("etapaEntrega");
-    return;
-  }
-
-  if(!pedido.cep || !pedido.rua || !pedido.numero || !pedido.bairro || !pedido.cidade || !pedido.estado){
-    alert("Preencha o endereço completo antes de finalizar.");
-    mostrarEtapa("etapaEntrega");
-    return;
-  }
-
-  document.getElementById("pedidoMercadoPago").value = JSON.stringify(pedido);
-  document.getElementById("formMercadoPago").submit();
-}
-
-document.getElementById("btnFinalizarPagamento").addEventListener("click", function(e){
-  e.preventDefault();
-  enviarMercadoPago();
-});
-</script>
-
+  <section class="ms-panel" id="step3">
+    <h2 class="ms-title">Resumo do pedido</h2><div class="ms-summary"><div id="review" class="ms-review"></div><div class="ms-row"><span>Frete</span><strong id="reviewShipping">R$ 0,00</strong></div><div class="ms-row total"><span>Total</span><strong id="reviewTotal">R$ 0,00</strong></div></div>
+    <div class="ms-summary"><h2 class="ms-title">Pagamento seguro</h2><p class="ms-note">Você será direcionado ao Mercado Pago para escolher a forma de pagamento e concluir o pedido.</p><button class="ms-btn" id="payButton">Finalizar compra</button><div id="paymentLoading" class="ms-loading">Abrindo o pagamento...</div><button class="ms-btn back" data-back="2">Voltar à entrega</button></div>
+  </section>
 </main>
-
-<script src="script.js"></script>
-
 <script>
-async function pagarMercadoPago(event){
-  event.preventDefault();
-  event.stopPropagation();
+(() => {
+  'use strict';
+  const API = location.hostname === 'localhost' || location.hostname === '127.0.0.1' ? 'http://localhost:3000' : 'https://ms-matias-style.onrender.com';
+  const $ = id => document.getElementById(id);
+  let cart = readJSON('carrinho', []);
+  let shipping = readJSON('freteSelecionadoMS', null);
+  let shippingValue = moneyNumber(localStorage.getItem('valorFreteMS') || shipping?.preco || 0);
 
-  const carrinho = JSON.parse(localStorage.getItem("carrinho")) || [];
-  const valorFrete = Number(localStorage.getItem("valorFreteMS")) || 0;
+  function readJSON(key, fallback){ try{return JSON.parse(localStorage.getItem(key)) ?? fallback}catch{return fallback} }
+  function moneyNumber(v){ if(typeof v==='number') return Number.isFinite(v)?v:0; let s=String(v??'0').replace(/R\$/gi,'').replace(/\s/g,''); if(s.includes(',')) s=s.replace(/\./g,'').replace(',','.'); else s=s.replace(/[^0-9.-]/g,''); const n=parseFloat(s); return Number.isFinite(n)?n:0 }
+  function brl(v){ return moneyNumber(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}) }
+  function qty(item){ return Math.max(1, Number(item.quantidade)||1) }
+  function subtotal(){ return cart.reduce((sum,item)=>sum+moneyNumber(item.preco)*qty(item),0) }
+  function save(){ localStorage.setItem('carrinho',JSON.stringify(cart)); }
+  function imageOf(item){ return item.imagem || item.img || (Array.isArray(item.fotos)?item.fotos[0]:'') || 'logo.png' }
 
-  if(carrinho.length === 0){
-    alert("Carrinho vazio.");
-    return false;
+  function renderCart(){
+    const list=$('cartList');
+    if(!cart.length){ list.innerHTML='<div class="ms-empty">Seu carrinho está vazio.<br>Adicione um produto para continuar.</div>'; }
+    else list.innerHTML=cart.map((item,i)=>`<article class="ms-item"><img src="${escapeAttr(imageOf(item))}" alt="${escapeAttr(item.nome||'Produto MS')}"><div class="ms-info"><h3>${escapeHtml(item.nome||'Produto MS')}</h3><p>Tamanho: ${escapeHtml(item.tamanho||'-')}</p><p>Preço unit.: ${brl(item.preco)}</p><strong class="ms-price">${brl(moneyNumber(item.preco)*qty(item))}</strong></div><div class="ms-actions"><div class="ms-qty"><button type="button" data-minus="${i}" aria-label="Diminuir">−</button><span>${qty(item)}</span><button type="button" data-plus="${i}" aria-label="Aumentar">+</button></div><button type="button" class="ms-remove" data-remove="${i}">Remover</button></div></article>`).join('');
+    updateTotals();
+  }
+  function updateTotals(){ const sub=subtotal(), total=sub+shippingValue; $('cartTotal').textContent=brl(sub); $('shippingSubtotal').textContent=brl(sub); $('shippingValue').textContent=brl(shippingValue); $('shippingTotal').textContent=brl(total); $('reviewShipping').textContent=brl(shippingValue); $('reviewTotal').textContent=brl(total); }
+  function renderReview(){ $('review').innerHTML=cart.map(item=>`<div class="ms-review-item"><span>${escapeHtml(item.nome||'Produto')} × ${qty(item)}</span><strong>${brl(moneyNumber(item.preco)*qty(item))}</strong></div>`).join(''); updateTotals(); }
+  function showStep(n){ document.querySelectorAll('.ms-panel').forEach((p,i)=>p.classList.toggle('active',i===n-1)); document.querySelectorAll('.ms-step').forEach(s=>s.classList.toggle('active',Number(s.dataset.step)===n)); $('pageTitle').textContent=n===1?'Meu carrinho':n===2?'Entrega':'Pagamento'; if(n===3)renderReview(); window.scrollTo({top:0,behavior:'smooth'}); }
+
+  function validateDelivery(){ const phone=$('customerPhone').value.replace(/\D/g,''); const required=[$('customerName'),$('zip'),$('street'),$('number'),$('district'),$('city'),$('state')]; if(required.some(el=>!el.value.trim())){ alert('Quase lá! Complete os dados de entrega para continuar.'); return false } if(phone.length<10){ alert('Informe um WhatsApp válido com DDD.'); return false } if(!shipping){ alert('Escolha uma opção de entrega para continuar.'); return false } return true }
+
+  async function calculateShipping(){ const zip=$('zip').value.replace(/\D/g,''); if(zip.length!==8){alert('Informe um CEP válido para calcular a entrega.');return} $('loadingShipping').classList.add('active'); $('shippingOptions').innerHTML=''; try{
+      const cepRes=await fetch(`https://viacep.com.br/ws/${zip}/json/`); const address=await cepRes.json(); if(!address.erro){$('street').value=address.logradouro||'';$('district').value=address.bairro||'';$('city').value=address.localidade||'';$('state').value=address.uf||''}
+      const res=await fetch(`${API}/calcular-frete`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cep:zip})}); const data=await res.json(); if(!Array.isArray(data))throw new Error('Resposta de frete inválida');
+      const valid=data.filter(f=>!f.error && f.price).filter(f=>{const c=(f.company?.name||'').toLowerCase(),n=(f.name||'').toLowerCase();return n.includes('pac')||n.includes('sedex')||(c.includes('jadlog')&&n.includes('package')&&!n.includes('centralizado'))});
+      if(!valid.length){$('shippingOptions').innerHTML='<div class="ms-empty">Nenhuma opção de entrega encontrada para este CEP.</div>';return}
+      $('shippingOptions').innerHTML=valid.map((f,i)=>`<button type="button" class="ms-ship" data-ship="${i}"><span><strong>${escapeHtml((f.company?.name||'')+' - '+(f.name||''))}</strong><br><small>Prazo: ${Number(f.delivery_time)||0} dias úteis</small></span><strong>${brl(f.price)}</strong></button>`).join('');
+      document.querySelectorAll('[data-ship]').forEach(btn=>btn.onclick=()=>{document.querySelectorAll('.ms-ship').forEach(x=>x.classList.remove('selected'));btn.classList.add('selected');const f=valid[Number(btn.dataset.ship)];shipping={nome:`${f.company?.name||''} - ${f.name||''}`,preco:moneyNumber(f.price),prazo:Number(f.delivery_time)||0};shippingValue=shipping.preco;localStorage.setItem('freteSelecionadoMS',JSON.stringify(shipping));localStorage.setItem('valorFreteMS',String(shippingValue));updateTotals()});
+    }catch(e){console.error(e);alert('Não foi possível calcular a entrega agora. Tente novamente em instantes.')}finally{$('loadingShipping').classList.remove('active')}
   }
 
-  const resposta = await fetch("http://localhost:3000/criar-pagamento", {
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body:JSON.stringify({
-      items:carrinho,
-      valorFrete:valorFrete
-    })
-  });
+  async function pay(){ if(!validateDelivery())return; $('paymentLoading').classList.add('active'); $('payButton').disabled=true; const payload={items:cart,valorFrete:shippingValue,freteSelecionado:shipping,totalComFrete:subtotal()+shippingValue,cliente:{nome:$('customerName').value.trim(),telefone:$('customerPhone').value.trim(),email:$('customerEmail').value.trim(),cep:$('zip').value.trim(),rua:$('street').value.trim(),numero:$('number').value.trim(),bairro:$('district').value.trim(),complemento:$('complement').value.trim(),cidade:$('city').value.trim(),estado:$('state').value.trim()}}; try{const res=await fetch(`${API}/criar-pagamento`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});const data=await res.json();if(!data.init_point)throw new Error(data.erro||'Link de pagamento não recebido');location.href=data.init_point}catch(e){console.error(e);alert('Não foi possível abrir o pagamento agora. Tente novamente em instantes.')}finally{$('paymentLoading').classList.remove('active');$('payButton').disabled=false}}
 
-  const dados = await resposta.json();
-
-  console.log("MERCADO PAGO:", dados);
-
-  if(dados.init_point){
-    window.location.href = dados.init_point;
-    return false;
-  }
-
-  alert("Não veio link do Mercado Pago.");
-  return false;
-}
-</script>
-
-
-<script>
-/* Correção direta da página carrinho.html: total e limpeza do aviso órfão. */
-(function corrigirCarrinhoMobileMS(){
-  function precoNumeroMS(valor){
-    if (typeof valor === "number" && Number.isFinite(valor)) return valor;
-    let texto = String(valor ?? "0").replace(/R\$/gi, "").replace(/\s/g, "").trim();
-    if (texto.includes(",")) texto = texto.replace(/\./g, "").replace(",", ".");
-    else texto = texto.replace(/[^0-9.-]/g, "");
-    const numero = parseFloat(texto);
-    return Number.isFinite(numero) ? numero : 0;
-  }
-
-  function moedaMS(valor){
-    return Number(valor || 0).toLocaleString("pt-BR", {style:"currency", currency:"BRL"});
-  }
-
-  function atualizarTotalCarrinhoMobileMS(){
-    let itens = [];
-    try { itens = JSON.parse(localStorage.getItem("carrinho") || "[]"); } catch (_) {}
-    const subtotal = itens.reduce(function(total, item){
-      return total + precoNumeroMS(item.preco) * Math.max(1, Number(item.quantidade || 1));
-    }, 0);
-    const frete = precoNumeroMS(localStorage.getItem("valorFreteMS") || 0);
-    const idsSubtotal = ["subtotal1", "subtotalCheckout"];
-    const idsTotal = ["total1", "totalCheckout", "totalPagamentoMobile"];
-    idsSubtotal.forEach(function(id){ const el=document.getElementById(id); if(el) el.textContent=moedaMS(subtotal); });
-    idsTotal.forEach(function(id){ const el=document.getElementById(id); if(el) el.textContent=moedaMS(subtotal + frete); });
-  }
-
-  function limparAvisoOrfaoMS(){
-    document.getElementById("msConfirmacaoCarrinho")?.remove();
-    document.querySelectorAll("body > .ms-confirmacao-fechar").forEach(function(el){ el.remove(); });
-  }
-
-  document.addEventListener("DOMContentLoaded", function(){
-    limparAvisoOrfaoMS();
-    atualizarTotalCarrinhoMobileMS();
-    setTimeout(atualizarTotalCarrinhoMobileMS, 100);
-  });
-  document.addEventListener("click", function(){
-    setTimeout(function(){ limparAvisoOrfaoMS(); atualizarTotalCarrinhoMobileMS(); }, 50);
-  }, true);
-  window.addEventListener("storage", atualizarTotalCarrinhoMobileMS);
-  window.atualizarTotalCarrinhoMobileMS = atualizarTotalCarrinhoMobileMS;
+  function escapeHtml(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))} function escapeAttr(v){return escapeHtml(v)}
+  window.voltarLoja=()=>{ if(history.length>1)history.back(); else location.href='index.html' };
+  $('cartList').addEventListener('click',e=>{const plus=e.target.dataset.plus,minus=e.target.dataset.minus,remove=e.target.dataset.remove;if(plus!==undefined){const i=Number(plus);cart[i].quantidade=qty(cart[i])+1}else if(minus!==undefined){const i=Number(minus);if(qty(cart[i])>1)cart[i].quantidade=qty(cart[i])-1;else cart.splice(i,1)}else if(remove!==undefined){cart.splice(Number(remove),1)}else return;save();renderCart()});
+  $('clearCart').onclick=()=>{if(confirm('Deseja remover todos os produtos do carrinho?')){cart=[];save();renderCart()}};
+  $('toShipping').onclick=()=>{if(!cart.length){alert('Seu carrinho está vazio. Adicione um produto para continuar.');return}showStep(2)};
+  $('toPayment').onclick=()=>{if(validateDelivery())showStep(3)}; $('calcShipping').onclick=calculateShipping; $('payButton').onclick=pay;
+  document.querySelectorAll('[data-back]').forEach(b=>b.onclick=()=>showStep(Number(b.dataset.back)));
+  $('zip').addEventListener('input',e=>{let v=e.target.value.replace(/\D/g,'').slice(0,8);e.target.value=v.length>5?v.slice(0,5)+'-'+v.slice(5):v});
+  $('customerPhone').addEventListener('input',e=>{let v=e.target.value.replace(/\D/g,'').slice(0,11);e.target.value=v.length>10?`(${v.slice(0,2)}) ${v.slice(2,7)}-${v.slice(7)}`:v.length>6?`(${v.slice(0,2)}) ${v.slice(2,6)}-${v.slice(6)}`:v.length>2?`(${v.slice(0,2)}) ${v.slice(2)}`:v});
+  renderCart();
 })();
 </script>
-
 </body>
 </html>
