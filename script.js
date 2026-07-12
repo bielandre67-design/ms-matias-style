@@ -12,131 +12,7 @@ const API_BASE = (location.hostname === "localhost" || location.hostname === "12
   : "https://ms-matias-style.onrender.com";
 
 
-// ===============================
-// POPUP DE AVISOS MS
-// Chamado diretamente pelas mensagens da loja. Não depende do alert do navegador.
-// ===============================
-(function configurarAvisosMS() {
-  function tratarMensagemMS(mensagem) {
-    const original = String(mensagem || "").trim();
-    const texto = original.toLowerCase();
-
-    if (texto.includes("ainda não tem estoque cadastrado") ||
-        texto.includes("sem estoque") ||
-        texto.includes("produto indisponível")) {
-      return {
-        titulo: "Produto indisponível",
-        mensagem: "Esta combinação de cor e tamanho está indisponível no momento. Escolha outra opção para continuar.",
-        icone: "!"
-      };
-    }
-    if (texto.includes("estoque insuficiente") || texto.includes("unidades disponíveis") || texto.includes("unidade(s) disponível")) {
-      return { titulo: "Estoque limitado", mensagem: "A quantidade escolhida é maior do que o estoque disponível.", icone: "!" };
-    }
-    if (texto.includes("escolha um tamanho")) {
-      return { titulo: "Escolha o tamanho", mensagem: "Selecione um tamanho antes de continuar.", icone: "i" };
-    }
-    if (texto.includes("carrinho está vazio") || texto.includes("adicione um produto")) {
-      return { titulo: "Carrinho vazio", mensagem: "Adicione pelo menos um produto ao carrinho para continuar.", icone: "i" };
-    }
-    if (texto.includes("cep")) {
-      return {
-        titulo: "Confira o CEP",
-        mensagem: texto.includes("não encontrado")
-          ? "Não encontramos esse CEP. Confira os números e tente novamente."
-          : "Digite um CEP válido para continuar.",
-        icone: "i"
-      };
-    }
-    if (texto.includes("whatsapp")) {
-      return { titulo: "Confira o WhatsApp", mensagem: "Digite um número válido com DDD para continuar.", icone: "i" };
-    }
-    if (texto.includes("preencha")) {
-      return { titulo: "Faltam algumas informações", mensagem: "Confira os campos obrigatórios antes de continuar.", icone: "i" };
-    }
-    if (texto.includes("frete")) {
-      return { titulo: "Escolha a entrega", mensagem: "Calcule e selecione uma opção de frete antes de continuar.", icone: "i" };
-    }
-    if (texto.includes("mercado pago") || texto.includes("backend") || texto.includes("api_base") ||
-        texto.includes("console") || texto.includes("não encontrado no html") || texto.includes("id do endereço")) {
-      return { titulo: "Não foi possível continuar", mensagem: "Tivemos uma instabilidade rápida. Tente novamente em alguns instantes.", icone: "!" };
-    }
-    return { titulo: "Aviso", mensagem: original || "Confira as informações e tente novamente.", icone: "i" };
-  }
-
-  function adicionarEstiloPopupMS() {
-    if (document.getElementById("avisoMSEstilo")) return;
-    const estilo = document.createElement("style");
-    estilo.id = "avisoMSEstilo";
-    estilo.textContent = `
-      .aviso-ms{position:fixed;inset:0;z-index:2147483647;display:none;align-items:center;justify-content:center;padding:20px;font-family:Arial,sans-serif}
-      .aviso-ms.ativo{display:flex}
-      .aviso-ms-fundo{position:absolute;inset:0;background:rgba(0,0,0,.82);backdrop-filter:blur(4px)}
-      .aviso-ms-caixa{position:relative;width:min(420px,100%);box-sizing:border-box;padding:32px 26px 24px;text-align:center;color:#fff;background:#0b0b0b;border:1px solid #b88a2a;border-radius:18px;box-shadow:0 24px 70px rgba(0,0,0,.65)}
-      .aviso-ms-fechar{position:absolute;top:10px;right:12px;border:0;background:transparent;color:#fff;font-size:28px;line-height:1;cursor:pointer}
-      .aviso-ms-icone{display:grid;place-items:center;width:50px;height:50px;margin:0 auto 14px;border:1px solid #b88a2a;border-radius:50%;color:#d6a737;font-size:24px;font-weight:800}
-      .aviso-ms-caixa h2{margin:0 0 10px;color:#fff;font-size:24px}
-      .aviso-ms-caixa p{margin:0 0 22px;color:#d8d8d8;font-size:15px;line-height:1.55}
-      .aviso-ms-botao{min-width:150px;padding:13px 22px;border:1px solid #b88a2a;border-radius:10px;background:#b88a2a;color:#090909;font-weight:800;cursor:pointer}
-      body.aviso-ms-aberto{overflow:hidden!important}
-    `;
-    (document.head || document.documentElement).appendChild(estilo);
-  }
-
-  function fecharAvisoMS() {
-    const popup = document.getElementById("avisoMS");
-    if (!popup) return;
-    popup.classList.remove("ativo");
-    popup.setAttribute("aria-hidden", "true");
-    document.body?.classList.remove("aviso-ms-aberto");
-  }
-
-  function garantirPopupMS() {
-    if (!document.body) return null;
-    adicionarEstiloPopupMS();
-    let popup = document.getElementById("avisoMS");
-    if (popup) return popup;
-
-    popup = document.createElement("div");
-    popup.id = "avisoMS";
-    popup.className = "aviso-ms";
-    popup.setAttribute("aria-hidden", "true");
-    popup.innerHTML = `
-      <div class="aviso-ms-fundo" data-fechar-aviso></div>
-      <section class="aviso-ms-caixa" role="dialog" aria-modal="true" aria-labelledby="avisoMSTitulo">
-        <button class="aviso-ms-fechar" type="button" aria-label="Fechar" data-fechar-aviso>×</button>
-        <div class="aviso-ms-icone" id="avisoMSIcone">i</div>
-        <h2 id="avisoMSTitulo">Aviso</h2>
-        <p id="avisoMSMensagem"></p>
-        <button class="aviso-ms-botao" type="button" data-fechar-aviso>Entendi</button>
-      </section>`;
-    document.body.appendChild(popup);
-    popup.querySelectorAll("[data-fechar-aviso]").forEach(el => el.addEventListener("click", fecharAvisoMS));
-    return popup;
-  }
-
-  window.mostrarAvisoMS = function mostrarAvisoMS(mensagem) {
-    const abrir = () => {
-      const popup = garantirPopupMS();
-      if (!popup) return;
-      const dados = tratarMensagemMS(mensagem);
-      popup.querySelector("#avisoMSTitulo").textContent = dados.titulo;
-      popup.querySelector("#avisoMSMensagem").textContent = dados.mensagem;
-      popup.querySelector("#avisoMSIcone").textContent = dados.icone;
-      popup.classList.add("ativo");
-      popup.setAttribute("aria-hidden", "false");
-      document.body.classList.add("aviso-ms-aberto");
-      setTimeout(() => popup.querySelector(".aviso-ms-botao")?.focus(), 30);
-    };
-
-    if (document.body) abrir();
-    else document.addEventListener("DOMContentLoaded", abrir, { once: true });
-  };
-
-  document.addEventListener("keydown", evento => {
-    if (evento.key === "Escape") fecharAvisoMS();
-  });
-})();
+// Os avisos usam a caixa padrão do navegador, com textos claros para o cliente.
 
 function salvarCarrinho() {
   localStorage.setItem("carrinho", JSON.stringify(carrinho));
@@ -250,7 +126,7 @@ function adicionarCarrinho(arg1, arg2, arg3, arg4) {
   }
 
   if (!tamanho) {
-    mostrarAvisoMS("Escolha um tamanho antes de adicionar ao carrinho.");
+    alert("Selecione um tamanho para adicionar este produto ao carrinho.");
     return;
   }
 
@@ -301,7 +177,7 @@ function adicionarProdutoDetalhe() {
   if (!detalhe || !produtoDetalheAtual) return;
 
 const tamanho = detalhe.querySelector(".tamanhos-detalhe button.ativo, .detalhe-tamanhos button.ativo")?.innerText.trim();  if (!tamanho) {
-    mostrarAvisoMS("Escolha um tamanho antes de adicionar ao carrinho.");
+    alert("Selecione um tamanho para adicionar este produto ao carrinho.");
     return;
   }
 
@@ -585,7 +461,7 @@ function irEntrega() {
   carregarCarrinho();
 
   if (carrinho.length === 0) {
-    mostrarAvisoMS("Adicione um produto ao carrinho.");
+    alert("Seu carrinho está vazio. Adicione um produto para continuar.");
     return;
   }
 
@@ -643,27 +519,27 @@ function irPagamento() {
   const estado = document.getElementById("estadoCliente")?.value.trim();
 
   if (!nome || nome.length < 3) {
-    mostrarAvisoMS("Preencha seu nome completo.");
+    alert("Informe seu nome completo para continuar com o pedido.");
     return;
   }
 
   if (!cep || cep.replace(/\D/g, "").length < 8) {
-    mostrarAvisoMS("Preencha o CEP corretamente.");
+    alert("Informe um CEP válido para calcular a entrega.");
     return;
   }
 
   if (!valorFrete || valorFrete <= 0) {
-    mostrarAvisoMS("Calcule o frete antes de continuar.");
+    alert("Calcule e escolha uma opção de entrega antes de continuar.");
     return;
   }
 
   if (!whats || whats.replace(/\D/g, "").length < 10) {
-    mostrarAvisoMS("Preencha o WhatsApp com DDD.");
+    alert("Informe um número de WhatsApp válido com DDD.");
     return;
   }
 
   if (!rua || !numero || !bairro || !cidade || !estado) {
-    mostrarAvisoMS("Preencha todos os dados.");
+    alert("Complete os dados de entrega para continuar com o pedido.");
     return;
   }
 
@@ -718,7 +594,7 @@ function irEntregaPC() {
   carregarCarrinho();
 
   if (carrinho.length === 0) {
-    mostrarAvisoMS("Adicione um produto ao carrinho.");
+    alert("Seu carrinho está vazio. Adicione um produto para continuar.");
     return;
   }
 
@@ -731,12 +607,12 @@ function irPagamentoPC() {
   const cep = document.getElementById("cepCliente")?.value.trim();
 
   if (!nome || !telefone || !cep) {
-    mostrarAvisoMS("Preencha todos os dados antes de continuar.");
+    alert("Quase lá! Complete os dados de entrega para continuar.");
     return;
   }
 
   if (valorFrete <= 0) {
-    mostrarAvisoMS("Selecione um frete antes de continuar.");
+    alert("Escolha uma opção de entrega para continuar.");
     return;
   }
 
@@ -832,7 +708,7 @@ async function calcularFrete() {
   const resultadoFrete = document.getElementById("resultadoFrete");
 
   if (!cep || cep.length !== 8) {
-    mostrarAvisoMS("Digite um CEP válido.");
+    alert("Informe um CEP válido para calcular a entrega.");
     return;
   }
 
@@ -895,7 +771,7 @@ async function calcularFreteCheckout() {
   const cep = cepInput.value.replace(/\D/g, "");
 
   if (cep.length !== 8) {
-    mostrarAvisoMS("Digite um CEP válido.");
+    alert("Informe um CEP válido para calcular a entrega.");
     return;
   }
 
@@ -967,7 +843,7 @@ async function calcularFreteCheckout() {
 
   } catch (erro) {
     console.log(erro);
-    mostrarAvisoMS("Erro ao calcular o frete.");
+    alert("Não foi possível calcular a entrega agora. Tente novamente em instantes.");
   }
 }
 
@@ -1012,7 +888,7 @@ async function buscarEndereco() {
     const endereco = await resposta.json();
 
     if (endereco.erro) {
-      mostrarAvisoMS("CEP não encontrado.");
+      alert("Não encontramos esse CEP. Confira os números e tente novamente.");
       return;
     }
 
@@ -1027,7 +903,7 @@ async function buscarEndereco() {
     if (estado) estado.value = endereco.uf || "";
 
   } catch (erro) {
-    mostrarAvisoMS("Erro ao buscar endereço.");
+    alert("Não foi possível localizar o endereço. Confira o CEP e tente novamente.");
   }
 }
 
@@ -1215,7 +1091,7 @@ async function finalizarCompra(event) {
   carregarCarrinho();
 
   if (carrinho.length === 0) {
-    mostrarAvisoMS("Seu carrinho está vazio.");
+    alert("Seu carrinho está vazio. Adicione um produto para continuar.");
     return false;
   }
 
@@ -1242,7 +1118,7 @@ async function finalizarCompra(event) {
     console.log("RESPOSTA MERCADO PAGO:", dados);
 
     if (!dados.init_point) {
-      mostrarAvisoMS("Mercado Pago não gerou link. Veja o console.");
+      alert("Não foi possível abrir o pagamento agora. Tente novamente em instantes.");
       return false;
     }
 
@@ -1252,7 +1128,7 @@ async function finalizarCompra(event) {
   } catch (erro) {
     console.error("ERRO MERCADO PAGO:", erro);
     esconderLoadingCheckout();
-    mostrarAvisoMS("Erro ao iniciar pagamento.");
+    alert("Não foi possível iniciar o pagamento. Tente novamente em instantes.");
     return false;
   }
 }
@@ -1268,7 +1144,7 @@ function finalizarCompraFinal(evento){
     document.getElementById("telefoneCliente");
 
   if(!tel || tel.value.replace(/\D/g, "").length < 11){
-    mostrarAvisoMS("Digite um WhatsApp válido com DDD.");
+    alert("Informe um número de WhatsApp válido com DDD.");
     return;
   }
 
@@ -1622,7 +1498,7 @@ function abrirMenu(){
   const menu = document.querySelector("nav.menu");
 
   if(!menu){
-    mostrarAvisoMS("Menu não encontrado");
+    alert("Não foi possível abrir esta seção. Atualize a página e tente novamente.");
     return;
   }
 
@@ -1644,7 +1520,7 @@ function abrirCarrinhoMobile() {
   } else if (carrinhoMobile) {
     carrinhoMobile.classList.add("ativo");
   } else {
-    mostrarAvisoMS("Carrinho não encontrado");
+    alert("Não foi possível abrir o carrinho. Atualize a página e tente novamente.");
   }
 }
 
@@ -1805,7 +1681,7 @@ function abrirCarrinhoMobile() {
   carrinho = JSON.parse(localStorage.getItem("carrinho")) || [];
 
   if (!lista) {
-    mostrarAvisoMS("Não achei listaCarrinhoMobile no HTML");
+    alert("Não foi possível carregar o carrinho. Atualize a página e tente novamente.");
     return;
   }
 
@@ -2047,7 +1923,7 @@ function abrirCarrinhoMobileMS() {
   const carrinho = document.getElementById("carrinhoMobileMS");
 
   if (!carrinho) {
-    mostrarAvisoMS("Não achei o carrinhoMobileMS");
+    alert("Não foi possível abrir o carrinho. Atualize a página e tente novamente.");
     return;
   }
 
@@ -2061,7 +1937,7 @@ function abrirCarrinhoMobileMS() {
   const modal = document.getElementById("carrinhoMobileMS");
 
   if (!modal) {
-    mostrarAvisoMS("Não achei o carrinhoMobileMS no HTML");
+    alert("Não foi possível abrir o carrinho. Atualize a página e tente novamente.");
     return;
   }
 
@@ -2081,7 +1957,7 @@ function abrirCarrinhoResponsivoMS() {
     const modal = document.getElementById("carrinhoMobileMS");
 
     if (!modal) {
-      mostrarAvisoMS("Não achei o carrinhoMobileMS");
+      alert("Não foi possível abrir o carrinho. Atualize a página e tente novamente.");
       return;
     }
 
@@ -2243,7 +2119,7 @@ async function buscarEnderecoCheckout() {
     const dados = await resposta.json();
 
     if (dados.erro) {
-      mostrarAvisoMS("CEP não encontrado");
+      alert("Não encontramos esse CEP. Confira os números e tente novamente.");
       return;
     }
 
@@ -2276,7 +2152,7 @@ async function buscarEnderecoCheckout() {
     const dados = await resposta.json();
 
     if (dados.erro) {
-      mostrarAvisoMS("CEP não encontrado");
+      alert("Não encontramos esse CEP. Confira os números e tente novamente.");
       return;
     }
 
@@ -2297,7 +2173,7 @@ async function buscarEnderecoCheckout() {
   const estado = document.getElementById("estadoCliente");
 
   if (!cepInput || !rua || !bairro || !cidade || !estado) {
-    mostrarAvisoMS("Algum ID do endereço está errado");
+    alert("Não foi possível carregar os campos de entrega. Atualize a página e tente novamente.");
     return;
   }
 
@@ -2310,7 +2186,7 @@ async function buscarEnderecoCheckout() {
     const dados = await resposta.json();
 
     if (dados.erro) {
-      mostrarAvisoMS("CEP não encontrado");
+      alert("Não encontramos esse CEP. Confira os números e tente novamente.");
       return;
     }
 
@@ -2341,7 +2217,7 @@ async function buscarEnderecoCheckout() {
   });
 
   if (!cepInput || !rua || !bairro || !cidade || !estado) {
-    mostrarAvisoMS("Algum campo não foi encontrado. Confere os IDs no HTML.");
+    alert("Não foi possível carregar os dados de entrega. Atualize a página e tente novamente.");
     return;
   }
 
@@ -2371,7 +2247,7 @@ async function buscarEnderecoCheckout() {
   const dados = await resposta.json();
 
   if (dados.erro) {
-    mostrarAvisoMS("CEP não encontrado");
+    alert("Não encontramos esse CEP. Confira os números e tente novamente.");
     return;
   }
 
@@ -2971,7 +2847,7 @@ function msPegarProdutoDoCard(botao){
     card.querySelector(".tamanhos button.ativo, .tamanho-btn.ativo")?.innerText.trim();
 
   if(!tamanho){
-    mostrarAvisoMS("Escolha um tamanho antes de adicionar ao carrinho.");
+    alert("Selecione um tamanho para adicionar este produto ao carrinho.");
     return null;
   }
 
@@ -3007,7 +2883,7 @@ function msPegarProdutoDoDetalhe(){
   const detalhe = document.getElementById("produtoDetalhe");
 
   if(!detalhe || !produtoDetalheAtual){
-    mostrarAvisoMS("Produto não encontrado.");
+    alert("Este produto não está disponível no momento. Escolha outra opção.");
     return null;
   }
 
@@ -3016,7 +2892,7 @@ function msPegarProdutoDoDetalhe(){
     detalhe.querySelector(".tamanhos-detalhe button.ativo, .detalhe-tamanhos button.ativo")?.innerText.trim();
 
   if(!tamanho){
-    mostrarAvisoMS("Escolha um tamanho antes de comprar.");
+    alert("Selecione um tamanho para continuar com a compra.");
     return null;
   }
 
@@ -3106,7 +2982,7 @@ function abrirCarrinhoMS(){
     return;
   }
 
-  mostrarAvisoMS("Carrinho não encontrado no HTML.");
+  alert("Não foi possível abrir o carrinho. Atualize a página e tente novamente.");
 }
 
 function abrirCarrinhoResponsivoMS(){
@@ -3168,7 +3044,7 @@ function abrirCarrinhoMS(){
     return;
   }
 
-  mostrarAvisoMS("Carrinho não encontrado no HTML.");
+  alert("Não foi possível abrir o carrinho. Atualize a página e tente novamente.");
 }
 
 function comprarAgoraDetalhe(){
@@ -3188,7 +3064,7 @@ function abrirCarrinhoPCMS(){
   }
 
   if(!carrinhoPC){
-    mostrarAvisoMS("Carrinho PC não encontrado.");
+    alert("Não foi possível abrir o carrinho. Atualize a página e tente novamente.");
     return false;
   }
 
@@ -3222,7 +3098,7 @@ function abrirCarrinhoPCMS(){
   const fundo = document.getElementById("fundoCarrinho");
 
   if(!carrinho){
-    mostrarAvisoMS("Carrinho PC não encontrado.");
+    alert("Não foi possível abrir o carrinho. Atualize a página e tente novamente.");
     return false;
   }
 
@@ -3250,7 +3126,7 @@ window.comprarAgoraDetalhe = function(){
   )?.innerText.trim();
 
   if(!tamanho){
-    mostrarAvisoMS("Escolha um tamanho antes de comprar.");
+    alert("Selecione um tamanho para continuar com a compra.");
     return false;
   }
 
@@ -3308,7 +3184,7 @@ document.addEventListener("click", function(e){
   )?.innerText.trim();
 
   if(!tamanho){
-    mostrarAvisoMS("Escolha um tamanho antes de comprar.");
+    alert("Selecione um tamanho para continuar com a compra.");
     return;
   }
 
@@ -3529,7 +3405,7 @@ window.abrirCarrinhoResponsivoMS = function(){
     const tamanho = detalhe?.querySelector(".tamanhos-detalhe button.ativo, .detalhe-tamanhos button.ativo, .tamanho-btn.ativo")?.innerText.trim();
 
     if(!tamanho){
-      mostrarAvisoMS("Escolha um tamanho antes de comprar.");
+      alert("Selecione um tamanho para continuar com a compra.");
       return null;
     }
 
@@ -3676,7 +3552,7 @@ function adicionarProdutoDetalhe() {
   const detalhe = document.getElementById("produtoDetalhe");
 
   if (!produtoDetalheAtual) {
-    mostrarAvisoMS("Produto não encontrado.");
+    alert("Este produto não está disponível no momento. Escolha outra opção.");
     return;
   }
 
@@ -4147,13 +4023,13 @@ function trocarCorDetalhe(card, cor, botao) {
   function salvarItemDetalheMSCarrinho(){
     const item = produtoEscolhidoMS();
     if(!item){
-      mostrarAvisoMS('Produto não encontrado.');
+      alert('Este produto não está disponível no momento. Escolha outra opção.');
       return false;
     }
 
     if(!item.tamanho){
       if(typeof alertaMS === 'function') alertaMS('Escolha um tamanho antes de continuar.');
-      else mostrarAvisoMS('Escolha um tamanho antes de adicionar ao carrinho.');
+      else alert('Selecione um tamanho para adicionar este produto ao carrinho.');
       return false;
     }
 
@@ -4479,7 +4355,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if(!lista.length && typeof carrinho !== "undefined" && Array.isArray(carrinho)) lista = carrinho;
 
       if(!lista || !lista.length){
-        mostrarAvisoMS("Seu carrinho está vazio.");
+        alert("Seu carrinho está vazio. Adicione um produto para continuar.");
         return false;
       }
 
@@ -4488,7 +4364,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       var apiBase = msApiBaseFinal();
       if(!apiBase){
-        mostrarAvisoMS("API_BASE não encontrado. Confira o endereço do backend.");
+        alert("A loja está passando por uma instabilidade. Tente novamente em instantes.");
         return false;
       }
 
@@ -4515,14 +4391,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if(!resposta.ok){
         if(typeof esconderLoadingCheckout === "function") esconderLoadingCheckout();
-        mostrarAvisoMS("Erro no backend do pagamento: " + resposta.status + ". Veja o Console.");
+        alert("Não foi possível processar o pagamento agora. Tente novamente em instantes.");
         return false;
       }
 
       var link = dados.init_point || dados.sandbox_init_point || dados.url || dados.link;
       if(!link){
         if(typeof esconderLoadingCheckout === "function") esconderLoadingCheckout();
-        mostrarAvisoMS("Mercado Pago não gerou link. Veja o Console.");
+        alert("Não foi possível abrir o pagamento agora. Tente novamente em instantes.");
         return false;
       }
 
@@ -4532,7 +4408,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }catch(erro){
       console.error("ERRO FINAL MERCADO PAGO MS:", erro);
       if(typeof esconderLoadingCheckout === "function") esconderLoadingCheckout();
-      mostrarAvisoMS("Não consegui iniciar o Mercado Pago. Veja o Console.");
+      alert("Não foi possível iniciar o pagamento. Tente novamente em instantes.");
       return false;
     }
   }
@@ -4595,7 +4471,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const tamanho = msTamanhoDetalheCorrigido();
 
     if(!tamanho){
-      mostrarAvisoMS('Escolha um tamanho antes de adicionar ao carrinho.');
+      alert('Selecione um tamanho para adicionar este produto ao carrinho.');
       return null;
     }
 
@@ -5001,7 +4877,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const tamanho = tamanhoDetalheMS();
     if(!tamanho){
-      mostrarAvisoMS("Escolha um tamanho antes de adicionar ao carrinho.");
+      alert("Selecione um tamanho para adicionar este produto ao carrinho.");
       return false;
     }
 
@@ -5266,7 +5142,7 @@ function dinheiro(valor){
 
     const tamanho = tamanhoFinalMS();
     if(!tamanho){
-      mostrarAvisoMS('Escolha um tamanho antes de adicionar ao carrinho.');
+      alert('Selecione um tamanho para adicionar este produto ao carrinho.');
       return false;
     }
 
@@ -5437,7 +5313,7 @@ function dinheiro(valor){
     const info = await buscarDisponivelMS(pronto);
 
     if(!info.cadastrado){
-      mostrarAvisoMS(`${pronto.nome} / ${pronto.cor} / ${pronto.tamanho} ainda não tem estoque cadastrado no painel admin.`);
+      alert("Esta combinação de cor e tamanho está indisponível no momento. Escolha outra opção.");
       return false;
     }
 
@@ -5447,9 +5323,9 @@ function dinheiro(valor){
     if(pedidoTotal > Number(info.disponivel || 0)){
       const restante = Math.max(0, Number(info.disponivel || 0) - jaNoCarrinho);
       if(restante <= 0){
-        mostrarAvisoMS(`Estoque insuficiente. Você já adicionou todas as unidades disponíveis de ${pronto.nome} ${pronto.cor} ${pronto.tamanho}.`);
+        alert("Você já adicionou ao carrinho todas as unidades disponíveis desta opção.");
       }else{
-        mostrarAvisoMS(`Temos apenas ${restante} unidade(s) disponível(is) de ${pronto.nome} ${pronto.cor} ${pronto.tamanho}.`);
+        alert(`Temos apenas ${restante} unidade(s) disponível(is) desta opção.`);
       }
       return false;
     }
@@ -5494,7 +5370,7 @@ function dinheiro(valor){
     const botao = typeof arg1 === "string" ? arg4 : arg1;
 
     if(!item.tamanho || item.tamanho === "ÚNICO" && botao?.closest?.(".card-produto")?.querySelector(".tamanhos")){
-      mostrarAvisoMS("Escolha um tamanho antes de adicionar ao carrinho.");
+      alert("Selecione um tamanho para adicionar este produto ao carrinho.");
       return false;
     }
 
@@ -5526,7 +5402,7 @@ function dinheiro(valor){
     const ativo = detalhe.querySelector(".tamanhos-detalhe button.ativo, .detalhe-tamanhos button.ativo, .tamanho-btn.ativo");
     const tamanho = textoLimpoMS(detalhe.dataset.tamanho || ativo?.innerText);
     if(!tamanho){
-      mostrarAvisoMS("Escolha um tamanho antes de adicionar ao carrinho.");
+      alert("Selecione um tamanho para adicionar este produto ao carrinho.");
       return false;
     }
 
@@ -5577,7 +5453,7 @@ function dinheiro(valor){
     let lista = [];
     try{ lista = JSON.parse(localStorage.getItem("carrinho")) || []; }catch(e){ lista = []; }
     if(!lista.length){
-      mostrarAvisoMS("Seu carrinho está vazio.");
+      alert("Seu carrinho está vazio. Adicione um produto para continuar.");
       return false;
     }
 
@@ -5589,11 +5465,11 @@ function dinheiro(valor){
       });
       const dados = await resp.json().catch(() => ({}));
       if(!resp.ok){
-        mostrarAvisoMS(dados.mensagem || "Estoque insuficiente para finalizar a compra.");
+        alert(dados.mensagem || "Estoque insuficiente para finalizar a compra.");
         return false;
       }
     }catch(erro){
-      mostrarAvisoMS("Não consegui validar o estoque agora. Confira se o servidor está ligado.");
+      alert("Não consegui validar o estoque agora. Confira se o servidor está ligado.");
       console.error(erro);
       return false;
     }
