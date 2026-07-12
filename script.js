@@ -5726,220 +5726,84 @@ document.addEventListener("DOMContentLoaded", () => {
   }, true);
 })();
 
+
 /* =========================================================
-   VITRINE COM ESTOQUE VISÍVEL - MS MATIAS STYLE
-   Mostra ESGOTADO, desativa tamanhos sem estoque e impede
-   compra/abertura de produtos totalmente indisponíveis.
+   CORREÇÃO FINAL MS - NAVEGAÇÃO PRESA PELO CARRINHO
+   Fecha todos os carrinhos/overlays antes de navegar e restaura
+   a rolagem da página no computador e no celular.
    ========================================================= */
-(function(){
-  const API_VITRINE_MS = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
-    ? 'http://localhost:3000'
-    : 'https://ms-matias-style.onrender.com';
+(function corrigirNavegacaoCarrinhoMS(){
+  function fecharTudoDoCarrinhoMS(){
+    const seletores = [
+      '#carrinho',
+      '#carrinhoMobile',
+      '#carrinhoMobileMS',
+      '#checkoutMobile',
+      '.checkout-mobile',
+      '.carrinho-mobile',
+      '.carrinho-lateral',
+      '.modal-carrinho'
+    ];
 
-  let estoqueVitrineMS = new Map();
-  let carregandoEstoqueMS = null;
+    document.querySelectorAll(seletores.join(',')).forEach(function(elemento){
+      elemento.classList.remove('ativo', 'aberto', 'open', 'mostrar');
 
-  function normalizarMS(v){
-    return String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
-  }
-
-  function corDoProdutoMS(card){
-    const texto = normalizarMS(card?.dataset?.cor || card?.dataset?.nome || card?.querySelector('h3')?.innerText || '');
-    if(texto.includes('off white') || texto.includes('offwhite')) return 'Off White';
-    if(texto.includes('preto') || texto.includes('preta')) return 'Preto';
-    if(texto.includes('branco') || texto.includes('branca')) return 'Branco';
-    if(texto.includes('bege')) return 'Bege';
-    if(texto.includes('azul')) return 'Azul';
-    if(texto.includes('rosa')) return 'Rosa';
-    if(texto.includes('cinza')) return 'Cinza';
-    if(texto.includes('vinho') || texto.includes('bordo')) return 'Vinho';
-    if(texto.includes('marrom')) return 'Marrom';
-    if(texto.includes('vermelho') || texto.includes('vermelha')) return 'Vermelho';
-    return 'Única';
-  }
-
-  function skuVitrineMS(nome, cor, tamanho){
-    const n = normalizarMS(nome);
-    const c = normalizarMS(cor).replace(/\s+/g, '');
-    const t = String(tamanho || 'UN').toUpperCase().trim();
-    let tipo = 'PROD';
-    if(n.includes('moletom')) tipo = 'MOL';
-    else if(n.includes('jaqueta') || n.includes('corta vento')) tipo = 'JAQ';
-    else if(n.includes('conjunto')) tipo = 'CON';
-    else if(n.includes('camiseta') && n.includes('oversized')) tipo = 'OVR';
-    else if(n.includes('camiseta')) tipo = 'CBA';
-    else if(n.includes('calca')) tipo = 'CAL';
-    else if(n.includes('touca')) tipo = 'TOU';
-    else if(n.includes('meia')) tipo = 'MEI';
-
-    const mapa = {
-      preto:'PT', preta:'PT', branco:'BR', branca:'BR', bege:'BG', azul:'AZ',
-      rosa:'RS', cinza:'CZ', vinho:'VN', bordo:'VN', marrom:'MR',
-      vermelho:'VM', vermelha:'VM', offwhite:'OW', unica:'UN', unico:'UN'
-    };
-    const codCor = mapa[c] || (c.slice(0,3).toUpperCase() || 'UN');
-    return `MS-${tipo}-${codCor}-${t || 'UN'}`.replace(/[^A-Z0-9-]/g, '');
-  }
-
-  function avisarIndisponivelMS(texto){
-    const mensagem = texto || 'Produto indisponível no momento.';
-    if(typeof window.avisoCarrinhoPremium === 'function') window.avisoCarrinhoPremium(mensagem);
-    else alert(mensagem);
-  }
-
-  function injetarEstiloEstoqueMS(){
-    if(document.getElementById('estiloEstoqueVitrineMS')) return;
-    const estilo = document.createElement('style');
-    estilo.id = 'estiloEstoqueVitrineMS';
-    estilo.textContent = `
-      .card-produto{position:relative}
-      .selo-esgotado-ms{position:absolute;z-index:12;top:12px;left:12px;padding:8px 12px;border-radius:999px;background:#111;color:#fff;font-size:12px;font-weight:800;letter-spacing:.08em;box-shadow:0 5px 18px rgba(0,0,0,.28)}
-      .card-produto.esgotado-ms .produto-img img{filter:grayscale(1);opacity:.55}
-      .card-produto.esgotado-ms .produto-img{cursor:not-allowed}
-      .card-produto.esgotado-ms .btn-comprar,.btn-comprar.indisponivel-ms{opacity:.48;cursor:not-allowed;pointer-events:auto}
-      .tamanhos button.tamanho-esgotado-ms,.tamanhos-detalhe button.tamanho-esgotado-ms,.detalhe-tamanhos button.tamanho-esgotado-ms{opacity:.35;text-decoration:line-through;cursor:not-allowed;pointer-events:auto}
-      .estoque-tamanho-ms{display:block;margin-top:7px;font-size:11px;opacity:.72}
-    `;
-    document.head.appendChild(estilo);
-  }
-
-  function tamanhosDoCardMS(card){
-    const botoes = [...card.querySelectorAll('.tamanhos button')];
-    if(botoes.length) return botoes.map(b => String(b.dataset.tamanho || b.innerText || '').trim()).filter(Boolean);
-    const dados = String(card.dataset.tamanhos || '').split(',').map(v => v.trim()).filter(Boolean);
-    return dados.length ? dados : ['ÚNICO'];
-  }
-
-  function quantidadeDisponivelMS(card, tamanho){
-    const nome = card.dataset.nome || card.querySelector('h3')?.innerText || '';
-    const cor = corDoProdutoMS(card);
-    const sku = skuVitrineMS(nome, cor, tamanho);
-    return Number(estoqueVitrineMS.get(sku) || 0);
-  }
-
-  function aplicarEstadoCardMS(card){
-    if(!card || card.classList.contains('produto-em-breve')) return;
-    const nome = card.dataset.nome || card.querySelector('h3')?.innerText || 'Produto';
-    const tamanhos = tamanhosDoCardMS(card);
-    let totalDisponivel = 0;
-
-    card.querySelectorAll('.tamanhos button').forEach(botao => {
-      const tamanho = String(botao.dataset.tamanho || botao.innerText || '').trim();
-      const disponivel = quantidadeDisponivelMS(card, tamanho);
-      totalDisponivel += disponivel;
-      const semEstoque = disponivel <= 0;
-      botao.classList.toggle('tamanho-esgotado-ms', semEstoque);
-      botao.disabled = semEstoque;
-      botao.setAttribute('aria-disabled', semEstoque ? 'true' : 'false');
-      botao.title = semEstoque ? `${tamanho} esgotado` : `${disponivel} unidade(s) disponível(is)`;
-      if(semEstoque) botao.classList.remove('ativo');
+      // Remove estilos colocados por versões antigas do carrinho.
+      elemento.style.removeProperty('display');
+      elemento.style.removeProperty('right');
+      elemento.style.removeProperty('z-index');
+      elemento.style.removeProperty('transform');
+      elemento.style.removeProperty('pointer-events');
     });
 
-    // Cards sem botões de tamanho (touca/meia, por exemplo).
-    if(!card.querySelector('.tamanhos button')){
-      totalDisponivel = Math.max(...tamanhos.map(t => quantidadeDisponivelMS(card, t)), 0);
-    }
+    document.querySelectorAll('#fundoCarrinho, .fundo-carrinho, .overlay-carrinho, .carrinho-overlay').forEach(function(fundo){
+      fundo.classList.remove('ativo', 'aberto', 'open', 'mostrar');
+      fundo.style.removeProperty('display');
+      fundo.style.removeProperty('z-index');
+      fundo.style.removeProperty('pointer-events');
+    });
 
-    const esgotado = totalDisponivel <= 0;
-    card.classList.toggle('esgotado-ms', esgotado);
-    card.dataset.esgotado = esgotado ? 'true' : 'false';
+    document.documentElement.style.removeProperty('overflow');
+    document.documentElement.style.removeProperty('position');
+    document.body.style.removeProperty('overflow');
+    document.body.style.removeProperty('position');
+    document.body.style.removeProperty('width');
+    document.body.classList.remove('sem-scroll', 'no-scroll', 'modal-aberto', 'carrinho-aberto');
 
-    let selo = card.querySelector('.selo-esgotado-ms');
-    if(esgotado && !selo){
-      selo = document.createElement('span');
-      selo.className = 'selo-esgotado-ms';
-      selo.textContent = 'ESGOTADO';
-      card.prepend(selo);
-    }else if(!esgotado && selo){
-      selo.remove();
-    }
-
-    const comprar = card.querySelector('.btn-comprar');
-    if(comprar){
-      comprar.classList.toggle('indisponivel-ms', esgotado);
-      comprar.disabled = esgotado;
-      comprar.setAttribute('aria-disabled', esgotado ? 'true' : 'false');
-      const texto = comprar.querySelector('span:first-child');
-      if(texto){
-        if(!comprar.dataset.textoOriginal) comprar.dataset.textoOriginal = texto.textContent.trim();
-        texto.textContent = esgotado ? 'Produto esgotado' : comprar.dataset.textoOriginal;
-      }
-      comprar.title = esgotado ? `${nome} indisponível no momento` : '';
-    }
+    // Fecha também menu e detalhe para evitar camadas invisíveis.
+    document.querySelector('nav.menu')?.classList.remove('ativo');
+    document.getElementById('produtoDetalhe')?.classList.remove('ativo');
   }
 
-  function atualizarCardsEstoqueMS(){
-    document.querySelectorAll('.card-produto').forEach(aplicarEstadoCardMS);
-  }
+  // Mantém compatibilidade com todos os nomes usados no arquivo antigo.
+  window.fecharTudoDoCarrinhoMS = fecharTudoDoCarrinhoMS;
+  window.fecharCarrinhoMS = fecharTudoDoCarrinhoMS;
+  window.fecharCarrinhoMobile = fecharTudoDoCarrinhoMS;
+  window.fecharCarrinhoMobileNovo = fecharTudoDoCarrinhoMS;
 
-  async function carregarEstoqueVitrineMS(forcar = false){
-    if(carregandoEstoqueMS && !forcar) return carregandoEstoqueMS;
-    carregandoEstoqueMS = fetch(`${API_VITRINE_MS}/estoque?t=${Date.now()}`, {cache:'no-store'})
-      .then(res => {
-        if(!res.ok) throw new Error(`Estoque respondeu ${res.status}`);
-        return res.json();
-      })
-      .then(lista => {
-        estoqueVitrineMS = new Map();
-        (Array.isArray(lista) ? lista : []).forEach(item => {
-          const sku = String(item.sku || '').toUpperCase().trim();
-          if(sku) estoqueVitrineMS.set(sku, Math.max(0, Number(item.disponivel ?? item.quantidade ?? 0)));
-        });
-        atualizarCardsEstoqueMS();
-        return estoqueVitrineMS;
-      })
-      .catch(erro => {
-        console.warn('Não foi possível mostrar o estoque nos cards:', erro.message);
-        return estoqueVitrineMS;
-      })
-      .finally(() => { carregandoEstoqueMS = null; });
-    return carregandoEstoqueMS;
-  }
-
-  // Impede clique em tamanho sem estoque e atualiza o botão conforme a seleção.
   document.addEventListener('click', function(evento){
-    const tamanho = evento.target.closest('.tamanho-esgotado-ms');
-    if(tamanho){
-      evento.preventDefault();
-      evento.stopImmediatePropagation();
-      avisarIndisponivelMS(`O tamanho ${tamanho.innerText.trim()} está esgotado no momento.`);
-      return false;
-    }
+    const link = evento.target.closest('header a, nav.menu a, .menu-mobile a, a[href^="#"], a[href="index.html"], a[href^="index.html#"]');
+    if(!link) return;
 
-    const botaoComprar = evento.target.closest('.btn-comprar.indisponivel-ms');
-    if(botaoComprar){
-      evento.preventDefault();
-      evento.stopImmediatePropagation();
-      avisarIndisponivelMS('Produto indisponível no momento.');
-      return false;
+    fecharTudoDoCarrinhoMS();
+
+    const href = link.getAttribute('href') || '';
+    if(href.startsWith('#') && href.length > 1){
+      const destino = document.querySelector(href);
+      if(destino){
+        evento.preventDefault();
+        setTimeout(function(){
+          destino.scrollIntoView({behavior: 'smooth', block: 'start'});
+          history.replaceState(null, '', href);
+        }, 20);
+      }
     }
   }, true);
 
-  function protegerAberturaDetalheMS(){
-    const original = window.abrirProdutoDetalheCard;
-    if(typeof original !== 'function' || original.__protegidaEstoqueMS) return;
-    const protegida = function(card){
-      if(card?.dataset?.esgotado === 'true'){
-        avisarIndisponivelMS('Este produto está esgotado no momento.');
-        return false;
-      }
-      return original.apply(this, arguments);
-    };
-    protegida.__protegidaEstoqueMS = true;
-    window.abrirProdutoDetalheCard = protegida;
-  }
-
-  document.addEventListener('DOMContentLoaded', async function(){
-    injetarEstiloEstoqueMS();
-    protegerAberturaDetalheMS();
-    await carregarEstoqueVitrineMS();
+  document.addEventListener('keydown', function(evento){
+    if(evento.key === 'Escape') fecharTudoDoCarrinhoMS();
   });
 
-  document.addEventListener('catalogoMSCarregado', async function(){
-    protegerAberturaDetalheMS();
-    await carregarEstoqueVitrineMS(true);
-  });
-
-  // Permite atualizar a vitrine após salvar estoque no painel ou em testes.
-  window.atualizarEstoqueVitrineMS = () => carregarEstoqueVitrineMS(true);
+  window.addEventListener('pageshow', fecharTudoDoCarrinhoMS);
+  window.addEventListener('popstate', fecharTudoDoCarrinhoMS);
 })();

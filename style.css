@@ -14487,3 +14487,19 @@ body{
     pointer-events:auto !important;
   }
 }
+
+
+/* ===== AJUSTE MS: remover pesquisa e liberar navegação do carrinho ===== */
+.btn-lupa-site,
+#buscaMS,
+.busca-ms,
+.modal-busca-ms,
+.overlay-busca-ms {
+  display: none !important;
+}
+
+body.ms-carrinho-fechado {
+  overflow: auto !important;
+  position: static !important;
+  width: auto !important;
+}
