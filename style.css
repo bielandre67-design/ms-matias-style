@@ -14503,3 +14503,25 @@ body.ms-carrinho-fechado {
   position: static !important;
   width: auto !important;
 }
+
+/* ===== IDENTIDADE MS: LOGO E CABEÇALHO ===== */
+.header .logo{
+  flex-shrink:0;
+  text-decoration:none;
+}
+.header .logo img{
+  display:block;
+  object-fit:cover;
+  background:#050505;
+  border:1px solid rgba(212,175,55,.55);
+  box-shadow:0 0 0 3px rgba(212,175,55,.06), 0 8px 22px rgba(0,0,0,.35);
+}
+.header .logo span{
+  white-space:nowrap;
+  letter-spacing:.4px;
+}
+@media (max-width:768px){
+  .header .logo{gap:8px;}
+  .header .logo img{width:40px!important;height:40px!important;}
+  .header .logo span{font-size:15px!important;}
+}
