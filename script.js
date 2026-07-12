@@ -6061,3 +6061,148 @@ document.addEventListener("DOMContentLoaded", () => {
   // Assim, toda inclusão continua passando pela validação real de estoque.
 
 })();
+
+// =====================================================
+// CORREÇÃO DEFINITIVA: CEP E FRETE DO CARRINHO INTERNO MOBILE
+// =====================================================
+(function corrigirFreteCarrinhoMobileMS() {
+  const obterCampo = (...ids) => {
+    for (const id of ids) {
+      const elemento = document.getElementById(id);
+      if (elemento) return elemento;
+    }
+    return null;
+  };
+
+  window.buscarEnderecoCheckout = async function buscarEnderecoCheckoutMS() {
+    const cepInput = obterCampo("cepCheckout", "cepCliente");
+    if (!cepInput) return;
+
+    const cep = String(cepInput.value || "").replace(/\D/g, "");
+    if (cep.length !== 8) return;
+
+    try {
+      const resposta = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+      if (!resposta.ok) throw new Error(`ViaCEP respondeu ${resposta.status}`);
+
+      const dados = await resposta.json();
+      if (dados.erro) {
+        alert("Não encontramos esse CEP. Confira os números e tente novamente.");
+        return;
+      }
+
+      const rua = obterCampo("ruaClienteMobile", "ruaCliente");
+      const bairro = obterCampo("bairroClienteMobile", "bairroCliente");
+      const cidade = obterCampo("cidadeClienteMobile", "cidadeCliente");
+      const estado = obterCampo("estadoClienteMobile", "estadoCliente");
+
+      if (rua) rua.value = dados.logradouro || "";
+      if (bairro) bairro.value = dados.bairro || "";
+      if (cidade) cidade.value = dados.localidade || "";
+      if (estado) estado.value = dados.uf || "";
+    } catch (erro) {
+      console.error("Erro ao consultar CEP:", erro);
+      alert("Não foi possível localizar o endereço agora. Tente novamente em instantes.");
+    }
+  };
+
+  window.calcularFreteCheckout = async function calcularFreteCheckoutMS() {
+    const cepInput = obterCampo("cepCheckout", "cepCliente");
+    const container = document.getElementById("opcoesFreteCheckout");
+
+    if (!cepInput || !container) {
+      alert("Não foi possível carregar o cálculo de entrega. Atualize a página e tente novamente.");
+      return;
+    }
+
+    const cep = String(cepInput.value || "").replace(/\D/g, "");
+    if (cep.length !== 8) {
+      alert("Informe um CEP válido com 8 números para calcular a entrega.");
+      return;
+    }
+
+    container.innerHTML = '<p class="frete-carregando-ms">Calculando opções de entrega...</p>';
+
+    try {
+      await window.buscarEnderecoCheckout();
+
+      const resposta = await fetch(`${API_BASE}/calcular-frete`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cep })
+      });
+
+      let dados;
+      try {
+        dados = await resposta.json();
+      } catch (_) {
+        throw new Error("O servidor devolveu uma resposta inválida.");
+      }
+
+      if (!resposta.ok) {
+        throw new Error(dados?.erro || dados?.message || "Falha ao calcular o frete.");
+      }
+
+      const lista = Array.isArray(dados)
+        ? dados
+        : Array.isArray(dados?.fretes)
+          ? dados.fretes
+          : Array.isArray(dados?.data)
+            ? dados.data
+            : [];
+
+      const opcoes = lista.filter((frete) => {
+        if (!frete || frete.error) return false;
+        const empresa = String(frete.company?.name || frete.empresa || "").toLowerCase();
+        const servico = String(frete.name || frete.nome || "").toLowerCase();
+        return servico.includes("pac") || servico.includes("sedex") ||
+          (empresa.includes("jadlog") && servico.includes("package") && !servico.includes("centralizado"));
+      });
+
+      if (!opcoes.length) {
+        container.innerHTML = '<p class="frete-vazio-ms">Nenhuma opção de entrega foi encontrada para esse CEP.</p>';
+        return;
+      }
+
+      container.innerHTML = "";
+      opcoes.forEach((frete) => {
+        const empresa = frete.company?.name || frete.empresa || "Transportadora";
+        const servico = frete.name || frete.nome || "Entrega";
+        const preco = Number(String(frete.price ?? frete.preco ?? 0).replace(",", "."));
+        const prazo = Number(frete.delivery_time ?? frete.prazo ?? 0);
+        if (!Number.isFinite(preco) || preco <= 0) return;
+
+        const opcao = document.createElement("button");
+        opcao.type = "button";
+        opcao.className = "frete-opcao";
+        opcao.innerHTML = `
+          <span><strong>${empresa} - ${servico}</strong><br><small>Prazo: ${prazo || "-"} dias úteis</small></span>
+          <strong>${preco.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</strong>
+        `;
+
+        opcao.addEventListener("click", () => {
+          container.querySelectorAll(".frete-opcao").forEach((item) => item.classList.remove("selecionado"));
+          opcao.classList.add("selecionado");
+
+          freteSelecionado = { nome: `${empresa} - ${servico}`, preco, prazo };
+          valorFrete = preco;
+          window.valorFrete = preco;
+          localStorage.setItem("valorFreteMS", String(preco));
+          localStorage.setItem("freteSelecionadoMS", JSON.stringify(freteSelecionado));
+
+          if (typeof atualizarTotais === "function") atualizarTotais();
+          if (typeof atualizarResumoPagamentoMS === "function") atualizarResumoPagamentoMS();
+        });
+
+        container.appendChild(opcao);
+      });
+
+      if (!container.children.length) {
+        container.innerHTML = '<p class="frete-vazio-ms">Nenhuma opção de entrega válida foi encontrada.</p>';
+      }
+    } catch (erro) {
+      console.error("Erro ao calcular frete mobile:", erro);
+      container.innerHTML = '<p class="frete-erro-ms">Não foi possível calcular a entrega. Tente novamente em instantes.</p>';
+    }
+  };
+})();
