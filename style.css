@@ -14628,8 +14628,5 @@ body.aviso-ms-aberto{overflow:hidden!important;}
 }
 
 
-/* Carrinho mobile: nunca exibir o toast/X de confirmação nesta página */
-.pagina-carrinho-mobile-ms #msConfirmacaoCarrinho,
-.pagina-carrinho-mobile-ms .ms-confirmacao-fechar {
-  display: none !important;
-}
+/* Carrinho mobile: nunca mostrar a confirmação de adicionar produto nesta página */
+.pagina-carrinho-mobile #msConfirmacaoCarrinho{display:none!important;}

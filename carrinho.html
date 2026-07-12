@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="style.css">
 </head>
 
-<body class="pagina-carrinho-mobile-ms">
+<body class="pagina-carrinho-mobile">
   <main class="checkout-ms">
 
     <button type="button" class="voltar-checkout" onclick="voltarCheckoutMobile()">‹</button>
@@ -219,13 +219,53 @@ async function pagarMercadoPago(event){
 }
 </script>
 
+
 <script>
-document.addEventListener("DOMContentLoaded", function(){
-  document.getElementById("msConfirmacaoCarrinho")?.remove();
-  if (typeof window.atualizarTotalCarrinhoMobileMS === "function") {
-    window.atualizarTotalCarrinhoMobileMS();
+/* Correção direta da página carrinho.html: total e limpeza do aviso órfão. */
+(function corrigirCarrinhoMobileMS(){
+  function precoNumeroMS(valor){
+    if (typeof valor === "number" && Number.isFinite(valor)) return valor;
+    let texto = String(valor ?? "0").replace(/R\$/gi, "").replace(/\s/g, "").trim();
+    if (texto.includes(",")) texto = texto.replace(/\./g, "").replace(",", ".");
+    else texto = texto.replace(/[^0-9.-]/g, "");
+    const numero = parseFloat(texto);
+    return Number.isFinite(numero) ? numero : 0;
   }
-});
+
+  function moedaMS(valor){
+    return Number(valor || 0).toLocaleString("pt-BR", {style:"currency", currency:"BRL"});
+  }
+
+  function atualizarTotalCarrinhoMobileMS(){
+    let itens = [];
+    try { itens = JSON.parse(localStorage.getItem("carrinho") || "[]"); } catch (_) {}
+    const subtotal = itens.reduce(function(total, item){
+      return total + precoNumeroMS(item.preco) * Math.max(1, Number(item.quantidade || 1));
+    }, 0);
+    const frete = precoNumeroMS(localStorage.getItem("valorFreteMS") || 0);
+    const idsSubtotal = ["subtotal1", "subtotalCheckout"];
+    const idsTotal = ["total1", "totalCheckout", "totalPagamentoMobile"];
+    idsSubtotal.forEach(function(id){ const el=document.getElementById(id); if(el) el.textContent=moedaMS(subtotal); });
+    idsTotal.forEach(function(id){ const el=document.getElementById(id); if(el) el.textContent=moedaMS(subtotal + frete); });
+  }
+
+  function limparAvisoOrfaoMS(){
+    document.getElementById("msConfirmacaoCarrinho")?.remove();
+    document.querySelectorAll("body > .ms-confirmacao-fechar").forEach(function(el){ el.remove(); });
+  }
+
+  document.addEventListener("DOMContentLoaded", function(){
+    limparAvisoOrfaoMS();
+    atualizarTotalCarrinhoMobileMS();
+    setTimeout(atualizarTotalCarrinhoMobileMS, 100);
+  });
+  document.addEventListener("click", function(){
+    setTimeout(function(){ limparAvisoOrfaoMS(); atualizarTotalCarrinhoMobileMS(); }, 50);
+  }, true);
+  window.addEventListener("storage", atualizarTotalCarrinhoMobileMS);
+  window.atualizarTotalCarrinhoMobileMS = atualizarTotalCarrinhoMobileMS;
+})();
 </script>
+
 </body>
 </html>
