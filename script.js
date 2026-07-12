@@ -64,6 +64,26 @@ function pegarPrecoNumero(preco) {
   return parseFloat(valor) || 0;
 }
 
+function precoSeguroItem(item) {
+  return pegarPrecoNumero(item?.preco ?? item?.valor ?? item?.price ?? 0);
+}
+
+function quantidadeSeguraItem(item) {
+  const quantidade = Number(item?.quantidade ?? item?.qtd ?? 1);
+  return Number.isFinite(quantidade) && quantidade > 0 ? quantidade : 1;
+}
+
+function normalizarCarrinhoMS() {
+  carregarCarrinho();
+  carrinho = carrinho.map(item => ({
+    ...item,
+    preco: precoSeguroItem(item),
+    quantidade: quantidadeSeguraItem(item)
+  }));
+  salvarCarrinho();
+  return carrinho;
+}
+
 // ===============================
 // TAMANHO
 // ===============================
@@ -236,13 +256,13 @@ function atualizarContadorMobile() {
 // ===============================
 
 function atualizarCarrinho() {
-  carregarCarrinho();
+  normalizarCarrinhoMS();
 
   const listaPC = document.getElementById("listaCarrinho");
   const listaMobile = document.getElementById("listaCarrinhoMobile");
 
   const subtotal = carrinho.reduce((total, item) => {
-    return total + Number(item.preco) * Number(item.quantidade || 1);
+    return total + precoSeguroItem(item) * quantidadeSeguraItem(item);
   }, 0);
 
   let descontoValor = 0;
@@ -285,19 +305,20 @@ function montarListaCarrinho(lista, itens) {
 
         <div class="item-info produto-info">
           <h4>${item.nome}</h4>
-          <h3>${item.nome}</h3>
+          <p>Tamanho: ${item.tamanho || "Único"}</p>
 
-          <p>Tamanho: ${item.tamanho}</p>
-
-          <div class="controle-quantidade qtd">
-            <button onclick="diminuirQuantidade(${index})">−</button>
-            <span class="numero-quantidade">${item.quantidade}</span>
-            <button onclick="aumentarQuantidade(${index})">+</button>
+          <div class="precos-item-mobile">
+            <span class="preco-unitario-mobile">${dinheiro(precoSeguroItem(item))} cada</span>
+            <strong class="preco-total-mobile">${dinheiro(precoSeguroItem(item) * quantidadeSeguraItem(item))}</strong>
           </div>
 
-          <strong>${dinheiro(Number(item.preco) * Number(item.quantidade || 1))}</strong>
+          <div class="controle-quantidade qtd">
+            <button type="button" onclick="diminuirQuantidade(${index})" aria-label="Diminuir quantidade">−</button>
+            <span class="numero-quantidade">${quantidadeSeguraItem(item)}</span>
+            <button type="button" onclick="aumentarQuantidade(${index})" aria-label="Aumentar quantidade">+</button>
+          </div>
 
-          <button class="remover-item remover-mobile" onclick="removerItem(${index})">
+          <button type="button" class="remover-item remover-mobile" onclick="removerItem(${index})">
             Remover
           </button>
         </div>
@@ -322,7 +343,7 @@ function aumentarQuantidade(index) {
   carregarCarrinho();
   if (!carrinho[index]) return;
 
-  carrinho[index].quantidade = Number(carrinho[index].quantidade || 1) + 1;
+  carrinho[index].quantidade = quantidadeSeguraItem(carrinho[index]) + 1;
   salvarCarrinho();
   atualizarTudo();
 }
@@ -331,7 +352,7 @@ function diminuirQuantidade(index) {
   carregarCarrinho();
   if (!carrinho[index]) return;
 
-  if (Number(carrinho[index].quantidade || 1) > 1) {
+  if (quantidadeSeguraItem(carrinho[index]) > 1) {
     carrinho[index].quantidade -= 1;
   } else {
     carrinho.splice(index, 1);
@@ -5388,7 +5409,9 @@ function dinheiro(valor){
     salvarEAtualizarMS(lista);
 
     if(typeof animarProdutoParaCarrinho === "function" && botao) animarProdutoParaCarrinho(botao);
-    if(typeof mostrarToastMS === "function") mostrarToastMS();
+    if(typeof mostrarConfirmacaoCarrinhoMS === "function") mostrarConfirmacaoCarrinhoMS(item);
+    else if(typeof avisoCarrinhoPremium === "function") avisoCarrinhoPremium(item);
+    else if(typeof mostrarToastMS === "function") mostrarToastMS();
     return true;
   };
 
@@ -5426,7 +5449,8 @@ function dinheiro(valor){
     else lista.push(item);
 
     salvarEAtualizarMS(lista);
-    if(typeof avisoCarrinhoPremium === "function") avisoCarrinhoPremium();
+    if(typeof mostrarConfirmacaoCarrinhoMS === "function") mostrarConfirmacaoCarrinhoMS(item);
+    else if(typeof avisoCarrinhoPremium === "function") avisoCarrinhoPremium(item);
     else if(typeof mostrarToastMS === "function") mostrarToastMS();
     return true;
   };
@@ -6002,7 +6026,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const quantidade = Math.max(1, Number(item?.quantidade || 1));
 
     toast.innerHTML = `
-      <button class="ms-confirmacao-fechar" type="button" aria-label="Fechar">×</button>
       <div class="ms-confirmacao-topo">
         <div class="ms-confirmacao-icone" aria-hidden="true">🛍️</div>
         <div class="ms-confirmacao-conteudo">
@@ -6017,7 +6040,6 @@ document.addEventListener("DOMContentLoaded", () => {
       </div>
     `;
 
-    toast.querySelector(".ms-confirmacao-fechar")?.addEventListener("click", fecharConfirmacaoCarrinhoMS);
     toast.querySelector(".ms-confirmacao-continuar")?.addEventListener("click", fecharConfirmacaoCarrinhoMS);
     toast.querySelector(".ms-confirmacao-finalizar")?.addEventListener("click", abrirCarrinhoPeloToastMS);
 
@@ -6048,31 +6070,20 @@ document.addEventListener("DOMContentLoaded", () => {
   window.mostrarConfirmacaoCarrinhoMS = mostrarConfirmacaoCarrinhoMS;
   window.fecharConfirmacaoCarrinhoMS = fecharConfirmacaoCarrinhoMS;
 
-  // Sobrescreve apenas as duas entradas de adicionar, preservando toda a lógica existente.
-  window.adicionarCarrinho = function(botao){
-    const item = typeof msPegarProdutoDoCard === "function" ? msPegarProdutoDoCard(botao) : null;
-    if(!item) return false;
+  // A confirmação visual não substitui as funções de adicionar.
+  // Assim, toda inclusão continua passando pela validação real de estoque.
 
-    if(typeof msAdicionarItemFinal === "function") msAdicionarItemFinal(item);
-
-    if(typeof animarProdutoAoCarrinho === "function"){
-      animarProdutoAoCarrinho(botao);
-    }else if(typeof animarProdutoParaCarrinho === "function"){
-      animarProdutoParaCarrinho(botao);
-    }
-
-    mostrarConfirmacaoCarrinhoMS(item);
-    return false;
-  };
-
-  window.adicionarAoCarrinho = window.adicionarCarrinho;
-
-  window.adicionarProdutoDetalhe = function(){
-    const item = typeof msPegarProdutoDoDetalhe === "function" ? msPegarProdutoDoDetalhe() : null;
-    if(!item) return false;
-
-    if(typeof msAdicionarItemFinal === "function") msAdicionarItemFinal(item);
-    mostrarConfirmacaoCarrinhoMS(item);
-    return false;
-  };
 })();
+
+
+/* MS: reforço visual e limpeza do carrinho mobile */
+document.addEventListener("DOMContentLoaded", function(){
+  normalizarCarrinhoMS();
+  atualizarCarrinho();
+
+  document.querySelectorAll("body > .ms-confirmacao-fechar, body > button[aria-label='Fechar']").forEach(function(botao){
+    if(!botao.closest("#msConfirmacaoCarrinho, .modal, .carrinho, .produto-detalhe")){
+      botao.remove();
+    }
+  });
+});
