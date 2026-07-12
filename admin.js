@@ -16,6 +16,7 @@
   let filtroAtual = "todos";
   let pedidosCache = [];
   let pedidosExcluidosCache = [];
+  const pedidosSelecionadosMS = new Set();
 
   function injetarCSSPedidosMS() {
     if (document.getElementById("ms-pedidos-pro-css")) return;
@@ -23,6 +24,8 @@
     style.id = "ms-pedidos-pro-css";
     style.textContent = `
       #pedidos.lista, #pedidos{display:grid;gap:16px;}
+      .pedido-selecao-ms{position:absolute;top:18px;left:18px;z-index:4;display:grid;place-items:center;width:38px;height:38px;border-radius:12px;background:rgba(8,10,14,.86);border:1px solid rgba(216,173,67,.38)}
+      .pedido-checkbox-ms{width:19px;height:19px;accent-color:#d8ad43;cursor:pointer}.pedido-card.ms-pro.tem-selecao{padding-left:72px}.pedido-card.ms-pro.selecionado{outline:2px solid rgba(216,173,67,.78);box-shadow:0 0 0 5px rgba(216,173,67,.10),0 24px 70px rgba(0,0,0,.32)}
       .pedido-card.ms-pro{position:relative;overflow:hidden;padding:22px;border-radius:26px;background:linear-gradient(145deg,rgba(18,20,26,.88),rgba(13,15,20,.92));border:1px solid rgba(255,255,255,.11);color:var(--text);box-shadow:0 24px 70px rgba(0,0,0,.32);backdrop-filter:blur(18px);}
       .pedido-card.ms-pro::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 0% 0%,rgba(216,173,67,.16),transparent 30%);pointer-events:none;}
       .pedido-head-ms,.pedido-grid-ms,.pedido-actions-ms,.produtos-box-ms,.pedido-total-ms{position:relative;z-index:1;}
@@ -69,7 +72,7 @@
       html:not([data-theme="escuro"]) .pedido-card.ms-pro::before{background:radial-gradient(circle at 0% 0%,rgba(216,173,67,.18),transparent 30%);}
       html:not([data-theme="escuro"]) .pedido-actions-ms button:not(.btn-primary-ms):not(.btn-blue-ms):not(.btn-green-ms):not(.btn-danger-ms){background:#0f172a;color:#fff;border-color:#0f172a;}
       @media(max-width:1180px){.pedido-actions-ms{grid-template-columns:repeat(3,minmax(0,1fr));}.pedido-grid-ms{grid-template-columns:1fr 1fr}.pedido-grid-ms .info-card-ms:nth-child(3){grid-column:1/-1}.rastreio-tools-ms{grid-template-columns:1fr 1fr}.rastreio-tools-ms button{grid-column:1/-1}}
-      @media(max-width:760px){.rastreio-tools-ms{grid-template-columns:1fr}.pedido-card.ms-pro{padding:16px;border-radius:22px}.pedido-head-ms{display:grid;gap:12px}.pedido-title-ms h3{font-size:18px}.pedido-meta-ms{gap:6px}.pill-ms{font-size:11px;padding:6px 9px}.status-pedido{width:max-content;font-size:11px;padding:8px 11px}.pedido-grid-ms{grid-template-columns:1fr;gap:10px}.info-card-ms{min-height:auto;padding:13px;border-radius:16px}.info-line-ms{grid-template-columns:78px 1fr;font-size:13px}.produtos-title-ms{padding:12px 13px;font-size:13px}.produto-row-ms{grid-template-columns:1fr auto;padding:12px 13px;gap:6px}.produto-qtd-ms{text-align:left}.produto-preco-ms,.produto-subtotal-ms{grid-column:1/-1;text-align:left;font-size:13px;color:var(--muted)}.pedido-total-ms{justify-content:space-between}.pedido-total-ms strong{font-size:20px}.pedido-actions-ms{grid-template-columns:1fr 1fr;gap:8px}.pedido-actions-ms button{min-height:44px;border-radius:14px;font-size:12px;padding:0 8px;white-space:normal;line-height:1.1}.pedido-actions-ms .btn-danger-ms{grid-column:1/-1}}
+      @media(max-width:760px){.pedido-card.ms-pro.tem-selecao{padding-left:16px;padding-top:68px}.pedido-selecao-ms{top:16px;left:16px}.rastreio-tools-ms{grid-template-columns:1fr}.pedido-card.ms-pro{padding:16px;border-radius:22px}.pedido-head-ms{display:grid;gap:12px}.pedido-title-ms h3{font-size:18px}.pedido-meta-ms{gap:6px}.pill-ms{font-size:11px;padding:6px 9px}.status-pedido{width:max-content;font-size:11px;padding:8px 11px}.pedido-grid-ms{grid-template-columns:1fr;gap:10px}.info-card-ms{min-height:auto;padding:13px;border-radius:16px}.info-line-ms{grid-template-columns:78px 1fr;font-size:13px}.produtos-title-ms{padding:12px 13px;font-size:13px}.produto-row-ms{grid-template-columns:1fr auto;padding:12px 13px;gap:6px}.produto-qtd-ms{text-align:left}.produto-preco-ms,.produto-subtotal-ms{grid-column:1/-1;text-align:left;font-size:13px;color:var(--muted)}.pedido-total-ms{justify-content:space-between}.pedido-total-ms strong{font-size:20px}.pedido-actions-ms{grid-template-columns:1fr 1fr;gap:8px}.pedido-actions-ms button{min-height:44px;border-radius:14px;font-size:12px;padding:0 8px;white-space:normal;line-height:1.1}.pedido-actions-ms .btn-danger-ms{grid-column:1/-1}}
       @media(max-width:420px){.pedido-actions-ms{grid-template-columns:1fr}.info-line-ms{grid-template-columns:1fr;gap:3px}.produto-row-ms{grid-template-columns:1fr}.produto-qtd-ms,.produto-preco-ms,.produto-subtotal-ms{text-align:left}}
     `;
     document.head.appendChild(style);
@@ -298,8 +301,13 @@ Equipe MS Matias Style 🤍`;
       }).join("");
 
       const card = document.createElement("div");
-      card.className = "pedido-card ms-pro";
+      card.className = "pedido-card ms-pro tem-selecao";
+      card.dataset.pedidoId = String(pedido.id);
+      if (pedidosSelecionadosMS.has(String(pedido.id))) card.classList.add("selecionado");
       card.innerHTML = `
+        <label class="pedido-selecao-ms" title="Selecionar pedido">
+          <input class="pedido-checkbox-ms" type="checkbox" data-pedido-id="${idSeguro}" ${pedidosSelecionadosMS.has(String(pedido.id)) ? "checked" : ""} onchange="alternarSelecaoPedidoMS('${idSeguro}', this.checked)">
+        </label>
         <div class="pedido-head-ms">
           <div class="pedido-title-ms">
             <h3>Pedido #${texto(pedido.id)}</h3>
@@ -366,8 +374,73 @@ Equipe MS Matias Style 🤍`;
         </div>`;
       pedidosContainer.appendChild(card);
     });
+    atualizarBarraSelecaoPedidosMS();
   }
 
+
+  function pedidosVisiveisMS() {
+    return pedidosCache.filter(passarNosFiltros).map((p) => String(p.id));
+  }
+
+  function atualizarBarraSelecaoPedidosMS() {
+    const contador = document.getElementById("contadorPedidosSelecionados");
+    const botao = document.getElementById("excluirPedidosSelecionados");
+    const selecionarTodos = document.getElementById("selecionarTodosPedidos");
+    const total = pedidosSelecionadosMS.size;
+    if (contador) contador.textContent = `${total} pedido${total === 1 ? "" : "s"} selecionado${total === 1 ? "" : "s"}`;
+    if (botao) botao.disabled = total === 0;
+    const visiveis = pedidosVisiveisMS();
+    if (selecionarTodos) {
+      selecionarTodos.checked = visiveis.length > 0 && visiveis.every((id) => pedidosSelecionadosMS.has(id));
+      selecionarTodos.indeterminate = visiveis.some((id) => pedidosSelecionadosMS.has(id)) && !selecionarTodos.checked;
+    }
+  }
+
+  window.alternarSelecaoPedidoMS = function(id, marcado) {
+    const chave = String(id);
+    if (marcado) pedidosSelecionadosMS.add(chave); else pedidosSelecionadosMS.delete(chave);
+    const card = [...document.querySelectorAll('.pedido-card.ms-pro')].find((el) => String(el.dataset.pedidoId) === chave);
+    if (card) card.classList.toggle('selecionado', marcado);
+    atualizarBarraSelecaoPedidosMS();
+  };
+
+  window.selecionarTodosPedidosMS = function(marcar) {
+    pedidosVisiveisMS().forEach((id) => marcar ? pedidosSelecionadosMS.add(id) : pedidosSelecionadosMS.delete(id));
+    document.querySelectorAll('.pedido-checkbox-ms').forEach((cb) => { cb.checked = marcar; cb.closest('.pedido-card')?.classList.toggle('selecionado', marcar); });
+    atualizarBarraSelecaoPedidosMS();
+  };
+
+  async function excluirPedidoServidorMS(id) {
+    try {
+      const resposta = await fetch(`${API_PEDIDOS}/${encodeURIComponent(id)}`, { method:"DELETE" });
+      if (resposta.ok) return true;
+    } catch (erro) { console.warn("DELETE em lote falhou:", erro); }
+    try {
+      const respostaFallback = await fetch(`${API_BASE}/excluir-pedido`, {
+        method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ id })
+      });
+      return respostaFallback.ok;
+    } catch (erro) { console.warn("Fallback em lote falhou:", erro); return false; }
+  }
+
+  window.excluirPedidosSelecionadosMS = async function() {
+    const ids = [...pedidosSelecionadosMS];
+    if (!ids.length) return alert("Selecione pelo menos um pedido.");
+    if (!confirm(`Mover ${ids.length} pedido${ids.length === 1 ? "" : "s"} para a lixeira?`)) return;
+    const botao = document.getElementById("excluirPedidosSelecionados");
+    const textoOriginal = botao?.innerHTML;
+    if (botao) { botao.disabled = true; botao.innerHTML = "Excluindo..."; }
+    const resultados = await Promise.all(ids.map(async (id) => ({ id, ok: await excluirPedidoServidorMS(id) })));
+    const removidos = new Set(resultados.map((r) => String(r.id)));
+    pedidosCache = pedidosCache.filter((p) => !removidos.has(String(p.id)));
+    ids.forEach((id) => pedidosSelecionadosMS.delete(String(id)));
+    localStorage.setItem("pedidosMS", JSON.stringify(pedidosCache));
+    atualizarResumo(pedidosCache);
+    renderizarPedidos();
+    const confirmados = resultados.filter((r) => r.ok).length;
+    if (botao) botao.innerHTML = textoOriginal || "🗑️ Excluir selecionados";
+    alert(confirmados === ids.length ? `${ids.length} pedido${ids.length === 1 ? "" : "s"} movido${ids.length === 1 ? "" : "s"} para a lixeira.` : `${ids.length} pedido(s) removido(s) da tela. O servidor confirmou ${confirmados}.`);
+  };
 
   async function pegarPedidosExcluidos() {
     try {
@@ -414,8 +487,13 @@ Equipe MS Matias Style 🤍`;
         return `<div class="produto-row-ms"><div><strong>${texto(produto.nome || produto.title || "Produto")}</strong><small>Cor: ${texto(produto.cor || produto.color, "Única")} • Tamanho: ${texto(produto.tamanho || produto.size, "-")}</small></div><div class="produto-qtd-ms">x${qtd}</div><div class="produto-preco-ms">${formatarMoeda(preco)}</div><div class="produto-subtotal-ms">${formatarMoeda(preco * qtd)}</div></div>`;
       }).join("");
       const card = document.createElement("div");
-      card.className = "pedido-card ms-pro";
+      card.className = "pedido-card ms-pro tem-selecao";
+      card.dataset.pedidoId = String(pedido.id);
+      if (pedidosSelecionadosMS.has(String(pedido.id))) card.classList.add("selecionado");
       card.innerHTML = `
+        <label class="pedido-selecao-ms" title="Selecionar pedido">
+          <input class="pedido-checkbox-ms" type="checkbox" data-pedido-id="${idSeguro}" ${pedidosSelecionadosMS.has(String(pedido.id)) ? "checked" : ""} onchange="alternarSelecaoPedidoMS('${idSeguro}', this.checked)">
+        </label>
         <div class="pedido-head-ms"><div class="pedido-title-ms"><h3>Pedido #${texto(pedido.id)}</h3><p>Excluído em: ${texto(pedido.excluidoEm || pedido.deletadoEm || "não informado")}</p><div class="pedido-meta-ms"><span class="pill-ms">${produtos.length} produto${produtos.length === 1 ? "" : "s"}</span><span class="pill-ms">Frete: ${formatarMoeda(frete)}</span><span class="pill-ms">Total: ${formatarMoeda(total)}</span></div></div><span class="status-pedido excluido">Excluído</span></div>
         <div class="pedido-grid-ms"><div class="info-card-ms"><h4>Cliente</h4><div class="info-line-ms"><span>Nome</span><strong>${texto(pedido.nome)}</strong></div><div class="info-line-ms"><span>WhatsApp</span><strong>${texto(pedido.telefone)}</strong></div></div><div class="info-card-ms"><h4>Entrega</h4><div class="info-line-ms"><span>Endereço</span><strong>${texto(endereco.rua)}, ${texto(endereco.numero)}</strong></div><div class="info-line-ms"><span>Bairro</span><strong>${texto(endereco.bairro)}</strong></div><div class="info-line-ms"><span>Cidade</span><strong>${texto(endereco.cidade)} ${endereco.estado ? "- " + texto(endereco.estado) : ""}</strong></div><div class="info-line-ms"><span>CEP</span><strong>${texto(endereco.cep)}</strong></div></div><div class="info-card-ms"><h4>Pagamento</h4><div class="info-line-ms"><span>Status antigo</span><strong>${statusLabel(pedido.status)}</strong></div><div class="info-line-ms"><span>Total</span><strong>${formatarMoeda(total)}</strong></div></div></div>
         <div class="produtos-box-ms"><div class="produtos-title-ms"><span>Produtos do pedido</span><span>${formatarMoeda(totalProdutos)}</span></div>${produtosHTML || `<div class="produto-row-ms"><strong>Nenhum produto encontrado.</strong></div>`}</div>

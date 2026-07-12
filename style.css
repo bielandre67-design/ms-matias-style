@@ -14632,13 +14632,14 @@ body.aviso-ms-aberto{overflow:hidden!important;}
 .pagina-carrinho-mobile #msConfirmacaoCarrinho{display:none!important;}
 
 
-/* Seleção e exclusão em lote de produtos */
-.acoes-lote-produtos-ms{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:14px 16px;border-bottom:1px solid var(--border,rgba(255,255,255,.10));}
-.selecionar-todos-produtos-ms{display:flex;align-items:center;gap:8px;font-weight:800;cursor:pointer;}
-.acoes-lote-produtos-ms input[type="checkbox"],.col-check-produto-ms input[type="checkbox"],.check-produto-admin-ms{width:18px;height:18px;accent-color:#7c3aed;cursor:pointer;}
-#contadorSelecionadosProdutosMS{font-size:13px;opacity:.75;font-weight:700;}
-.btn-excluir-lote-ms{margin-left:auto;border:0;border-radius:12px;padding:10px 14px;background:#b91c1c;color:#fff;font-weight:900;cursor:pointer;transition:.2s ease;}
-.btn-excluir-lote-ms:hover:not(:disabled){filter:brightness(1.12);transform:translateY(-1px);}
-.btn-excluir-lote-ms:disabled{opacity:.4;cursor:not-allowed;}
-.col-check-produto-ms{width:42px;text-align:center!important;}
-@media(max-width:700px){.btn-excluir-lote-ms{width:100%;margin-left:0}.acoes-lote-produtos-ms{gap:10px}.col-check-produto-ms{position:sticky;left:0;z-index:2;background:var(--card-bg,#11141a)}}
+/* Seleção e exclusão em lote de pedidos */
+.acoes-pedidos-lote{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:14px 0 16px;padding:14px 16px;border:1px solid rgba(212,175,55,.25);border-radius:16px;background:rgba(255,255,255,.035)}
+.selecionar-todos-pedidos{display:flex;align-items:center;gap:9px;font-weight:850;cursor:pointer}
+.selecionar-todos-pedidos input,.pedido-checkbox-ms{width:19px;height:19px;accent-color:#d4af37;cursor:pointer}
+#contadorPedidosSelecionados{color:var(--muted,#aaa);font-weight:800;font-size:13px}
+#excluirPedidosSelecionados{margin-left:auto;border:1px solid #fecdd3;background:#fff1f2;color:#e11d48;border-radius:12px;padding:11px 16px;font-weight:950;cursor:pointer}
+#excluirPedidosSelecionados:disabled{opacity:.45;cursor:not-allowed}
+.pedido-selecao-ms{position:absolute;top:18px;left:18px;z-index:4;display:grid;place-items:center;width:38px;height:38px;border-radius:12px;background:rgba(8,10,14,.86);border:1px solid rgba(212,175,55,.35)}
+.pedido-card.ms-pro.tem-selecao{padding-left:72px}
+.pedido-card.ms-pro.selecionado{outline:2px solid rgba(212,175,55,.75);box-shadow:0 0 0 5px rgba(212,175,55,.10),0 24px 70px rgba(0,0,0,.32)}
+@media(max-width:760px){.acoes-pedidos-lote{align-items:stretch}.selecionar-todos-pedidos{width:100%}#excluirPedidosSelecionados{margin-left:0;width:100%}.pedido-card.ms-pro.tem-selecao{padding-left:16px;padding-top:68px}.pedido-selecao-ms{top:16px;left:16px}}

@@ -184,6 +184,14 @@
         <button class="aba-pedido" onclick="filtrarPedidos('enviado', this)">Enviados <span id="qtdEnviados">0</span></button>
         <button class="aba-pedido" onclick="filtrarPedidos('excluidos', this)">🗑️ Lixeira</button>
       </div>
+      <div id="acoesPedidosLote" class="acoes-pedidos-lote">
+        <label class="selecionar-todos-pedidos">
+          <input id="selecionarTodosPedidos" type="checkbox" onchange="selecionarTodosPedidosMS(this.checked)">
+          <span>Selecionar todos</span>
+        </label>
+        <span id="contadorPedidosSelecionados">0 pedidos selecionados</span>
+        <button id="excluirPedidosSelecionados" type="button" onclick="excluirPedidosSelecionadosMS()" disabled>🗑️ Excluir selecionados</button>
+      </div>
       <div id="pedidos" class="lista"></div>
     </section>
 
