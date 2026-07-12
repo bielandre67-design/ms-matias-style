@@ -3196,8 +3196,18 @@ onclick="window.scrollTo({top:0, behavior:'smooth'})">
 
 <script>
 (function(){
+  function precoNumeroMS(valor){
+    if (typeof valor === 'number') return Number.isFinite(valor) ? valor : 0;
+    var texto = String(valor ?? '').trim().replace(/\s/g, '').replace(/R\$/gi, '');
+    if (!texto) return 0;
+    if (texto.includes(',')) texto = texto.replace(/\./g, '').replace(',', '.');
+    texto = texto.replace(/[^0-9.-]/g, '');
+    var numero = Number(texto);
+    return Number.isFinite(numero) ? numero : 0;
+  }
+
   function dinheiroMS(valor){
-    return Number(valor || 0).toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
+    return precoNumeroMS(valor).toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
   }
 
   function getCarrinhoMS(){
@@ -3213,7 +3223,7 @@ onclick="window.scrollTo({top:0, behavior:'smooth'})">
 
   function subtotalMS(carrinho){
     return carrinho.reduce(function(acc, item){
-      return acc + Number(item.preco || 0) * Number(item.quantidade || 1);
+      return acc + precoNumeroMS(item.preco) * Number(item.quantidade || 1);
     }, 0);
   }
 
@@ -3266,7 +3276,7 @@ onclick="window.scrollTo({top:0, behavior:'smooth'})">
     lista.innerHTML = carrinho.map(function(item, index){
       var img = item.imagem || item.img || '';
       var qtd = Number(item.quantidade || 1);
-      var preco = Number(item.preco || 0);
+      var preco = precoNumeroMS(item.preco);
       return `
         <div class="cmms-item">
           <img src="${img}" class="cmms-img" alt="${item.nome || 'Produto'}">
@@ -3420,9 +3430,6 @@ window.voltarFreteMS = function(){
 };
 })();
 </script>
-<div id="toastMS" class="toast-ms">
-  🛒 Produto adicionado ao carrinho
-</div>
 <div id="toastMS" class="toast-ms"></div>
 
 <script>
@@ -3523,14 +3530,29 @@ window.fecharCarrinhoMobileMS = function(){
     if (typeof window.atualizarBadgeCarrinho === 'function') window.atualizarBadgeCarrinho();
   }
 
+  function precoNumeroCarrinhoMS(valor){
+    if (typeof valor === 'number') return Number.isFinite(valor) ? valor : 0;
+    var texto = String(valor ?? '').trim().replace(/\s/g, '').replace(/R\$/gi, '');
+    if (!texto) return 0;
+    if (texto.includes(',')) texto = texto.replace(/\./g, '').replace(',', '.');
+    texto = texto.replace(/[^0-9.-]/g, '');
+    var numero = Number(texto);
+    return Number.isFinite(numero) ? numero : 0;
+  }
+
   function moeda(valor){
-    return Number(valor || 0).toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+    return precoNumeroCarrinhoMS(valor).toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
   }
 
   function renderMobile(){
     var lista = document.getElementById('listaCarrinhoMobileMS');
     if (!lista) return;
     var itens = lerCarrinho();
+    var total = itens.reduce(function(soma, item){
+      return soma + (precoNumeroCarrinhoMS(item.preco) * Number(item.quantidade || 1));
+    }, 0);
+    var totalEl = document.getElementById('totalCarrinhoMobileMS');
+    if (totalEl) totalEl.textContent = moeda(total);
 
     if (!itens.length){
       lista.innerHTML = '<p style="text-align:center;color:#999;padding:40px 0;">Seu carrinho está vazio.</p>';
@@ -3539,7 +3561,7 @@ window.fecharCarrinhoMobileMS = function(){
 
     lista.innerHTML = itens.map(function(item, index){
       var qtd = Number(item.quantidade || 1);
-      var preco = Number(item.preco || 0);
+      var preco = precoNumeroCarrinhoMS(item.preco);
       var img = item.imagem || item.img || '';
       return '<div class="cmms-item">' +
         '<img src="' + img + '" class="cmms-img" alt="' + (item.nome || 'Produto') + '">' +
@@ -3581,6 +3603,7 @@ window.fecharCarrinhoMobileMS = function(){
     modal.style.opacity='1';
     modal.style.pointerEvents='auto';
     modal.classList.add('ativo');
+    document.body.classList.add('cmms-carrinho-aberto');
     mostrarProdutosMobile();
     renderMobile();
   };
@@ -3593,6 +3616,7 @@ window.fecharCarrinhoMobileMS = function(){
     modal.style.visibility='hidden';
     modal.style.opacity='0';
     modal.style.pointerEvents='none';
+    document.body.classList.remove('cmms-carrinho-aberto');
   };
 
   window.alterarQtdCarrinhoMS = function(index, delta){
@@ -3630,5 +3654,17 @@ window.fecharCarrinhoMobileMS = function(){
 })();
 </script>
 
+
+<style id="fix-carrinho-interno-ms">
+  body.cmms-carrinho-aberto #toastMS,
+  body.cmms-carrinho-aberto #msToast,
+  body.cmms-carrinho-aberto #toastCarrinhoMS,
+  body.cmms-carrinho-aberto #avisoCarrinhoPremium,
+  body.cmms-carrinho-aberto .toast-ms,
+  body.cmms-carrinho-aberto .ms-toast,
+  body.cmms-carrinho-aberto .ms-confirmacao-carrinho {
+    display: none !important;
+  }
+</style>
 </body>
 </html>
