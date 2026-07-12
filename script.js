@@ -11,6 +11,155 @@ const API_BASE = (location.hostname === "localhost" || location.hostname === "12
   ? "http://localhost:3000"
   : "https://ms-matias-style.onrender.com";
 
+
+// ===============================
+// POPUP DE AVISOS MS
+// Substitui os alertas padrões do navegador por uma mensagem da marca.
+// ===============================
+(function configurarAvisosMS() {
+  function tratarMensagemMS(mensagem) {
+    const original = String(mensagem || "").trim();
+    const texto = original.toLowerCase();
+
+    if (texto.includes("ainda não tem estoque cadastrado") ||
+        texto.includes("sem estoque") ||
+        texto.includes("produto indisponível")) {
+      return {
+        titulo: "Produto indisponível",
+        mensagem: "Esta combinação de cor e tamanho está indisponível no momento. Escolha outra opção para continuar.",
+        icone: "!"
+      };
+    }
+
+    if (texto.includes("estoque insuficiente") ||
+        texto.includes("unidades disponíveis") ||
+        texto.includes("unidade(s) disponível")) {
+      return {
+        titulo: "Estoque limitado",
+        mensagem: original.replace(/\s*de\s+[^.]+$/i, "").trim() || "A quantidade escolhida é maior do que o estoque disponível.",
+        icone: "!"
+      };
+    }
+
+    if (texto.includes("escolha um tamanho")) {
+      return {
+        titulo: "Escolha o tamanho",
+        mensagem: "Selecione um tamanho antes de continuar.",
+        icone: "i"
+      };
+    }
+
+    if (texto.includes("carrinho está vazio") || texto.includes("adicione um produto")) {
+      return {
+        titulo: "Carrinho vazio",
+        mensagem: "Adicione pelo menos um produto ao carrinho para continuar.",
+        icone: "i"
+      };
+    }
+
+    if (texto.includes("cep")) {
+      return {
+        titulo: "Confira o CEP",
+        mensagem: texto.includes("não encontrado")
+          ? "Não encontramos esse CEP. Confira os números e tente novamente."
+          : "Digite um CEP válido para continuar.",
+        icone: "i"
+      };
+    }
+
+    if (texto.includes("whatsapp")) {
+      return {
+        titulo: "Confira o WhatsApp",
+        mensagem: "Digite um número válido com DDD para continuar.",
+        icone: "i"
+      };
+    }
+
+    if (texto.includes("preencha")) {
+      return {
+        titulo: "Faltam algumas informações",
+        mensagem: "Confira os campos obrigatórios antes de continuar.",
+        icone: "i"
+      };
+    }
+
+    if (texto.includes("frete")) {
+      return {
+        titulo: "Escolha a entrega",
+        mensagem: "Calcule e selecione uma opção de frete antes de continuar.",
+        icone: "i"
+      };
+    }
+
+    if (texto.includes("mercado pago") || texto.includes("backend") ||
+        texto.includes("api_base") || texto.includes("console") ||
+        texto.includes("não encontrado no html") || texto.includes("id do endereço")) {
+      return {
+        titulo: "Não foi possível continuar",
+        mensagem: "Tivemos uma instabilidade rápida. Tente novamente em alguns instantes.",
+        icone: "!"
+      };
+    }
+
+    return {
+      titulo: "Aviso",
+      mensagem: original || "Confira as informações e tente novamente.",
+      icone: "i"
+    };
+  }
+
+  function garantirPopupMS() {
+    let popup = document.getElementById("avisoMS");
+    if (popup) return popup;
+
+    popup = document.createElement("div");
+    popup.id = "avisoMS";
+    popup.className = "aviso-ms";
+    popup.setAttribute("aria-hidden", "true");
+    popup.innerHTML = `
+      <div class="aviso-ms-fundo" data-fechar-aviso></div>
+      <section class="aviso-ms-caixa" role="dialog" aria-modal="true" aria-labelledby="avisoMSTitulo">
+        <button class="aviso-ms-fechar" type="button" aria-label="Fechar" data-fechar-aviso>×</button>
+        <div class="aviso-ms-icone" id="avisoMSIcone">i</div>
+        <h2 id="avisoMSTitulo">Aviso</h2>
+        <p id="avisoMSMensagem"></p>
+        <button class="aviso-ms-botao" type="button" data-fechar-aviso>Entendi</button>
+      </section>`;
+    document.body.appendChild(popup);
+
+    popup.querySelectorAll("[data-fechar-aviso]").forEach(elemento => {
+      elemento.addEventListener("click", fecharAvisoMS);
+    });
+    return popup;
+  }
+
+  function fecharAvisoMS() {
+    const popup = document.getElementById("avisoMS");
+    if (!popup) return;
+    popup.classList.remove("ativo");
+    popup.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("aviso-ms-aberto");
+  }
+
+  window.mostrarAvisoMS = function mostrarAvisoMS(mensagem) {
+    const dados = tratarMensagemMS(mensagem);
+    const popup = garantirPopupMS();
+    popup.querySelector("#avisoMSTitulo").textContent = dados.titulo;
+    popup.querySelector("#avisoMSMensagem").textContent = dados.mensagem;
+    popup.querySelector("#avisoMSIcone").textContent = dados.icone;
+    popup.classList.add("ativo");
+    popup.setAttribute("aria-hidden", "false");
+    document.body.classList.add("aviso-ms-aberto");
+    setTimeout(() => popup.querySelector(".aviso-ms-botao")?.focus(), 30);
+  };
+
+  window.alert = window.mostrarAvisoMS;
+
+  document.addEventListener("keydown", evento => {
+    if (evento.key === "Escape") fecharAvisoMS();
+  });
+})();
+
 function salvarCarrinho() {
   localStorage.setItem("carrinho", JSON.stringify(carrinho));
 }

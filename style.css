@@ -14525,3 +14525,104 @@ body.ms-carrinho-fechado {
   .header .logo img{width:40px!important;height:40px!important;}
   .header .logo span{font-size:15px!important;}
 }
+
+
+/* ===== POPUP DE AVISOS MS ===== */
+.aviso-ms{
+  position:fixed;
+  inset:0;
+  z-index:999999;
+  display:grid;
+  place-items:center;
+  padding:20px;
+  opacity:0;
+  visibility:hidden;
+  transition:opacity .22s ease, visibility .22s ease;
+}
+.aviso-ms.ativo{
+  opacity:1;
+  visibility:visible;
+}
+.aviso-ms-fundo{
+  position:absolute;
+  inset:0;
+  background:rgba(0,0,0,.78);
+  backdrop-filter:blur(5px);
+}
+.aviso-ms-caixa{
+  position:relative;
+  width:min(420px, 100%);
+  padding:34px 28px 26px;
+  border:1px solid rgba(212,175,55,.72);
+  border-radius:22px;
+  background:linear-gradient(150deg,#171717 0%,#070707 100%);
+  color:#fff;
+  text-align:center;
+  box-shadow:0 24px 70px rgba(0,0,0,.62), 0 0 35px rgba(212,175,55,.10);
+  transform:translateY(15px) scale(.97);
+  transition:transform .22s ease;
+}
+.aviso-ms.ativo .aviso-ms-caixa{
+  transform:translateY(0) scale(1);
+}
+.aviso-ms-fechar{
+  position:absolute;
+  top:12px;
+  right:14px;
+  width:34px;
+  height:34px;
+  border:0;
+  background:transparent;
+  color:#aaa;
+  font-size:28px;
+  line-height:1;
+  cursor:pointer;
+}
+.aviso-ms-fechar:hover{color:#d4af37;}
+.aviso-ms-icone{
+  width:58px;
+  height:58px;
+  margin:0 auto 18px;
+  display:grid;
+  place-items:center;
+  border:1px solid #d4af37;
+  border-radius:50%;
+  color:#d4af37;
+  font-size:27px;
+  font-weight:900;
+  box-shadow:0 0 0 7px rgba(212,175,55,.08);
+}
+.aviso-ms-caixa h2{
+  margin:0 0 10px;
+  color:#fff;
+  font-size:24px;
+  line-height:1.2;
+  letter-spacing:.2px;
+}
+.aviso-ms-caixa p{
+  margin:0 auto 24px;
+  max-width:340px;
+  color:#cfcfcf;
+  font-size:15px;
+  line-height:1.6;
+}
+.aviso-ms-botao{
+  width:100%;
+  min-height:48px;
+  border:1px solid #d4af37;
+  border-radius:13px;
+  background:#d4af37;
+  color:#090909;
+  font-weight:900;
+  font-size:14px;
+  cursor:pointer;
+  transition:transform .18s ease, filter .18s ease;
+}
+.aviso-ms-botao:hover{filter:brightness(1.08);transform:translateY(-1px);}
+body.aviso-ms-aberto{overflow:hidden!important;}
+@media (max-width:480px){
+  .aviso-ms{padding:16px;}
+  .aviso-ms-caixa{padding:32px 21px 22px;border-radius:18px;}
+  .aviso-ms-caixa h2{font-size:21px;}
+  .aviso-ms-caixa p{font-size:14px;}
+}
