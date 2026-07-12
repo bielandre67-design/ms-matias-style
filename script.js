@@ -14,9 +14,14 @@ const API_BASE = (location.hostname === "localhost" || location.hostname === "12
 
 // ===============================
 // POPUP DE AVISOS MS
-// Substitui os alertas padrões do navegador por uma mensagem da marca.
+// Seguro: cria o popup apenas quando o <body> existir e usa o alerta
+// original como reserva caso qualquer parte visual falhe.
 // ===============================
 (function configurarAvisosMS() {
+  const alertaOriginalMS = typeof window.alert === "function"
+    ? window.alert.bind(window)
+    : function () {};
+
   function tratarMensagemMS(mensagem) {
     const original = String(mensagem || "").trim();
     const texto = original.toLowerCase();
@@ -36,25 +41,17 @@ const API_BASE = (location.hostname === "localhost" || location.hostname === "12
         texto.includes("unidade(s) disponível")) {
       return {
         titulo: "Estoque limitado",
-        mensagem: original.replace(/\s*de\s+[^.]+$/i, "").trim() || "A quantidade escolhida é maior do que o estoque disponível.",
+        mensagem: "A quantidade escolhida é maior do que o estoque disponível.",
         icone: "!"
       };
     }
 
     if (texto.includes("escolha um tamanho")) {
-      return {
-        titulo: "Escolha o tamanho",
-        mensagem: "Selecione um tamanho antes de continuar.",
-        icone: "i"
-      };
+      return { titulo: "Escolha o tamanho", mensagem: "Selecione um tamanho antes de continuar.", icone: "i" };
     }
 
     if (texto.includes("carrinho está vazio") || texto.includes("adicione um produto")) {
-      return {
-        titulo: "Carrinho vazio",
-        mensagem: "Adicione pelo menos um produto ao carrinho para continuar.",
-        icone: "i"
-      };
+      return { titulo: "Carrinho vazio", mensagem: "Adicione pelo menos um produto ao carrinho para continuar.", icone: "i" };
     }
 
     if (texto.includes("cep")) {
@@ -68,27 +65,15 @@ const API_BASE = (location.hostname === "localhost" || location.hostname === "12
     }
 
     if (texto.includes("whatsapp")) {
-      return {
-        titulo: "Confira o WhatsApp",
-        mensagem: "Digite um número válido com DDD para continuar.",
-        icone: "i"
-      };
+      return { titulo: "Confira o WhatsApp", mensagem: "Digite um número válido com DDD para continuar.", icone: "i" };
     }
 
     if (texto.includes("preencha")) {
-      return {
-        titulo: "Faltam algumas informações",
-        mensagem: "Confira os campos obrigatórios antes de continuar.",
-        icone: "i"
-      };
+      return { titulo: "Faltam algumas informações", mensagem: "Confira os campos obrigatórios antes de continuar.", icone: "i" };
     }
 
     if (texto.includes("frete")) {
-      return {
-        titulo: "Escolha a entrega",
-        mensagem: "Calcule e selecione uma opção de frete antes de continuar.",
-        icone: "i"
-      };
+      return { titulo: "Escolha a entrega", mensagem: "Calcule e selecione uma opção de frete antes de continuar.", icone: "i" };
     }
 
     if (texto.includes("mercado pago") || texto.includes("backend") ||
@@ -101,17 +86,42 @@ const API_BASE = (location.hostname === "localhost" || location.hostname === "12
       };
     }
 
-    return {
-      titulo: "Aviso",
-      mensagem: original || "Confira as informações e tente novamente.",
-      icone: "i"
-    };
+    return { titulo: "Aviso", mensagem: original || "Confira as informações e tente novamente.", icone: "i" };
+  }
+
+  function adicionarEstiloPopupMS() {
+    if (document.getElementById("avisoMSEstilo")) return;
+    const estilo = document.createElement("style");
+    estilo.id = "avisoMSEstilo";
+    estilo.textContent = `
+      .aviso-ms{position:fixed;inset:0;z-index:2147483647;display:none;align-items:center;justify-content:center;padding:20px;font-family:Arial,sans-serif}
+      .aviso-ms.ativo{display:flex}
+      .aviso-ms-fundo{position:absolute;inset:0;background:rgba(0,0,0,.78);backdrop-filter:blur(3px)}
+      .aviso-ms-caixa{position:relative;width:min(420px,100%);box-sizing:border-box;padding:32px 26px 24px;text-align:center;color:#fff;background:#0b0b0b;border:1px solid #b88a2a;border-radius:18px;box-shadow:0 24px 70px rgba(0,0,0,.55)}
+      .aviso-ms-fechar{position:absolute;top:10px;right:12px;border:0;background:transparent;color:#fff;font-size:28px;line-height:1;cursor:pointer}
+      .aviso-ms-icone{display:grid;place-items:center;width:48px;height:48px;margin:0 auto 14px;border:1px solid #b88a2a;border-radius:50%;color:#d6a737;font-size:24px;font-weight:800}
+      .aviso-ms-caixa h2{margin:0 0 10px;color:#fff;font-size:24px}
+      .aviso-ms-caixa p{margin:0 0 22px;color:#d8d8d8;font-size:15px;line-height:1.55}
+      .aviso-ms-botao{min-width:150px;padding:13px 22px;border:1px solid #b88a2a;border-radius:10px;background:#b88a2a;color:#090909;font-weight:800;cursor:pointer}
+      body.aviso-ms-aberto{overflow:hidden!important}
+    `;
+    (document.head || document.documentElement).appendChild(estilo);
+  }
+
+  function fecharAvisoMS() {
+    const popup = document.getElementById("avisoMS");
+    if (!popup) return;
+    popup.classList.remove("ativo");
+    popup.setAttribute("aria-hidden", "true");
+    document.body?.classList.remove("aviso-ms-aberto");
   }
 
   function garantirPopupMS() {
+    if (!document.body) return null;
     let popup = document.getElementById("avisoMS");
     if (popup) return popup;
 
+    adicionarEstiloPopupMS();
     popup = document.createElement("div");
     popup.id = "avisoMS";
     popup.className = "aviso-ms";
@@ -126,34 +136,55 @@ const API_BASE = (location.hostname === "localhost" || location.hostname === "12
         <button class="aviso-ms-botao" type="button" data-fechar-aviso>Entendi</button>
       </section>`;
     document.body.appendChild(popup);
-
     popup.querySelectorAll("[data-fechar-aviso]").forEach(elemento => {
       elemento.addEventListener("click", fecharAvisoMS);
     });
     return popup;
   }
 
-  function fecharAvisoMS() {
-    const popup = document.getElementById("avisoMS");
-    if (!popup) return;
-    popup.classList.remove("ativo");
-    popup.setAttribute("aria-hidden", "true");
-    document.body.classList.remove("aviso-ms-aberto");
-  }
-
-  window.mostrarAvisoMS = function mostrarAvisoMS(mensagem) {
+  function exibirPopupMS(mensagem) {
     const dados = tratarMensagemMS(mensagem);
     const popup = garantirPopupMS();
-    popup.querySelector("#avisoMSTitulo").textContent = dados.titulo;
-    popup.querySelector("#avisoMSMensagem").textContent = dados.mensagem;
-    popup.querySelector("#avisoMSIcone").textContent = dados.icone;
+    if (!popup) return false;
+
+    const titulo = popup.querySelector("#avisoMSTitulo");
+    const texto = popup.querySelector("#avisoMSMensagem");
+    const icone = popup.querySelector("#avisoMSIcone");
+    if (!titulo || !texto || !icone) return false;
+
+    titulo.textContent = dados.titulo;
+    texto.textContent = dados.mensagem;
+    icone.textContent = dados.icone;
     popup.classList.add("ativo");
     popup.setAttribute("aria-hidden", "false");
     document.body.classList.add("aviso-ms-aberto");
     setTimeout(() => popup.querySelector(".aviso-ms-botao")?.focus(), 30);
+    return true;
+  }
+
+  window.mostrarAvisoMS = function mostrarAvisoMS(mensagem) {
+    try {
+      if (exibirPopupMS(mensagem)) return;
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", () => {
+          try {
+            if (!exibirPopupMS(mensagem)) alertaOriginalMS(String(mensagem || "Aviso"));
+          } catch (erro) {
+            console.error("Erro no aviso MS:", erro);
+            alertaOriginalMS(String(mensagem || "Aviso"));
+          }
+        }, { once: true });
+        return;
+      }
+    } catch (erro) {
+      console.error("Erro no aviso MS:", erro);
+    }
+    alertaOriginalMS(String(mensagem || "Aviso"));
   };
 
-  window.alert = window.mostrarAvisoMS;
+  window.alert = function alertaMSSeguro(mensagem) {
+    window.mostrarAvisoMS(mensagem);
+  };
 
   document.addEventListener("keydown", evento => {
     if (evento.key === "Escape") fecharAvisoMS();
