@@ -14628,76 +14628,21 @@ body.aviso-ms-aberto{overflow:hidden!important;}
 }
 
 
-/* ===== CORREÇÃO FINAL CARRINHO MOBILE: PREÇOS E X ÓRFÃO ===== */
-@media (max-width: 768px) {
-  #listaCarrinhoMobile .item-carrinho,
-  #listaCarrinhoMobile .item-checkout {
-    display: grid !important;
-    grid-template-columns: 88px minmax(0, 1fr) !important;
-    align-items: start !important;
-    gap: 14px !important;
+/* Correção final do carrinho mobile */
+body:has(.checkout-ms) #msConfirmacaoCarrinho {
+  display: none !important;
+}
+@media (max-width: 768px){
+  .checkout-ms .resumo-checkout p{
+    display:flex !important;
   }
-
-  #listaCarrinhoMobile .produto-info {
-    min-width: 0 !important;
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: stretch !important;
+  .checkout-ms #subtotal1,
+  .checkout-ms #total1{
+    color:#d9b73a !important;
+    font-weight:900 !important;
   }
-
-  #listaCarrinhoMobile .produto-info h4 {
-    display: block !important;
-    color: #fff !important;
-    font-size: 15px !important;
-    line-height: 1.25 !important;
-    margin: 0 0 5px !important;
-  }
-
-  #listaCarrinhoMobile .precos-item-mobile {
-    display: flex !important;
-    align-items: baseline !important;
-    justify-content: space-between !important;
-    gap: 10px !important;
-    margin: 8px 0 12px !important;
-    padding: 9px 10px !important;
-    border-radius: 12px !important;
-    background: rgba(212,175,55,.08) !important;
-    border: 1px solid rgba(212,175,55,.20) !important;
-  }
-
-  #listaCarrinhoMobile .preco-unitario-mobile {
-    display: block !important;
-    color: #aaa !important;
-    font-size: 11px !important;
-    white-space: nowrap !important;
-  }
-
-  #listaCarrinhoMobile .preco-total-mobile {
-    display: block !important;
-    margin: 0 !important;
-    color: #d4af37 !important;
-    font-size: 17px !important;
-    line-height: 1 !important;
-    white-space: nowrap !important;
-  }
-
-  #etapaCarrinho .resumo-checkout {
-    display: block !important;
-    background: #0b0b0b !important;
-    border: 1px solid rgba(212,175,55,.24) !important;
-  }
-
-  #etapaCarrinho .resumo-checkout p,
-  #etapaCarrinho .resumo-checkout span {
-    color: #bbb !important;
-  }
-
-  #etapaCarrinho .resumo-checkout strong {
-    display: inline !important;
-    margin: 0 !important;
-    color: #fff !important;
-    font-size: 16px !important;
+  .checkout-ms .item-checkout .produto-info > strong{
+    color:#d9b73a !important;
+    display:block !important;
   }
 }
-
-body > .ms-confirmacao-fechar { display:none !important; }

@@ -64,26 +64,6 @@ function pegarPrecoNumero(preco) {
   return parseFloat(valor) || 0;
 }
 
-function precoSeguroItem(item) {
-  return pegarPrecoNumero(item?.preco ?? item?.valor ?? item?.price ?? 0);
-}
-
-function quantidadeSeguraItem(item) {
-  const quantidade = Number(item?.quantidade ?? item?.qtd ?? 1);
-  return Number.isFinite(quantidade) && quantidade > 0 ? quantidade : 1;
-}
-
-function normalizarCarrinhoMS() {
-  carregarCarrinho();
-  carrinho = carrinho.map(item => ({
-    ...item,
-    preco: precoSeguroItem(item),
-    quantidade: quantidadeSeguraItem(item)
-  }));
-  salvarCarrinho();
-  return carrinho;
-}
-
 // ===============================
 // TAMANHO
 // ===============================
@@ -256,13 +236,13 @@ function atualizarContadorMobile() {
 // ===============================
 
 function atualizarCarrinho() {
-  normalizarCarrinhoMS();
+  carregarCarrinho();
 
   const listaPC = document.getElementById("listaCarrinho");
   const listaMobile = document.getElementById("listaCarrinhoMobile");
 
   const subtotal = carrinho.reduce((total, item) => {
-    return total + precoSeguroItem(item) * quantidadeSeguraItem(item);
+    return total + pegarPrecoNumero(item.preco) * Number(item.quantidade || 1);
   }, 0);
 
   let descontoValor = 0;
@@ -305,20 +285,19 @@ function montarListaCarrinho(lista, itens) {
 
         <div class="item-info produto-info">
           <h4>${item.nome}</h4>
-          <p>Tamanho: ${item.tamanho || "Único"}</p>
+          <h3>${item.nome}</h3>
 
-          <div class="precos-item-mobile">
-            <span class="preco-unitario-mobile">${dinheiro(precoSeguroItem(item))} cada</span>
-            <strong class="preco-total-mobile">${dinheiro(precoSeguroItem(item) * quantidadeSeguraItem(item))}</strong>
-          </div>
+          <p>Tamanho: ${item.tamanho}</p>
 
           <div class="controle-quantidade qtd">
-            <button type="button" onclick="diminuirQuantidade(${index})" aria-label="Diminuir quantidade">−</button>
-            <span class="numero-quantidade">${quantidadeSeguraItem(item)}</span>
-            <button type="button" onclick="aumentarQuantidade(${index})" aria-label="Aumentar quantidade">+</button>
+            <button onclick="diminuirQuantidade(${index})">−</button>
+            <span class="numero-quantidade">${item.quantidade}</span>
+            <button onclick="aumentarQuantidade(${index})">+</button>
           </div>
 
-          <button type="button" class="remover-item remover-mobile" onclick="removerItem(${index})">
+          <strong>${dinheiro(pegarPrecoNumero(item.preco) * Number(item.quantidade || 1))}</strong>
+
+          <button class="remover-item remover-mobile" onclick="removerItem(${index})">
             Remover
           </button>
         </div>
@@ -343,7 +322,7 @@ function aumentarQuantidade(index) {
   carregarCarrinho();
   if (!carrinho[index]) return;
 
-  carrinho[index].quantidade = quantidadeSeguraItem(carrinho[index]) + 1;
+  carrinho[index].quantidade = Number(carrinho[index].quantidade || 1) + 1;
   salvarCarrinho();
   atualizarTudo();
 }
@@ -352,7 +331,7 @@ function diminuirQuantidade(index) {
   carregarCarrinho();
   if (!carrinho[index]) return;
 
-  if (quantidadeSeguraItem(carrinho[index]) > 1) {
+  if (Number(carrinho[index].quantidade || 1) > 1) {
     carrinho[index].quantidade -= 1;
   } else {
     carrinho.splice(index, 1);
@@ -669,7 +648,7 @@ function montarResumoPagamentoPC() {
   }
 
   const subtotal = carrinho.reduce((total, item) => {
-    return total + Number(item.preco) * Number(item.quantidade || 1);
+    return total + pegarPrecoNumero(item.preco) * Number(item.quantidade || 1);
   }, 0);
 
   resumo.innerHTML = "<h3>Resumo do pedido</h3>";
@@ -691,7 +670,7 @@ function montarResumoPagamentoPC() {
             <span>Qtd: ${item.quantidade}</span>
 
             <strong class="preco-item-resumo">
-               ${dinheiro(Number(item.preco) * Number(item.quantidade || 1))}
+               ${dinheiro(pegarPrecoNumero(item.preco) * Number(item.quantidade || 1))}
             </strong>
          </div>
       </div>
@@ -1664,7 +1643,7 @@ function renderCarrinhoMobileMS() {
           <button onclick="aumentarQuantidade(${index}); renderCarrinhoMobileMS();">+</button>
         </div>
 
-        <strong>${dinheiro(Number(item.preco) * Number(item.quantidade || 1))}</strong>
+        <strong>${dinheiro(pegarPrecoNumero(item.preco) * Number(item.quantidade || 1))}</strong>
 
         <button class="remover-mobile-ms" onclick="removerItem(${index}); renderCarrinhoMobileMS();">
           Remover
@@ -1717,7 +1696,7 @@ function abrirCarrinhoMobile() {
       <div>
         <h4>${item.nome}</h4>
         <p>Tamanho: ${item.tamanho}</p>
-        <strong>${dinheiro(Number(item.preco) * Number(item.quantidade || 1))}</strong>
+        <strong>${dinheiro(pegarPrecoNumero(item.preco) * Number(item.quantidade || 1))}</strong>
         <p>Qtd: ${item.quantidade || 1}</p>
         <button onclick="removerItem(${index}); abrirCarrinhoMobile();">Remover</button>
       </div>
@@ -1760,7 +1739,7 @@ function abrirCarrinhoMobileMS() {
       </p>
 
       <strong>
-        ${dinheiro(Number(item.preco) * Number(item.quantidade || 1))}
+        ${dinheiro(pegarPrecoNumero(item.preco) * Number(item.quantidade || 1))}
       </strong>
 
       <div class="cmms-acoes">
@@ -5331,43 +5310,27 @@ function dinheiro(valor){
 
   async function podeAdicionarMS(item, qtdNova){
     const pronto = itemProntoMS(item);
-    const quantidadeNova = Math.max(1, Number(qtdNova || 1));
+    const info = await buscarDisponivelMS(pronto);
 
-    let lista = [];
-    try{ lista = JSON.parse(localStorage.getItem("carrinho")) || []; }catch(e){ lista = []; }
-
-    // Monta uma cópia do carrinho como ele ficaria após este clique.
-    const proposta = lista.map(p => itemProntoMS(p));
-    const indice = proposta.findIndex(p => chaveItemMS(p) === chaveItemMS(pronto));
-    if(indice >= 0){
-      proposta[indice].quantidade = Number(proposta[indice].quantidade || 1) + quantidadeNova;
-    }else{
-      proposta.push({ ...pronto, quantidade: quantidadeNova });
-    }
-
-    try{
-      const resp = await fetch(`${API_ESTOQUE_MS}/estoque/validar-carrinho`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ items: proposta })
-      });
-      const dados = await resp.json().catch(() => ({}));
-
-      if(!resp.ok){
-        const mensagemServidor = String(dados.mensagem || "").toLowerCase();
-        if(mensagemServidor.includes("cadastr") || mensagemServidor.includes("não encontrado") || mensagemServidor.includes("nao encontrado")){
-          alert("Esta combinação de cor e tamanho está indisponível no momento. Escolha outra opção.");
-        }else{
-          alert("Você já adicionou ao carrinho todas as unidades disponíveis desta opção.");
-        }
-        return false;
-      }
-      return true;
-    }catch(erro){
-      console.error("Falha ao validar estoque:", erro);
-      alert("Não foi possível conferir o estoque agora. Tente novamente em instantes.");
+    if(!info.cadastrado){
+      alert("Esta combinação de cor e tamanho está indisponível no momento. Escolha outra opção.");
       return false;
     }
+
+    const jaNoCarrinho = qtdNoCarrinhoMS(pronto);
+    const pedidoTotal = jaNoCarrinho + Math.max(1, Number(qtdNova || 1));
+
+    if(pedidoTotal > Number(info.disponivel || 0)){
+      const restante = Math.max(0, Number(info.disponivel || 0) - jaNoCarrinho);
+      if(restante <= 0){
+        alert("Você já adicionou ao carrinho todas as unidades disponíveis desta opção.");
+      }else{
+        alert(`Temos apenas ${restante} unidade(s) disponível(is) desta opção.`);
+      }
+      return false;
+    }
+
+    return true;
   }
 
   function pegarItemDoCardMS(arg1, arg2, arg3, arg4){
@@ -5402,44 +5365,33 @@ function dinheiro(valor){
   }
 
   const addOriginalMS = window.adicionarCarrinho;
-  const inclusoesEmAndamentoMS = new Set();
   window.adicionarCarrinho = async function(arg1, arg2, arg3, arg4){
     const item = pegarItemDoCardMS(arg1, arg2, arg3, arg4);
     const botao = typeof arg1 === "string" ? arg4 : arg1;
-    const chaveBloqueio = chaveItemMS(item);
-
-    if(inclusoesEmAndamentoMS.has(chaveBloqueio)) return false;
 
     if(!item.tamanho || item.tamanho === "ÚNICO" && botao?.closest?.(".card-produto")?.querySelector(".tamanhos")){
       alert("Selecione um tamanho para adicionar este produto ao carrinho.");
       return false;
     }
 
-    inclusoesEmAndamentoMS.add(chaveBloqueio);
-    if(botao) botao.disabled = true;
-    try{
-      if(!(await podeAdicionarMS(item, item.quantidade))) return false;
+    if(!(await podeAdicionarMS(item, item.quantidade))) return false;
 
-      let lista = [];
-      try{ lista = JSON.parse(localStorage.getItem("carrinho")) || []; }catch(e){ lista = []; }
-      const idx = lista.findIndex(p => chaveItemMS(p) === chaveItemMS(item));
-      if(idx >= 0){
-        lista[idx].quantidade = Number(lista[idx].quantidade || 1) + item.quantidade;
-      }else{
-        lista.push(item);
-      }
-
-      salvarEAtualizarMS(lista);
-
-      if(typeof animarProdutoParaCarrinho === "function" && botao) animarProdutoParaCarrinho(botao);
-      if(typeof mostrarConfirmacaoCarrinhoMS === "function") mostrarConfirmacaoCarrinhoMS(item);
-      else if(typeof avisoCarrinhoPremium === "function") avisoCarrinhoPremium(item);
-      else if(typeof mostrarToastMS === "function") mostrarToastMS();
-      return true;
-    }finally{
-      inclusoesEmAndamentoMS.delete(chaveBloqueio);
-      if(botao) botao.disabled = false;
+    let lista = [];
+    try{ lista = JSON.parse(localStorage.getItem("carrinho")) || []; }catch(e){ lista = []; }
+    const idx = lista.findIndex(p => chaveItemMS(p) === chaveItemMS(item));
+    if(idx >= 0){
+      lista[idx].quantidade = Number(lista[idx].quantidade || 1) + item.quantidade;
+    }else{
+      lista.push(item);
     }
+
+    salvarEAtualizarMS(lista);
+
+    if(typeof animarProdutoParaCarrinho === "function" && botao) animarProdutoParaCarrinho(botao);
+    if(typeof mostrarConfirmacaoCarrinhoMS === "function") mostrarConfirmacaoCarrinhoMS(item);
+    else if(typeof avisoCarrinhoPremium === "function") avisoCarrinhoPremium(item);
+    else if(typeof mostrarToastMS === "function") mostrarToastMS();
+    return true;
   };
 
   window.adicionarAoCarrinho = function(botao){ return window.adicionarCarrinho(botao); };
@@ -5467,26 +5419,19 @@ function dinheiro(valor){
       quantidade: qtd
     });
 
-    const chaveBloqueio = chaveItemMS(item);
-    if(inclusoesEmAndamentoMS.has(chaveBloqueio)) return false;
-    inclusoesEmAndamentoMS.add(chaveBloqueio);
-    try{
-      if(!(await podeAdicionarMS(item, qtd))) return false;
+    if(!(await podeAdicionarMS(item, qtd))) return false;
 
-      let lista = [];
-      try{ lista = JSON.parse(localStorage.getItem("carrinho")) || []; }catch(e){ lista = []; }
-      const idx = lista.findIndex(p => chaveItemMS(p) === chaveItemMS(item));
-      if(idx >= 0) lista[idx].quantidade = Number(lista[idx].quantidade || 1) + item.quantidade;
-      else lista.push(item);
+    let lista = [];
+    try{ lista = JSON.parse(localStorage.getItem("carrinho")) || []; }catch(e){ lista = []; }
+    const idx = lista.findIndex(p => chaveItemMS(p) === chaveItemMS(item));
+    if(idx >= 0) lista[idx].quantidade = Number(lista[idx].quantidade || 1) + item.quantidade;
+    else lista.push(item);
 
-      salvarEAtualizarMS(lista);
-      if(typeof mostrarConfirmacaoCarrinhoMS === "function") mostrarConfirmacaoCarrinhoMS(item);
-      else if(typeof avisoCarrinhoPremium === "function") avisoCarrinhoPremium(item);
-      else if(typeof mostrarToastMS === "function") mostrarToastMS();
-      return true;
-    }finally{
-      inclusoesEmAndamentoMS.delete(chaveBloqueio);
-    }
+    salvarEAtualizarMS(lista);
+    if(typeof mostrarConfirmacaoCarrinhoMS === "function") mostrarConfirmacaoCarrinhoMS(item);
+    else if(typeof avisoCarrinhoPremium === "function") avisoCarrinhoPremium(item);
+    else if(typeof mostrarToastMS === "function") mostrarToastMS();
+    return true;
   };
 
   window.aumentarQuantidade = async function(index){
@@ -5877,6 +5822,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const STYLE_ID = "ms-confirmacao-carrinho-style";
   const TOAST_ID = "msConfirmacaoCarrinho";
 
+  function estaNoCheckoutMobileMS(){
+    return Boolean(document.querySelector(".checkout-ms") || /carrinho\.html$/i.test(location.pathname));
+  }
+
   function escaparHTMLMS(valor){
     return String(valor ?? "").replace(/[&<>'"]/g, function(caractere){
       return ({
@@ -6043,7 +5992,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function mostrarConfirmacaoCarrinhoMS(item){
-    if(!document.body) return;
+    if(!document.body || estaNoCheckoutMobileMS()) return;
     garantirEstiloMS();
 
     let toast = document.getElementById(TOAST_ID);
@@ -6060,6 +6009,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const quantidade = Math.max(1, Number(item?.quantidade || 1));
 
     toast.innerHTML = `
+      <button class="ms-confirmacao-fechar" type="button" aria-label="Fechar">×</button>
       <div class="ms-confirmacao-topo">
         <div class="ms-confirmacao-icone" aria-hidden="true">🛍️</div>
         <div class="ms-confirmacao-conteudo">
@@ -6074,6 +6024,7 @@ document.addEventListener("DOMContentLoaded", () => {
       </div>
     `;
 
+    toast.querySelector(".ms-confirmacao-fechar")?.addEventListener("click", fecharConfirmacaoCarrinhoMS);
     toast.querySelector(".ms-confirmacao-continuar")?.addEventListener("click", fecharConfirmacaoCarrinhoMS);
     toast.querySelector(".ms-confirmacao-finalizar")?.addEventListener("click", abrirCarrinhoPeloToastMS);
 
@@ -6093,6 +6044,15 @@ document.addEventListener("DOMContentLoaded", () => {
     window.msConfirmacaoCarrinhoTimer = setTimeout(fecharConfirmacaoCarrinhoMS, 8000);
   }
 
+
+  if(document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", function(){
+      if(estaNoCheckoutMobileMS()) document.getElementById(TOAST_ID)?.remove();
+    }, { once:true });
+  } else if(estaNoCheckoutMobileMS()) {
+    document.getElementById(TOAST_ID)?.remove();
+  }
+
   // Mantém o nome antigo funcionando para outras partes do projeto.
   window.avisoCarrinhoPremium = function(textoOuItem){
     if(textoOuItem && typeof textoOuItem === "object"){
@@ -6108,16 +6068,3 @@ document.addEventListener("DOMContentLoaded", () => {
   // Assim, toda inclusão continua passando pela validação real de estoque.
 
 })();
-
-
-/* MS: reforço visual e limpeza do carrinho mobile */
-document.addEventListener("DOMContentLoaded", function(){
-  normalizarCarrinhoMS();
-  atualizarCarrinho();
-
-  document.querySelectorAll("body > .ms-confirmacao-fechar, body > button[aria-label='Fechar']").forEach(function(botao){
-    if(!botao.closest("#msConfirmacaoCarrinho, .modal, .carrinho, .produto-detalhe")){
-      botao.remove();
-    }
-  });
-});
