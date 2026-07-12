@@ -22,6 +22,7 @@
     .ms-form{display:grid;gap:12px}.ms-form input{width:100%;border:1px solid #4b3b0b;background:#111;color:#fff;border-radius:14px;padding:15px;outline:0}.ms-form input:focus{border-color:var(--gold)}.ms-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.ms-title{font-size:20px;margin:0 0 14px}
     .ms-shipping{display:grid;gap:10px;margin-top:14px}.ms-ship{border:1px solid #4b3b0b;border-radius:14px;padding:14px;display:flex;justify-content:space-between;gap:10px;background:#101010}.ms-ship.selected{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}.ms-ship small{color:var(--muted)}
     .ms-review{display:grid;gap:10px}.ms-review-item{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid #282828}.ms-note{color:var(--muted);line-height:1.5}.ms-loading{display:none;text-align:center;color:var(--muted);padding:12px}.ms-loading.active{display:block}
+    .ms-coupon{margin-top:16px}.ms-coupon-line{display:grid;grid-template-columns:1fr auto;gap:10px}.ms-coupon input{min-width:0;width:100%;border:1px solid #4b3b0b;background:#111;color:#fff;border-radius:14px;padding:15px;outline:0;text-transform:uppercase}.ms-coupon input:focus{border-color:var(--gold)}.ms-coupon button{border:0;border-radius:14px;padding:0 20px;font-weight:900;background:var(--gold);color:#050505}.ms-coupon-message{min-height:22px;margin:10px 0 0;font-weight:800;font-size:14px}.ms-row.discount{display:none;color:#22c55e}.ms-row.discount strong{color:#22c55e}
     @media(max-width:390px){.ms-cart{padding-left:12px;padding-right:12px}.ms-item{grid-template-columns:78px 1fr}.ms-item img{width:78px;height:102px}.ms-head h1{font-size:24px}.ms-step{font-size:12px}}
   </style>
 </head>
@@ -56,7 +57,19 @@
   </section>
 
   <section class="ms-panel" id="step3">
-    <h2 class="ms-title">Resumo do pedido</h2><div class="ms-summary"><div id="review" class="ms-review"></div><div class="ms-row"><span>Frete</span><strong id="reviewShipping">R$ 0,00</strong></div><div class="ms-row total"><span>Total</span><strong id="reviewTotal">R$ 0,00</strong></div></div>
+    <h2 class="ms-title">Resumo do pedido</h2>
+    <div class="ms-summary">
+      <div id="review" class="ms-review"></div>
+      <div class="ms-row"><span>Subtotal</span><strong id="reviewSubtotal">R$ 0,00</strong></div>
+      <div class="ms-row discount" id="reviewDiscountRow"><span id="reviewDiscountLabel">Desconto</span><strong id="reviewDiscount">- R$ 0,00</strong></div>
+      <div class="ms-row"><span>Frete</span><strong id="reviewShipping">R$ 0,00</strong></div>
+      <div class="ms-row total"><span>Total</span><strong id="reviewTotal">R$ 0,00</strong></div>
+    </div>
+    <div class="ms-summary ms-coupon">
+      <h2 class="ms-title">Cupom de desconto</h2>
+      <div class="ms-coupon-line"><input id="couponCode" placeholder="Digite seu cupom" autocomplete="off"><button type="button" id="applyCoupon">Aplicar</button></div>
+      <p class="ms-coupon-message" id="couponMessage"></p>
+    </div>
     <div class="ms-summary"><h2 class="ms-title">Pagamento seguro</h2><p class="ms-note">Você será direcionado ao Mercado Pago para escolher a forma de pagamento e concluir o pedido.</p><button class="ms-btn" id="payButton">Finalizar compra</button><div id="paymentLoading" class="ms-loading">Abrindo o pagamento...</div><button class="ms-btn back" data-back="2">Voltar à entrega</button></div>
   </section>
 </main>
@@ -68,6 +81,8 @@
   let cart = readJSON('carrinho', []);
   let shipping = readJSON('freteSelecionadoMS', null);
   let shippingValue = moneyNumber(localStorage.getItem('valorFreteMS') || shipping?.preco || 0);
+  let couponCode = '';
+  let couponPercent = 0;
 
   function readJSON(key, fallback){ try{return JSON.parse(localStorage.getItem(key)) ?? fallback}catch{return fallback} }
   function moneyNumber(v){ if(typeof v==='number') return Number.isFinite(v)?v:0; let s=String(v??'0').replace(/R\$/gi,'').replace(/\s/g,''); if(s.includes(',')) s=s.replace(/\./g,'').replace(',','.'); else s=s.replace(/[^0-9.-]/g,''); const n=parseFloat(s); return Number.isFinite(n)?n:0 }
@@ -83,7 +98,10 @@
     else list.innerHTML=cart.map((item,i)=>`<article class="ms-item"><img src="${escapeAttr(imageOf(item))}" alt="${escapeAttr(item.nome||'Produto MS')}"><div class="ms-info"><h3>${escapeHtml(item.nome||'Produto MS')}</h3><p>Tamanho: ${escapeHtml(item.tamanho||'-')}</p><p>Preço unit.: ${brl(item.preco)}</p><strong class="ms-price">${brl(moneyNumber(item.preco)*qty(item))}</strong></div><div class="ms-actions"><div class="ms-qty"><button type="button" data-minus="${i}" aria-label="Diminuir">−</button><span>${qty(item)}</span><button type="button" data-plus="${i}" aria-label="Aumentar">+</button></div><button type="button" class="ms-remove" data-remove="${i}">Remover</button></div></article>`).join('');
     updateTotals();
   }
-  function updateTotals(){ const sub=subtotal(), total=sub+shippingValue; $('cartTotal').textContent=brl(sub); $('shippingSubtotal').textContent=brl(sub); $('shippingValue').textContent=brl(shippingValue); $('shippingTotal').textContent=brl(total); $('reviewShipping').textContent=brl(shippingValue); $('reviewTotal').textContent=brl(total); }
+  function discountValue(){ return subtotal() * (Math.max(0, couponPercent) / 100); }
+  function finalTotal(){ return Math.max(0, subtotal() - discountValue() + shippingValue); }
+  function clearCoupon(message=''){ couponCode=''; couponPercent=0; if($('couponCode')) $('couponCode').value=''; if($('couponMessage')){ $('couponMessage').textContent=message; $('couponMessage').style.color=message?'#ff4d6d':''; } updateTotals(); }
+  function updateTotals(){ const sub=subtotal(), discount=discountValue(), total=finalTotal(); $('cartTotal').textContent=brl(sub); $('shippingSubtotal').textContent=brl(sub); $('shippingValue').textContent=brl(shippingValue); $('shippingTotal').textContent=brl(sub+shippingValue); if($('reviewSubtotal')) $('reviewSubtotal').textContent=brl(sub); $('reviewShipping').textContent=brl(shippingValue); $('reviewTotal').textContent=brl(total); const row=$('reviewDiscountRow'); if(row){ row.style.display=couponPercent>0?'flex':'none'; $('reviewDiscount').textContent='- '+brl(discount); $('reviewDiscountLabel').textContent='Desconto '+(couponCode||'cupom'); } }
   function renderReview(){ $('review').innerHTML=cart.map(item=>`<div class="ms-review-item"><span>${escapeHtml(item.nome||'Produto')} × ${qty(item)}</span><strong>${brl(moneyNumber(item.preco)*qty(item))}</strong></div>`).join(''); updateTotals(); }
   function showStep(n){ document.querySelectorAll('.ms-panel').forEach((p,i)=>p.classList.toggle('active',i===n-1)); document.querySelectorAll('.ms-step').forEach(s=>s.classList.toggle('active',Number(s.dataset.step)===n)); $('pageTitle').textContent=n===1?'Meu carrinho':n===2?'Entrega':'Pagamento'; if(n===3)renderReview(); window.scrollTo({top:0,behavior:'smooth'}); }
 
@@ -99,17 +117,34 @@
     }catch(e){console.error(e);alert('Não foi possível calcular a entrega agora. Tente novamente em instantes.')}finally{$('loadingShipping').classList.remove('active')}
   }
 
-  async function pay(){ if(!validateDelivery())return; $('paymentLoading').classList.add('active'); $('payButton').disabled=true; const payload={items:cart,valorFrete:shippingValue,freteSelecionado:shipping,totalComFrete:subtotal()+shippingValue,cliente:{nome:$('customerName').value.trim(),telefone:$('customerPhone').value.trim(),email:$('customerEmail').value.trim(),cep:$('zip').value.trim(),rua:$('street').value.trim(),numero:$('number').value.trim(),bairro:$('district').value.trim(),complemento:$('complement').value.trim(),cidade:$('city').value.trim(),estado:$('state').value.trim()}}; try{const res=await fetch(`${API}/criar-pagamento`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});const data=await res.json();if(!data.init_point)throw new Error(data.erro||'Link de pagamento não recebido');location.href=data.init_point}catch(e){console.error(e);alert('Não foi possível abrir o pagamento agora. Tente novamente em instantes.')}finally{$('paymentLoading').classList.remove('active');$('payButton').disabled=false}}
+  async function applyCoupon(){
+    const input=$('couponCode'); const message=$('couponMessage'); const code=(input.value||'').trim().toUpperCase();
+    if(!code){ clearCoupon('Digite um cupom.'); return; }
+    message.textContent='Validando cupom...'; message.style.color=varGold(); $('applyCoupon').disabled=true;
+    try{
+      const res=await fetch(`${API}/cupons/validar`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({codigo:code,subtotal:subtotal()})});
+      const data=await res.json();
+      if(!res.ok || !data.valido) throw new Error(data.mensagem||'Cupom inválido.');
+      const percent=Number(data.percentual ?? data.cupom?.percentual ?? data.desconto ?? 0);
+      if(!Number.isFinite(percent) || percent<=0) throw new Error('Cupom sem desconto válido.');
+      couponCode=code; couponPercent=percent; input.value=code; message.textContent='Cupom aplicado com sucesso ✓'; message.style.color='#22c55e'; updateTotals();
+    }catch(e){ couponCode=''; couponPercent=0; message.textContent=e.message||'Cupom inválido.'; message.style.color='#ff4d6d'; updateTotals(); }
+    finally{$('applyCoupon').disabled=false}
+  }
+  function varGold(){return getComputedStyle(document.documentElement).getPropertyValue('--gold').trim()||'#e1b92f'}
+
+  async function pay(){ if(!validateDelivery())return; $('paymentLoading').classList.add('active'); $('payButton').disabled=true; const payload={items:cart,valorFrete:shippingValue,freteSelecionado:shipping,subtotal:subtotal(),codigoCupom:couponCode||null,cupom:couponCode?{codigo:couponCode,percentual:couponPercent}:null,percentualDesconto:couponPercent,valorDesconto:discountValue(),desconto:discountValue(),totalComFrete:finalTotal(),total:finalTotal(),cliente:{nome:$('customerName').value.trim(),telefone:$('customerPhone').value.trim(),whatsapp:$('customerPhone').value.trim(),email:$('customerEmail').value.trim(),cep:$('zip').value.trim(),rua:$('street').value.trim(),endereco:$('street').value.trim(),numero:$('number').value.trim(),bairro:$('district').value.trim(),complemento:$('complement').value.trim(),cidade:$('city').value.trim(),estado:$('state').value.trim(),uf:$('state').value.trim()}}; try{const res=await fetch(`${API}/criar-pagamento`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});const data=await res.json();if(!data.init_point)throw new Error(data.erro||'Link de pagamento não recebido');location.href=data.init_point}catch(e){console.error(e);alert('Não foi possível abrir o pagamento agora. Tente novamente em instantes.')}finally{$('paymentLoading').classList.remove('active');$('payButton').disabled=false}}
 
   function escapeHtml(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))} function escapeAttr(v){return escapeHtml(v)}
   window.voltarLoja=()=>{ if(history.length>1)history.back(); else location.href='index.html' };
-  $('cartList').addEventListener('click',e=>{const plus=e.target.dataset.plus,minus=e.target.dataset.minus,remove=e.target.dataset.remove;if(plus!==undefined){const i=Number(plus);cart[i].quantidade=qty(cart[i])+1}else if(minus!==undefined){const i=Number(minus);if(qty(cart[i])>1)cart[i].quantidade=qty(cart[i])-1;else cart.splice(i,1)}else if(remove!==undefined){cart.splice(Number(remove),1)}else return;save();renderCart()});
+  $('cartList').addEventListener('click',e=>{const plus=e.target.dataset.plus,minus=e.target.dataset.minus,remove=e.target.dataset.remove;if(plus!==undefined){const i=Number(plus);cart[i].quantidade=qty(cart[i])+1}else if(minus!==undefined){const i=Number(minus);if(qty(cart[i])>1)cart[i].quantidade=qty(cart[i])-1;else cart.splice(i,1)}else if(remove!==undefined){cart.splice(Number(remove),1)}else return;if(couponPercent>0){couponCode='';couponPercent=0;if($('couponMessage')){$('couponMessage').textContent='Carrinho alterado. Aplique o cupom novamente.';$('couponMessage').style.color='#ff4d6d'}}save();renderCart()});
   $('clearCart').onclick=()=>{if(confirm('Deseja remover todos os produtos do carrinho?')){cart=[];save();renderCart()}};
   $('toShipping').onclick=()=>{if(!cart.length){alert('Seu carrinho está vazio. Adicione um produto para continuar.');return}showStep(2)};
-  $('toPayment').onclick=()=>{if(validateDelivery())showStep(3)}; $('calcShipping').onclick=calculateShipping; $('payButton').onclick=pay;
+  $('toPayment').onclick=()=>{if(validateDelivery())showStep(3)}; $('calcShipping').onclick=calculateShipping; $('applyCoupon').onclick=applyCoupon; $('couponCode').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();applyCoupon()}}); $('payButton').onclick=pay;
   document.querySelectorAll('[data-back]').forEach(b=>b.onclick=()=>showStep(Number(b.dataset.back)));
   $('zip').addEventListener('input',e=>{let v=e.target.value.replace(/\D/g,'').slice(0,8);e.target.value=v.length>5?v.slice(0,5)+'-'+v.slice(5):v});
   $('customerPhone').addEventListener('input',e=>{let v=e.target.value.replace(/\D/g,'').slice(0,11);e.target.value=v.length>10?`(${v.slice(0,2)}) ${v.slice(2,7)}-${v.slice(7)}`:v.length>6?`(${v.slice(0,2)}) ${v.slice(2,6)}-${v.slice(6)}`:v.length>2?`(${v.slice(0,2)}) ${v.slice(2)}`:v});
+  ['customerName','customerPhone','customerEmail','zip','street','number','district','complement','city','state'].forEach(id=>{const el=$(id); const saved=localStorage.getItem('ms_checkout_'+id); if(saved)el.value=saved; el.addEventListener('input',()=>localStorage.setItem('ms_checkout_'+id,el.value));});
   renderCart();
 })();
 </script>
