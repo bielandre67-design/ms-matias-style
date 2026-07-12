@@ -4430,6 +4430,35 @@ document.addEventListener('DOMContentLoaded', () => {
     return window.API_BASE || (typeof API_BASE !== "undefined" ? API_BASE : "");
   }
 
+  function msObterValorCampo(){
+    for(var i = 0; i < arguments.length; i++){
+      var el = document.getElementById(arguments[i]);
+      if(el && String(el.value || "").trim()) return String(el.value).trim();
+    }
+    return "";
+  }
+
+  function msDadosClientePagamento(){
+    var salvo = {};
+    try { salvo = JSON.parse(localStorage.getItem("dadosClienteMS") || "{}"); } catch(e) {}
+
+    var dados = {
+      nome: msObterValorCampo("nomeClienteMobile", "nomeCliente", "customerName") || salvo.nome || "",
+      telefone: msObterValorCampo("telefoneClienteMobile", "telefoneCliente", "customerPhone", "whatsappCliente") || salvo.telefone || salvo.whatsapp || "",
+      email: msObterValorCampo("emailClienteMobile", "emailCliente", "customerEmail") || salvo.email || "",
+      cep: msObterValorCampo("cepCheckout", "cepCliente", "zip") || salvo.cep || "",
+      rua: msObterValorCampo("ruaCliente", "ruaCheckout", "street") || salvo.rua || "",
+      numero: msObterValorCampo("numeroCasa", "numeroCliente", "numeroCheckout", "number") || salvo.numero || "",
+      complemento: msObterValorCampo("complementoCliente", "complementoCheckout", "complement") || salvo.complemento || "",
+      bairro: msObterValorCampo("bairroCliente", "bairroCheckout", "district") || salvo.bairro || "",
+      cidade: msObterValorCampo("cidadeCliente", "cidadeCheckout", "city") || salvo.cidade || "",
+      estado: msObterValorCampo("estadoCliente", "estadoCheckout", "state") || salvo.estado || ""
+    };
+
+    localStorage.setItem("dadosClienteMS", JSON.stringify(dados));
+    return dados;
+  }
+
   function msNormalizarItensPagamento(lista){
     return (lista || []).map(function(item){
       return {
@@ -4474,12 +4503,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
       console.log("MS PAGAMENTO: chamando", apiBase + "/criar-pagamento");
 
+      var clienteMS = msDadosClientePagamento();
+      if(!clienteMS.nome || !clienteMS.telefone || !clienteMS.cep || !clienteMS.rua || !clienteMS.numero || !clienteMS.bairro || !clienteMS.cidade || !clienteMS.estado){
+        if(typeof esconderLoadingCheckout === "function") esconderLoadingCheckout();
+        alert("Volte à etapa Entrega e preencha nome, WhatsApp e endereço completo antes de finalizar.");
+        return false;
+      }
+
       var resposta = await fetch(apiBase + "/criar-pagamento", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           items: msNormalizarItensPagamento(lista),
           carrinho: msNormalizarItensPagamento(lista),
+          nome: clienteMS.nome,
+          telefone: clienteMS.telefone,
+          whatsapp: clienteMS.telefone,
+          email: clienteMS.email,
+          cep: clienteMS.cep,
+          rua: clienteMS.rua,
+          numero: clienteMS.numero,
+          complemento: clienteMS.complemento,
+          bairro: clienteMS.bairro,
+          cidade: clienteMS.cidade,
+          estado: clienteMS.estado,
+          cliente: { nome: clienteMS.nome, telefone: clienteMS.telefone, email: clienteMS.email },
+          endereco: { cep: clienteMS.cep, rua: clienteMS.rua, numero: clienteMS.numero, complemento: clienteMS.complemento, bairro: clienteMS.bairro, cidade: clienteMS.cidade, estado: clienteMS.estado },
           valorFrete: Number(window.valorFrete || valorFrete || localStorage.getItem("valorFreteMS") || 0),
           freteSelecionado: window.freteSelecionado || freteSelecionado || JSON.parse(localStorage.getItem("freteSelecionadoMS") || "null"),
           desconto: Number(descontoCupomMS || 0),

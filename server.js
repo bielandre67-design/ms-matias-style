@@ -1220,15 +1220,16 @@ app.post("/criar-pagamento", async (req, res) => {
     const body = req.body || {};
     const carrinhoItems = body.items || [];
 
-    const nome = body.nome || "";
-    const telefone = body.telefone || "";
-    const cep = body.cep || "";
-    const rua = body.rua || "";
-    const numero = body.numero || "";
-    const complemento = body.complemento || "";
-    const bairro = body.bairro || "";
-    const cidade = body.cidade || "";
-    const estado = body.estado || "";
+    const nome = body.nome || body.cliente?.nome || "";
+    const telefone = body.telefone || body.whatsapp || body.cliente?.telefone || "";
+    const email = body.email || body.cliente?.email || "";
+    const cep = body.cep || body.endereco?.cep || "";
+    const rua = body.rua || body.endereco?.rua || body.endereco?.endereco || "";
+    const numero = body.numero || body.endereco?.numero || "";
+    const complemento = body.complemento || body.endereco?.complemento || "";
+    const bairro = body.bairro || body.endereco?.bairro || "";
+    const cidade = body.cidade || body.endereco?.cidade || "";
+    const estado = body.estado || body.endereco?.estado || "";
 
     const valorFrete = Number(body.valorFrete) || 0;
     const freteSelecionado = body.freteSelecionado || null;
@@ -1238,6 +1239,13 @@ app.post("/criar-pagamento", async (req, res) => {
       return res.status(400).json({
         erro: true,
         mensagem: "Carrinho vazio. Adicione um produto antes de pagar."
+      });
+    }
+
+    if (!nome || !telefone || !cep || !rua || !numero || !bairro || !cidade || !estado) {
+      return res.status(400).json({
+        erro: true,
+        mensagem: "Dados do cliente ou endereço incompletos. Volte à etapa Entrega e preencha todos os campos obrigatórios."
       });
     }
 
@@ -1270,6 +1278,8 @@ app.post("/criar-pagamento", async (req, res) => {
       id: idPedido,
       nome,
       telefone,
+      whatsapp: telefone,
+      email,
       cep,
       rua,
       numero,
@@ -1277,6 +1287,8 @@ app.post("/criar-pagamento", async (req, res) => {
       bairro,
       cidade,
       estado,
+      cliente: { nome, telefone, email },
+      endereco: { cep, rua, numero, complemento, bairro, cidade, estado },
       produtos: carrinhoItems,
       frete: freteSelecionado,
       subtotal,
