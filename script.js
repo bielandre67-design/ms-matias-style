@@ -2401,40 +2401,93 @@ if (resumoMobile && Array.isArray(carrinho)) {
   document.getElementById("valorTotalPagamento").innerText =
     total.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 };
-setInterval(() => {
-  const itens = document.querySelectorAll("#resumoPedidoMobile > div");
-  const qtdItens = itens.length;
+// Removido: este temporizador sobrescrevia o desconto do cupom a cada 500 ms.
+let descontoCupomMS = Number(localStorage.getItem("descontoCupomMS") || 0);
 
-  const precoUnitario = 100; // preço de cada moletom
-  const subtotal = qtdItens * precoUnitario;
+function aplicarCupomMS() {
+  const input = document.getElementById("cupomPagamentoMS");
+  const msg = document.getElementById("mensagemCupomMS");
 
-  const frete = 14.59;
-  const total = subtotal + frete;
+  if (!input || !msg) {
+    console.error("Campo ou mensagem do cupom não encontrado.");
+    return;
+  }
 
-  const produtos = document.getElementById("valorProdutosPagamento");
+  const cupom = input.value.trim().toUpperCase();
+
+  if (cupom === "MS10") {
+    descontoCupomMS = 10;
+    localStorage.setItem("descontoCupomMS", "10");
+    localStorage.setItem("cupomMS", "MS10");
+    msg.textContent = "Cupom MS10 aplicado: 10% de desconto";
+    msg.style.color = "#22c55e";
+  } else {
+    descontoCupomMS = 0;
+    localStorage.removeItem("descontoCupomMS");
+    localStorage.removeItem("cupomMS");
+    msg.textContent = cupom ? "Cupom inválido" : "Digite o cupom MS10";
+    msg.style.color = "#ff4d6d";
+  }
+
+  atualizarResumoPagamentoMSComCupom();
+}
+
+function atualizarResumoPagamentoMSComCupom() {
+  const carrinho =
+    window.carrinho ||
+    window.carrinhoMobile ||
+    JSON.parse(localStorage.getItem("carrinho") || "[]");
+
+  const subtotal = Array.isArray(carrinho)
+    ? carrinho.reduce((soma, item) => {
+        const preco = Number(item.preco || item.valor || item.price || 0);
+        const quantidade = Number(item.quantidade || item.qtd || 1);
+        return soma + (preco * quantidade);
+      }, 0)
+    : 0;
+
+  const frete = Number(
+    window.valorFrete ||
+    window.freteSelecionadoValor ||
+    localStorage.getItem("valorFreteMS") ||
+    localStorage.getItem("valorFrete") ||
+    0
+  );
+
+  const percentual = Number(descontoCupomMS || 0);
+  const valorDesconto = subtotal * (percentual / 100);
+  const total = Math.max(0, subtotal - valorDesconto + frete);
+
+  const produtosEl = document.getElementById("valorProdutosPagamento");
   const freteEl = document.getElementById("valorFretePagamento");
   const totalEl = document.getElementById("valorTotalPagamento");
 
-  if (produtos) produtos.innerText = subtotal.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-  if (freteEl) freteEl.innerText = frete.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-  if (totalEl) totalEl.innerText = total.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-}, 500);
-let descontoCupomMS = 0;
+  if (produtosEl) produtosEl.textContent = subtotal.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  if (freteEl) freteEl.textContent = frete.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  if (totalEl) totalEl.textContent = total.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
-function aplicarCupomMS(){
-  const cupom = document.getElementById("cupomPagamentoMS").value.trim().toUpperCase();
-  const msg = document.getElementById("mensagemCupomMS");
-
-  if(cupom === "MS10"){
-    descontoCupomMS = 10;
-    msg.innerText = "Cupom aplicado: 10% de desconto";
-  } else {
-    descontoCupomMS = 0;
-    msg.innerText = "Cupom inválido";
-  }
-
-  atualizarResumoPagamentoMS();
+  window.descontoCupomMS = percentual;
+  window.valorDescontoCupomMS = valorDesconto;
+  window.totalComCupomMS = total;
 }
+
+window.aplicarCupomMS = aplicarCupomMS;
+window.atualizarResumoPagamentoMSComCupom = atualizarResumoPagamentoMSComCupom;
+
+document.addEventListener("click", function (event) {
+  const botao = event.target.closest(".cupom-linha-ms button");
+  if (!botao) return;
+  event.preventDefault();
+  aplicarCupomMS();
+});
+
+document.addEventListener("keydown", function (event) {
+  if (event.key === "Enter" && event.target?.id === "cupomPagamentoMS") {
+    event.preventDefault();
+    aplicarCupomMS();
+  }
+});
+
 function comprarFavoritosMS(){
 
   const favoritos = JSON.parse(localStorage.getItem("favoritosMS")) || [];
