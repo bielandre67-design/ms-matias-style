@@ -908,6 +908,17 @@ async function buscarEndereco() {
 }
 
 function aplicarCupom() {
+  // No pagamento mobile, o botão antigo ainda chama aplicarCupom().
+  // Encaminhamos para a função correta, que recalcula subtotal, desconto, frete e total.
+  const inputPagamento = document.getElementById("cupomPagamentoMS");
+  const mensagemPagamento = document.getElementById("mensagemCupomMS");
+
+  if (inputPagamento && mensagemPagamento) {
+    aplicarCupomMS();
+    return;
+  }
+
+  // Cupom do carrinho tradicional/desktop.
   const input = document.getElementById("cupomInput");
   const mensagem = document.getElementById("cupomMensagem");
 
@@ -917,10 +928,16 @@ function aplicarCupom() {
 
   if (cupom === "MS10") {
     desconto = 10;
+    localStorage.setItem("descontoCupomMS", "10");
+    localStorage.setItem("cupomMS", "MS10");
     mensagem.innerText = "Cupom aplicado: 10% OFF 🔥";
+    mensagem.style.color = "#22c55e";
   } else {
     desconto = 0;
+    localStorage.removeItem("descontoCupomMS");
+    localStorage.removeItem("cupomMS");
     mensagem.innerText = "Cupom inválido.";
+    mensagem.style.color = "#ff4d6d";
   }
 
   atualizarCarrinho();
@@ -2417,16 +2434,12 @@ function aplicarCupomMS() {
 
   if (cupom === "MS10") {
     descontoCupomMS = 10;
-    desconto = 10;
-    window.desconto = 10;
     localStorage.setItem("descontoCupomMS", "10");
     localStorage.setItem("cupomMS", "MS10");
-    msg.textContent = "Cupom aplicado: 10% OFF 🔥";
+    msg.textContent = "Cupom MS10 aplicado: 10% de desconto";
     msg.style.color = "#22c55e";
   } else {
     descontoCupomMS = 0;
-    desconto = 0;
-    window.desconto = 0;
     localStorage.removeItem("descontoCupomMS");
     localStorage.removeItem("cupomMS");
     msg.textContent = cupom ? "Cupom inválido" : "Digite o cupom MS10";
@@ -2437,18 +2450,22 @@ function aplicarCupomMS() {
 }
 
 function atualizarResumoPagamentoMSComCupom() {
-  const carrinhoAtual = JSON.parse(localStorage.getItem("carrinho") || "[]");
+  const carrinho =
+    (Array.isArray(window.carrinho) && window.carrinho.length ? window.carrinho : null) ||
+    (Array.isArray(window.carrinhoMobile) && window.carrinhoMobile.length ? window.carrinhoMobile : null) ||
+    JSON.parse(localStorage.getItem("carrinhoMobile") || "null") ||
+    JSON.parse(localStorage.getItem("carrinhoMS") || "null") ||
+    JSON.parse(localStorage.getItem("carrinho") || "[]");
 
-  const subtotal = Array.isArray(carrinhoAtual)
-    ? carrinhoAtual.reduce((soma, item) => {
-        const preco = pegarPrecoNumero(item.preco ?? item.valor ?? item.price ?? 0);
+  const subtotal = Array.isArray(carrinho)
+    ? carrinho.reduce((soma, item) => {
+        const preco = Number(item.preco || item.valor || item.price || 0);
         const quantidade = Number(item.quantidade || item.qtd || 1);
         return soma + (preco * quantidade);
       }, 0)
     : 0;
 
   const frete = Number(
-    valorFrete ||
     window.valorFrete ||
     window.freteSelecionadoValor ||
     localStorage.getItem("valorFreteMS") ||
@@ -2460,68 +2477,41 @@ function atualizarResumoPagamentoMSComCupom() {
   const valorDesconto = subtotal * (percentual / 100);
   const total = Math.max(0, subtotal - valorDesconto + frete);
 
-  // Mantém os valores globais usados no checkout e no Mercado Pago.
-  desconto = percentual;
-  totalComFrete = total;
-  window.desconto = percentual;
+  const produtosEl = document.getElementById("valorProdutosPagamento");
+  const freteEl = document.getElementById("valorFretePagamento");
+  const totalEl = document.getElementById("valorTotalPagamento");
+
+  if (produtosEl) produtosEl.textContent = subtotal.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  if (freteEl) freteEl.textContent = frete.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  if (totalEl) totalEl.textContent = total.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+  // Mostra claramente o valor descontado no resumo.
+  if (totalEl) {
+    let linhaDesconto = document.getElementById("linhaDescontoCupomMS");
+    if (!linhaDesconto) {
+      const linhaTotal = totalEl.closest("p, .linha-resumo, .resumo-linha, div");
+      if (linhaTotal && linhaTotal.parentElement) {
+        linhaDesconto = document.createElement("p");
+        linhaDesconto.id = "linhaDescontoCupomMS";
+        linhaDesconto.style.display = "flex";
+        linhaDesconto.style.justifyContent = "space-between";
+        linhaDesconto.style.color = "#22c55e";
+        linhaDesconto.innerHTML = '<span>Desconto MS10</span><strong id="valorDescontoCupomMS"></strong>';
+        linhaTotal.parentElement.insertBefore(linhaDesconto, linhaTotal);
+      }
+    }
+    if (linhaDesconto) {
+      linhaDesconto.style.display = percentual > 0 ? "flex" : "none";
+      const valorDescontoEl = document.getElementById("valorDescontoCupomMS");
+      if (valorDescontoEl) {
+        valorDescontoEl.textContent = "- " + valorDesconto.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+      }
+    }
+  }
+
   window.descontoCupomMS = percentual;
   window.valorDescontoCupomMS = valorDesconto;
   window.totalComCupomMS = total;
-  window.totalComFrete = total;
-
-  const escreverDinheiro = (ids, valor) => {
-    ids.forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.textContent = dinheiro(valor);
-    });
-  };
-
-  escreverDinheiro([
-    "valorProdutosPagamento",
-    "subtotalPagamentoMobile",
-    "subtotalCheckout",
-    "subtotal1"
-  ], subtotal);
-
-  escreverDinheiro([
-    "valorFretePagamento",
-    "fretePagamentoMobile",
-    "freteResumo"
-  ], frete);
-
-  escreverDinheiro([
-    "valorTotalPagamento",
-    "totalPagamentoMobile",
-    "totalCheckout",
-    "totalCarrinho",
-    "total1"
-  ], total);
-
-  // Cria ou atualiza a linha visual do desconto no resumo do pagamento.
-  const totalEl = document.getElementById("totalPagamentoMobile") ||
-                  document.getElementById("valorTotalPagamento");
-
-  if (totalEl) {
-    const linhaTotal = totalEl.closest("p, .linha-resumo, .resumo-linha, div");
-    const resumo = linhaTotal?.parentElement;
-    let linhaDesconto = document.getElementById("linhaDescontoMS10");
-
-    if (percentual > 0 && resumo && linhaTotal) {
-      if (!linhaDesconto) {
-        linhaDesconto = document.createElement(linhaTotal.tagName.toLowerCase());
-        linhaDesconto.id = "linhaDescontoMS10";
-        linhaDesconto.className = linhaTotal.className;
-        linhaDesconto.innerHTML = '<span>Desconto MS10</span><strong id="valorDescontoMS10"></strong>';
-        resumo.insertBefore(linhaDesconto, linhaTotal);
-      }
-
-      const valorEl = linhaDesconto.querySelector("#valorDescontoMS10") || linhaDesconto.querySelector("strong");
-      if (valorEl) valorEl.textContent = `- ${dinheiro(valorDesconto)}`;
-      linhaDesconto.style.display = "";
-    } else if (linhaDesconto) {
-      linhaDesconto.remove();
-    }
-  }
 }
 
 window.aplicarCupomMS = aplicarCupomMS;
