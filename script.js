@@ -913,41 +913,64 @@ async function buscarEndereco() {
   }
 }
 
-function aplicarCupom() {
-  // No pagamento mobile, o botão antigo ainda chama aplicarCupom().
-  // Encaminhamos para a função correta, que recalcula subtotal, desconto, frete e total.
-  const inputPagamento = document.getElementById("cupomPagamentoMS");
-  const mensagemPagamento = document.getElementById("mensagemCupomMS");
+async function aplicarCupom() {
+  // Aceita tanto os IDs do carrinho lateral quanto os IDs do checkout mobile.
+  const input =
+    document.getElementById("cupomPagamentoMS") ||
+    document.getElementById("cupomInput");
 
-  if (inputPagamento && mensagemPagamento) {
-    aplicarCupomMS();
-    return;
-  }
-
-  // Cupom do carrinho tradicional/desktop.
-  const input = document.getElementById("cupomInput");
-  const mensagem = document.getElementById("cupomMensagem");
+  const mensagem =
+    document.getElementById("mensagemCupomMS") ||
+    document.getElementById("cupomMensagem");
 
   if (!input || !mensagem) return;
 
-  const cupom = input.value.trim().toUpperCase();
+  const codigo = input.value.trim().toUpperCase();
 
-  if (cupom === "MS10") {
-    desconto = 10;
-    localStorage.setItem("descontoCupomMS", "10");
-    localStorage.setItem("cupomMS", "MS10");
-    mensagem.innerText = "Cupom aplicado: 10% OFF 🔥";
+  if (!codigo) {
+    descontoCupomMS = 0;
+    codigoCupomAplicadoMS = "";
+    mensagem.textContent = "Digite um cupom.";
+    mensagem.style.color = "#ff4d6d";
+    montarResumoPagamentoPC();
+    return;
+  }
+
+  carregarCarrinho();
+  const subtotal = carrinho.reduce((soma, item) => {
+    return soma + pegarPrecoNumero(item.preco) * Number(item.quantidade || 1);
+  }, 0);
+
+  mensagem.textContent = "Validando cupom...";
+  mensagem.style.color = "#d6b24c";
+
+  try {
+    const resposta = await fetch(`${API_BASE}/cupons/validar`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ codigo, subtotal })
+    });
+
+    const dados = await resposta.json();
+
+    if (!resposta.ok || !dados.valido) {
+      throw new Error(dados.mensagem || "Cupom inválido.");
+    }
+
+    descontoCupomMS = Number(dados.percentual || dados.cupom?.percentual || 0);
+    codigoCupomAplicadoMS = codigo;
+
+    // Mensagem neutra, para nunca ficar presa em 10% quando o painel for editado.
+    mensagem.textContent = "Cupom aplicado com sucesso ✓";
     mensagem.style.color = "#22c55e";
-  } else {
-    desconto = 0;
-    localStorage.removeItem("descontoCupomMS");
-    localStorage.removeItem("cupomMS");
-    mensagem.innerText = "Cupom inválido.";
+  } catch (erro) {
+    descontoCupomMS = 0;
+    codigoCupomAplicadoMS = "";
+    mensagem.textContent = erro.message || "Cupom inválido.";
     mensagem.style.color = "#ff4d6d";
   }
 
-  atualizarCarrinho();
-  if (document.getElementById("resumoPagamentoPC")) montarResumoPagamentoPC();
+  montarResumoPagamentoPC();
 }
 
 // ===============================
@@ -2432,21 +2455,7 @@ localStorage.removeItem("descontoCupomMS");
 localStorage.removeItem("cupomMS");
 
 async function aplicarCupomMS() {
-  const input = document.getElementById("cupomPagamentoMS");
-  const msg = document.getElementById("mensagemCupomMS");
-  if (!input || !msg) return;
-  const codigo = input.value.trim().toUpperCase();
-  if (!codigo) { descontoCupomMS=0; codigoCupomAplicadoMS=""; msg.textContent="Digite um cupom."; msg.style.color="#ff4d6d"; montarResumoPagamentoPC(); return; }
-  const subtotal = (JSON.parse(localStorage.getItem("carrinho")||"[]")).reduce((s,i)=>s+Number(i.preco||0)*Number(i.quantidade||1),0);
-  msg.textContent="Validando cupom...";
-  try{
-    const r=await fetch(`${API_BASE}/cupons/validar`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({codigo,subtotal})});
-    const d=await r.json();
-    if(!r.ok || !d.valido) throw new Error(d.mensagem||"Cupom inválido.");
-    descontoCupomMS=Number(d.percentual||0); codigoCupomAplicadoMS=codigo;
-    msg.textContent=`Cupom ${codigo} aplicado: ${descontoCupomMS}% OFF 🔥`; msg.style.color="#22c55e";
-  }catch(e){ descontoCupomMS=0; codigoCupomAplicadoMS=""; msg.textContent=e.message||"Cupom inválido."; msg.style.color="#ff4d6d"; }
-  if(document.getElementById("resumoPagamentoPC")) montarResumoPagamentoPC(); else atualizarResumoPagamentoMSComCupom();
+  return aplicarCupom();
 }
 function atualizarResumoPagamentoMSComCupom() {
   const carrinho =
@@ -2524,7 +2533,7 @@ document.addEventListener("click", function (event) {
 });
 
 document.addEventListener("keydown", function (event) {
-  if (event.key === "Enter" && event.target?.id === "cupomPagamentoMS") {
+  if (event.key === "Enter" && ["cupomPagamentoMS", "cupomInput"].includes(event.target?.id)) {
     event.preventDefault();
     aplicarCupomMS();
   }
