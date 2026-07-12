@@ -3506,5 +3506,127 @@ window.fecharCarrinhoMobileMS = function(){
   }
 };
 </script>
+
+<script id="etapa3-carrinho-unificado-ms">
+/* ===== ETAPA 3: CARRINHO RESPONSIVO UNIFICADO ===== */
+(function(){
+  function lerCarrinho(){
+    try { return JSON.parse(localStorage.getItem('carrinho')) || []; }
+    catch(e){ return []; }
+  }
+
+  function gravarCarrinho(itens){
+    localStorage.setItem('carrinho', JSON.stringify(itens));
+    if (typeof window.atualizarTudo === 'function') window.atualizarTudo();
+    if (typeof window.atualizarBadgeCarrinho === 'function') window.atualizarBadgeCarrinho();
+  }
+
+  function moeda(valor){
+    return Number(valor || 0).toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+  }
+
+  function renderMobile(){
+    var lista = document.getElementById('listaCarrinhoMobileMS');
+    if (!lista) return;
+    var itens = lerCarrinho();
+
+    if (!itens.length){
+      lista.innerHTML = '<p style="text-align:center;color:#999;padding:40px 0;">Seu carrinho está vazio.</p>';
+      return;
+    }
+
+    lista.innerHTML = itens.map(function(item, index){
+      var qtd = Number(item.quantidade || 1);
+      var preco = Number(item.preco || 0);
+      var img = item.imagem || item.img || '';
+      return '<div class="cmms-item">' +
+        '<img src="' + img + '" class="cmms-img" alt="' + (item.nome || 'Produto') + '">' +
+        '<div class="cmms-info">' +
+          '<h4>' + (item.nome || 'Produto') + '</h4>' +
+          '<p>Tamanho: ' + (item.tamanho || '-') + '</p>' +
+          '<p>Preço unit.: ' + moeda(preco) + '</p>' +
+          '<strong>' + moeda(preco * qtd) + '</strong>' +
+          '<div class="cmms-acoes">' +
+            '<div class="cmms-qtd">' +
+              '<button type="button" onclick="alterarQtdCarrinhoMS(' + index + ',-1)">−</button>' +
+              '<span>' + qtd + '</span>' +
+              '<button type="button" onclick="alterarQtdCarrinhoMS(' + index + ',1)">+</button>' +
+            '</div>' +
+            '<button type="button" class="btn-remover-ms" onclick="removerCarrinhoMS(' + index + ')">Remover</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  function mostrarProdutosMobile(){
+    document.querySelectorAll('#carrinhoMobileMS .cmms-etapa').forEach(function(el){
+      el.classList.remove('ativa'); el.style.display='none';
+    });
+    var etapa = document.getElementById('cmmsEtapaProdutos');
+    if (etapa){ etapa.classList.add('ativa'); etapa.style.display='block'; }
+    document.querySelectorAll('#carrinhoMobileMS .cmms-etapas span').forEach(function(el){el.classList.remove('ativo');});
+    document.getElementById('cmmsStep1')?.classList.add('ativo');
+    var titulo=document.getElementById('tituloCarrinhoMS');
+    if(titulo) titulo.innerText='Meu carrinho';
+  }
+
+  window.abrirCarrinhoMobileMS = function(){
+    var modal = document.getElementById('carrinhoMobileMS');
+    if (!modal) return;
+    modal.style.display='block';
+    modal.style.visibility='visible';
+    modal.style.opacity='1';
+    modal.style.pointerEvents='auto';
+    modal.classList.add('ativo');
+    mostrarProdutosMobile();
+    renderMobile();
+  };
+
+  window.fecharCarrinhoMobileMS = function(){
+    var modal = document.getElementById('carrinhoMobileMS');
+    if (!modal) return;
+    modal.classList.remove('ativo');
+    modal.style.display='none';
+    modal.style.visibility='hidden';
+    modal.style.opacity='0';
+    modal.style.pointerEvents='none';
+  };
+
+  window.alterarQtdCarrinhoMS = function(index, delta){
+    var itens=lerCarrinho();
+    if(!itens[index]) return;
+    itens[index].quantidade=Number(itens[index].quantidade || 1)+Number(delta || 0);
+    if(itens[index].quantidade<=0) itens.splice(index,1);
+    gravarCarrinho(itens);
+    renderMobile();
+  };
+
+  window.removerCarrinhoMS = function(index){
+    var itens=lerCarrinho();
+    itens.splice(index,1);
+    gravarCarrinho(itens);
+    renderMobile();
+  };
+
+  window.limparCarrinhoMS = function(){
+    gravarCarrinho([]);
+    renderMobile();
+  };
+
+  window.abrirCarrinhoResponsivoMS = function(){
+    if(window.innerWidth<=768){
+      window.abrirCarrinhoMobileMS();
+    } else if(typeof window.abrirCarrinhoPCMS==='function'){
+      window.abrirCarrinhoPCMS();
+    } else if(typeof window.abrirCarrinho==='function'){
+      window.abrirCarrinho();
+    }
+  };
+
+  window.abrirCarrinhoMS=window.abrirCarrinhoResponsivoMS;
+})();
+</script>
+
 </body>
 </html>

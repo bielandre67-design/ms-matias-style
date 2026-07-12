@@ -14458,3 +14458,32 @@ body{
     font-weight:800;
   }
 }
+
+
+/* =========================================================
+   CORREÇÃO FINAL: BOTÃO ADICIONAR AO CARRINHO NOS CARDS
+   Mantém o conteúdo completo do card visível no desktop.
+========================================================= */
+@media (min-width: 769px){
+  .card-produto{
+    height:auto !important;
+    max-height:none !important;
+    min-height:690px !important;
+    overflow:hidden !important;
+  }
+
+  .card-produto .btn-comprar{
+    display:flex !important;
+    visibility:visible !important;
+    opacity:1 !important;
+    position:relative !important;
+    width:100% !important;
+    min-height:58px !important;
+    height:58px !important;
+    margin-top:auto !important;
+    flex-shrink:0 !important;
+    align-items:center !important;
+    justify-content:space-between !important;
+    pointer-events:auto !important;
+  }
+}

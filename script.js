@@ -5235,13 +5235,15 @@ function dinheiro(valor){
   function corPeloNomeMS(nome){
     const n = String(nome || "").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
     if(n.includes("preto") || n.includes("preta")) return "Preto";
-    if(n.includes("branco") || n.includes("branca") || n.includes("off white")) return "Branco";
+    if(n.includes("off white") || n.includes("offwhite")) return "Off White";
+    if(n.includes("branco") || n.includes("branca")) return "Branco";
     if(n.includes("bege")) return "Bege";
     if(n.includes("azul")) return "Azul";
     if(n.includes("rosa")) return "Rosa";
     if(n.includes("cinza")) return "Cinza";
     if(n.includes("vinho") || n.includes("bordo")) return "Vinho";
     if(n.includes("marrom")) return "Marrom";
+    if(n.includes("vermelho") || n.includes("vermelha")) return "Vermelho";
     return "Única";
   }
 
@@ -5256,11 +5258,11 @@ function dinheiro(valor){
     else if(nome.includes("jaqueta") || nome.includes("corta vento")) tipo = "JAQ";
     else if(nome.includes("conjunto")) tipo = "CON";
     else if(nome.includes("camiseta") && nome.includes("oversized")) tipo = "OVR";
-    else if(nome.includes("camiseta")) tipo = "CAM";
+    else if(nome.includes("camiseta")) tipo = "CBA";
     else if(nome.includes("calca")) tipo = "CAL";
     else if(nome.includes("touca")) tipo = "TOU";
     else if(nome.includes("meia")) tipo = "MEI";
-    const mapa = {preto:"PT",preta:"PT",branco:"BR",branca:"BR",bege:"BG",azul:"AZ",rosa:"RS",cinza:"CZ",vinho:"VN",bordo:"VN",marrom:"MR",offwhite:"OW",unica:"UN",unico:"UN"};
+    const mapa = {preto:"PT",preta:"PT",branco:"BR",branca:"BR",bege:"BG",azul:"AZ",rosa:"RS",cinza:"CZ",vinho:"VN",bordo:"VN",marrom:"MR",vermelho:"VM",vermelha:"VM",offwhite:"OW",unica:"UN",unico:"UN"};
     const corKey = corTxt.replace(/\s+/g,"");
     const cor = mapa[corKey] || (corKey.slice(0,3).toUpperCase() || "UN");
     return `MS-${tipo}-${cor}-${tam || "UN"}`.replace(/[^A-Z0-9-]/g,"");

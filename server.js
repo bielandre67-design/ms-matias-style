@@ -424,13 +424,15 @@ function normalizarTextoMS(valor) {
 function corPeloNomeMS(nome) {
   const n = normalizarTextoMS(nome);
   if (n.includes("preto") || n.includes("preta")) return "Preto";
-  if (n.includes("branco") || n.includes("branca") || n.includes("off white")) return "Branco";
+  if (n.includes("off white") || n.includes("offwhite")) return "Off White";
+  if (n.includes("branco") || n.includes("branca")) return "Branco";
   if (n.includes("bege")) return "Bege";
   if (n.includes("azul")) return "Azul";
   if (n.includes("rosa")) return "Rosa";
   if (n.includes("cinza")) return "Cinza";
   if (n.includes("vinho") || n.includes("bordo")) return "Vinho";
   if (n.includes("marrom")) return "Marrom";
+  if (n.includes("vermelho") || n.includes("vermelha")) return "Vermelho";
   return "Única";
 }
 
@@ -445,14 +447,14 @@ function gerarSkuEstoqueMS(item) {
   else if (base.includes("jaqueta") || base.includes("corta vento")) tipo = "JAQ";
   else if (base.includes("conjunto")) tipo = "CON";
   else if (base.includes("camiseta") && base.includes("oversized")) tipo = "OVR";
-  else if (base.includes("camiseta")) tipo = "CAM";
+  else if (base.includes("camiseta")) tipo = "CBA";
   else if (base.includes("calca") || base.includes("calça")) tipo = "CAL";
   else if (base.includes("touca")) tipo = "TOU";
   else if (base.includes("meia")) tipo = "MEI";
 
   const cores = {
     preto:"PT", preta:"PT", branco:"BR", branca:"BR", bege:"BG", azul:"AZ",
-    rosa:"RS", cinza:"CZ", vinho:"VN", bordo:"VN", marrom:"MR", offwhite:"OW", unica:"UN", unico:"UN"
+    rosa:"RS", cinza:"CZ", vinho:"VN", bordo:"VN", marrom:"MR", vermelho:"VM", vermelha:"VM", offwhite:"OW", unica:"UN", unico:"UN"
   };
   const corCodigo = cores[cor.replace(/\s+/g, "")] || cor.slice(0,3).toUpperCase() || "UN";
   return `MS-${tipo}-${corCodigo}-${tam || "UN"}`.replace(/[^A-Z0-9-]/g, "");
