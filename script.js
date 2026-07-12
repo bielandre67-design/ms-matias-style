@@ -679,11 +679,17 @@ function montarResumoPagamentoPC() {
 `;
 });
 
+  const percentualCupom = Number(localStorage.getItem("descontoCupomMS") || 0);
+  const valorDescontoCupom = subtotal * (percentualCupom / 100);
+  const totalFinal = Math.max(0, subtotal - valorDescontoCupom + Number(valorFrete || 0));
+  totalComFrete = totalFinal;
+
   resumo.innerHTML += `
     <div class="total-resumo-pc">
-      <p><span>Subtotal</span><strong>${dinheiro(subtotal)}</strong></p>
-      <p><span>Frete</span><strong>${dinheiro(valorFrete)}</strong></p>
-      <p><span>Total</span><strong>${dinheiro(subtotal + Number(valorFrete || 0))}</strong></p>
+      <p><span>Subtotal</span><strong id="valorProdutosPagamento">${dinheiro(subtotal)}</strong></p>
+      ${percentualCupom > 0 ? `<p id="linhaDescontoCupomMS" style="color:#22c55e"><span>Desconto MS10</span><strong id="valorDescontoCupomMS">- ${dinheiro(valorDescontoCupom)}</strong></p>` : ""}
+      <p><span>Frete</span><strong id="valorFretePagamento">${dinheiro(valorFrete)}</strong></p>
+      <p><span>Total</span><strong id="valorTotalPagamento">${dinheiro(totalFinal)}</strong></p>
     </div>
   `;
 }
@@ -941,6 +947,7 @@ function aplicarCupom() {
   }
 
   atualizarCarrinho();
+  if (document.getElementById("resumoPagamentoPC")) montarResumoPagamentoPC();
 }
 
 // ===============================
@@ -2446,7 +2453,13 @@ function aplicarCupomMS() {
     msg.style.color = "#ff4d6d";
   }
 
-  atualizarResumoPagamentoMSComCupom();
+  // O carrinho lateral do computador é montado por outra função.
+  // Recriamos o resumo para que subtotal, desconto, frete e total mudem na hora.
+  if (document.getElementById("resumoPagamentoPC")) {
+    montarResumoPagamentoPC();
+  } else {
+    atualizarResumoPagamentoMSComCupom();
+  }
 }
 
 function atualizarResumoPagamentoMSComCupom() {
