@@ -30,6 +30,7 @@
       <button class="ms-tab" onclick="abrirAbaMS('produtosAba', this)"><span>▦</span> Produtos</button>
       <button class="ms-tab" onclick="abrirAbaMS('estoqueAba', this)"><span>◇</span> Estoque</button>
       <button class="ms-tab" onclick="abrirAbaMS('pedidosAba', this)"><span>◌</span> Pedidos</button>
+      <button class="ms-tab" onclick="abrirAbaMS('cuponsAba', this)"><span>%</span> Cupons</button>
       <button class="ms-tab" onclick="abrirAbaMS('relatoriosAba', this)"><span>▥</span> Relatórios</button>
     </nav>
 
@@ -195,6 +196,23 @@
       <div id="pedidos" class="lista"></div>
     </section>
 
+
+    <section id="cuponsAba" class="ms-painel">
+      <div class="page-title-ms"><div><h2>Cupons</h2><p>Crie e controle códigos promocionais sem editar o site.</p></div></div>
+      <section class="painel-card-ms cupom-form-admin-ms">
+        <input type="hidden" id="cupomIdMS">
+        <label>Código<input id="cupomCodigoMS" placeholder="MS10" maxlength="40"></label>
+        <label>Desconto (%)<input id="cupomPercentualMS" type="number" min="1" max="100" value="10"></label>
+        <label>Compra mínima<input id="cupomMinimoMS" type="number" min="0" step="0.01" value="0"></label>
+        <label>Limite de usos<input id="cupomLimiteMS" type="number" min="0" value="0"><small>0 = ilimitado</small></label>
+        <label>Validade<input id="cupomValidadeMS" type="datetime-local"></label>
+        <label class="cupom-ativo-admin-ms"><input id="cupomAtivoMS" type="checkbox" checked> Ativo</label>
+        <div class="cupom-acoes-admin-ms"><button class="btn-dark-ms" onclick="salvarCupomMS()">Salvar cupom</button><button class="btn-dark-ms" onclick="limparCupomFormMS()">Novo</button></div>
+        <p id="cupomMsgAdminMS"></p>
+      </section>
+      <section class="painel-card-ms"><div class="tabela-responsiva"><table class="estoque-lista grade-estoque-ms"><thead><tr><th>Código</th><th>Desconto</th><th>Usos</th><th>Validade</th><th>Status</th><th>Ações</th></tr></thead><tbody id="listaCuponsMS"><tr><td colspan="6">Carregando...</td></tr></tbody></table></div></section>
+    </section>
+
     <section id="relatoriosAba" class="ms-painel">
       <div class="page-title-ms"><div><h2>Relatórios</h2><p>Resumo simples para acompanhar a loja.</p></div></div>
       <section class="cards-resumo">
@@ -230,11 +248,12 @@ function abrirAbaMS(id, btn){
   document.getElementById(id)?.classList.add('ativa');
   document.querySelectorAll('.ms-tab').forEach(b => b.classList.remove('ativa'));
   btn?.classList.add('ativa');
-  const titulos = {visao:'Dashboard', produtosAba:'Produtos', estoqueAba:'Estoque', pedidosAba:'Pedidos', relatoriosAba:'Relatórios'};
+  const titulos = {visao:'Dashboard', produtosAba:'Produtos', estoqueAba:'Estoque', pedidosAba:'Pedidos', cuponsAba:'Cupons', relatoriosAba:'Relatórios'};
   const titulo = document.getElementById('tituloPaginaMS');
   if(titulo) titulo.innerText = titulos[id] || 'Painel ADM';
   if(id === 'estoqueAba') carregarEstoqueMS();
   if(id === 'produtosAba') carregarProdutosAdminMS();
+  if(id === 'cuponsAba') carregarCuponsMS();
 }
 
 function skuMS(produto, cor, tamanho){
@@ -523,6 +542,14 @@ function alternarTemaMS(){
   const atual = document.documentElement.getAttribute('data-theme') || 'claro';
   aplicarTemaMS(atual === 'escuro' ? 'claro' : 'escuro');
 }
+
+
+let cuponsAdminMS=[];
+async function carregarCuponsMS(){const corpo=document.getElementById('listaCuponsMS');if(!corpo)return;try{const r=await fetch(`${API_ADMIN_MS}/cupons?t=${Date.now()}`);cuponsAdminMS=await r.json();corpo.innerHTML=cuponsAdminMS.length?cuponsAdminMS.map(c=>`<tr><td><strong>${c.codigo}</strong></td><td>${c.percentual}%</td><td>${c.usos}${c.limiteUsos?` / ${c.limiteUsos}`:' / ∞'}</td><td>${c.validade?new Date(c.validade).toLocaleString('pt-BR'):'Sem validade'}</td><td>${c.ativo?'Ativo':'Desativado'}</td><td><button class="btn-dark-ms" onclick="editarCupomMS(${c.id})">Editar</button> <button class="btn-excluir-lote-ms" onclick="excluirCupomMS(${c.id})">Excluir</button></td></tr>`).join(''):'<tr><td colspan="6">Nenhum cupom cadastrado.</td></tr>';}catch(e){corpo.innerHTML='<tr><td colspan="6">Erro ao carregar cupons.</td></tr>';}}
+function limparCupomFormMS(){cupomIdMS.value='';cupomCodigoMS.value='';cupomPercentualMS.value=10;cupomMinimoMS.value=0;cupomLimiteMS.value=0;cupomValidadeMS.value='';cupomAtivoMS.checked=true;cupomMsgAdminMS.textContent='';}
+function editarCupomMS(id){const c=cuponsAdminMS.find(x=>x.id===id);if(!c)return;cupomIdMS.value=c.id;cupomCodigoMS.value=c.codigo;cupomPercentualMS.value=c.percentual;cupomMinimoMS.value=c.valorMinimo;cupomLimiteMS.value=c.limiteUsos;cupomValidadeMS.value=c.validade?new Date(c.validade).toISOString().slice(0,16):'';cupomAtivoMS.checked=c.ativo;window.scrollTo({top:0,behavior:'smooth'});}
+async function salvarCupomMS(){const id=cupomIdMS.value;const body={codigo:cupomCodigoMS.value.trim().toUpperCase(),percentual:Number(cupomPercentualMS.value),valorMinimo:Number(cupomMinimoMS.value),limiteUsos:Number(cupomLimiteMS.value),validade:cupomValidadeMS.value||null,ativo:cupomAtivoMS.checked};try{const r=await fetch(`${API_ADMIN_MS}/cupons${id?'/'+id:''}`,{method:id?'PUT':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const d=await r.json();if(!r.ok)throw new Error(d.mensagem||'Erro ao salvar.');cupomMsgAdminMS.textContent='Cupom salvo com sucesso.';limparCupomFormMS();await carregarCuponsMS();}catch(e){cupomMsgAdminMS.textContent=e.message;}}
+async function excluirCupomMS(id){if(!confirm('Excluir este cupom?'))return;await fetch(`${API_ADMIN_MS}/cupons/${id}`,{method:'DELETE'});await carregarCuponsMS();}
 
 function carregarTudoMS(){
   if(window.atualizarPedidos) window.atualizarPedidos();

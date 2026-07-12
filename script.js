@@ -679,7 +679,7 @@ function montarResumoPagamentoPC() {
 `;
 });
 
-  const percentualCupom = Number(localStorage.getItem("descontoCupomMS") || 0);
+  const percentualCupom = Number(descontoCupomMS || 0);
   const valorDescontoCupom = subtotal * (percentualCupom / 100);
   const totalFinal = Math.max(0, subtotal - valorDescontoCupom + Number(valorFrete || 0));
   totalComFrete = totalFinal;
@@ -687,7 +687,7 @@ function montarResumoPagamentoPC() {
   resumo.innerHTML += `
     <div class="total-resumo-pc">
       <p><span>Subtotal</span><strong id="valorProdutosPagamento">${dinheiro(subtotal)}</strong></p>
-      ${percentualCupom > 0 ? `<p id="linhaDescontoCupomMS" style="color:#22c55e"><span>Desconto MS10</span><strong id="valorDescontoCupomMS">- ${dinheiro(valorDescontoCupom)}</strong></p>` : ""}
+      ${percentualCupom > 0 ? `<p id="linhaDescontoCupomMS" style="color:#22c55e"><span>Desconto ${codigoCupomAplicadoMS || "cupom"}</span><strong id="valorDescontoCupomMS">- ${dinheiro(valorDescontoCupom)}</strong></p>` : ""}
       <p><span>Frete</span><strong id="valorFretePagamento">${dinheiro(valorFrete)}</strong></p>
       <p><span>Total</span><strong id="valorTotalPagamento">${dinheiro(totalFinal)}</strong></p>
     </div>
@@ -2426,42 +2426,28 @@ if (resumoMobile && Array.isArray(carrinho)) {
     total.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 };
 // Removido: este temporizador sobrescrevia o desconto do cupom a cada 500 ms.
-let descontoCupomMS = Number(localStorage.getItem("descontoCupomMS") || 0);
+let descontoCupomMS = 0;
+let codigoCupomAplicadoMS = "";
+localStorage.removeItem("descontoCupomMS");
+localStorage.removeItem("cupomMS");
 
-function aplicarCupomMS() {
+async function aplicarCupomMS() {
   const input = document.getElementById("cupomPagamentoMS");
   const msg = document.getElementById("mensagemCupomMS");
-
-  if (!input || !msg) {
-    console.error("Campo ou mensagem do cupom não encontrado.");
-    return;
-  }
-
-  const cupom = input.value.trim().toUpperCase();
-
-  if (cupom === "MS10") {
-    descontoCupomMS = 10;
-    localStorage.setItem("descontoCupomMS", "10");
-    localStorage.setItem("cupomMS", "MS10");
-    msg.textContent = "Cupom MS10 aplicado: 10% de desconto";
-    msg.style.color = "#22c55e";
-  } else {
-    descontoCupomMS = 0;
-    localStorage.removeItem("descontoCupomMS");
-    localStorage.removeItem("cupomMS");
-    msg.textContent = cupom ? "Cupom inválido" : "Digite o cupom MS10";
-    msg.style.color = "#ff4d6d";
-  }
-
-  // O carrinho lateral do computador é montado por outra função.
-  // Recriamos o resumo para que subtotal, desconto, frete e total mudem na hora.
-  if (document.getElementById("resumoPagamentoPC")) {
-    montarResumoPagamentoPC();
-  } else {
-    atualizarResumoPagamentoMSComCupom();
-  }
+  if (!input || !msg) return;
+  const codigo = input.value.trim().toUpperCase();
+  if (!codigo) { descontoCupomMS=0; codigoCupomAplicadoMS=""; msg.textContent="Digite um cupom."; msg.style.color="#ff4d6d"; montarResumoPagamentoPC(); return; }
+  const subtotal = (JSON.parse(localStorage.getItem("carrinho")||"[]")).reduce((s,i)=>s+Number(i.preco||0)*Number(i.quantidade||1),0);
+  msg.textContent="Validando cupom...";
+  try{
+    const r=await fetch(`${API_BASE}/cupons/validar`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({codigo,subtotal})});
+    const d=await r.json();
+    if(!r.ok || !d.valido) throw new Error(d.mensagem||"Cupom inválido.");
+    descontoCupomMS=Number(d.percentual||0); codigoCupomAplicadoMS=codigo;
+    msg.textContent=`Cupom ${codigo} aplicado: ${descontoCupomMS}% OFF 🔥`; msg.style.color="#22c55e";
+  }catch(e){ descontoCupomMS=0; codigoCupomAplicadoMS=""; msg.textContent=e.message||"Cupom inválido."; msg.style.color="#ff4d6d"; }
+  if(document.getElementById("resumoPagamentoPC")) montarResumoPagamentoPC(); else atualizarResumoPagamentoMSComCupom();
 }
-
 function atualizarResumoPagamentoMSComCupom() {
   const carrinho =
     (Array.isArray(window.carrinho) && window.carrinho.length ? window.carrinho : null) ||
@@ -4487,7 +4473,8 @@ document.addEventListener('DOMContentLoaded', () => {
           carrinho: msNormalizarItensPagamento(lista),
           valorFrete: Number(window.valorFrete || valorFrete || localStorage.getItem("valorFreteMS") || 0),
           freteSelecionado: window.freteSelecionado || freteSelecionado || JSON.parse(localStorage.getItem("freteSelecionadoMS") || "null"),
-          desconto: Number(window.desconto || desconto || 0),
+          desconto: Number(descontoCupomMS || 0),
+          codigoCupom: codigoCupomAplicadoMS || "",
           totalComFrete: Number(window.totalComFrete || totalComFrete || 0)
         })
       });

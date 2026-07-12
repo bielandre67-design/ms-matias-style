@@ -92,6 +92,21 @@ async function iniciarPostgresMS() {
   await pool.query(`ALTER TABLE produtos ADD COLUMN IF NOT EXISTS tamanhos JSONB NOT NULL DEFAULT '["P","M","G","GG"]'::jsonb`);
 
   await pool.query(`
+    CREATE TABLE IF NOT EXISTS cupons (
+      id BIGSERIAL PRIMARY KEY,
+      codigo VARCHAR(40) UNIQUE NOT NULL,
+      percentual NUMERIC(5,2) NOT NULL CHECK (percentual > 0 AND percentual <= 100),
+      ativo BOOLEAN NOT NULL DEFAULT TRUE,
+      valor_minimo NUMERIC(10,2) NOT NULL DEFAULT 0,
+      limite_usos INTEGER NOT NULL DEFAULT 0,
+      usos INTEGER NOT NULL DEFAULT 0,
+      validade TIMESTAMPTZ,
+      criado_em TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      atualizado_em TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+
+  await pool.query(`
     CREATE TABLE IF NOT EXISTS estoque_variantes (
       sku VARCHAR(100) PRIMARY KEY,
       nome VARCHAR(180) NOT NULL,
@@ -201,7 +216,7 @@ function garantirMercadoPagoConfigurado() {
 
 const client = new MercadoPagoConfig({ accessToken });
 
-function montarItensMercadoPago(carrinhoItems, valorFrete, freteSelecionado) {
+function montarItensMercadoPago(carrinhoItems, valorFrete, freteSelecionado, percentualDesconto = 0) {
   const items = carrinhoItems
     .map((item) => {
       const preco = Number(item.preco);
@@ -212,7 +227,7 @@ function montarItensMercadoPago(carrinhoItems, valorFrete, freteSelecionado) {
       return {
         title: `${item.nome || "Produto"} - Tamanho ${item.tamanho || "-"}`,
         quantity: quantidade,
-        unit_price: preco,
+        unit_price: Math.max(0.01, preco * (1 - Number(percentualDesconto || 0) / 100)),
         currency_id: "BRL"
       };
     })
@@ -231,9 +246,9 @@ function montarItensMercadoPago(carrinhoItems, valorFrete, freteSelecionado) {
   return items;
 }
 
-async function criarPreferenciaMP({ carrinhoItems, valorFrete, freteSelecionado, idPedido }) {
+async function criarPreferenciaMP({ carrinhoItems, valorFrete, freteSelecionado, idPedido, percentualDesconto = 0 }) {
   garantirMercadoPagoConfigurado();
-  const items = montarItensMercadoPago(carrinhoItems, valorFrete, freteSelecionado);
+  const items = montarItensMercadoPago(carrinhoItems, valorFrete, freteSelecionado, percentualDesconto);
 
   if (!items.length) {
     const erro = new Error("Carrinho vazio ou produtos sem preço válido.");
@@ -1217,7 +1232,7 @@ app.post("/criar-pagamento", async (req, res) => {
 
     const valorFrete = Number(body.valorFrete) || 0;
     const freteSelecionado = body.freteSelecionado || null;
-    const desconto = Number(body.desconto) || 0;
+    const codigoCupom = String(body.codigoCupom || "").trim().toUpperCase();
 
     if (!carrinhoItems.length) {
       return res.status(400).json({
@@ -1238,7 +1253,10 @@ app.post("/criar-pagamento", async (req, res) => {
       return soma + Number(item.preco || 0) * Number(item.quantidade || 1);
     }, 0);
 
-    const valorDesconto = desconto > 0 ? subtotal * (desconto / 100) : 0;
+    const validacaoCupom = codigoCupom ? await validarCupomBancoMS(codigoCupom, subtotal) : { valido:false, percentual:0 };
+    if (codigoCupom && !validacaoCupom.valido) return res.status(400).json({ erro:true, mensagem:validacaoCupom.mensagem });
+    const desconto = validacaoCupom.valido ? Number(validacaoCupom.percentual) : 0;
+    const valorDesconto = subtotal * (desconto / 100);
     const totalPedido = subtotal - valorDesconto + valorFrete;
 
     const pedidos = lerPedidos();
@@ -1261,6 +1279,9 @@ app.post("/criar-pagamento", async (req, res) => {
       estado,
       produtos: carrinhoItems,
       frete: freteSelecionado,
+      subtotal,
+      desconto,
+      codigoCupom: codigoCupom || null,
       total: totalPedido,
       status: "aguardando pagamento",
       data: agoraBrasil
@@ -1275,12 +1296,17 @@ app.post("/criar-pagamento", async (req, res) => {
         carrinhoItems,
         valorFrete,
         freteSelecionado,
-        idPedido
+        idPedido,
+        percentualDesconto: desconto
       });
     } catch (erroPagamento) {
       liberarReservaPedidoMS(idPedido);
       salvarPedidos(lerPedidos().filter((p) => !idsIguaisMS(p.id, idPedido)));
       throw erroPagamento;
+    }
+
+    if (codigoCupom && validacaoCupom.valido && pool) {
+      await pool.query("UPDATE cupons SET usos=usos+1, atualizado_em=NOW() WHERE id=$1", [validacaoCupom.cupom.id]);
     }
 
     const pedidosAtualizados = lerPedidos();
@@ -1560,6 +1586,33 @@ app.get("/health", (req, res) => {
   });
 });
 
+
+
+// CUPONS ---------------------------------------------------------------------
+function cupomRespostaMS(row) {
+  return {
+    id: Number(row.id), codigo: row.codigo, percentual: Number(row.percentual || 0),
+    ativo: Boolean(row.ativo), valorMinimo: Number(row.valor_minimo || 0),
+    limiteUsos: Number(row.limite_usos || 0), usos: Number(row.usos || 0),
+    validade: row.validade, criadoEm: row.criado_em, atualizadoEm: row.atualizado_em
+  };
+}
+async function validarCupomBancoMS(codigo, subtotal) {
+  if (!pool || !codigo) return { valido:false, mensagem:"Cupom inválido." };
+  const r = await pool.query("SELECT * FROM cupons WHERE UPPER(codigo)=UPPER($1) LIMIT 1", [String(codigo).trim()]);
+  if (!r.rowCount) return { valido:false, mensagem:"Cupom inválido." };
+  const c=r.rows[0];
+  if(!c.ativo) return { valido:false, mensagem:"Este cupom está desativado." };
+  if(c.validade && new Date(c.validade).getTime() < Date.now()) return { valido:false, mensagem:"Este cupom expirou." };
+  if(Number(c.limite_usos)>0 && Number(c.usos)>=Number(c.limite_usos)) return { valido:false, mensagem:"Este cupom atingiu o limite de usos." };
+  if(Number(subtotal||0) < Number(c.valor_minimo||0)) return { valido:false, mensagem:`Compra mínima de R$ ${Number(c.valor_minimo).toFixed(2).replace('.',',')}.` };
+  return { valido:true, cupom:cupomRespostaMS(c), percentual:Number(c.percentual), valorDesconto:Number(subtotal||0)*(Number(c.percentual)/100) };
+}
+app.get("/cupons", async (req,res,next)=>{ if(!pool) return res.json([]); try{const r=await pool.query("SELECT * FROM cupons ORDER BY id DESC");res.json(r.rows.map(cupomRespostaMS));}catch(e){next(e);} });
+app.post("/cupons/validar", async (req,res,next)=>{ try{const resultado=await validarCupomBancoMS(req.body?.codigo, Number(req.body?.subtotal||0)); res.status(resultado.valido?200:400).json(resultado);}catch(e){next(e);} });
+app.post("/cupons", async (req,res,next)=>{ if(!pool)return res.status(503).json({mensagem:"Banco não configurado."});try{const b=req.body||{};const codigo=String(b.codigo||'').trim().toUpperCase();if(!codigo)return res.status(400).json({mensagem:"Informe o código."});const r=await pool.query(`INSERT INTO cupons(codigo,percentual,ativo,valor_minimo,limite_usos,validade) VALUES($1,$2,$3,$4,$5,$6) RETURNING *`,[codigo,Number(b.percentual)||0,b.ativo!==false,Number(b.valorMinimo)||0,Math.max(0,Number(b.limiteUsos)||0),b.validade||null]);res.json({ok:true,cupom:cupomRespostaMS(r.rows[0])});}catch(e){if(e.code==='23505')return res.status(400).json({mensagem:"Esse código já existe."});next(e);} });
+app.put("/cupons/:id", async (req,res,next)=>{if(!pool)return res.status(503).json({mensagem:"Banco não configurado."});try{const b=req.body||{};const r=await pool.query(`UPDATE cupons SET codigo=UPPER($2),percentual=$3,ativo=$4,valor_minimo=$5,limite_usos=$6,validade=$7,atualizado_em=NOW() WHERE id=$1 RETURNING *`,[req.params.id,String(b.codigo||'').trim(),Number(b.percentual)||0,b.ativo!==false,Number(b.valorMinimo)||0,Math.max(0,Number(b.limiteUsos)||0),b.validade||null]);if(!r.rowCount)return res.status(404).json({mensagem:"Cupom não encontrado."});res.json({ok:true,cupom:cupomRespostaMS(r.rows[0])});}catch(e){next(e);} });
+app.delete("/cupons/:id", async(req,res,next)=>{if(!pool)return res.status(503).json({mensagem:"Banco não configurado."});try{await pool.query("DELETE FROM cupons WHERE id=$1",[req.params.id]);res.json({ok:true});}catch(e){next(e);} });
 
 // PRODUTOS NO POSTGRESQL ------------------------------------------------------
 // Esta API é compatível com o catálogo HTML atual. O front sincroniza os cards

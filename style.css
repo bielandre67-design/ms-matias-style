@@ -14643,3 +14643,6 @@ body.aviso-ms-aberto{overflow:hidden!important;}
 .pedido-card.ms-pro.tem-selecao{padding-left:72px}
 .pedido-card.ms-pro.selecionado{outline:2px solid rgba(212,175,55,.75);box-shadow:0 0 0 5px rgba(212,175,55,.10),0 24px 70px rgba(0,0,0,.32)}
 @media(max-width:760px){.acoes-pedidos-lote{align-items:stretch}.selecionar-todos-pedidos{width:100%}#excluirPedidosSelecionados{margin-left:0;width:100%}.pedido-card.ms-pro.tem-selecao{padding-left:16px;padding-top:68px}.pedido-selecao-ms{top:16px;left:16px}}
+
+/* Cupons no painel */
+.cupom-form-admin-ms{display:grid;grid-template-columns:repeat(3,minmax(180px,1fr));gap:14px;margin-bottom:18px}.cupom-form-admin-ms label{display:flex;flex-direction:column;gap:7px;font-weight:700}.cupom-form-admin-ms input{background:#15171c;border:1px solid #343741;color:#fff;border-radius:12px;padding:12px}.cupom-ativo-admin-ms{justify-content:center}.cupom-ativo-admin-ms input{width:20px;height:20px}.cupom-acoes-admin-ms{display:flex;gap:10px;align-items:end}@media(max-width:800px){.cupom-form-admin-ms{grid-template-columns:1fr}.cupom-acoes-admin-ms{align-items:stretch;flex-direction:column}}
