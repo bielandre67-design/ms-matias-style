@@ -91,10 +91,18 @@
         </div>
       </section>
       <section class="painel-card-ms">
+        <div class="acoes-lote-produtos-ms">
+          <label class="selecionar-todos-produtos-ms">
+            <input id="selecionarTodosProdutosMS" type="checkbox" onchange="alternarTodosProdutosMS(this.checked)">
+            <span>Selecionar todos</span>
+          </label>
+          <span id="contadorSelecionadosProdutosMS">0 selecionados</span>
+          <button id="btnExcluirSelecionadosProdutosMS" class="btn-excluir-lote-ms" type="button" onclick="excluirProdutosSelecionadosMS()" disabled>🗑 Excluir selecionados</button>
+        </div>
         <div class="tabela-wrap-ms">
           <table class="estoque-lista grade-estoque-ms">
-            <thead><tr><th>Produto</th><th>Categoria</th><th>Preço</th><th>Preço antigo</th><th>Promoção</th><th>Destaque</th><th>Visível</th><th>Ação</th></tr></thead>
-            <tbody id="listaProdutosAdminMS"><tr><td colspan="8">Carregando produtos...</td></tr></tbody>
+            <thead><tr><th class="col-check-produto-ms"><input type="checkbox" aria-label="Selecionar todos os produtos" onchange="alternarTodosProdutosMS(this.checked)" data-check-todos-produtos></th><th>Produto</th><th>Categoria</th><th>Preço</th><th>Preço antigo</th><th>Promoção</th><th>Destaque</th><th>Visível</th><th>Ação</th></tr></thead>
+            <tbody id="listaProdutosAdminMS"><tr><td colspan="9">Carregando produtos...</td></tr></tbody>
           </table>
         </div>
       </section>
@@ -406,12 +414,12 @@ function moedaAdminMS(v){ return Number(v||0).toLocaleString('pt-BR',{style:'cur
 function escaparAdminMS(v){ return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
 async function carregarProdutosAdminMS(){
   const corpo=document.getElementById('listaProdutosAdminMS');
-  if(corpo) corpo.innerHTML='<tr><td colspan="8">Carregando...</td></tr>';
+  if(corpo) corpo.innerHTML='<tr><td colspan="9">Carregando...</td></tr>';
   try{
     const r=await fetch(`${API_ADMIN_MS}/produtos?t=${Date.now()}`);
     if(!r.ok) throw new Error('Falha ao carregar produtos');
     produtosAdminMS=await r.json(); renderProdutosAdminMS();
-  }catch(e){ if(corpo) corpo.innerHTML='<tr><td colspan="8">Não consegui carregar os produtos.</td></tr>'; }
+  }catch(e){ if(corpo) corpo.innerHTML='<tr><td colspan="9">Não consegui carregar os produtos.</td></tr>'; }
 }
 function renderProdutosAdminMS(){
   const corpo=document.getElementById('listaProdutosAdminMS'); if(!corpo) return;
@@ -422,8 +430,9 @@ function renderProdutosAdminMS(){
     const okStatus=filtro==='todos'||(filtro==='ativos'&&p.ativo)||(filtro==='ocultos'&&!p.ativo);
     return okBusca&&okStatus;
   });
-  if(!lista.length){ corpo.innerHTML='<tr><td colspan="8">Nenhum produto encontrado.</td></tr>'; return; }
+  if(!lista.length){ corpo.innerHTML='<tr><td colspan="9">Nenhum produto encontrado.</td></tr>'; atualizarSelecaoProdutosMS(); return; }
   corpo.innerHTML=lista.map(p=>`<tr data-produto-id="${p.id}">
+    <td class="col-check-produto-ms"><input type="checkbox" class="check-produto-admin-ms" value="${p.id}" aria-label="Selecionar ${escaparAdminMS(p.nome)}" onchange="atualizarSelecaoProdutosMS()"></td>
     <td><strong>${escaparAdminMS(p.nome)}</strong></td><td>${escaparAdminMS(p.categoria)}</td>
     <td><input type="number" step="0.01" min="0" class="prod-preco-ms" value="${Number(p.preco||0).toFixed(2)}" style="width:105px"></td>
     <td><input type="number" step="0.01" min="0" class="prod-preco-antigo-ms" value="${p.precoAntigo==null?'':Number(p.precoAntigo).toFixed(2)}" style="width:105px"></td>
@@ -431,7 +440,48 @@ function renderProdutosAdminMS(){
     <td><input type="checkbox" class="prod-destaque-ms" ${p.destaque?'checked':''}></td>
     <td><input type="checkbox" class="prod-ativo-ms" ${p.ativo?'checked':''}></td>
     <td><button class="btn-dark-ms" onclick="salvarProdutoLinhaMS(${p.id},this)">Salvar</button></td></tr>`).join('');
+  atualizarSelecaoProdutosMS();
 }
+
+function atualizarSelecaoProdutosMS(){
+  const checks=[...document.querySelectorAll('.check-produto-admin-ms')];
+  const marcados=checks.filter(c=>c.checked);
+  const total=marcados.length;
+  const contador=document.getElementById('contadorSelecionadosProdutosMS');
+  const botao=document.getElementById('btnExcluirSelecionadosProdutosMS');
+  if(contador) contador.textContent=`${total} selecionado${total===1?'':'s'}`;
+  if(botao) botao.disabled=total===0;
+  const todos=checks.length>0 && total===checks.length;
+  document.querySelectorAll('#selecionarTodosProdutosMS,[data-check-todos-produtos]').forEach(c=>{
+    c.checked=todos;
+    c.indeterminate=total>0 && !todos;
+  });
+}
+function alternarTodosProdutosMS(marcar){
+  document.querySelectorAll('.check-produto-admin-ms').forEach(c=>c.checked=!!marcar);
+  atualizarSelecaoProdutosMS();
+}
+async function excluirProdutosSelecionadosMS(){
+  const ids=[...document.querySelectorAll('.check-produto-admin-ms:checked')].map(c=>c.value);
+  if(!ids.length) return;
+  if(!confirm(`Deseja excluir ${ids.length} produto${ids.length===1?'':'s'}? Essa ação também pode afetar o estoque relacionado.`)) return;
+  const botao=document.getElementById('btnExcluirSelecionadosProdutosMS');
+  const texto=botao?.textContent;
+  if(botao){ botao.disabled=true; botao.textContent='Excluindo...'; }
+  let removidos=0, falhas=0;
+  for(const id of ids){
+    try{
+      const r=await fetch(`${API_ADMIN_MS}/produtos/${id}`,{method:'DELETE'});
+      if(!r.ok) throw new Error();
+      removidos++;
+    }catch(e){ falhas++; }
+  }
+  if(botao) botao.textContent=texto||'🗑 Excluir selecionados';
+  await carregarProdutosAdminMS();
+  if(falhas) alert(`${removidos} produto(s) excluído(s). ${falhas} não puderam ser excluídos.`);
+  else alert(`${removidos} produto${removidos===1?' excluído':'s excluídos'} com sucesso.`);
+}
+
 async function salvarProdutoLinhaMS(id,botao){
   const linha=document.querySelector(`tr[data-produto-id="${id}"]`); if(!linha) return;
   const corpo={preco:Number(linha.querySelector('.prod-preco-ms').value||0),

@@ -14630,3 +14630,15 @@ body.aviso-ms-aberto{overflow:hidden!important;}
 
 /* Carrinho mobile: nunca mostrar a confirmação de adicionar produto nesta página */
 .pagina-carrinho-mobile #msConfirmacaoCarrinho{display:none!important;}
+
+
+/* Seleção e exclusão em lote de produtos */
+.acoes-lote-produtos-ms{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:14px 16px;border-bottom:1px solid var(--border,rgba(255,255,255,.10));}
+.selecionar-todos-produtos-ms{display:flex;align-items:center;gap:8px;font-weight:800;cursor:pointer;}
+.acoes-lote-produtos-ms input[type="checkbox"],.col-check-produto-ms input[type="checkbox"],.check-produto-admin-ms{width:18px;height:18px;accent-color:#7c3aed;cursor:pointer;}
+#contadorSelecionadosProdutosMS{font-size:13px;opacity:.75;font-weight:700;}
+.btn-excluir-lote-ms{margin-left:auto;border:0;border-radius:12px;padding:10px 14px;background:#b91c1c;color:#fff;font-weight:900;cursor:pointer;transition:.2s ease;}
+.btn-excluir-lote-ms:hover:not(:disabled){filter:brightness(1.12);transform:translateY(-1px);}
+.btn-excluir-lote-ms:disabled{opacity:.4;cursor:not-allowed;}
+.col-check-produto-ms{width:42px;text-align:center!important;}
+@media(max-width:700px){.btn-excluir-lote-ms{width:100%;margin-left:0}.acoes-lote-produtos-ms{gap:10px}.col-check-produto-ms{position:sticky;left:0;z-index:2;background:var(--card-bg,#11141a)}}
