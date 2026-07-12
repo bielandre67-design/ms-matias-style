@@ -648,7 +648,7 @@ function montarResumoPagamentoPC() {
   }
 
   const subtotal = carrinho.reduce((total, item) => {
-    return total + pegarPrecoNumero(item.preco) * Number(item.quantidade || 1);
+    return total + Number(item.preco) * Number(item.quantidade || 1);
   }, 0);
 
   resumo.innerHTML = "<h3>Resumo do pedido</h3>";
@@ -5822,10 +5822,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const STYLE_ID = "ms-confirmacao-carrinho-style";
   const TOAST_ID = "msConfirmacaoCarrinho";
 
-  function estaNoCheckoutMobileMS(){
-    return Boolean(document.querySelector(".checkout-ms") || /carrinho\.html$/i.test(location.pathname));
-  }
-
   function escaparHTMLMS(valor){
     return String(valor ?? "").replace(/[&<>'"]/g, function(caractere){
       return ({
@@ -5992,7 +5988,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function mostrarConfirmacaoCarrinhoMS(item){
-    if(!document.body || estaNoCheckoutMobileMS()) return;
+    if(!document.body) return;
     garantirEstiloMS();
 
     let toast = document.getElementById(TOAST_ID);
@@ -6044,15 +6040,6 @@ document.addEventListener("DOMContentLoaded", () => {
     window.msConfirmacaoCarrinhoTimer = setTimeout(fecharConfirmacaoCarrinhoMS, 8000);
   }
 
-
-  if(document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", function(){
-      if(estaNoCheckoutMobileMS()) document.getElementById(TOAST_ID)?.remove();
-    }, { once:true });
-  } else if(estaNoCheckoutMobileMS()) {
-    document.getElementById(TOAST_ID)?.remove();
-  }
-
   // Mantém o nome antigo funcionando para outras partes do projeto.
   window.avisoCarrinhoPremium = function(textoOuItem){
     if(textoOuItem && typeof textoOuItem === "object"){
@@ -6067,4 +6054,70 @@ document.addEventListener("DOMContentLoaded", () => {
   // A confirmação visual não substitui as funções de adicionar.
   // Assim, toda inclusão continua passando pela validação real de estoque.
 
+})();
+
+
+/* =====================================================
+   MS FIX DEFINITIVO - CARRINHO MOBILE
+   Usa o preço real salvo no carrinho e remove o X do toast nesta página.
+===================================================== */
+(function(){
+  function ehPaginaCarrinhoMS(){
+    return !!document.getElementById('listaCarrinhoMobile');
+  }
+
+  function precoMS(valor){
+    if (typeof window.pegarPrecoNumero === 'function') return window.pegarPrecoNumero(valor);
+    if (typeof valor === 'number') return valor;
+    let texto = String(valor ?? '0').replace(/R\$/gi, '').replace(/\s/g, '');
+    if (texto.includes(',')) texto = texto.replace(/\./g, '').replace(',', '.');
+    else texto = texto.replace(/[^0-9.]/g, '');
+    return parseFloat(texto) || 0;
+  }
+
+  function moedaMS(valor){
+    return Number(valor || 0).toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+  }
+
+  function atualizarTotalCarrinhoMobileMS(){
+    if(!ehPaginaCarrinhoMS()) return;
+    let itens=[];
+    try { itens = JSON.parse(localStorage.getItem('carrinho')) || []; } catch(e) { itens=[]; }
+    const subtotal = itens.reduce((soma,item)=> soma + precoMS(item.preco) * Math.max(1, Number(item.quantidade || 1)), 0);
+    const frete = Number(localStorage.getItem('valorFreteMS') || 0) || 0;
+    const total = subtotal + frete;
+    const set=(id,valor)=>{ const el=document.getElementById(id); if(el) el.textContent=moedaMS(valor); };
+    set('subtotal1', subtotal);
+    set('subtotalCheckout', subtotal);
+    set('freteResumo', frete);
+    set('total1', total);
+    set('totalCheckout', total);
+    set('totalPagamentoMobile', total);
+  }
+
+  function removerXSoltoMS(){
+    if(!ehPaginaCarrinhoMS()) return;
+    document.getElementById('msConfirmacaoCarrinho')?.remove();
+    document.querySelectorAll('.ms-confirmacao-fechar').forEach(el=>el.remove());
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){
+    atualizarTotalCarrinhoMobileMS();
+    removerXSoltoMS();
+    setTimeout(atualizarTotalCarrinhoMobileMS, 50);
+    setTimeout(removerXSoltoMS, 50);
+  });
+
+  ['atualizarTudo','atualizarCarrinho','renderCarrinhoMobileMS','removerItem','aumentarQuantidade','diminuirQuantidade'].forEach(nome=>{
+    const original = window[nome];
+    if(typeof original !== 'function') return;
+    window[nome]=function(){
+      const retorno=original.apply(this,arguments);
+      setTimeout(atualizarTotalCarrinhoMobileMS,0);
+      setTimeout(removerXSoltoMS,0);
+      return retorno;
+    };
+  });
+
+  window.atualizarTotalCarrinhoMobileMS = atualizarTotalCarrinhoMobileMS;
 })();

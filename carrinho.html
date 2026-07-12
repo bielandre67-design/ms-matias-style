@@ -7,10 +7,12 @@
   <link rel="stylesheet" href="style.css">
 </head>
 
-<body>
+<body class="pagina-carrinho-mobile-ms">
   <main class="checkout-ms">
 
-    <h2 id="tituloEtapa">Seu carrinho</h2>
+    <button type="button" class="voltar-checkout" onclick="voltarCheckoutMobile()">‹</button>
+
+    <h2 id="tituloEtapa">Carrinho</h2>
 
     <div class="etapas">
       <span class="ativo" data-num="1">Carrinho</span>
@@ -217,5 +219,13 @@ async function pagarMercadoPago(event){
 }
 </script>
 
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+  document.getElementById("msConfirmacaoCarrinho")?.remove();
+  if (typeof window.atualizarTotalCarrinhoMobileMS === "function") {
+    window.atualizarTotalCarrinhoMobileMS();
+  }
+});
+</script>
 </body>
 </html>

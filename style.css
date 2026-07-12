@@ -14628,21 +14628,8 @@ body.aviso-ms-aberto{overflow:hidden!important;}
 }
 
 
-/* Correção final do carrinho mobile */
-body:has(.checkout-ms) #msConfirmacaoCarrinho {
+/* Carrinho mobile: nunca exibir o toast/X de confirmação nesta página */
+.pagina-carrinho-mobile-ms #msConfirmacaoCarrinho,
+.pagina-carrinho-mobile-ms .ms-confirmacao-fechar {
   display: none !important;
-}
-@media (max-width: 768px){
-  .checkout-ms .resumo-checkout p{
-    display:flex !important;
-  }
-  .checkout-ms #subtotal1,
-  .checkout-ms #total1{
-    color:#d9b73a !important;
-    font-weight:900 !important;
-  }
-  .checkout-ms .item-checkout .produto-info > strong{
-    color:#d9b73a !important;
-    display:block !important;
-  }
 }
