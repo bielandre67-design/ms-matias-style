@@ -5331,27 +5331,43 @@ function dinheiro(valor){
 
   async function podeAdicionarMS(item, qtdNova){
     const pronto = itemProntoMS(item);
-    const info = await buscarDisponivelMS(pronto);
+    const quantidadeNova = Math.max(1, Number(qtdNova || 1));
 
-    if(!info.cadastrado){
-      alert("Esta combinação de cor e tamanho está indisponível no momento. Escolha outra opção.");
-      return false;
+    let lista = [];
+    try{ lista = JSON.parse(localStorage.getItem("carrinho")) || []; }catch(e){ lista = []; }
+
+    // Monta uma cópia do carrinho como ele ficaria após este clique.
+    const proposta = lista.map(p => itemProntoMS(p));
+    const indice = proposta.findIndex(p => chaveItemMS(p) === chaveItemMS(pronto));
+    if(indice >= 0){
+      proposta[indice].quantidade = Number(proposta[indice].quantidade || 1) + quantidadeNova;
+    }else{
+      proposta.push({ ...pronto, quantidade: quantidadeNova });
     }
 
-    const jaNoCarrinho = qtdNoCarrinhoMS(pronto);
-    const pedidoTotal = jaNoCarrinho + Math.max(1, Number(qtdNova || 1));
+    try{
+      const resp = await fetch(`${API_ESTOQUE_MS}/estoque/validar-carrinho`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items: proposta })
+      });
+      const dados = await resp.json().catch(() => ({}));
 
-    if(pedidoTotal > Number(info.disponivel || 0)){
-      const restante = Math.max(0, Number(info.disponivel || 0) - jaNoCarrinho);
-      if(restante <= 0){
-        alert("Você já adicionou ao carrinho todas as unidades disponíveis desta opção.");
-      }else{
-        alert(`Temos apenas ${restante} unidade(s) disponível(is) desta opção.`);
+      if(!resp.ok){
+        const mensagemServidor = String(dados.mensagem || "").toLowerCase();
+        if(mensagemServidor.includes("cadastr") || mensagemServidor.includes("não encontrado") || mensagemServidor.includes("nao encontrado")){
+          alert("Esta combinação de cor e tamanho está indisponível no momento. Escolha outra opção.");
+        }else{
+          alert("Você já adicionou ao carrinho todas as unidades disponíveis desta opção.");
+        }
+        return false;
       }
+      return true;
+    }catch(erro){
+      console.error("Falha ao validar estoque:", erro);
+      alert("Não foi possível conferir o estoque agora. Tente novamente em instantes.");
       return false;
     }
-
-    return true;
   }
 
   function pegarItemDoCardMS(arg1, arg2, arg3, arg4){
@@ -5386,33 +5402,44 @@ function dinheiro(valor){
   }
 
   const addOriginalMS = window.adicionarCarrinho;
+  const inclusoesEmAndamentoMS = new Set();
   window.adicionarCarrinho = async function(arg1, arg2, arg3, arg4){
     const item = pegarItemDoCardMS(arg1, arg2, arg3, arg4);
     const botao = typeof arg1 === "string" ? arg4 : arg1;
+    const chaveBloqueio = chaveItemMS(item);
+
+    if(inclusoesEmAndamentoMS.has(chaveBloqueio)) return false;
 
     if(!item.tamanho || item.tamanho === "ÚNICO" && botao?.closest?.(".card-produto")?.querySelector(".tamanhos")){
       alert("Selecione um tamanho para adicionar este produto ao carrinho.");
       return false;
     }
 
-    if(!(await podeAdicionarMS(item, item.quantidade))) return false;
+    inclusoesEmAndamentoMS.add(chaveBloqueio);
+    if(botao) botao.disabled = true;
+    try{
+      if(!(await podeAdicionarMS(item, item.quantidade))) return false;
 
-    let lista = [];
-    try{ lista = JSON.parse(localStorage.getItem("carrinho")) || []; }catch(e){ lista = []; }
-    const idx = lista.findIndex(p => chaveItemMS(p) === chaveItemMS(item));
-    if(idx >= 0){
-      lista[idx].quantidade = Number(lista[idx].quantidade || 1) + item.quantidade;
-    }else{
-      lista.push(item);
+      let lista = [];
+      try{ lista = JSON.parse(localStorage.getItem("carrinho")) || []; }catch(e){ lista = []; }
+      const idx = lista.findIndex(p => chaveItemMS(p) === chaveItemMS(item));
+      if(idx >= 0){
+        lista[idx].quantidade = Number(lista[idx].quantidade || 1) + item.quantidade;
+      }else{
+        lista.push(item);
+      }
+
+      salvarEAtualizarMS(lista);
+
+      if(typeof animarProdutoParaCarrinho === "function" && botao) animarProdutoParaCarrinho(botao);
+      if(typeof mostrarConfirmacaoCarrinhoMS === "function") mostrarConfirmacaoCarrinhoMS(item);
+      else if(typeof avisoCarrinhoPremium === "function") avisoCarrinhoPremium(item);
+      else if(typeof mostrarToastMS === "function") mostrarToastMS();
+      return true;
+    }finally{
+      inclusoesEmAndamentoMS.delete(chaveBloqueio);
+      if(botao) botao.disabled = false;
     }
-
-    salvarEAtualizarMS(lista);
-
-    if(typeof animarProdutoParaCarrinho === "function" && botao) animarProdutoParaCarrinho(botao);
-    if(typeof mostrarConfirmacaoCarrinhoMS === "function") mostrarConfirmacaoCarrinhoMS(item);
-    else if(typeof avisoCarrinhoPremium === "function") avisoCarrinhoPremium(item);
-    else if(typeof mostrarToastMS === "function") mostrarToastMS();
-    return true;
   };
 
   window.adicionarAoCarrinho = function(botao){ return window.adicionarCarrinho(botao); };
@@ -5440,19 +5467,26 @@ function dinheiro(valor){
       quantidade: qtd
     });
 
-    if(!(await podeAdicionarMS(item, qtd))) return false;
+    const chaveBloqueio = chaveItemMS(item);
+    if(inclusoesEmAndamentoMS.has(chaveBloqueio)) return false;
+    inclusoesEmAndamentoMS.add(chaveBloqueio);
+    try{
+      if(!(await podeAdicionarMS(item, qtd))) return false;
 
-    let lista = [];
-    try{ lista = JSON.parse(localStorage.getItem("carrinho")) || []; }catch(e){ lista = []; }
-    const idx = lista.findIndex(p => chaveItemMS(p) === chaveItemMS(item));
-    if(idx >= 0) lista[idx].quantidade = Number(lista[idx].quantidade || 1) + item.quantidade;
-    else lista.push(item);
+      let lista = [];
+      try{ lista = JSON.parse(localStorage.getItem("carrinho")) || []; }catch(e){ lista = []; }
+      const idx = lista.findIndex(p => chaveItemMS(p) === chaveItemMS(item));
+      if(idx >= 0) lista[idx].quantidade = Number(lista[idx].quantidade || 1) + item.quantidade;
+      else lista.push(item);
 
-    salvarEAtualizarMS(lista);
-    if(typeof mostrarConfirmacaoCarrinhoMS === "function") mostrarConfirmacaoCarrinhoMS(item);
-    else if(typeof avisoCarrinhoPremium === "function") avisoCarrinhoPremium(item);
-    else if(typeof mostrarToastMS === "function") mostrarToastMS();
-    return true;
+      salvarEAtualizarMS(lista);
+      if(typeof mostrarConfirmacaoCarrinhoMS === "function") mostrarConfirmacaoCarrinhoMS(item);
+      else if(typeof avisoCarrinhoPremium === "function") avisoCarrinhoPremium(item);
+      else if(typeof mostrarToastMS === "function") mostrarToastMS();
+      return true;
+    }finally{
+      inclusoesEmAndamentoMS.delete(chaveBloqueio);
+    }
   };
 
   window.aumentarQuantidade = async function(index){
