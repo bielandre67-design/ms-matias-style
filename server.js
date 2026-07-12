@@ -246,7 +246,7 @@ async function criarPreferenciaMP({ carrinhoItems, valorFrete, freteSelecionado,
   const preference = new Preference(client);
 
   const frontendUrl = (process.env.FRONTEND_URL || "https://ms-matias-style.vercel.app").replace(/\/$/, "");
-  const backendUrl = (process.env.BACKEND_URL || "").replace(/\/$/, "");
+  const backendUrl = (process.env.BACKEND_URL || "https://ms-matias-style.onrender.com").replace(/\/$/, "");
 
   const bodyPreferencia = {
     external_reference: String(idPedido),
@@ -1269,12 +1269,30 @@ app.post("/criar-pagamento", async (req, res) => {
     salvarPedidos(pedidos);
     reservarEstoquePedidoMS(carrinhoItems, idPedido);
 
-    const pagamento = await criarPreferenciaMP({
-      carrinhoItems,
-      valorFrete,
-      freteSelecionado,
-      idPedido
-    });
+    let pagamento;
+    try {
+      pagamento = await criarPreferenciaMP({
+        carrinhoItems,
+        valorFrete,
+        freteSelecionado,
+        idPedido
+      });
+    } catch (erroPagamento) {
+      liberarReservaPedidoMS(idPedido);
+      salvarPedidos(lerPedidos().filter((p) => !idsIguaisMS(p.id, idPedido)));
+      throw erroPagamento;
+    }
+
+    const pedidosAtualizados = lerPedidos();
+    const pedidoAtualizado = pedidosAtualizados.find((p) => idsIguaisMS(p.id, idPedido));
+    if (pedidoAtualizado) {
+      pedidoAtualizado.pagamento = {
+        metodo: "Mercado Pago",
+        status: "aguardando pagamento",
+        preferenceId: pagamento.id
+      };
+      salvarPedidos(pedidosAtualizados);
+    }
 
     return res.json({
       sucesso: true,
@@ -1377,12 +1395,29 @@ app.post("/checkout-mp", async (req, res) => {
     salvarPedidos(pedidos);
     reservarEstoquePedidoMS(carrinhoItems, idPedido);
 
-    const pagamento = await criarPreferenciaMP({
-      carrinhoItems,
-      valorFrete,
-      freteSelecionado,
-      idPedido
-    });
+    let pagamento;
+    try {
+      pagamento = await criarPreferenciaMP({
+        carrinhoItems,
+        valorFrete,
+        freteSelecionado,
+        idPedido
+      });
+    } catch (erroPagamento) {
+      liberarReservaPedidoMS(idPedido);
+      salvarPedidos(lerPedidos().filter((p) => !idsIguaisMS(p.id, idPedido)));
+      throw erroPagamento;
+    }
+
+    const pedidosAtualizados = lerPedidos();
+    const pedidoAtualizado = pedidosAtualizados.find((p) => idsIguaisMS(p.id, idPedido));
+    if (pedidoAtualizado) {
+      pedidoAtualizado.pagamento = {
+        ...(pedidoAtualizado.pagamento || {}),
+        preferenceId: pagamento.id
+      };
+      salvarPedidos(pedidosAtualizados);
+    }
 
     return res.redirect(pagamento.init_point);
   } catch (erro) {
@@ -1416,39 +1451,100 @@ app.post("/atualizar-status", (req, res) => {
   });
 });
 
+function statusPedidoMercadoPagoMS(statusMP) {
+  const mapa = {
+    approved: "pago",
+    pending: "aguardando pagamento",
+    in_process: "pagamento em análise",
+    rejected: "recusado",
+    cancelled: "cancelado",
+    refunded: "reembolsado",
+    charged_back: "estornado"
+  };
+  return mapa[String(statusMP || "").toLowerCase()] || String(statusMP || "aguardando pagamento");
+}
+
 app.post("/webhook", async (req, res) => {
   try {
-    const pagamentoId = req.body?.data?.id || req.query["data.id"];
+    garantirMercadoPagoConfigurado();
 
-    if (!pagamentoId) {
+    const pagamentoId =
+      req.body?.data?.id ||
+      req.body?.id ||
+      req.query["data.id"] ||
+      req.query.id;
+
+    const tipo = req.body?.type || req.body?.topic || req.query.type || req.query.topic || "payment";
+
+    if (!pagamentoId || !String(tipo).toLowerCase().includes("payment")) {
       return res.sendStatus(200);
     }
 
     const resposta = await fetch(`https://api.mercadopago.com/v1/payments/${pagamentoId}`, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`
-      }
+      headers: { Authorization: `Bearer ${accessToken}` }
     });
 
-    const pagamento = await resposta.json();
-
-    if (pagamento.status === "approved") {
-      const idPedido = pagamento.external_reference;
-      const pedidos = lerPedidos();
-      const pedido = pedidos.find((p) => String(p.id) === String(idPedido));
-
-      if (pedido) {
-        pedido.status = "pago";
-        baixarEstoquePedidoMS(pedido);
-        salvarPedidos(pedidos);
-      }
+    if (!resposta.ok) {
+      console.error("Webhook MP: falha ao consultar pagamento", pagamentoId, resposta.status);
+      return res.sendStatus(200);
     }
 
-    res.sendStatus(200);
+    const pagamento = await resposta.json();
+    const idPedido = pagamento.external_reference;
+
+    if (!idPedido) {
+      console.error("Webhook MP sem external_reference:", pagamentoId);
+      return res.sendStatus(200);
+    }
+
+    const pedidos = lerPedidos();
+    const pedido = pedidos.find((p) => idsIguaisMS(p.id, idPedido));
+
+    if (!pedido) {
+      console.error("Webhook MP: pedido não encontrado", idPedido);
+      return res.sendStatus(200);
+    }
+
+    const statusMP = String(pagamento.status || "").toLowerCase();
+    pedido.status = statusPedidoMercadoPagoMS(statusMP);
+    pedido.pagamento = {
+      ...(pedido.pagamento || {}),
+      metodo: "Mercado Pago",
+      status: statusMP,
+      paymentId: String(pagamento.id || pagamentoId),
+      preferenceId: pagamento.preference_id || pedido.pagamento?.preferenceId || null,
+      statusDetail: pagamento.status_detail || "",
+      atualizadoEm: new Date().toISOString()
+    };
+
+    if (statusMP === "approved") {
+      baixarEstoquePedidoMS(pedido);
+      pedido.pagoEm = pagamento.date_approved || new Date().toISOString();
+    }
+
+    if (["rejected", "cancelled", "refunded", "charged_back"].includes(statusMP)) {
+      liberarReservaPedidoMS(pedido.id);
+    }
+
+    salvarPedidos(pedidos);
+    console.log("Webhook MP atualizado:", { pedido: pedido.id, pagamento: pagamento.id, status: statusMP });
+    return res.sendStatus(200);
   } catch (erro) {
-    console.error("Erro no webhook:", erro);
-    res.sendStatus(200);
+    console.error("Erro no webhook Mercado Pago:", erro);
+    return res.sendStatus(200);
   }
+});
+
+app.get("/pagamento/status/:pedidoId", (req, res) => {
+  const pedido = lerPedidos().find((p) => idsIguaisMS(p.id, req.params.pedidoId));
+  if (!pedido) return res.status(404).json({ erro: true, mensagem: "Pedido não encontrado" });
+
+  res.json({
+    pedido: pedido.id,
+    status: pedido.status,
+    pagamento: pedido.pagamento || null,
+    estoqueBaixado: Boolean(pedido.estoqueBaixado)
+  });
 });
 
 // A antiga rota /gerar-token foi removida por segurança.
