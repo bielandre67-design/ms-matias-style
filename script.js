@@ -5810,3 +5810,269 @@ document.addEventListener("DOMContentLoaded", () => {
   window.addEventListener('pageshow', fecharTudoDoCarrinhoMS);
   window.addEventListener('popstate', fecharTudoDoCarrinhoMS);
 })();
+
+/* =========================================================
+   MS MATIAS STYLE - CONFIRMAÇÃO PREMIUM AO ADICIONAR PRODUTO
+   Exibe nome, tamanho e dois botões: continuar ou finalizar.
+   ========================================================= */
+(function instalarConfirmacaoCarrinhoMS(){
+  const STYLE_ID = "ms-confirmacao-carrinho-style";
+  const TOAST_ID = "msConfirmacaoCarrinho";
+
+  function escaparHTMLMS(valor){
+    return String(valor ?? "").replace(/[&<>'"]/g, function(caractere){
+      return ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        "'": "&#39;",
+        '"': "&quot;"
+      })[caractere];
+    });
+  }
+
+  function garantirEstiloMS(){
+    if(document.getElementById(STYLE_ID)) return;
+
+    const style = document.createElement("style");
+    style.id = STYLE_ID;
+    style.textContent = `
+      #${TOAST_ID}{
+        position:fixed;
+        top:22px;
+        right:22px;
+        z-index:2147483646;
+        width:min(390px,calc(100vw - 28px));
+        background:#101010;
+        color:#fff;
+        border:1px solid rgba(212,175,55,.75);
+        border-radius:18px;
+        box-shadow:0 22px 70px rgba(0,0,0,.55);
+        padding:18px;
+        opacity:0;
+        visibility:hidden;
+        transform:translateX(calc(100% + 36px));
+        transition:transform .32s ease,opacity .25s ease,visibility .25s ease;
+        font-family:inherit;
+      }
+      #${TOAST_ID}.ativo{
+        opacity:1;
+        visibility:visible;
+        transform:translateX(0);
+      }
+      #${TOAST_ID} .ms-confirmacao-topo{
+        display:flex;
+        align-items:flex-start;
+        gap:12px;
+      }
+      #${TOAST_ID} .ms-confirmacao-icone{
+        width:42px;
+        height:42px;
+        flex:0 0 42px;
+        display:grid;
+        place-items:center;
+        border-radius:50%;
+        background:rgba(212,175,55,.12);
+        border:1px solid rgba(212,175,55,.55);
+        font-size:20px;
+      }
+      #${TOAST_ID} .ms-confirmacao-conteudo{min-width:0;flex:1;}
+      #${TOAST_ID} .ms-confirmacao-titulo{
+        display:block;
+        margin:0 28px 5px 0;
+        color:#d4af37;
+        font-size:17px;
+        line-height:1.25;
+      }
+      #${TOAST_ID} .ms-confirmacao-produto{
+        margin:0;
+        color:#fff;
+        font-size:15px;
+        line-height:1.45;
+        overflow-wrap:anywhere;
+      }
+      #${TOAST_ID} .ms-confirmacao-detalhe{
+        margin:4px 0 0;
+        color:#bdbdbd;
+        font-size:13px;
+      }
+      #${TOAST_ID} .ms-confirmacao-fechar{
+        position:absolute;
+        top:12px;
+        right:12px;
+        width:30px;
+        height:30px;
+        border:0;
+        border-radius:50%;
+        background:transparent;
+        color:#aaa;
+        cursor:pointer;
+        font-size:20px;
+        line-height:1;
+      }
+      #${TOAST_ID} .ms-confirmacao-fechar:hover{color:#fff;background:rgba(255,255,255,.07);}
+      #${TOAST_ID} .ms-confirmacao-acoes{
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:10px;
+        margin-top:16px;
+      }
+      #${TOAST_ID} .ms-confirmacao-btn{
+        min-height:44px;
+        border-radius:11px;
+        padding:10px 12px;
+        font:inherit;
+        font-size:13px;
+        font-weight:700;
+        cursor:pointer;
+        transition:transform .18s ease,background .18s ease,color .18s ease,border-color .18s ease;
+      }
+      #${TOAST_ID} .ms-confirmacao-btn:hover{transform:translateY(-1px);}
+      #${TOAST_ID} .ms-confirmacao-continuar{
+        color:#fff;
+        background:transparent;
+        border:1px solid rgba(255,255,255,.22);
+      }
+      #${TOAST_ID} .ms-confirmacao-continuar:hover{border-color:#d4af37;color:#d4af37;}
+      #${TOAST_ID} .ms-confirmacao-finalizar{
+        color:#111;
+        background:#d4af37;
+        border:1px solid #d4af37;
+      }
+      #${TOAST_ID} .ms-confirmacao-finalizar:hover{background:#ebc94e;border-color:#ebc94e;}
+      .btn-carrinho.ms-pulso-carrinho{animation:msPulsoCarrinho .48s ease;}
+      @keyframes msPulsoCarrinho{
+        0%,100%{transform:scale(1)}
+        45%{transform:scale(1.18)}
+      }
+      @media(max-width:600px){
+        #${TOAST_ID}{
+          top:auto;
+          right:14px;
+          bottom:16px;
+          left:14px;
+          width:auto;
+          transform:translateY(calc(100% + 32px));
+          padding:17px;
+        }
+        #${TOAST_ID}.ativo{transform:translateY(0);}
+        #${TOAST_ID} .ms-confirmacao-acoes{grid-template-columns:1fr;}
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function fecharConfirmacaoCarrinhoMS(){
+    const toast = document.getElementById(TOAST_ID);
+    if(toast) toast.classList.remove("ativo");
+    clearTimeout(window.msConfirmacaoCarrinhoTimer);
+  }
+
+  function abrirCarrinhoPeloToastMS(){
+    fecharConfirmacaoCarrinhoMS();
+
+    if(typeof window.abrirCarrinhoResponsivoMS === "function"){
+      window.abrirCarrinhoResponsivoMS();
+      return;
+    }
+    if(typeof window.abrirCarrinhoMS === "function"){
+      window.abrirCarrinhoMS();
+      return;
+    }
+    if(typeof window.abrirCarrinho === "function"){
+      window.abrirCarrinho();
+    }
+  }
+
+  function mostrarConfirmacaoCarrinhoMS(item){
+    if(!document.body) return;
+    garantirEstiloMS();
+
+    let toast = document.getElementById(TOAST_ID);
+    if(!toast){
+      toast = document.createElement("aside");
+      toast.id = TOAST_ID;
+      toast.setAttribute("role", "status");
+      toast.setAttribute("aria-live", "polite");
+      document.body.appendChild(toast);
+    }
+
+    const nome = escaparHTMLMS(item?.nome || "Produto MS");
+    const tamanho = escaparHTMLMS(item?.tamanho || "");
+    const quantidade = Math.max(1, Number(item?.quantidade || 1));
+
+    toast.innerHTML = `
+      <button class="ms-confirmacao-fechar" type="button" aria-label="Fechar">×</button>
+      <div class="ms-confirmacao-topo">
+        <div class="ms-confirmacao-icone" aria-hidden="true">🛍️</div>
+        <div class="ms-confirmacao-conteudo">
+          <strong class="ms-confirmacao-titulo">Adicionado ao carrinho!</strong>
+          <p class="ms-confirmacao-produto">${nome} foi adicionado com sucesso.</p>
+          ${tamanho ? `<p class="ms-confirmacao-detalhe">Tamanho: ${tamanho}${quantidade > 1 ? ` · Quantidade: ${quantidade}` : ""}</p>` : ""}
+        </div>
+      </div>
+      <div class="ms-confirmacao-acoes">
+        <button class="ms-confirmacao-btn ms-confirmacao-continuar" type="button">Continuar comprando</button>
+        <button class="ms-confirmacao-btn ms-confirmacao-finalizar" type="button">Finalizar pedido</button>
+      </div>
+    `;
+
+    toast.querySelector(".ms-confirmacao-fechar")?.addEventListener("click", fecharConfirmacaoCarrinhoMS);
+    toast.querySelector(".ms-confirmacao-continuar")?.addEventListener("click", fecharConfirmacaoCarrinhoMS);
+    toast.querySelector(".ms-confirmacao-finalizar")?.addEventListener("click", abrirCarrinhoPeloToastMS);
+
+    requestAnimationFrame(function(){
+      toast.classList.add("ativo");
+    });
+
+    const botaoCarrinho = document.querySelector("header .btn-carrinho, .btn-carrinho");
+    if(botaoCarrinho){
+      botaoCarrinho.classList.remove("ms-pulso-carrinho");
+      void botaoCarrinho.offsetWidth;
+      botaoCarrinho.classList.add("ms-pulso-carrinho");
+      setTimeout(function(){ botaoCarrinho.classList.remove("ms-pulso-carrinho"); }, 520);
+    }
+
+    clearTimeout(window.msConfirmacaoCarrinhoTimer);
+    window.msConfirmacaoCarrinhoTimer = setTimeout(fecharConfirmacaoCarrinhoMS, 8000);
+  }
+
+  // Mantém o nome antigo funcionando para outras partes do projeto.
+  window.avisoCarrinhoPremium = function(textoOuItem){
+    if(textoOuItem && typeof textoOuItem === "object"){
+      mostrarConfirmacaoCarrinhoMS(textoOuItem);
+    }else{
+      mostrarConfirmacaoCarrinhoMS({ nome: "Seu produto", tamanho: "", quantidade: 1 });
+    }
+  };
+  window.mostrarConfirmacaoCarrinhoMS = mostrarConfirmacaoCarrinhoMS;
+  window.fecharConfirmacaoCarrinhoMS = fecharConfirmacaoCarrinhoMS;
+
+  // Sobrescreve apenas as duas entradas de adicionar, preservando toda a lógica existente.
+  window.adicionarCarrinho = function(botao){
+    const item = typeof msPegarProdutoDoCard === "function" ? msPegarProdutoDoCard(botao) : null;
+    if(!item) return false;
+
+    if(typeof msAdicionarItemFinal === "function") msAdicionarItemFinal(item);
+
+    if(typeof animarProdutoAoCarrinho === "function"){
+      animarProdutoAoCarrinho(botao);
+    }else if(typeof animarProdutoParaCarrinho === "function"){
+      animarProdutoParaCarrinho(botao);
+    }
+
+    mostrarConfirmacaoCarrinhoMS(item);
+    return false;
+  };
+
+  window.adicionarAoCarrinho = window.adicionarCarrinho;
+
+  window.adicionarProdutoDetalhe = function(){
+    const item = typeof msPegarProdutoDoDetalhe === "function" ? msPegarProdutoDoDetalhe() : null;
+    if(!item) return false;
+
+    if(typeof msAdicionarItemFinal === "function") msAdicionarItemFinal(item);
+    mostrarConfirmacaoCarrinhoMS(item);
+    return false;
+  };
+})();
