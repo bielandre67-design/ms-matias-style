@@ -2504,14 +2504,12 @@ function atualizarResumoPagamentoMSComCupom() {
         linhaDesconto.style.display = "flex";
         linhaDesconto.style.justifyContent = "space-between";
         linhaDesconto.style.color = "#22c55e";
-        linhaDesconto.innerHTML = '<span id="rotuloDescontoCupomMS">Desconto</span><strong id="valorDescontoCupomMS"></strong>';
+        linhaDesconto.innerHTML = '<span>Desconto MS10</span><strong id="valorDescontoCupomMS"></strong>';
         linhaTotal.parentElement.insertBefore(linhaDesconto, linhaTotal);
       }
     }
     if (linhaDesconto) {
       linhaDesconto.style.display = percentual > 0 ? "flex" : "none";
-      const rotuloDescontoEl = document.getElementById("rotuloDescontoCupomMS");
-      if (rotuloDescontoEl) rotuloDescontoEl.textContent = 'Desconto ' + (codigoCupomAplicadoMS || 'cupom');
       const valorDescontoEl = document.getElementById("valorDescontoCupomMS");
       if (valorDescontoEl) {
         valorDescontoEl.textContent = "- " + valorDesconto.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });

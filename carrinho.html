@@ -21,8 +21,7 @@
     .ms-btn{width:100%;border:0;border-radius:16px;padding:17px 16px;font-weight:900;margin-top:12px;background:var(--gold);color:#050505}.ms-btn.secondary{background:transparent;color:var(--danger);border:2px solid var(--danger)}.ms-btn.back{background:#151515;color:#fff;border:1px solid #333}
     .ms-form{display:grid;gap:12px}.ms-form input{width:100%;border:1px solid #4b3b0b;background:#111;color:#fff;border-radius:14px;padding:15px;outline:0}.ms-form input:focus{border-color:var(--gold)}.ms-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.ms-title{font-size:20px;margin:0 0 14px}
     .ms-shipping{display:grid;gap:10px;margin-top:14px}.ms-ship{border:1px solid #4b3b0b;border-radius:14px;padding:14px;display:flex;justify-content:space-between;gap:10px;background:#101010}.ms-ship.selected{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}.ms-ship small{color:var(--muted)}
-    .ms-review{display:grid;gap:10px}.ms-review-item{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid #282828}.ms-note{color:var(--muted);line-height:1.5}.ms-loading{display:none;text-align:center;color:var(--muted);padding:12px}.ms-loading.active{display:block}
-    .ms-coupon{margin-top:16px}.ms-coupon-line{display:grid;grid-template-columns:1fr auto;gap:10px}.ms-coupon input{min-width:0;width:100%;border:1px solid #4b3b0b;background:#111;color:#fff;border-radius:14px;padding:15px;outline:0;text-transform:uppercase}.ms-coupon input:focus{border-color:var(--gold)}.ms-coupon button{border:0;border-radius:14px;padding:0 20px;font-weight:900;background:var(--gold);color:#050505}.ms-coupon-message{min-height:22px;margin:10px 0 0;font-weight:800;font-size:14px}.ms-row.discount{display:none;color:#22c55e}.ms-row.discount strong{color:#22c55e}
+    .ms-review{display:grid;gap:10px}.ms-review-item{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid #282828}.ms-note{color:var(--muted);line-height:1.5}.ms-loading{display:none;text-align:center;color:var(--muted);padding:12px}.ms-loading.active{display:block}.ms-coupon{margin-top:18px;border:1px solid var(--line);border-radius:22px;padding:18px;background:var(--card)}.ms-coupon h2{margin:0 0 12px;font-size:18px}.ms-coupon-line{display:grid;grid-template-columns:1fr auto;gap:10px}.ms-coupon input{min-width:0;border:1px solid #4b3b0b;background:#111;color:#fff;border-radius:14px;padding:15px;outline:0;text-transform:uppercase}.ms-coupon button{border:0;border-radius:14px;padding:0 18px;background:var(--gold);color:#050505;font-weight:900}.ms-coupon-msg{min-height:20px;margin:10px 0 0;color:var(--muted);font-size:14px}.ms-coupon-msg.ok{color:#22c55e}.ms-coupon-msg.error{color:#ff6b7d}.ms-row.discount{color:#22c55e}.ms-row.discount strong{color:#22c55e}
     @media(max-width:390px){.ms-cart{padding-left:12px;padding-right:12px}.ms-item{grid-template-columns:78px 1fr}.ms-item img{width:78px;height:102px}.ms-head h1{font-size:24px}.ms-step{font-size:12px}}
   </style>
 </head>
@@ -60,15 +59,15 @@
     <h2 class="ms-title">Resumo do pedido</h2>
     <div class="ms-summary">
       <div id="review" class="ms-review"></div>
-      <div class="ms-row"><span>Subtotal</span><strong id="reviewSubtotal">R$ 0,00</strong></div>
-      <div class="ms-row discount" id="reviewDiscountRow"><span id="reviewDiscountLabel">Desconto</span><strong id="reviewDiscount">- R$ 0,00</strong></div>
+      <div class="ms-row"><span>Produtos</span><strong id="reviewSubtotal">R$ 0,00</strong></div>
+      <div class="ms-row discount" id="couponDiscountRow" hidden><span id="couponDiscountLabel">Desconto</span><strong id="couponDiscountValue">- R$ 0,00</strong></div>
       <div class="ms-row"><span>Frete</span><strong id="reviewShipping">R$ 0,00</strong></div>
       <div class="ms-row total"><span>Total</span><strong id="reviewTotal">R$ 0,00</strong></div>
     </div>
-    <div class="ms-summary ms-coupon">
-      <h2 class="ms-title">Cupom de desconto</h2>
+    <div class="ms-coupon">
+      <h2>Código promocional</h2>
       <div class="ms-coupon-line"><input id="couponCode" placeholder="Digite seu cupom" autocomplete="off"><button type="button" id="applyCoupon">Aplicar</button></div>
-      <p class="ms-coupon-message" id="couponMessage"></p>
+      <p id="couponMessage" class="ms-coupon-msg"></p>
     </div>
     <div class="ms-summary"><h2 class="ms-title">Pagamento seguro</h2><p class="ms-note">Você será direcionado ao Mercado Pago para escolher a forma de pagamento e concluir o pedido.</p><button class="ms-btn" id="payButton">Finalizar compra</button><div id="paymentLoading" class="ms-loading">Abrindo o pagamento...</div><button class="ms-btn back" data-back="2">Voltar à entrega</button></div>
   </section>
@@ -78,73 +77,88 @@
   'use strict';
   const API = location.hostname === 'localhost' || location.hostname === '127.0.0.1' ? 'http://localhost:3000' : 'https://ms-matias-style.onrender.com';
   const $ = id => document.getElementById(id);
-  let cart = readJSON('carrinho', []);
+  const CART_KEYS = ['carrinho', 'carrinhoMS'];
+  let cart = readCart();
   let shipping = readJSON('freteSelecionadoMS', null);
-  let shippingValue = moneyNumber(localStorage.getItem('valorFreteMS') || shipping?.preco || 0);
-  let couponCode = '';
-  let couponPercent = 0;
+  let shippingValue = moneyNumber(localStorage.getItem('valorFreteMS') || localStorage.getItem('valorFrete') || shipping?.preco || 0);
+  let coupon = null;
 
   function readJSON(key, fallback){ try{return JSON.parse(localStorage.getItem(key)) ?? fallback}catch{return fallback} }
-  function moneyNumber(v){ if(typeof v==='number') return Number.isFinite(v)?v:0; let s=String(v??'0').replace(/R\$/gi,'').replace(/\s/g,''); if(s.includes(',')) s=s.replace(/\./g,'').replace(',','.'); else s=s.replace(/[^0-9.-]/g,''); const n=parseFloat(s); return Number.isFinite(n)?n:0 }
+  function readCart(){ for(const key of CART_KEYS){ const value=readJSON(key,null); if(Array.isArray(value)&&value.length) return value } return [] }
+  function moneyNumber(v){ if(typeof v==='number') return Number.isFinite(v)?v:0; let s=String(v??'0').trim().replace(/R\$/gi,'').replace(/\s/g,''); if(!s)return 0; if(s.includes(','))s=s.replace(/\./g,'').replace(',','.'); else s=s.replace(/[^0-9.-]/g,''); const n=parseFloat(s); return Number.isFinite(n)?n:0 }
+  function itemPrice(item){ const candidates=[item.preco,item.price,item.valor,item.precoNumerico,item.valorUnitario,item.unit_price,item.precoAtual]; for(const value of candidates){ const n=moneyNumber(value); if(n>0)return n } return 0 }
   function brl(v){ return moneyNumber(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}) }
-  function qty(item){ return Math.max(1, Number(item.quantidade)||1) }
-  function subtotal(){ return cart.reduce((sum,item)=>sum+moneyNumber(item.preco)*qty(item),0) }
-  function save(){ localStorage.setItem('carrinho',JSON.stringify(cart)); }
-  function imageOf(item){ return item.imagem || item.img || (Array.isArray(item.fotos)?item.fotos[0]:'') || 'logo.png' }
+  function qty(item){ return Math.max(1, Number(item.quantidade ?? item.qtd ?? item.quantity ?? 1)||1) }
+  function subtotal(){ return cart.reduce((sum,item)=>sum+itemPrice(item)*qty(item),0) }
+  function discountValue(){ return coupon ? subtotal()*(Number(coupon.percentual||0)/100) : 0 }
+  function finalTotal(){ return Math.max(0,subtotal()-discountValue()+shippingValue) }
+  function save(){ CART_KEYS.forEach(key=>localStorage.setItem(key,JSON.stringify(cart))) }
+  function imageOf(item){ return item.imagem || item.img || item.image || (Array.isArray(item.fotos)?item.fotos[0]:'') || 'logo.png' }
+  function clearCoupon(message=''){ coupon=null; $('couponDiscountRow').hidden=true; $('couponMessage').className='ms-coupon-msg'; $('couponMessage').textContent=message; updateTotals() }
 
   function renderCart(){
     const list=$('cartList');
-    if(!cart.length){ list.innerHTML='<div class="ms-empty">Seu carrinho está vazio.<br>Adicione um produto para continuar.</div>'; }
-    else list.innerHTML=cart.map((item,i)=>`<article class="ms-item"><img src="${escapeAttr(imageOf(item))}" alt="${escapeAttr(item.nome||'Produto MS')}"><div class="ms-info"><h3>${escapeHtml(item.nome||'Produto MS')}</h3><p>Tamanho: ${escapeHtml(item.tamanho||'-')}</p><p>Preço unit.: ${brl(item.preco)}</p><strong class="ms-price">${brl(moneyNumber(item.preco)*qty(item))}</strong></div><div class="ms-actions"><div class="ms-qty"><button type="button" data-minus="${i}" aria-label="Diminuir">−</button><span>${qty(item)}</span><button type="button" data-plus="${i}" aria-label="Aumentar">+</button></div><button type="button" class="ms-remove" data-remove="${i}">Remover</button></div></article>`).join('');
+    if(!cart.length) list.innerHTML='<div class="ms-empty">Seu carrinho está vazio.<br>Adicione um produto para continuar.</div>';
+    else list.innerHTML=cart.map((item,i)=>`<article class="ms-item"><img src="${escapeAttr(imageOf(item))}" alt="${escapeAttr(item.nome||'Produto MS')}"><div class="ms-info"><h3>${escapeHtml(item.nome||'Produto MS')}</h3><p>Tamanho: ${escapeHtml(item.tamanho||'-')}</p><p>Preço unit.: ${brl(itemPrice(item))}</p><strong class="ms-price">${brl(itemPrice(item)*qty(item))}</strong></div><div class="ms-actions"><div class="ms-qty"><button type="button" data-minus="${i}" aria-label="Diminuir">−</button><span>${qty(item)}</span><button type="button" data-plus="${i}" aria-label="Aumentar">+</button></div><button type="button" class="ms-remove" data-remove="${i}">Remover</button></div></article>`).join('');
     updateTotals();
   }
-  function discountValue(){ return subtotal() * (Math.max(0, couponPercent) / 100); }
-  function finalTotal(){ return Math.max(0, subtotal() - discountValue() + shippingValue); }
-  function clearCoupon(message=''){ couponCode=''; couponPercent=0; if($('couponCode')) $('couponCode').value=''; if($('couponMessage')){ $('couponMessage').textContent=message; $('couponMessage').style.color=message?'#ff4d6d':''; } updateTotals(); }
-  function updateTotals(){ const sub=subtotal(), discount=discountValue(), total=finalTotal(); $('cartTotal').textContent=brl(sub); $('shippingSubtotal').textContent=brl(sub); $('shippingValue').textContent=brl(shippingValue); $('shippingTotal').textContent=brl(sub+shippingValue); if($('reviewSubtotal')) $('reviewSubtotal').textContent=brl(sub); $('reviewShipping').textContent=brl(shippingValue); $('reviewTotal').textContent=brl(total); const row=$('reviewDiscountRow'); if(row){ row.style.display=couponPercent>0?'flex':'none'; $('reviewDiscount').textContent='- '+brl(discount); $('reviewDiscountLabel').textContent='Desconto '+(couponCode||'cupom'); } }
-  function renderReview(){ $('review').innerHTML=cart.map(item=>`<div class="ms-review-item"><span>${escapeHtml(item.nome||'Produto')} × ${qty(item)}</span><strong>${brl(moneyNumber(item.preco)*qty(item))}</strong></div>`).join(''); updateTotals(); }
-  function showStep(n){ document.querySelectorAll('.ms-panel').forEach((p,i)=>p.classList.toggle('active',i===n-1)); document.querySelectorAll('.ms-step').forEach(s=>s.classList.toggle('active',Number(s.dataset.step)===n)); $('pageTitle').textContent=n===1?'Meu carrinho':n===2?'Entrega':'Pagamento'; if(n===3)renderReview(); window.scrollTo({top:0,behavior:'smooth'}); }
+  function updateTotals(){
+    const sub=subtotal(), discount=discountValue(), total=finalTotal();
+    $('cartTotal').textContent=brl(sub);
+    $('shippingSubtotal').textContent=brl(sub);
+    $('shippingValue').textContent=brl(shippingValue);
+    $('shippingTotal').textContent=brl(sub+shippingValue);
+    $('reviewSubtotal').textContent=brl(sub);
+    $('reviewShipping').textContent=brl(shippingValue);
+    $('reviewTotal').textContent=brl(total);
+    if(coupon){ $('couponDiscountRow').hidden=false; $('couponDiscountLabel').textContent=`Desconto ${coupon.codigo}`; $('couponDiscountValue').textContent=`- ${brl(discount)}` }
+  }
+  function renderReview(){ $('review').innerHTML=cart.map(item=>`<div class="ms-review-item"><span>${escapeHtml(item.nome||'Produto')} × ${qty(item)}</span><strong>${brl(itemPrice(item)*qty(item))}</strong></div>`).join(''); updateTotals() }
+  function showStep(n){ document.querySelectorAll('.ms-panel').forEach((p,i)=>p.classList.toggle('active',i===n-1)); document.querySelectorAll('.ms-step').forEach(s=>s.classList.toggle('active',Number(s.dataset.step)===n)); $('pageTitle').textContent=n===1?'Meu carrinho':n===2?'Entrega':'Pagamento'; if(n===3)renderReview(); window.scrollTo({top:0,behavior:'smooth'}) }
 
-  function validateDelivery(){ const phone=$('customerPhone').value.replace(/\D/g,''); const required=[$('customerName'),$('zip'),$('street'),$('number'),$('district'),$('city'),$('state')]; if(required.some(el=>!el.value.trim())){ alert('Quase lá! Complete os dados de entrega para continuar.'); return false } if(phone.length<10){ alert('Informe um WhatsApp válido com DDD.'); return false } if(!shipping){ alert('Escolha uma opção de entrega para continuar.'); return false } return true }
+  function validateDelivery(){ const phone=$('customerPhone').value.replace(/\D/g,''); const required=[$('customerName'),$('zip'),$('street'),$('number'),$('district'),$('city'),$('state')]; if(required.some(el=>!el.value.trim())){alert('Complete nome e endereço para continuar.');return false} if(phone.length<10){alert('Informe um WhatsApp válido com DDD.');return false} if(!shipping){alert('Escolha uma opção de entrega para continuar.');return false} return true }
 
   async function calculateShipping(){ const zip=$('zip').value.replace(/\D/g,''); if(zip.length!==8){alert('Informe um CEP válido para calcular a entrega.');return} $('loadingShipping').classList.add('active'); $('shippingOptions').innerHTML=''; try{
-      const cepRes=await fetch(`https://viacep.com.br/ws/${zip}/json/`); const address=await cepRes.json(); if(!address.erro){$('street').value=address.logradouro||'';$('district').value=address.bairro||'';$('city').value=address.localidade||'';$('state').value=address.uf||''}
-      const res=await fetch(`${API}/calcular-frete`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cep:zip})}); const data=await res.json(); if(!Array.isArray(data))throw new Error('Resposta de frete inválida');
-      const valid=data.filter(f=>!f.error && f.price).filter(f=>{const c=(f.company?.name||'').toLowerCase(),n=(f.name||'').toLowerCase();return n.includes('pac')||n.includes('sedex')||(c.includes('jadlog')&&n.includes('package')&&!n.includes('centralizado'))});
-      if(!valid.length){$('shippingOptions').innerHTML='<div class="ms-empty">Nenhuma opção de entrega encontrada para este CEP.</div>';return}
-      $('shippingOptions').innerHTML=valid.map((f,i)=>`<button type="button" class="ms-ship" data-ship="${i}"><span><strong>${escapeHtml((f.company?.name||'')+' - '+(f.name||''))}</strong><br><small>Prazo: ${Number(f.delivery_time)||0} dias úteis</small></span><strong>${brl(f.price)}</strong></button>`).join('');
-      document.querySelectorAll('[data-ship]').forEach(btn=>btn.onclick=()=>{document.querySelectorAll('.ms-ship').forEach(x=>x.classList.remove('selected'));btn.classList.add('selected');const f=valid[Number(btn.dataset.ship)];shipping={nome:`${f.company?.name||''} - ${f.name||''}`,preco:moneyNumber(f.price),prazo:Number(f.delivery_time)||0};shippingValue=shipping.preco;localStorage.setItem('freteSelecionadoMS',JSON.stringify(shipping));localStorage.setItem('valorFreteMS',String(shippingValue));updateTotals()});
-    }catch(e){console.error(e);alert('Não foi possível calcular a entrega agora. Tente novamente em instantes.')}finally{$('loadingShipping').classList.remove('active')}
-  }
+    const cepRes=await fetch(`https://viacep.com.br/ws/${zip}/json/`); const address=await cepRes.json(); if(!address.erro){$('street').value=address.logradouro||'';$('district').value=address.bairro||'';$('city').value=address.localidade||'';$('state').value=address.uf||''}
+    const res=await fetch(`${API}/calcular-frete`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cep:zip})}); const data=await res.json(); if(!Array.isArray(data))throw new Error('Resposta de frete inválida');
+    const valid=data.filter(f=>!f.error&&f.price).filter(f=>{const c=(f.company?.name||'').toLowerCase(),n=(f.name||'').toLowerCase();return n.includes('pac')||n.includes('sedex')||(c.includes('jadlog')&&n.includes('package')&&!n.includes('centralizado'))});
+    if(!valid.length){$('shippingOptions').innerHTML='<div class="ms-empty">Nenhuma opção de entrega encontrada para este CEP.</div>';return}
+    $('shippingOptions').innerHTML=valid.map((f,i)=>`<button type="button" class="ms-ship" data-ship="${i}"><span><strong>${escapeHtml((f.company?.name||'')+' - '+(f.name||''))}</strong><br><small>Prazo: ${Number(f.delivery_time)||0} dias úteis</small></span><strong>${brl(f.price)}</strong></button>`).join('');
+    document.querySelectorAll('[data-ship]').forEach(btn=>btn.onclick=()=>{document.querySelectorAll('.ms-ship').forEach(x=>x.classList.remove('selected'));btn.classList.add('selected');const f=valid[Number(btn.dataset.ship)];shipping={nome:`${f.company?.name||''} - ${f.name||''}`,preco:moneyNumber(f.price),prazo:Number(f.delivery_time)||0};shippingValue=shipping.preco;localStorage.setItem('freteSelecionadoMS',JSON.stringify(shipping));localStorage.setItem('valorFreteMS',String(shippingValue));updateTotals()})
+  }catch(e){console.error(e);alert('Não foi possível calcular a entrega agora. Tente novamente em instantes.')}finally{$('loadingShipping').classList.remove('active')} }
 
   async function applyCoupon(){
-    const input=$('couponCode'); const message=$('couponMessage'); const code=(input.value||'').trim().toUpperCase();
-    if(!code){ clearCoupon('Digite um cupom.'); return; }
-    message.textContent='Validando cupom...'; message.style.color=varGold(); $('applyCoupon').disabled=true;
+    const code=$('couponCode').value.trim().toUpperCase();
+    const message=$('couponMessage');
+    if(!code){clearCoupon('Digite um cupom.');message.classList.add('error');return}
+    message.className='ms-coupon-msg'; message.textContent='Validando cupom...'; $('applyCoupon').disabled=true;
     try{
       const res=await fetch(`${API}/cupons/validar`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({codigo:code,subtotal:subtotal()})});
-      const data=await res.json();
-      if(!res.ok || !data.valido) throw new Error(data.mensagem||'Cupom inválido.');
-      const percent=Number(data.percentual ?? data.cupom?.percentual ?? data.desconto ?? 0);
-      if(!Number.isFinite(percent) || percent<=0) throw new Error('Cupom sem desconto válido.');
-      couponCode=code; couponPercent=percent; input.value=code; message.textContent='Cupom aplicado com sucesso ✓'; message.style.color='#22c55e'; updateTotals();
-    }catch(e){ couponCode=''; couponPercent=0; message.textContent=e.message||'Cupom inválido.'; message.style.color='#ff4d6d'; updateTotals(); }
+      const data=await res.json(); if(!res.ok||data.valido===false)throw new Error(data.mensagem||'Cupom inválido.');
+      const percentual=Number(data.percentual??data.cupom?.percentual??0); if(!(percentual>0))throw new Error('Cupom sem desconto válido.');
+      coupon={codigo:code,percentual}; message.className='ms-coupon-msg ok'; message.textContent='Cupom aplicado com sucesso ✓'; updateTotals();
+    }catch(e){clearCoupon(e.message||'Cupom inválido.');message.classList.add('error')}
     finally{$('applyCoupon').disabled=false}
   }
-  function varGold(){return getComputedStyle(document.documentElement).getPropertyValue('--gold').trim()||'#e1b92f'}
 
-  async function pay(){ if(!validateDelivery())return; $('paymentLoading').classList.add('active'); $('payButton').disabled=true; const payload={items:cart,valorFrete:shippingValue,freteSelecionado:shipping,subtotal:subtotal(),codigoCupom:couponCode||null,cupom:couponCode?{codigo:couponCode,percentual:couponPercent}:null,percentualDesconto:couponPercent,valorDesconto:discountValue(),desconto:discountValue(),totalComFrete:finalTotal(),total:finalTotal(),cliente:{nome:$('customerName').value.trim(),telefone:$('customerPhone').value.trim(),whatsapp:$('customerPhone').value.trim(),email:$('customerEmail').value.trim(),cep:$('zip').value.trim(),rua:$('street').value.trim(),endereco:$('street').value.trim(),numero:$('number').value.trim(),bairro:$('district').value.trim(),complemento:$('complement').value.trim(),cidade:$('city').value.trim(),estado:$('state').value.trim(),uf:$('state').value.trim()}}; try{const res=await fetch(`${API}/criar-pagamento`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});const data=await res.json();if(!data.init_point)throw new Error(data.erro||'Link de pagamento não recebido');location.href=data.init_point}catch(e){console.error(e);alert('Não foi possível abrir o pagamento agora. Tente novamente em instantes.')}finally{$('paymentLoading').classList.remove('active');$('payButton').disabled=false}}
+  async function pay(){
+    if(!validateDelivery())return;
+    $('paymentLoading').classList.add('active'); $('payButton').disabled=true;
+    const payload={items:cart,valorFrete:shippingValue,freteSelecionado:shipping,codigoCupom:coupon?.codigo||'',desconto:Number(coupon?.percentual||0),totalComFrete:finalTotal(),cliente:{nome:$('customerName').value.trim(),telefone:$('customerPhone').value.trim(),whatsapp:$('customerPhone').value.trim(),email:$('customerEmail').value.trim(),cep:$('zip').value.trim(),rua:$('street').value.trim(),endereco:$('street').value.trim(),numero:$('number').value.trim(),bairro:$('district').value.trim(),complemento:$('complement').value.trim(),cidade:$('city').value.trim(),estado:$('state').value.trim()}};
+    try{const res=await fetch(`${API}/criar-pagamento`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});const data=await res.json();if(!res.ok||!data.init_point)throw new Error(data.mensagem||data.erro||'Link de pagamento não recebido');location.href=data.init_point}catch(e){console.error(e);alert(e.message||'Não foi possível abrir o pagamento agora.')}finally{$('paymentLoading').classList.remove('active');$('payButton').disabled=false}
+  }
 
   function escapeHtml(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))} function escapeAttr(v){return escapeHtml(v)}
-  window.voltarLoja=()=>{ if(history.length>1)history.back(); else location.href='index.html' };
-  $('cartList').addEventListener('click',e=>{const plus=e.target.dataset.plus,minus=e.target.dataset.minus,remove=e.target.dataset.remove;if(plus!==undefined){const i=Number(plus);cart[i].quantidade=qty(cart[i])+1}else if(minus!==undefined){const i=Number(minus);if(qty(cart[i])>1)cart[i].quantidade=qty(cart[i])-1;else cart.splice(i,1)}else if(remove!==undefined){cart.splice(Number(remove),1)}else return;if(couponPercent>0){couponCode='';couponPercent=0;if($('couponMessage')){$('couponMessage').textContent='Carrinho alterado. Aplique o cupom novamente.';$('couponMessage').style.color='#ff4d6d'}}save();renderCart()});
-  $('clearCart').onclick=()=>{if(confirm('Deseja remover todos os produtos do carrinho?')){cart=[];save();renderCart()}};
-  $('toShipping').onclick=()=>{if(!cart.length){alert('Seu carrinho está vazio. Adicione um produto para continuar.');return}showStep(2)};
-  $('toPayment').onclick=()=>{if(validateDelivery())showStep(3)}; $('calcShipping').onclick=calculateShipping; $('applyCoupon').onclick=applyCoupon; $('couponCode').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();applyCoupon()}}); $('payButton').onclick=pay;
+  window.voltarLoja=()=>{if(history.length>1)history.back();else location.href='index.html'};
+  $('cartList').addEventListener('click',e=>{const plus=e.target.dataset.plus,minus=e.target.dataset.minus,remove=e.target.dataset.remove;if(plus!==undefined){const i=Number(plus);cart[i].quantidade=qty(cart[i])+1}else if(minus!==undefined){const i=Number(minus);if(qty(cart[i])>1)cart[i].quantidade=qty(cart[i])-1;else cart.splice(i,1)}else if(remove!==undefined){cart.splice(Number(remove),1)}else return;save();clearCoupon('Aplique o cupom novamente após alterar o carrinho.');renderCart()});
+  $('clearCart').onclick=()=>{if(confirm('Deseja remover todos os produtos do carrinho?')){cart=[];save();clearCoupon();renderCart()}};
+  $('toShipping').onclick=()=>{if(!cart.length){alert('Seu carrinho está vazio.');return}showStep(2)};
+  $('toPayment').onclick=()=>{if(validateDelivery())showStep(3)};
+  $('calcShipping').onclick=calculateShipping; $('payButton').onclick=pay; $('applyCoupon').onclick=applyCoupon;
+  $('couponCode').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();applyCoupon()}});
   document.querySelectorAll('[data-back]').forEach(b=>b.onclick=()=>showStep(Number(b.dataset.back)));
   $('zip').addEventListener('input',e=>{let v=e.target.value.replace(/\D/g,'').slice(0,8);e.target.value=v.length>5?v.slice(0,5)+'-'+v.slice(5):v});
   $('customerPhone').addEventListener('input',e=>{let v=e.target.value.replace(/\D/g,'').slice(0,11);e.target.value=v.length>10?`(${v.slice(0,2)}) ${v.slice(2,7)}-${v.slice(7)}`:v.length>6?`(${v.slice(0,2)}) ${v.slice(2,6)}-${v.slice(6)}`:v.length>2?`(${v.slice(0,2)}) ${v.slice(2)}`:v});
-  ['customerName','customerPhone','customerEmail','zip','street','number','district','complement','city','state'].forEach(id=>{const el=$(id); const saved=localStorage.getItem('ms_checkout_'+id); if(saved)el.value=saved; el.addEventListener('input',()=>localStorage.setItem('ms_checkout_'+id,el.value));});
   renderCart();
 })();
 </script>
