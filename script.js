@@ -2539,35 +2539,94 @@ document.addEventListener("keydown", function (event) {
   }
 });
 
-function comprarFavoritosMS(){
+async function comprarFavoritosMS(){
 
   const favoritos = JSON.parse(localStorage.getItem("favoritosMS")) || [];
 
+  if(!favoritos.length){
+    alert("Você ainda não adicionou produtos aos favoritos.");
+    return false;
+  }
+
   let carrinho = JSON.parse(localStorage.getItem("carrinho")) || [];
+  const adicionados = [];
+  const indisponiveis = [];
 
-  favoritos.forEach(produto => {
+  function corFavoritoMS(nome){
+    const n = String(nome || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    if(n.includes("preto") || n.includes("preta")) return "Preto";
+    if(n.includes("off white") || n.includes("offwhite")) return "Off White";
+    if(n.includes("branco") || n.includes("branca")) return "Branco";
+    if(n.includes("bege")) return "Bege";
+    if(n.includes("azul")) return "Azul";
+    if(n.includes("rosa")) return "Rosa";
+    if(n.includes("cinza")) return "Cinza";
+    if(n.includes("vinho") || n.includes("bordo")) return "Vinho";
+    if(n.includes("marrom")) return "Marrom";
+    if(n.includes("vermelho") || n.includes("vermelha")) return "Vermelho";
+    return "Única";
+  }
 
-    const itemExistente = carrinho.find(item => item.nome === produto.nome);
+  for(const produto of favoritos){
+    const tamanho = String(produto.tamanho || "P").toUpperCase().trim();
+    const item = {
+      nome: produto.nome,
+      preco: pegarPrecoNumero(produto.preco) || 0,
+      imagem: produto.imagem || produto.img || "",
+      img: produto.img || produto.imagem || "",
+      tamanho,
+      cor: produto.cor || corFavoritoMS(produto.nome),
+      quantidade: 1
+    };
 
-    if(itemExistente){
-      itemExistente.quantidade += 1;
-    } else {
-      carrinho.push({
-        nome: produto.nome,
-        preco: pegarPrecoNumero(produto.preco) || 0,
-        imagem: produto.imagem || produto.img || "",
-        tamanho: produto.tamanho || "P",
-        quantidade: 1
+    try{
+      const resposta = await fetch(`${API_BASE}/estoque/disponivel`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(item)
       });
-    }
 
-  });
+      const estoque = await resposta.json().catch(() => ({}));
+      const jaNoCarrinho = carrinho
+        .filter(p => String(p.nome || "").trim() === String(item.nome || "").trim()
+          && String(p.tamanho || "").toUpperCase().trim() === tamanho)
+        .reduce((total, p) => total + Number(p.quantidade || 1), 0);
+
+      if(!resposta.ok || !estoque.cadastrado || jaNoCarrinho + 1 > Number(estoque.disponivel || 0)){
+        indisponiveis.push(`${item.nome} - tamanho ${tamanho}`);
+        continue;
+      }
+
+      const itemExistente = carrinho.find(p =>
+        String(p.nome || "").trim() === String(item.nome || "").trim()
+        && String(p.tamanho || "").toUpperCase().trim() === tamanho
+      );
+
+      if(itemExistente){
+        itemExistente.quantidade = Number(itemExistente.quantidade || 1) + 1;
+      }else{
+        carrinho.push(item);
+      }
+
+      adicionados.push(item.nome);
+    }catch(erro){
+      console.error("Erro ao validar favorito no estoque:", erro);
+      indisponiveis.push(`${item.nome} - não foi possível validar o estoque`);
+    }
+  }
 
   localStorage.setItem("carrinho", JSON.stringify(carrinho));
 
   if(typeof carregarCarrinho === "function") carregarCarrinho();
   if(typeof atualizarCarrinho === "function") atualizarCarrinho();
   if(typeof atualizarBadgeCarrinho === "function") atualizarBadgeCarrinho();
+  if(typeof renderCarrinhoMobileMS === "function") renderCarrinhoMobileMS();
+
+  if(indisponiveis.length){
+    alert(`Não adicionamos os produtos sem estoque:\n\n${indisponiveis.join("\n")}`);
+  }
+
+  if(!adicionados.length) return false;
 
   document.getElementById("painelFavoritos")?.classList.remove("ativo");
   document.getElementById("painelFavoritos")?.classList.remove("favoritos-ativo");
@@ -2577,6 +2636,8 @@ function comprarFavoritosMS(){
   } else {
     abrirCarrinho();
   }
+
+  return true;
 }
 
 
