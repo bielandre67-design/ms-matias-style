@@ -6,69 +6,61 @@
   <meta name="theme-color" content="#050505">
   <title>Carrinho | MS Matias Style</title>
   <style>
-    :root{--bg:#050505;--card:#0d0d0d;--card2:#111;--line:#3b3217;--gold:#e1b92f;--text:#fff;--muted:#b9b9b9;--danger:#ff5b78;--ok:#22c55e}
-    *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif}body{overflow-x:hidden}
-    button,input{font:inherit}button{cursor:pointer}.ms-cart{width:min(100%,560px);min-height:100vh;margin:auto;padding:16px 14px calc(30px + env(safe-area-inset-bottom));background:var(--bg)}
-    .ms-head{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;padding:8px 0 14px;background:linear-gradient(#050505 78%,transparent)}.ms-head h1{font-size:24px;margin:0;font-weight:900}.ms-close{display:grid;place-items:center;width:42px;height:42px;border-radius:50%;border:1px solid var(--gold);background:#0c0c0c;color:var(--gold);font-size:25px;line-height:1}
-    .ms-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:2px 0 18px}.ms-step{position:relative;border:1px solid var(--line);border-radius:12px;padding:11px 5px;text-align:center;font-weight:800;font-size:12px;color:#d8d8d8;background:#0b0b0b}.ms-step.active{background:var(--gold);color:#050505;border-color:var(--gold)}
-    .ms-panel{display:none}.ms-panel.active{display:block}.ms-section-card{border:1px solid var(--line);border-radius:20px;padding:16px;background:var(--card);margin-bottom:14px}.ms-section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}.ms-section-head h2,.ms-title{font-size:19px;margin:0}.ms-section-head small{color:var(--muted)}
-    .ms-list{display:grid;gap:12px}.ms-item{border:1px solid var(--line);border-radius:18px;padding:12px;display:grid;grid-template-columns:82px minmax(0,1fr);gap:12px;background:var(--card)}.ms-item img{width:82px;height:104px;object-fit:cover;border-radius:12px;background:#161616}.ms-info{min-width:0}.ms-info h3{font-size:16px;line-height:1.25;margin:1px 0 6px;white-space:normal}.ms-info p{margin:3px 0;color:var(--muted);font-size:13px}.ms-price{display:block;color:var(--gold);font-size:21px;margin-top:7px}.ms-actions{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:10px;border-top:1px solid #262626}.ms-qty{display:flex;align-items:center;gap:8px}.ms-qty button{width:36px;height:36px;border-radius:10px;border:1px solid var(--gold);background:#080808;color:var(--gold);font-size:22px;line-height:1}.ms-qty span{min-width:38px;height:36px;display:grid;place-items:center;border-radius:10px;background:#181818;font-weight:800}.ms-remove{border:0;background:transparent;color:var(--danger);font-weight:800;padding:8px 2px}
-    .ms-empty{padding:38px 18px;text-align:center;border:1px dashed var(--line);border-radius:18px;color:var(--muted);line-height:1.55}.ms-summary{margin-top:14px;border:1px solid var(--line);border-radius:20px;padding:17px;background:var(--card)}.ms-row{display:flex;justify-content:space-between;align-items:center;gap:16px;margin:10px 0;color:var(--muted);font-size:14px}.ms-row strong{color:#fff}.ms-row.total{border-top:1px solid #2c2c2c;padding-top:14px;margin-top:14px;font-size:17px}.ms-row.total strong{font-size:26px;color:var(--gold)}
-    .ms-btn{width:100%;min-height:52px;border:0;border-radius:14px;padding:15px 16px;font-weight:900;margin-top:11px;background:var(--gold);color:#050505}.ms-btn:disabled{opacity:.55;cursor:not-allowed}.ms-btn.secondary{background:transparent;color:var(--danger);border:1px solid var(--danger)}.ms-btn.back{background:#151515;color:#fff;border:1px solid #343434}
-    .ms-form{display:grid;gap:12px}.ms-field{display:grid;gap:7px}.ms-field label{font-size:13px;font-weight:800;color:#e8e8e8;padding-left:2px}.ms-field input,.ms-form>input{width:100%;border:1px solid #4b3b0b;background:#111;color:#fff;border-radius:13px;padding:14px;outline:0;min-height:49px}.ms-field input:focus,.ms-form>input:focus{border-color:var(--gold);box-shadow:0 0 0 2px rgba(225,185,47,.12)}.ms-field input::placeholder,.ms-form>input::placeholder{color:#858585}.ms-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .ms-shipping{display:grid;gap:10px;margin-top:12px}.ms-ship{width:100%;border:1px solid #4b3b0b;border-radius:14px;padding:13px;display:flex;align-items:center;justify-content:space-between;gap:10px;background:#101010;color:#fff;text-align:left}.ms-ship.selected{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}.ms-ship small{color:var(--muted)}.ms-review{display:grid;gap:4px}.ms-review-item{display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid #282828;font-size:14px}.ms-note{color:var(--muted);line-height:1.5;font-size:14px}.ms-loading{display:none;text-align:center;color:var(--muted);padding:12px}.ms-loading.active{display:block}
-    .ms-coupon{margin-top:14px;border:1px solid var(--line);border-radius:20px;padding:17px;background:var(--card)}.ms-coupon h2{margin:0 0 12px;font-size:18px}.ms-coupon-line{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px}.ms-coupon input{min-width:0;border:1px solid #4b3b0b;background:#111;color:#fff;border-radius:13px;padding:14px;outline:0;text-transform:uppercase}.ms-coupon button{border:0;border-radius:13px;padding:0 16px;background:var(--gold);color:#050505;font-weight:900}.ms-coupon-msg{min-height:20px;margin:10px 0 0;color:var(--muted);font-size:13px}.ms-coupon-msg.ok{color:var(--ok)}.ms-coupon-msg.error{color:#ff6b7d}.ms-row.discount,.ms-row.discount strong{color:var(--ok)}
-    @media(max-width:390px){.ms-cart{padding-left:10px;padding-right:10px}.ms-item{grid-template-columns:74px minmax(0,1fr);padding:10px}.ms-item img{width:74px;height:96px}.ms-head h1{font-size:22px}.ms-step{font-size:11px;padding:10px 3px}.ms-grid{grid-template-columns:1fr}.ms-coupon-line{grid-template-columns:1fr}.ms-coupon button{min-height:48px}}
+    :root{--bg:#050505;--card:#0d0d0d;--line:#7b5d0b;--gold:#e1b92f;--text:#fff;--muted:#b9b9b9;--danger:#ff3f70}
+    *{box-sizing:border-box} html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif}
+    button,input{font:inherit} button{cursor:pointer}
+    .ms-cart{width:min(100%,520px);min-height:100vh;margin:auto;padding:24px 18px 40px;background:#050505}
+    .ms-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}.ms-head h1{font-size:28px;margin:0}.ms-close{width:48px;height:48px;border-radius:50%;border:1px solid var(--gold);background:transparent;color:var(--gold);font-size:26px}
+    .ms-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:22px}.ms-step{border:1px solid var(--line);border-radius:14px;padding:14px 6px;text-align:center;font-weight:800;font-size:13px;color:#fff}.ms-step.active{background:var(--gold);color:#050505;border-color:var(--gold)}
+    .ms-panel{display:none}.ms-panel.active{display:block}
+    .ms-list{display:grid;gap:14px}.ms-item{border:1px solid var(--line);border-radius:22px;padding:15px;display:grid;grid-template-columns:92px 1fr;gap:14px;background:var(--card)}
+    .ms-item img{width:92px;height:118px;object-fit:cover;border-radius:14px;background:#111}.ms-info h3{font-size:17px;margin:1px 0 7px}.ms-info p{margin:3px 0;color:var(--muted);font-size:14px}.ms-price{display:block;color:var(--gold);font-size:25px;margin-top:8px}
+    .ms-actions{grid-column:1/-1;display:flex;align-items:center;justify-content:flex-end;gap:12px;margin-top:4px}.ms-qty{display:flex;align-items:center;gap:10px}.ms-qty button{width:38px;height:38px;border-radius:50%;border:1px solid var(--gold);background:#050505;color:var(--gold);font-size:24px;line-height:1}.ms-qty span{min-width:38px;height:38px;display:grid;place-items:center;border-radius:10px;background:#151515;font-weight:800}.ms-remove{border:0;background:transparent;color:var(--danger);font-weight:800;margin-left:auto}
+    .ms-empty{padding:48px 20px;text-align:center;border:1px dashed var(--line);border-radius:20px;color:var(--muted)}
+    .ms-summary{margin-top:18px;border:1px solid var(--line);border-radius:22px;padding:20px;background:var(--card)}.ms-row{display:flex;justify-content:space-between;gap:16px;margin:10px 0;color:var(--muted)}.ms-row strong{color:#fff}.ms-row.total{border-top:1px solid #333;padding-top:16px;margin-top:16px;font-size:19px}.ms-row.total strong{font-size:30px;color:var(--gold)}
+    .ms-btn{width:100%;border:0;border-radius:16px;padding:17px 16px;font-weight:900;margin-top:12px;background:var(--gold);color:#050505}.ms-btn.secondary{background:transparent;color:var(--danger);border:2px solid var(--danger)}.ms-btn.back{background:#151515;color:#fff;border:1px solid #333}
+    .ms-form{display:grid;gap:12px}.ms-field{display:grid;gap:7px}.ms-field label{font-size:13px;font-weight:800;color:#f2f2f2}.ms-required{color:var(--gold)}.ms-form input{width:100%;border:1px solid #4b3b0b;background:#111;color:#fff;border-radius:14px;padding:15px;outline:0}.ms-form input:focus{border-color:var(--gold)}.ms-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.ms-title{font-size:20px;margin:0 0 14px}
+    .ms-shipping{display:grid;gap:10px;margin-top:14px}.ms-ship{border:1px solid #4b3b0b;border-radius:14px;padding:14px;display:flex;justify-content:space-between;gap:10px;background:#101010}.ms-ship.selected{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}.ms-ship small{color:var(--muted)}
+    .ms-review{display:grid;gap:10px}.ms-review-item{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid #282828}.ms-note{color:var(--muted);line-height:1.5}.ms-loading{display:none;text-align:center;color:var(--muted);padding:12px}.ms-loading.active{display:block}.ms-coupon{margin-top:18px;border:1px solid var(--line);border-radius:22px;padding:18px;background:var(--card)}.ms-coupon h2{margin:0 0 12px;font-size:18px}.ms-coupon-line{display:grid;grid-template-columns:1fr auto;gap:10px}.ms-coupon input{min-width:0;border:1px solid #4b3b0b;background:#111;color:#fff;border-radius:14px;padding:15px;outline:0;text-transform:uppercase}.ms-coupon button{border:0;border-radius:14px;padding:0 18px;background:var(--gold);color:#050505;font-weight:900}.ms-coupon-msg{min-height:20px;margin:10px 0 0;color:var(--muted);font-size:14px}.ms-coupon-msg.ok{color:#22c55e}.ms-coupon-msg.error{color:#ff6b7d}.ms-row.discount{color:#22c55e}.ms-row.discount strong{color:#22c55e}
+    @media(max-width:390px){.ms-cart{padding-left:12px;padding-right:12px}.ms-item{grid-template-columns:78px 1fr}.ms-item img{width:78px;height:102px}.ms-head h1{font-size:24px}.ms-step{font-size:12px}}
   </style>
 </head>
 <body>
 <main class="ms-cart">
   <header class="ms-head"><h1 id="pageTitle">Meu carrinho</h1><button class="ms-close" type="button" aria-label="Voltar à loja" onclick="voltarLoja()">×</button></header>
   <nav class="ms-steps" aria-label="Etapas da compra">
-    <div class="ms-step active" data-step="1">1 Produtos</div><div class="ms-step" data-step="2">2 Entrega</div><div class="ms-step" data-step="3">3 Pagamento</div>
+    <div class="ms-step active" data-step="1">1 Produtos</div><div class="ms-step" data-step="2">2 Frete</div><div class="ms-step" data-step="3">3 Pagamento</div>
   </nav>
 
   <section class="ms-panel active" id="step1">
-    <div class="ms-section-head"><h2>Produtos escolhidos</h2><small>Revise antes de continuar</small></div>
     <div id="cartList" class="ms-list"></div>
-    <div class="ms-summary">
-      <div class="ms-row"><span>Subtotal dos produtos</span><strong id="cartTotal">R$ 0,00</strong></div>
-      <div class="ms-row total"><span>Total nesta etapa</span><strong id="cartTotalMirror">R$ 0,00</strong></div>
-      <button class="ms-btn" id="toShipping">Continuar para entrega</button>
-      <button class="ms-btn secondary" id="clearCart">Limpar carrinho</button>
-    </div>
+    <div class="ms-summary"><div class="ms-row total"><span>Total</span><strong id="cartTotal">R$ 0,00</strong></div><button class="ms-btn" id="toShipping">Continuar</button><button class="ms-btn secondary" id="clearCart">Limpar carrinho</button></div>
   </section>
 
   <section class="ms-panel" id="step2">
-    <div class="ms-section-card">
-      <div class="ms-section-head"><h2>Dados do cliente</h2><small>Campos obrigatórios</small></div>
-      <div class="ms-form">
-        <div class="ms-field"><label for="customerName">Nome completo</label><input id="customerName" placeholder="Digite seu nome" autocomplete="name"></div>
-        <div class="ms-field"><label for="customerPhone">WhatsApp com DDD</label><input id="customerPhone" placeholder="(51) 99999-9999" inputmode="tel" autocomplete="tel"></div>
-        <div class="ms-field"><label for="customerEmail">E-mail</label><input id="customerEmail" placeholder="Opcional" type="email" autocomplete="email"></div>
+    <h2 class="ms-title">Dados de entrega</h2>
+    <div class="ms-form">
+      <div class="ms-field">
+        <label for="customerName">Nome completo do cliente <span class="ms-required">*</span></label>
+        <input id="customerName" name="customerName" placeholder="Digite nome e sobrenome" autocomplete="name" required>
       </div>
-    </div>
-
-    <div class="ms-section-card">
-      <div class="ms-section-head"><h2>Endereço de entrega</h2><small>Informe o CEP primeiro</small></div>
-      <div class="ms-form">
-        <div class="ms-field"><label for="zip">CEP</label><input id="zip" placeholder="00000-000" inputmode="numeric" maxlength="9" autocomplete="postal-code"></div>
-        <button class="ms-btn" id="calcShipping">Calcular frete</button>
-        <div id="loadingShipping" class="ms-loading">Calculando opções de entrega...</div>
-        <div id="shippingOptions" class="ms-shipping"></div>
-        <div class="ms-field"><label for="street">Rua / Avenida</label><input id="street" placeholder="Nome da rua" autocomplete="address-line1"></div>
-        <div class="ms-grid">
-          <div class="ms-field"><label for="number">Número</label><input id="number" placeholder="Número"></div>
-          <div class="ms-field"><label for="district">Bairro</label><input id="district" placeholder="Bairro"></div>
-        </div>
-        <div class="ms-field"><label for="complement">Complemento</label><input id="complement" placeholder="Opcional" autocomplete="address-line2"></div>
-        <div class="ms-grid">
-          <div class="ms-field"><label for="city">Cidade</label><input id="city" placeholder="Cidade" autocomplete="address-level2"></div>
-          <div class="ms-field"><label for="state">UF</label><input id="state" placeholder="RS" maxlength="2" autocomplete="address-level1"></div>
-        </div>
+      <div class="ms-field">
+        <label for="customerPhone">WhatsApp com DDD <span class="ms-required">*</span></label>
+        <input id="customerPhone" name="customerPhone" placeholder="(51) 99999-9999" inputmode="tel" autocomplete="tel" required>
       </div>
+      <div class="ms-field">
+        <label for="customerEmail">E-mail</label>
+        <input id="customerEmail" name="customerEmail" placeholder="E-mail (opcional)" type="email" autocomplete="email">
+      </div>
+      <input id="zip" placeholder="CEP" inputmode="numeric" maxlength="9" autocomplete="postal-code">
+      <button class="ms-btn" id="calcShipping">Calcular frete</button>
+      <div id="loadingShipping" class="ms-loading">Calculando opções de entrega...</div>
+      <div id="shippingOptions" class="ms-shipping"></div>
+      <input id="street" placeholder="Rua / Avenida" autocomplete="address-line1">
+      <div class="ms-grid"><input id="number" placeholder="Número"><input id="district" placeholder="Bairro"></div>
+      <input id="complement" placeholder="Complemento (opcional)" autocomplete="address-line2">
+      <div class="ms-grid"><input id="city" placeholder="Cidade" autocomplete="address-level2"><input id="state" placeholder="UF" maxlength="2" autocomplete="address-level1"></div>
     </div>
-
     <div class="ms-summary"><div class="ms-row"><span>Subtotal</span><strong id="shippingSubtotal">R$ 0,00</strong></div><div class="ms-row"><span>Frete</span><strong id="shippingValue">R$ 0,00</strong></div><div class="ms-row total"><span>Total</span><strong id="shippingTotal">R$ 0,00</strong></div><button class="ms-btn" id="toPayment">Continuar para pagamento</button><button class="ms-btn back" data-back="1">Voltar aos produtos</button></div>
   </section>
 
@@ -121,7 +113,7 @@
   }
   function updateTotals(){
     const sub=subtotal(), discount=discountValue(), total=finalTotal();
-    $('cartTotal').textContent=brl(sub); if($('cartTotalMirror')) $('cartTotalMirror').textContent=brl(sub);
+    $('cartTotal').textContent=brl(sub);
     $('shippingSubtotal').textContent=brl(sub);
     $('shippingValue').textContent=brl(shippingValue);
     $('shippingTotal').textContent=brl(sub+shippingValue);
@@ -133,7 +125,7 @@
   function renderReview(){ $('review').innerHTML=cart.map(item=>`<div class="ms-review-item"><span>${escapeHtml(item.nome||'Produto')} × ${qty(item)}</span><strong>${brl(itemPrice(item)*qty(item))}</strong></div>`).join(''); updateTotals() }
   function showStep(n){ document.querySelectorAll('.ms-panel').forEach((p,i)=>p.classList.toggle('active',i===n-1)); document.querySelectorAll('.ms-step').forEach(s=>s.classList.toggle('active',Number(s.dataset.step)===n)); $('pageTitle').textContent=n===1?'Meu carrinho':n===2?'Entrega':'Pagamento'; if(n===3)renderReview(); window.scrollTo({top:0,behavior:'smooth'}) }
 
-  function validateDelivery(){ const phone=$('customerPhone').value.replace(/\D/g,''); const required=[$('customerName'),$('zip'),$('street'),$('number'),$('district'),$('city'),$('state')]; if(required.some(el=>!el.value.trim())){alert('Complete nome e endereço para continuar.');return false} if(phone.length<10){alert('Informe um WhatsApp válido com DDD.');return false} if(!shipping){alert('Escolha uma opção de entrega para continuar.');return false} return true }
+  function validateDelivery(){ const fullName=$('customerName').value.trim().replace(/\s+/g,' '); const phone=$('customerPhone').value.replace(/\D/g,''); const required=[$('customerName'),$('zip'),$('street'),$('number'),$('district'),$('city'),$('state')]; if(required.some(el=>!el.value.trim())){alert('Complete o nome do cliente e o endereço para continuar.');return false} if(fullName.split(' ').filter(Boolean).length<2){alert('Informe o nome completo do cliente, com nome e sobrenome.');$('customerName').focus();return false} if(phone.length<10){alert('Informe um WhatsApp válido com DDD.');return false} if(!shipping){alert('Escolha uma opção de entrega para continuar.');return false} return true }
 
   async function calculateShipping(){ const zip=$('zip').value.replace(/\D/g,''); if(zip.length!==8){alert('Informe um CEP válido para calcular a entrega.');return} $('loadingShipping').classList.add('active'); $('shippingOptions').innerHTML=''; try{
     const cepRes=await fetch(`https://viacep.com.br/ws/${zip}/json/`); const address=await cepRes.json(); if(!address.erro){$('street').value=address.logradouro||'';$('district').value=address.bairro||'';$('city').value=address.localidade||'';$('state').value=address.uf||''}
@@ -176,6 +168,11 @@
   document.querySelectorAll('[data-back]').forEach(b=>b.onclick=()=>showStep(Number(b.dataset.back)));
   $('zip').addEventListener('input',e=>{let v=e.target.value.replace(/\D/g,'').slice(0,8);e.target.value=v.length>5?v.slice(0,5)+'-'+v.slice(5):v});
   $('customerPhone').addEventListener('input',e=>{let v=e.target.value.replace(/\D/g,'').slice(0,11);e.target.value=v.length>10?`(${v.slice(0,2)}) ${v.slice(2,7)}-${v.slice(7)}`:v.length>6?`(${v.slice(0,2)}) ${v.slice(2,6)}-${v.slice(6)}`:v.length>2?`(${v.slice(0,2)}) ${v.slice(2)}`:v});
+  const savedCustomer=readJSON('dadosClienteMS',{});
+  if(savedCustomer.nome) $('customerName').value=savedCustomer.nome;
+  if(savedCustomer.telefone||savedCustomer.whatsapp) $('customerPhone').value=savedCustomer.telefone||savedCustomer.whatsapp;
+  if(savedCustomer.email) $('customerEmail').value=savedCustomer.email;
+  ['customerName','customerPhone','customerEmail'].forEach(id=>$(id).addEventListener('input',()=>localStorage.setItem('dadosClienteMS',JSON.stringify({...(readJSON('dadosClienteMS',{})),nome:$('customerName').value.trim(),telefone:$('customerPhone').value.trim(),whatsapp:$('customerPhone').value.trim(),email:$('customerEmail').value.trim()}))));
   renderCart();
 })();
 </script>
