@@ -3128,7 +3128,26 @@ onclick="window.scrollTo({top:0, behavior:'smooth'})">
   onblur="buscarEnderecoCheckout()"
 >
 
-<input id="telefoneClienteMobile" placeholder="WhatsApp com DDD">
+<input
+  id="nomeClienteMobile"
+  type="text"
+  placeholder="Nome completo do cliente"
+  autocomplete="name"
+>
+
+<input
+  id="telefoneClienteMobile"
+  type="tel"
+  placeholder="WhatsApp com DDD"
+  autocomplete="tel"
+>
+
+<input
+  id="emailClienteMobile"
+  type="email"
+  placeholder="E-mail (opcional)"
+  autocomplete="email"
+>
 
 <input id="ruaClienteMobile" placeholder="Rua">
 <input id="numeroCasaMobile" placeholder="Número">
@@ -3336,14 +3355,22 @@ onclick="window.scrollTo({top:0, behavior:'smooth'})">
 
   
 window.irPagamentoMS = function(){
+  var nome = (document.getElementById('nomeClienteMobile') || {}).value || '';
   var cep = (document.getElementById('cepCheckout') || {}).value || '';
   var whats = (document.getElementById('telefoneClienteMobile') || {}).value || '';
+  var email = (document.getElementById('emailClienteMobile') || {}).value || '';
   var rua = (document.getElementById('ruaClienteMobile') || {}).value || '';
   var numero = (document.getElementById('numeroCasaMobile') || {}).value || '';
   var complemento = (document.getElementById('complementoCasa') || {}).value || '';
   var bairro = (document.getElementById('bairroClienteMobile') || {}).value || '';
   var cidade = (document.getElementById('cidadeClienteMobile') || {}).value || '';
   var estado = (document.getElementById('estadoClienteMobile') || {}).value || '';
+
+  if (nome.trim().split(/\s+/).length < 2) {
+    alert('Preencha o nome completo do cliente.');
+    document.getElementById('nomeClienteMobile')?.focus();
+    return;
+  }
 
   if (cep.replace(/\D/g,'').length < 8) {
     alert('Preencha o CEP corretamente.');
@@ -3373,6 +3400,20 @@ window.irPagamentoMS = function(){
     alert('Preencha todos os dados de entrega.');
     return;
   }
+
+  localStorage.setItem('dadosClienteMS', JSON.stringify({
+    nome: nome.trim(),
+    telefone: whats.trim(),
+    whatsapp: whats.trim(),
+    email: email.trim(),
+    cep: cep.trim(),
+    rua: rua.trim(),
+    numero: numero.trim(),
+    complemento: complemento.trim(),
+    bairro: bairro.trim(),
+    cidade: cidade.trim(),
+    estado: estado.trim()
+  }));
 
   var carrinho = getCarrinhoMS();
   var total = subtotalMS(carrinho) + frete;

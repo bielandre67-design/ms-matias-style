@@ -476,12 +476,12 @@ function salvarDadosClienteMobileMS() {
     telefone: document.getElementById("telefoneClienteMobile")?.value?.trim() || "",
     email: document.getElementById("emailClienteMobile")?.value?.trim() || "",
     cep: document.getElementById("cepCheckout")?.value?.trim() || "",
-    rua: document.getElementById("ruaCliente")?.value?.trim() || "",
-    numero: document.getElementById("numeroCasa")?.value?.trim() || "",
-    complemento: document.getElementById("complementoCliente")?.value?.trim() || "",
-    bairro: document.getElementById("bairroCliente")?.value?.trim() || "",
-    cidade: document.getElementById("cidadeCliente")?.value?.trim() || "",
-    estado: document.getElementById("estadoCliente")?.value?.trim() || ""
+    rua: (document.getElementById("ruaClienteMobile") || document.getElementById("ruaCliente"))?.value?.trim() || "",
+    numero: (document.getElementById("numeroCasaMobile") || document.getElementById("numeroCasa"))?.value?.trim() || "",
+    complemento: (document.getElementById("complementoCasa") || document.getElementById("complementoCliente"))?.value?.trim() || "",
+    bairro: (document.getElementById("bairroClienteMobile") || document.getElementById("bairroCliente"))?.value?.trim() || "",
+    cidade: (document.getElementById("cidadeClienteMobile") || document.getElementById("cidadeCliente"))?.value?.trim() || "",
+    estado: (document.getElementById("estadoClienteMobile") || document.getElementById("estadoCliente"))?.value?.trim() || ""
   };
   localStorage.setItem("dadosClienteMS", JSON.stringify(dados));
   return dados;
@@ -4508,12 +4508,12 @@ document.addEventListener('DOMContentLoaded', () => {
       telefone: msObterValorCampo("telefoneClienteMobile", "telefoneCliente", "customerPhone", "whatsappCliente") || salvo.telefone || salvo.whatsapp || "",
       email: msObterValorCampo("emailClienteMobile", "emailCliente", "customerEmail") || salvo.email || "",
       cep: msObterValorCampo("cepCheckout", "cepCliente", "zip") || salvo.cep || "",
-      rua: msObterValorCampo("ruaCliente", "ruaCheckout", "street") || salvo.rua || "",
-      numero: msObterValorCampo("numeroCasa", "numeroCliente", "numeroCheckout", "number") || salvo.numero || "",
-      complemento: msObterValorCampo("complementoCliente", "complementoCheckout", "complement") || salvo.complemento || "",
-      bairro: msObterValorCampo("bairroCliente", "bairroCheckout", "district") || salvo.bairro || "",
-      cidade: msObterValorCampo("cidadeCliente", "cidadeCheckout", "city") || salvo.cidade || "",
-      estado: msObterValorCampo("estadoCliente", "estadoCheckout", "state") || salvo.estado || ""
+      rua: msObterValorCampo("ruaClienteMobile", "ruaCliente", "ruaCheckout", "street") || salvo.rua || "",
+      numero: msObterValorCampo("numeroCasaMobile", "numeroCasa", "numeroCliente", "numeroCheckout", "number") || salvo.numero || "",
+      complemento: msObterValorCampo("complementoCasa", "complementoCliente", "complementoCheckout", "complement") || salvo.complemento || "",
+      bairro: msObterValorCampo("bairroClienteMobile", "bairroCliente", "bairroCheckout", "district") || salvo.bairro || "",
+      cidade: msObterValorCampo("cidadeClienteMobile", "cidadeCliente", "cidadeCheckout", "city") || salvo.cidade || "",
+      estado: msObterValorCampo("estadoClienteMobile", "estadoCliente", "estadoCheckout", "state") || salvo.estado || ""
     };
 
     localStorage.setItem("dadosClienteMS", JSON.stringify(dados));
