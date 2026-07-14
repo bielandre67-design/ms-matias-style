@@ -476,12 +476,12 @@ function salvarDadosClienteMobileMS() {
     telefone: document.getElementById("telefoneClienteMobile")?.value?.trim() || "",
     email: document.getElementById("emailClienteMobile")?.value?.trim() || "",
     cep: document.getElementById("cepCheckout")?.value?.trim() || "",
-    rua: (document.getElementById("ruaClienteMobile") || document.getElementById("ruaCliente"))?.value?.trim() || "",
-    numero: (document.getElementById("numeroCasaMobile") || document.getElementById("numeroCasa"))?.value?.trim() || "",
-    complemento: (document.getElementById("complementoCasa") || document.getElementById("complementoCliente"))?.value?.trim() || "",
-    bairro: (document.getElementById("bairroClienteMobile") || document.getElementById("bairroCliente"))?.value?.trim() || "",
-    cidade: (document.getElementById("cidadeClienteMobile") || document.getElementById("cidadeCliente"))?.value?.trim() || "",
-    estado: (document.getElementById("estadoClienteMobile") || document.getElementById("estadoCliente"))?.value?.trim() || ""
+    rua: document.getElementById("ruaCliente")?.value?.trim() || "",
+    numero: document.getElementById("numeroCasa")?.value?.trim() || "",
+    complemento: document.getElementById("complementoCliente")?.value?.trim() || "",
+    bairro: document.getElementById("bairroCliente")?.value?.trim() || "",
+    cidade: document.getElementById("cidadeCliente")?.value?.trim() || "",
+    estado: document.getElementById("estadoCliente")?.value?.trim() || ""
   };
   localStorage.setItem("dadosClienteMS", JSON.stringify(dados));
   return dados;
@@ -970,7 +970,13 @@ async function aplicarCupom() {
     mensagem.style.color = "#ff4d6d";
   }
 
+  // Atualiza os dois resumos. Antes, somente o resumo do PC era recalculado,
+  // por isso o cupom aparecia como aplicado no mobile, mas o total não mudava.
   montarResumoPagamentoPC();
+  atualizarCarrinho();
+  if (typeof atualizarResumoPagamentoMSComCupom === "function") {
+    atualizarResumoPagamentoMSComCupom();
+  }
 }
 
 // ===============================
@@ -2458,65 +2464,73 @@ async function aplicarCupomMS() {
   return aplicarCupom();
 }
 function atualizarResumoPagamentoMSComCupom() {
-  const carrinho =
-    (Array.isArray(window.carrinho) && window.carrinho.length ? window.carrinho : null) ||
-    (Array.isArray(window.carrinhoMobile) && window.carrinhoMobile.length ? window.carrinhoMobile : null) ||
-    JSON.parse(localStorage.getItem("carrinhoMobile") || "null") ||
-    JSON.parse(localStorage.getItem("carrinhoMS") || "null") ||
-    JSON.parse(localStorage.getItem("carrinho") || "[]");
+  let itens = [];
+  try {
+    itens = JSON.parse(localStorage.getItem("carrinho") || "[]");
+  } catch (erro) {
+    itens = [];
+  }
 
-  const subtotal = Array.isArray(carrinho)
-    ? carrinho.reduce((soma, item) => {
-        const preco = Number(item.preco || item.valor || item.price || 0);
-        const quantidade = Number(item.quantidade || item.qtd || 1);
+  const subtotal = Array.isArray(itens)
+    ? itens.reduce((soma, item) => {
+        const preco = pegarPrecoNumero(item.preco ?? item.valor ?? item.price ?? 0);
+        const quantidade = Number(item.quantidade ?? item.qtd ?? 1);
         return soma + (preco * quantidade);
       }, 0)
     : 0;
 
+  let freteSalvo = null;
+  try {
+    freteSalvo = JSON.parse(localStorage.getItem("freteSelecionadoMS") || "null");
+  } catch (erro) {}
+
   const frete = Number(
-    window.valorFrete ||
-    window.freteSelecionadoValor ||
-    localStorage.getItem("valorFreteMS") ||
-    localStorage.getItem("valorFrete") ||
+    freteSelecionado?.preco ??
+    freteSalvo?.preco ??
+    window.valorFrete ??
+    window.freteSelecionadoValor ??
+    localStorage.getItem("valorFreteMS") ??
+    localStorage.getItem("valorFrete") ??
     0
-  );
+  ) || 0;
 
   const percentual = Number(descontoCupomMS || 0);
   const valorDesconto = subtotal * (percentual / 100);
   const total = Math.max(0, subtotal - valorDesconto + frete);
 
-  const produtosEl = document.getElementById("valorProdutosPagamento");
-  const freteEl = document.getElementById("valorFretePagamento");
+  atualizarTexto("valorProdutosPagamento", dinheiro(subtotal));
+  atualizarTexto("valorFretePagamento", dinheiro(frete));
+  atualizarTexto("valorTotalPagamento", dinheiro(total));
+  atualizarTexto("totalPagamentoMobile", dinheiro(total));
+  atualizarTexto("totalCarrinhoMobileMS", dinheiro(total));
+
   const totalEl = document.getElementById("valorTotalPagamento");
+  let linhaDesconto = document.getElementById("linhaDescontoCupomMSMobile");
 
-  if (produtosEl) produtosEl.textContent = subtotal.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-  if (freteEl) freteEl.textContent = frete.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-  if (totalEl) totalEl.textContent = total.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-
-  // Mostra claramente o valor descontado no resumo.
-  if (totalEl) {
-    let linhaDesconto = document.getElementById("linhaDescontoCupomMS");
-    if (!linhaDesconto) {
-      const linhaTotal = totalEl.closest("p, .linha-resumo, .resumo-linha, div");
-      if (linhaTotal && linhaTotal.parentElement) {
-        linhaDesconto = document.createElement("p");
-        linhaDesconto.id = "linhaDescontoCupomMS";
-        linhaDesconto.style.display = "flex";
-        linhaDesconto.style.justifyContent = "space-between";
-        linhaDesconto.style.color = "#22c55e";
-        linhaDesconto.innerHTML = '<span>Desconto MS10</span><strong id="valorDescontoCupomMS"></strong>';
-        linhaTotal.parentElement.insertBefore(linhaDesconto, linhaTotal);
-      }
-    }
-    if (linhaDesconto) {
-      linhaDesconto.style.display = percentual > 0 ? "flex" : "none";
-      const valorDescontoEl = document.getElementById("valorDescontoCupomMS");
-      if (valorDescontoEl) {
-        valorDescontoEl.textContent = "- " + valorDesconto.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-      }
+  if (!linhaDesconto && totalEl) {
+    const linhaTotal = totalEl.closest(".linha-total, p, .linha-resumo, .resumo-linha, div");
+    if (linhaTotal?.parentElement) {
+      linhaDesconto = document.createElement("div");
+      linhaDesconto.id = "linhaDescontoCupomMSMobile";
+      linhaDesconto.className = "linha-resumo linha-desconto-cupom-ms";
+      linhaDesconto.style.color = "#22c55e";
+      linhaDesconto.innerHTML = `
+        <span id="rotuloDescontoCupomMSMobile">Desconto</span>
+        <strong id="valorDescontoCupomMSMobile"></strong>
+      `;
+      linhaTotal.parentElement.insertBefore(linhaDesconto, linhaTotal);
     }
   }
 
+  if (linhaDesconto) {
+    linhaDesconto.style.display = percentual > 0 ? "flex" : "none";
+    const rotulo = document.getElementById("rotuloDescontoCupomMSMobile");
+    const valorEl = document.getElementById("valorDescontoCupomMSMobile");
+    if (rotulo) rotulo.textContent = `Desconto ${codigoCupomAplicadoMS || "cupom"}`;
+    if (valorEl) valorEl.textContent = `- ${dinheiro(valorDesconto)}`;
+  }
+
+  totalComFrete = total;
   window.descontoCupomMS = percentual;
   window.valorDescontoCupomMS = valorDesconto;
   window.totalComCupomMS = total;
@@ -4508,12 +4522,12 @@ document.addEventListener('DOMContentLoaded', () => {
       telefone: msObterValorCampo("telefoneClienteMobile", "telefoneCliente", "customerPhone", "whatsappCliente") || salvo.telefone || salvo.whatsapp || "",
       email: msObterValorCampo("emailClienteMobile", "emailCliente", "customerEmail") || salvo.email || "",
       cep: msObterValorCampo("cepCheckout", "cepCliente", "zip") || salvo.cep || "",
-      rua: msObterValorCampo("ruaClienteMobile", "ruaCliente", "ruaCheckout", "street") || salvo.rua || "",
-      numero: msObterValorCampo("numeroCasaMobile", "numeroCasa", "numeroCliente", "numeroCheckout", "number") || salvo.numero || "",
-      complemento: msObterValorCampo("complementoCasa", "complementoCliente", "complementoCheckout", "complement") || salvo.complemento || "",
-      bairro: msObterValorCampo("bairroClienteMobile", "bairroCliente", "bairroCheckout", "district") || salvo.bairro || "",
-      cidade: msObterValorCampo("cidadeClienteMobile", "cidadeCliente", "cidadeCheckout", "city") || salvo.cidade || "",
-      estado: msObterValorCampo("estadoClienteMobile", "estadoCliente", "estadoCheckout", "state") || salvo.estado || ""
+      rua: msObterValorCampo("ruaCliente", "ruaCheckout", "street") || salvo.rua || "",
+      numero: msObterValorCampo("numeroCasa", "numeroCliente", "numeroCheckout", "number") || salvo.numero || "",
+      complemento: msObterValorCampo("complementoCliente", "complementoCheckout", "complement") || salvo.complemento || "",
+      bairro: msObterValorCampo("bairroCliente", "bairroCheckout", "district") || salvo.bairro || "",
+      cidade: msObterValorCampo("cidadeCliente", "cidadeCheckout", "city") || salvo.cidade || "",
+      estado: msObterValorCampo("estadoCliente", "estadoCheckout", "state") || salvo.estado || ""
     };
 
     localStorage.setItem("dadosClienteMS", JSON.stringify(dados));
