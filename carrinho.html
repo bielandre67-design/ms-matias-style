@@ -19,7 +19,7 @@
     .ms-empty{padding:48px 20px;text-align:center;border:1px dashed var(--line);border-radius:20px;color:var(--muted)}
     .ms-summary{margin-top:18px;border:1px solid var(--line);border-radius:22px;padding:20px;background:var(--card)}.ms-row{display:flex;justify-content:space-between;gap:16px;margin:10px 0;color:var(--muted)}.ms-row strong{color:#fff}.ms-row.total{border-top:1px solid #333;padding-top:16px;margin-top:16px;font-size:19px}.ms-row.total strong{font-size:30px;color:var(--gold)}
     .ms-btn{width:100%;border:0;border-radius:16px;padding:17px 16px;font-weight:900;margin-top:12px;background:var(--gold);color:#050505}.ms-btn.secondary{background:transparent;color:var(--danger);border:2px solid var(--danger)}.ms-btn.back{background:#151515;color:#fff;border:1px solid #333}
-    .ms-form{display:grid;gap:12px}.ms-field{display:grid;gap:7px}.ms-field label{font-size:13px;font-weight:800;color:#f2f2f2}.ms-required{color:var(--gold)}.ms-form input{width:100%;border:1px solid #4b3b0b;background:#111;color:#fff;border-radius:14px;padding:15px;outline:0}.ms-form input:focus{border-color:var(--gold)}.ms-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.ms-title{font-size:20px;margin:0 0 14px}
+    .ms-form{display:grid;gap:12px}.ms-field-label{display:block;margin:2px 0 -6px 4px;color:#fff;font-size:13px;font-weight:800}.ms-form input{width:100%;border:1px solid #4b3b0b;background:#111;color:#fff;border-radius:14px;padding:15px;outline:0}.ms-form input:focus{border-color:var(--gold)}.ms-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.ms-title{font-size:20px;margin:0 0 14px}
     .ms-shipping{display:grid;gap:10px;margin-top:14px}.ms-ship{border:1px solid #4b3b0b;border-radius:14px;padding:14px;display:flex;justify-content:space-between;gap:10px;background:#101010}.ms-ship.selected{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}.ms-ship small{color:var(--muted)}
     .ms-review{display:grid;gap:10px}.ms-review-item{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid #282828}.ms-note{color:var(--muted);line-height:1.5}.ms-loading{display:none;text-align:center;color:var(--muted);padding:12px}.ms-loading.active{display:block}.ms-coupon{margin-top:18px;border:1px solid var(--line);border-radius:22px;padding:18px;background:var(--card)}.ms-coupon h2{margin:0 0 12px;font-size:18px}.ms-coupon-line{display:grid;grid-template-columns:1fr auto;gap:10px}.ms-coupon input{min-width:0;border:1px solid #4b3b0b;background:#111;color:#fff;border-radius:14px;padding:15px;outline:0;text-transform:uppercase}.ms-coupon button{border:0;border-radius:14px;padding:0 18px;background:var(--gold);color:#050505;font-weight:900}.ms-coupon-msg{min-height:20px;margin:10px 0 0;color:var(--muted);font-size:14px}.ms-coupon-msg.ok{color:#22c55e}.ms-coupon-msg.error{color:#ff6b7d}.ms-row.discount{color:#22c55e}.ms-row.discount strong{color:#22c55e}
     @media(max-width:390px){.ms-cart{padding-left:12px;padding-right:12px}.ms-item{grid-template-columns:78px 1fr}.ms-item img{width:78px;height:102px}.ms-head h1{font-size:24px}.ms-step{font-size:12px}}
@@ -40,18 +40,10 @@
   <section class="ms-panel" id="step2">
     <h2 class="ms-title">Dados de entrega</h2>
     <div class="ms-form">
-      <div class="ms-field">
-        <label for="customerName">Nome completo do cliente <span class="ms-required">*</span></label>
-        <input id="customerName" name="customerName" placeholder="Digite nome e sobrenome" autocomplete="name" required>
-      </div>
-      <div class="ms-field">
-        <label for="customerPhone">WhatsApp com DDD <span class="ms-required">*</span></label>
-        <input id="customerPhone" name="customerPhone" placeholder="(51) 99999-9999" inputmode="tel" autocomplete="tel" required>
-      </div>
-      <div class="ms-field">
-        <label for="customerEmail">E-mail</label>
-        <input id="customerEmail" name="customerEmail" placeholder="E-mail (opcional)" type="email" autocomplete="email">
-      </div>
+      <label class="ms-field-label" for="customerName">Nome completo do cliente *</label>
+      <input id="customerName" name="customerName" placeholder="Digite nome e sobrenome" autocomplete="name" required>
+      <input id="customerPhone" placeholder="WhatsApp com DDD" inputmode="tel" autocomplete="tel">
+      <input id="customerEmail" placeholder="E-mail (opcional)" type="email" autocomplete="email">
       <input id="zip" placeholder="CEP" inputmode="numeric" maxlength="9" autocomplete="postal-code">
       <button class="ms-btn" id="calcShipping">Calcular frete</button>
       <div id="loadingShipping" class="ms-loading">Calculando opções de entrega...</div>
@@ -125,7 +117,7 @@
   function renderReview(){ $('review').innerHTML=cart.map(item=>`<div class="ms-review-item"><span>${escapeHtml(item.nome||'Produto')} × ${qty(item)}</span><strong>${brl(itemPrice(item)*qty(item))}</strong></div>`).join(''); updateTotals() }
   function showStep(n){ document.querySelectorAll('.ms-panel').forEach((p,i)=>p.classList.toggle('active',i===n-1)); document.querySelectorAll('.ms-step').forEach(s=>s.classList.toggle('active',Number(s.dataset.step)===n)); $('pageTitle').textContent=n===1?'Meu carrinho':n===2?'Entrega':'Pagamento'; if(n===3)renderReview(); window.scrollTo({top:0,behavior:'smooth'}) }
 
-  function validateDelivery(){ const fullName=$('customerName').value.trim().replace(/\s+/g,' '); const phone=$('customerPhone').value.replace(/\D/g,''); const required=[$('customerName'),$('zip'),$('street'),$('number'),$('district'),$('city'),$('state')]; if(required.some(el=>!el.value.trim())){alert('Complete o nome do cliente e o endereço para continuar.');return false} if(fullName.split(' ').filter(Boolean).length<2){alert('Informe o nome completo do cliente, com nome e sobrenome.');$('customerName').focus();return false} if(phone.length<10){alert('Informe um WhatsApp válido com DDD.');return false} if(!shipping){alert('Escolha uma opção de entrega para continuar.');return false} return true }
+  function validateDelivery(){ const fullName=$('customerName').value.trim().replace(/\s+/g,' '); const phone=$('customerPhone').value.replace(/\D/g,''); const required=[$('customerName'),$('zip'),$('street'),$('number'),$('district'),$('city'),$('state')]; if(required.some(el=>!el.value.trim())){alert('Complete o nome do cliente e o endereço para continuar.');return false} if(fullName.split(' ').length<2){alert('Informe o nome completo do cliente.');$('customerName').focus();return false} if(phone.length<10){alert('Informe um WhatsApp válido com DDD.');return false} if(!shipping){alert('Escolha uma opção de entrega para continuar.');return false} return true }
 
   async function calculateShipping(){ const zip=$('zip').value.replace(/\D/g,''); if(zip.length!==8){alert('Informe um CEP válido para calcular a entrega.');return} $('loadingShipping').classList.add('active'); $('shippingOptions').innerHTML=''; try{
     const cepRes=await fetch(`https://viacep.com.br/ws/${zip}/json/`); const address=await cepRes.json(); if(!address.erro){$('street').value=address.logradouro||'';$('district').value=address.bairro||'';$('city').value=address.localidade||'';$('state').value=address.uf||''}
@@ -168,11 +160,6 @@
   document.querySelectorAll('[data-back]').forEach(b=>b.onclick=()=>showStep(Number(b.dataset.back)));
   $('zip').addEventListener('input',e=>{let v=e.target.value.replace(/\D/g,'').slice(0,8);e.target.value=v.length>5?v.slice(0,5)+'-'+v.slice(5):v});
   $('customerPhone').addEventListener('input',e=>{let v=e.target.value.replace(/\D/g,'').slice(0,11);e.target.value=v.length>10?`(${v.slice(0,2)}) ${v.slice(2,7)}-${v.slice(7)}`:v.length>6?`(${v.slice(0,2)}) ${v.slice(2,6)}-${v.slice(6)}`:v.length>2?`(${v.slice(0,2)}) ${v.slice(2)}`:v});
-  const savedCustomer=readJSON('dadosClienteMS',{});
-  if(savedCustomer.nome) $('customerName').value=savedCustomer.nome;
-  if(savedCustomer.telefone||savedCustomer.whatsapp) $('customerPhone').value=savedCustomer.telefone||savedCustomer.whatsapp;
-  if(savedCustomer.email) $('customerEmail').value=savedCustomer.email;
-  ['customerName','customerPhone','customerEmail'].forEach(id=>$(id).addEventListener('input',()=>localStorage.setItem('dadosClienteMS',JSON.stringify({...(readJSON('dadosClienteMS',{})),nome:$('customerName').value.trim(),telefone:$('customerPhone').value.trim(),whatsapp:$('customerPhone').value.trim(),email:$('customerEmail').value.trim()}))));
   renderCart();
 })();
 </script>
