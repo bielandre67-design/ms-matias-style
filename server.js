@@ -1357,7 +1357,8 @@ app.post("/criar-pagamento", async (req, res) => {
       sucesso: true,
       pedido: idPedido,
       id: pagamento.id,
-      init_point: pagamento.init_point
+      init_point: pagamento.init_point,
+      status_url: `/pagamento/status/${idPedido}`
     });
   } catch (error) {
     console.error("========== ERRO MERCADO PAGO ==========");
@@ -1595,6 +1596,9 @@ app.post("/webhook", async (req, res) => {
 });
 
 app.get("/pagamento/status/:pedidoId", (req, res) => {
+  res.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+  res.set("Pragma", "no-cache");
+  res.set("Expires", "0");
   const pedido = lerPedidos().find((p) => idsIguaisMS(p.id, req.params.pedidoId));
   if (!pedido) return res.status(404).json({ erro: true, mensagem: "Pedido não encontrado" });
 

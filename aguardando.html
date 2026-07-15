@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Acompanhando pagamento | MS Matias Style</title>
+  <style>
+    :root{--bg:#070707;--card:#111;--line:#292929;--text:#fff;--muted:#b8b8b8;--gold:#d9ac43;--green:#25c56d;--red:#ff5c70}
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;padding:24px;display:grid;place-items:center;font-family:Arial,Helvetica,sans-serif;color:var(--text);background:radial-gradient(circle at top,rgba(217,172,67,.17),transparent 34%),var(--bg)}
+    .card{width:min(540px,100%);padding:32px 26px;border:1px solid var(--line);border-radius:24px;background:rgba(17,17,17,.98);text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.5)}
+    .logo{width:94px;height:94px;object-fit:contain;border-radius:20px;background:#fff;padding:8px;margin-bottom:18px}
+    .status-icon{width:68px;height:68px;margin:0 auto 18px;border-radius:50%;display:grid;place-items:center;font-size:31px;font-weight:900;border:1px solid rgba(217,172,67,.4);background:rgba(217,172,67,.12);color:var(--gold)}
+    .status-icon.pago{border-color:rgba(37,197,109,.4);background:rgba(37,197,109,.13);color:var(--green)}
+    .status-icon.erro{border-color:rgba(255,92,112,.4);background:rgba(255,92,112,.13);color:var(--red)}
+    .spinner{width:28px;height:28px;border:3px solid rgba(255,255,255,.2);border-top-color:var(--gold);border-radius:50%;animation:girar .85s linear infinite}
+    @keyframes girar{to{transform:rotate(360deg)}}
+    h1{font-size:30px;margin:0 0 12px}
+    p{margin:8px 0;color:var(--muted);font-size:16px;line-height:1.55}
+    .pedido{margin:22px 0;padding:16px;border:1px solid var(--line);border-radius:16px;background:#0b0b0b}.pedido strong{color:var(--gold)}
+    .acoes{display:grid;gap:12px;margin-top:24px}.btn{padding:15px 18px;border-radius:14px;text-decoration:none;font-weight:800;border:1px solid var(--line);cursor:pointer;font-size:15px}.principal{background:#fff;color:#000}.secundario{background:transparent;color:#fff}.oculto{display:none!important}
+    small{display:block;color:#777;margin-top:20px;line-height:1.4}
+  </style>
+</head>
+<body>
+  <main class="card">
+    <img src="logo.png" alt="Logo MS Matias Style" class="logo" onerror="this.style.display='none'">
+    <div id="icone" class="status-icon"><span class="spinner"></span></div>
+    <h1 id="titulo">Aguardando pagamento...</h1>
+    <p id="mensagem">Conclua o PIX na aba do Mercado Pago. Esta página será atualizada automaticamente assim que o pagamento for aprovado.</p>
+    <div class="pedido">Pedido <strong id="numeroPedido">#</strong></div>
+
+    <div class="acoes">
+      <button id="abrirPagamento" class="btn principal" type="button">Abrir pagamento</button>
+      <a id="voltarLoja" class="btn principal oculto" href="index.html">Voltar para a loja</a>
+      <a class="btn secundario" href="https://wa.me/5551996881131" target="_blank" rel="noopener">Falar com a MS Matias Style</a>
+    </div>
+    <small id="rodape">Você pode deixar esta página aberta enquanto realiza o pagamento.</small>
+  </main>
+
+  <script>
+    (function(){
+      const API_BASE = (location.hostname === "localhost" || location.hostname === "127.0.0.1")
+        ? "http://localhost:3000"
+        : "https://ms-matias-style.onrender.com";
+      const params = new URLSearchParams(location.search);
+      const pedidoId = params.get("pedido") || localStorage.getItem("msUltimoPedidoId") || "";
+      const linkPagamento = localStorage.getItem("msUltimoLinkPagamento") || "";
+      const numero = document.getElementById("numeroPedido");
+      const btnPagamento = document.getElementById("abrirPagamento");
+      numero.textContent = pedidoId ? "#" + pedidoId : "não identificado";
+      if(!linkPagamento) btnPagamento.classList.add("oculto");
+      btnPagamento.addEventListener("click", () => { if(linkPagamento) window.open(linkPagamento, "_blank"); });
+
+      let encerrado = false;
+      let falhas = 0;
+      function limparCarrinhoPago(){
+        ["carrinho","carrinhoMobile","carrinhoMS","valorFreteMS","freteSelecionadoMS","tipoEntregaMS","descontoCupomMS","cupomMS","codigoCupomAplicadoMS"].forEach(k => localStorage.removeItem(k));
+      }
+      function exibirPago(){
+        encerrado = true;
+        limparCarrinhoPago();
+        document.getElementById("icone").className = "status-icon pago";
+        document.getElementById("icone").textContent = "✓";
+        document.getElementById("titulo").textContent = "Pagamento confirmado!";
+        document.getElementById("mensagem").textContent = "Seu pedido foi recebido com sucesso. Agora vamos separar suas peças e entrar em contato para combinar a entrega ou a retirada.";
+        document.getElementById("abrirPagamento").classList.add("oculto");
+        document.getElementById("voltarLoja").classList.remove("oculto");
+        document.getElementById("rodape").textContent = "A confirmação também foi registrada no painel da MS Matias Style.";
+      }
+      function exibirFalha(status){
+        encerrado = true;
+        document.getElementById("icone").className = "status-icon erro";
+        document.getElementById("icone").textContent = "!";
+        document.getElementById("titulo").textContent = "Pagamento não concluído";
+        document.getElementById("mensagem").textContent = "O Mercado Pago informou o status: " + status + ". Você pode tentar novamente ou falar com a loja.";
+      }
+      async function consultar(){
+        if(encerrado || !pedidoId) return;
+        try{
+          const r = await fetch(API_BASE + "/pagamento/status/" + encodeURIComponent(pedidoId) + "?t=" + Date.now(), {cache:"no-store"});
+          if(!r.ok) throw new Error("status " + r.status);
+          const d = await r.json();
+          falhas = 0;
+          const status = String(d.status || d.pagamento?.status || "").toLowerCase();
+          if(status === "pago" || status === "approved") return exibirPago();
+          if(["recusado","rejected","cancelado","cancelled","reembolsado","refunded","estornado","charged_back"].includes(status)) return exibirFalha(status);
+        }catch(e){
+          falhas++;
+          if(falhas >= 5) document.getElementById("rodape").textContent = "Ainda não conseguimos consultar o status. O pedido continua salvo e você pode atualizar esta página.";
+        }
+        setTimeout(consultar, 3000);
+      }
+      consultar();
+    })();
+  </script>
+</body>
+</html>
