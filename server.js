@@ -1745,6 +1745,63 @@ app.delete("/produtos/:id", async (req,res,next)=>{
   catch(erro){ next(erro); }
 });
 
+
+// Diagnóstico seguro do Mercado Pago: confirma se o Access Token habilita PIX.
+// Não revela o token completo. Após o deploy, abra:
+// https://ms-matias-style.onrender.com/diagnostico-mercado-pago
+app.get("/diagnostico-mercado-pago", async (req, res) => {
+  try {
+    garantirMercadoPagoConfigurado();
+
+    const resposta = await fetch("https://api.mercadopago.com/v1/payment_methods", {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        Accept: "application/json"
+      }
+    });
+
+    const dados = await resposta.json();
+    if (!resposta.ok) {
+      return res.status(resposta.status).json({
+        ok: false,
+        mensagem: "O Mercado Pago recusou a consulta dos meios de pagamento.",
+        statusMercadoPago: resposta.status,
+        detalhes: dados
+      });
+    }
+
+    const metodos = Array.isArray(dados) ? dados : [];
+    const pix = metodos.find((metodo) => String(metodo.id || "").toLowerCase() === "pix");
+
+    return res.json({
+      ok: true,
+      ambiente: "token configurado no Render",
+      tokenInicio: `${accessToken.slice(0, 12)}...`,
+      pixDisponivelNoToken: Boolean(pix),
+      pix: pix
+        ? {
+            id: pix.id,
+            nome: pix.name,
+            tipo: pix.payment_type_id,
+            status: pix.status || "disponível"
+          }
+        : null,
+      metodosDisponiveis: metodos.map((metodo) => ({
+        id: metodo.id,
+        nome: metodo.name,
+        tipo: metodo.payment_type_id,
+        status: metodo.status || null
+      }))
+    });
+  } catch (erro) {
+    console.error("Erro no diagnóstico do Mercado Pago:", erro);
+    return res.status(500).json({
+      ok: false,
+      mensagem: erro.message || "Erro ao consultar os meios de pagamento."
+    });
+  }
+});
+
 // Resposta JSON para rotas de API inexistentes.
 app.use((req, res, next) => {
   if (["GET", "HEAD"].includes(req.method) && !req.path.startsWith("/api/")) return next();
