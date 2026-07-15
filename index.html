@@ -3404,16 +3404,33 @@ window.irPagamentoMS = function(){
     return;
   }
 
-  if (cep.replace(/\D/g,'').length < 8) {
+  var tipoEntregaAtual =
+    document.querySelector('input[name="tipoEntregaMobileMS"]:checked')?.value ||
+    localStorage.getItem('tipoEntregaMS') ||
+    'entrega';
+
+  var retiradaLocal = tipoEntregaAtual === 'retirada';
+
+  if (!retiradaLocal && cep.replace(/\D/g,'').length < 8) {
     alert('Preencha o CEP corretamente.');
     return;
   }
 
   var freteSalvo = JSON.parse(localStorage.getItem("freteSelecionadoMS") || "null");
 
-  if (!freteSelecionado && !freteSalvo) {
+  if (!retiradaLocal && !freteSelecionado && !freteSalvo) {
     alert('Calcule e selecione uma opção de frete.');
     return;
+  }
+
+  if (retiradaLocal) {
+    freteSelecionado = { nome: 'Buscar no local', preco: 0, prazo: 0, tipo: 'retirada' };
+    window.freteSelecionado = freteSelecionado;
+    window.valorFrete = 0;
+    localStorage.setItem('tipoEntregaMS', 'retirada');
+    localStorage.setItem('valorFreteMS', '0');
+    localStorage.setItem('freteSelecionadoMS', JSON.stringify(freteSelecionado));
+    freteSalvo = freteSelecionado;
   }
 
   var frete = Number(
@@ -3428,7 +3445,7 @@ window.irPagamentoMS = function(){
     return;
   }
 
-  if (!rua.trim() || !numero.trim() || !bairro.trim() || !cidade.trim() || !estado.trim()) {
+  if (!retiradaLocal && (!rua.trim() || !numero.trim() || !bairro.trim() || !cidade.trim() || !estado.trim())) {
     alert('Preencha todos os dados de entrega.');
     return;
   }
@@ -3444,7 +3461,9 @@ window.irPagamentoMS = function(){
     complemento: complemento.trim(),
     bairro: bairro.trim(),
     cidade: cidade.trim(),
-    estado: estado.trim()
+    estado: estado.trim(),
+    tipoEntrega: tipoEntregaAtual,
+    retiradaLocal: retiradaLocal
   }));
 
   var carrinho = getCarrinhoMS();
