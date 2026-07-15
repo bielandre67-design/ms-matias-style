@@ -271,6 +271,13 @@ async function criarPreferenciaMP({ carrinhoItems, valorFrete, freteSelecionado,
       failure: `${frontendUrl}/erro.html`,
       pending: `${frontendUrl}/pendente.html`
     },
+    // Libera todos os meios aceitos pela conta, inclusive PIX (bank_transfer).
+    // Não inclua bank_transfer em excluded_payment_types, pois isso oculta o PIX.
+    payment_methods: {
+      excluded_payment_methods: [],
+      excluded_payment_types: [],
+      installments: 12
+    },
     auto_return: "approved"
   };
 
