@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pagamento não concluído | MS Matias Style</title>
+<style>
+:root{
+  --bg:#080808;
+  --card:#111111;
+  --line:#2a2a2a;
+  --text:#ffffff;
+  --muted:#b7b7b7;
+  --gold:#d7aa42;
+  --green:#27c56d;
+  --red:#ff5b6e;
+  --yellow:#f5c451;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  min-height:100vh;
+  font-family:Arial,Helvetica,sans-serif;
+  background:
+    radial-gradient(circle at top, rgba(215,170,66,.15), transparent 35%),
+    var(--bg);
+  color:var(--text);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+}
+.card{
+  width:min(520px,100%);
+  background:rgba(17,17,17,.97);
+  border:1px solid var(--line);
+  border-radius:24px;
+  padding:32px 26px;
+  text-align:center;
+  box-shadow:0 24px 80px rgba(0,0,0,.45);
+}
+.logo{
+  width:96px;
+  height:96px;
+  object-fit:contain;
+  border-radius:20px;
+  background:#fff;
+  padding:8px;
+  margin-bottom:18px;
+}
+.icon{
+  width:62px;
+  height:62px;
+  margin:0 auto 18px;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  font-size:30px;
+  font-weight:bold;
+}
+h1{font-size:30px;margin:0 0 12px}
+p{color:var(--muted);font-size:16px;line-height:1.55;margin:8px 0}
+.order{
+  margin:22px 0;
+  padding:16px;
+  border:1px solid var(--line);
+  border-radius:16px;
+  background:#0c0c0c;
+}
+.order strong{color:var(--gold)}
+.actions{
+  display:grid;
+  gap:12px;
+  margin-top:24px;
+}
+.btn{
+  display:block;
+  padding:15px 18px;
+  border-radius:14px;
+  text-decoration:none;
+  font-weight:800;
+  border:1px solid var(--line);
+}
+.btn-primary{background:#fff;color:#000}
+.btn-secondary{background:transparent;color:#fff}
+small{display:block;color:#777;margin-top:22px;line-height:1.4}
+
+.icon{background:rgba(255,91,110,.14);color:var(--red);border:1px solid rgba(255,91,110,.35)}
+</style>
+</head>
+<body>
+<main class="card">
+  <img src="logo.png" alt="Logo MS Matias Style" class="logo">
+  <div class="icon">!</div>
+  <h1>Pagamento não concluído</h1>
+  <p>O pagamento não foi finalizado, mas seu carrinho continua salvo.</p>
+  <p>Você pode voltar à loja e tentar novamente com PIX, cartão ou outro meio disponível.</p>
+  <div class="actions">
+    <a class="btn btn-primary" href="index.html">Tentar novamente</a>
+    <a class="btn btn-secondary" href="https://wa.me/5551996881131" target="_blank" rel="noopener">Pedir ajuda</a>
+  </div>
+</main>
+</body>
+</html>
