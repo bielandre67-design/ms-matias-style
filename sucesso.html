@@ -1,134 +1,64 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Pagamento confirmado | MS Matias Style</title>
-<style>
-:root{
-  --bg:#080808;
-  --card:#111111;
-  --line:#2a2a2a;
-  --text:#ffffff;
-  --muted:#b7b7b7;
-  --gold:#d7aa42;
-  --green:#27c56d;
-  --red:#ff5b6e;
-  --yellow:#f5c451;
-}
-*{box-sizing:border-box}
-body{
-  margin:0;
-  min-height:100vh;
-  font-family:Arial,Helvetica,sans-serif;
-  background:
-    radial-gradient(circle at top, rgba(215,170,66,.15), transparent 35%),
-    var(--bg);
-  color:var(--text);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:24px;
-}
-.card{
-  width:min(520px,100%);
-  background:rgba(17,17,17,.97);
-  border:1px solid var(--line);
-  border-radius:24px;
-  padding:32px 26px;
-  text-align:center;
-  box-shadow:0 24px 80px rgba(0,0,0,.45);
-}
-.logo{
-  width:96px;
-  height:96px;
-  object-fit:contain;
-  border-radius:20px;
-  background:#fff;
-  padding:8px;
-  margin-bottom:18px;
-}
-.icon{
-  width:62px;
-  height:62px;
-  margin:0 auto 18px;
-  border-radius:50%;
-  display:grid;
-  place-items:center;
-  font-size:30px;
-  font-weight:bold;
-}
-h1{font-size:30px;margin:0 0 12px}
-p{color:var(--muted);font-size:16px;line-height:1.55;margin:8px 0}
-.order{
-  margin:22px 0;
-  padding:16px;
-  border:1px solid var(--line);
-  border-radius:16px;
-  background:#0c0c0c;
-}
-.order strong{color:var(--gold)}
-.actions{
-  display:grid;
-  gap:12px;
-  margin-top:24px;
-}
-.btn{
-  display:block;
-  padding:15px 18px;
-  border-radius:14px;
-  text-decoration:none;
-  font-weight:800;
-  border:1px solid var(--line);
-}
-.btn-primary{background:#fff;color:#000}
-.btn-secondary{background:transparent;color:#fff}
-small{display:block;color:#777;margin-top:22px;line-height:1.4}
-
-.icon{background:rgba(39,197,109,.14);color:var(--green);border:1px solid rgba(39,197,109,.35)}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pagamento confirmado | MS Matias Style</title>
+  <style>
+    *{box-sizing:border-box} body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;background:#080808;color:#f7f7f7;font-family:Arial,Helvetica,sans-serif}
+    .card{width:min(560px,100%);background:#121212;border:1px solid #2b2b2b;border-radius:22px;padding:34px;text-align:center;box-shadow:0 24px 70px rgba(0,0,0,.45)}
+    .logo{width:78px;height:78px;margin:0 auto 22px;border-radius:50%;display:grid;place-items:center;background:#f7f7f7;color:#090909;font-size:25px;font-weight:900;letter-spacing:-2px}
+    .icon{font-size:54px;line-height:1;margin:8px 0 14px}.status{color:#bdbdbd;line-height:1.55}.pedido{margin:22px 0;padding:14px;border-radius:12px;background:#1a1a1a;font-weight:700}
+    .btn{display:block;width:100%;padding:15px 18px;border-radius:12px;text-decoration:none;font-weight:800;margin-top:12px}.principal{background:#fff;color:#090909}.secundario{border:1px solid #3b3b3b;color:#fff}
+    .aguardando .icon{animation:pulse 1.2s infinite}@keyframes pulse{50%{transform:scale(.9);opacity:.55}}
+  </style>
 </head>
 <body>
-<main class="card">
-  <img src="logo.png" alt="Logo MS Matias Style" class="logo">
-  <div class="icon">✓</div>
-  <h1>Pagamento confirmado!</h1>
-  <p>Seu pedido foi recebido com sucesso.</p>
-  <p>Agora vamos separar suas peças com carinho e entrar em contato para combinar a entrega ou a retirada.</p>
-
-  <div class="order" id="pedidoBox" hidden>
-    Pedido <strong id="numeroPedido"></strong>
-  </div>
-
-  <div class="actions">
-    <a class="btn btn-primary" href="index.html">Voltar para a loja</a>
-    <a class="btn btn-secondary" href="https://wa.me/5551996881131" target="_blank" rel="noopener">Falar com a MS Matias Style</a>
-  </div>
-
-  <small>Você também receberá a confirmação do Mercado Pago.</small>
-</main>
-
+  <main class="card aguardando" id="card">
+    <div class="logo">MS</div>
+    <div class="icon" id="icone">⏳</div>
+    <h1 id="titulo">Confirmando seu pagamento...</h1>
+    <p class="status" id="mensagem">Estamos consultando o Mercado Pago. Esta tela será atualizada automaticamente.</p>
+    <div class="pedido" id="pedidoBox">Pedido carregando...</div>
+    <a class="btn principal" id="voltar" href="index.html" style="display:none">Voltar para a loja</a>
+    <a class="btn secundario" href="index.html">Ir para a página inicial</a>
+  </main>
 <script>
 (function(){
-  const p = new URLSearchParams(location.search);
-  const pedido = p.get("external_reference");
-  if (pedido) {
-    document.getElementById("numeroPedido").textContent = "#" + pedido;
-    document.getElementById("pedidoBox").hidden = false;
+  const API='https://ms-matias-style.onrender.com';
+  const p=new URLSearchParams(location.search);
+  const pedido=p.get('pedido')||localStorage.getItem('msUltimoPedidoId');
+  const box=document.getElementById('pedidoBox');
+  box.textContent=pedido?'Pedido #'+pedido:'Número do pedido não encontrado';
+  let tentativas=0;
+  function aprovado(){
+    document.getElementById('card').classList.remove('aguardando');
+    document.getElementById('icone').textContent='✅';
+    document.getElementById('titulo').textContent='Pagamento confirmado!';
+    document.getElementById('mensagem').textContent='Recebemos seu pagamento. Seu pedido já entrou na fila de separação da MS Matias Style.';
+    document.getElementById('voltar').style.display='block';
+    ['carrinho','carrinhoMobile','carrinhoMS','valorFrete','valorFreteMS','freteSelecionadoMS'].forEach(k=>localStorage.removeItem(k));
   }
-
-  [
-    "carrinho",
-    "carrinhoMobile",
-    "carrinhoMS",
-    "valorFrete",
-    "valorFreteMS",
-    "freteMS",
-    "freteSelecionadoMS",
-    "tipoEntregaMS",
-    "descontoCupomMS",
-    "cupomMS"
-  ].forEach(chave => localStorage.removeItem(chave));
+  function pendente(texto){
+    document.getElementById('titulo').textContent='Pagamento ainda em confirmação';
+    document.getElementById('mensagem').textContent=texto||'Assim que o Mercado Pago confirmar, esta tela mudará automaticamente.';
+  }
+  async function consultar(){
+    if(!pedido){pendente('Não encontramos o número do pedido. Você pode voltar para a loja e conferir o painel de pedidos.');return;}
+    tentativas++;
+    try{
+      const r=await fetch(API+'/pagamento/status/'+encodeURIComponent(pedido)+'?t='+Date.now(),{cache:'no-store'});
+      const d=await r.json();
+      const st=String(d.status||d.pagamento?.status||'').toLowerCase();
+      if(st==='pago'||st==='approved'){aprovado();return;}
+      if(['recusado','rejected','cancelado','cancelled'].includes(st)){
+        location.replace('erro.html?pedido='+encodeURIComponent(pedido));return;
+      }
+      pendente(st==='pagamento em análise'?'O pagamento está em análise pelo Mercado Pago.':'A confirmação do PIX ainda está chegando. Não feche esta tela.');
+    }catch(e){pendente('A confirmação está demorando um pouco, mas continuaremos tentando automaticamente.');}
+    if(tentativas<90)setTimeout(consultar,2000);
+  }
+  consultar();
 })();
 </script>
 </body>

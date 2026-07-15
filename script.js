@@ -1243,7 +1243,9 @@ async function finalizarCompra(event) {
       return false;
     }
 
-    window.open(dados.init_point, "_blank");
+    localStorage.setItem("msUltimoPedidoId", String(dados.pedido || ""));
+    localStorage.setItem("msUltimoLinkPagamento", dados.init_point);
+    window.location.href = dados.init_point;
     return false;
 
   } catch (erro) {
@@ -4638,11 +4640,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if(typeof atualizarCarrinho === "function") atualizarCarrinho();
       if(typeof mostrarLoadingCheckout === "function") mostrarLoadingCheckout();
 
-      // Abre uma aba vazia durante o clique do cliente para evitar que o navegador
-      // bloqueie o Mercado Pago depois que a requisição terminar.
-      var abaMercadoPagoMS = null;
-      try { abaMercadoPagoMS = window.open("about:blank", "_blank"); } catch(e) {}
-
       var apiBase = msApiBaseFinal();
       if(!apiBase){
         alert("A loja está passando por uma instabilidade. Tente novamente em instantes.");
@@ -4703,7 +4700,6 @@ document.addEventListener('DOMContentLoaded', () => {
       console.log("MS PAGAMENTO: resposta", resposta.status, dados);
 
       if(!resposta.ok){
-        try { if(abaMercadoPagoMS && !abaMercadoPagoMS.closed) abaMercadoPagoMS.close(); } catch(e) {}
         if(typeof esconderLoadingCheckout === "function") esconderLoadingCheckout();
         alert(dados.mensagem || "Não foi possível processar o pagamento agora. Tente novamente em instantes.");
         return false;
@@ -4712,7 +4708,6 @@ document.addEventListener('DOMContentLoaded', () => {
       var link = dados.init_point || dados.sandbox_init_point || dados.url || dados.link;
       var pedidoIdMS = dados.pedido || dados.pedidoId || dados.external_reference || "";
       if(!link || !pedidoIdMS){
-        try { if(abaMercadoPagoMS && !abaMercadoPagoMS.closed) abaMercadoPagoMS.close(); } catch(e) {}
         if(typeof esconderLoadingCheckout === "function") esconderLoadingCheckout();
         alert("Não foi possível abrir o pagamento agora. Tente novamente em instantes.");
         return false;
@@ -4722,16 +4717,9 @@ document.addEventListener('DOMContentLoaded', () => {
       localStorage.setItem("msUltimoPedidoId", String(pedidoIdMS));
       localStorage.setItem("msUltimoLinkPagamento", link);
 
-      // O Mercado Pago fica em outra aba. A aba da loja acompanha o webhook e
-      // mostra automaticamente a confirmação com a identidade da MS.
-      try {
-        if(abaMercadoPagoMS && !abaMercadoPagoMS.closed){
-          abaMercadoPagoMS.location.href = link;
-        }
-      } catch(e) {}
-
-      if(typeof esconderLoadingCheckout === "function") esconderLoadingCheckout();
-      window.location.href = "aguardando.html?pedido=" + encodeURIComponent(pedidoIdMS);
+      // Abre o Mercado Pago na mesma aba. Após o pagamento, o próprio Mercado Pago
+      // retorna para a página da MS vinculada ao número deste pedido.
+      window.location.href = link;
       return false;
 
     }catch(erro){
