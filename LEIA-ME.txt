@@ -1,15 +1,9 @@
-MS MATIAS STYLE - FASE 1 POSTGRESQL
+MS MATIAS STYLE - PIX DENTRO DA LOJA
 
-Substitua somente estes arquivos no projeto:
-- server.js
-- admin.html
-- script.js
+1. Substitua server.js no backend/Render.
+2. Substitua script.js no site/Vercel.
+3. index.html foi mantido igual e está incluído apenas como referência.
+4. Faça git add ., git commit e git push.
+5. Aguarde Render e Vercel concluírem o deploy antes de testar.
 
-O index.html foi incluído apenas como cópia do arquivo enviado e não precisa ser substituído.
-Depois execute:
-git add .
-git commit -m "Produtos no PostgreSQL"
-git push
-
-Após o Render ficar Live, abra a loja uma vez. O catálogo atual será importado automaticamente para o PostgreSQL.
-Depois abra Painel ADM > Produtos para alterar preço, promoção, destaque e visibilidade.
+O cliente agora vê o QR Code PIX dentro da loja. A página verifica o webhook automaticamente e mostra Pagamento confirmado sem abrir outra aba.

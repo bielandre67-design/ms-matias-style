@@ -267,9 +267,9 @@ async function criarPreferenciaMP({ carrinhoItems, valorFrete, freteSelecionado,
     external_reference: String(idPedido),
     items,
     back_urls: {
-      success: `${frontendUrl}/sucesso.html?pedido=${encodeURIComponent(String(idPedido))}`,
-      failure: `${frontendUrl}/erro.html?pedido=${encodeURIComponent(String(idPedido))}`,
-      pending: `${frontendUrl}/pendente.html?pedido=${encodeURIComponent(String(idPedido))}`
+      success: `${frontendUrl}/sucesso.html`,
+      failure: `${frontendUrl}/erro.html`,
+      pending: `${frontendUrl}/pendente.html`
     },
     // Libera todos os meios aceitos pela conta, inclusive PIX (bank_transfer).
     // Não inclua bank_transfer em excluded_payment_types, pois isso oculta o PIX.
@@ -1219,6 +1219,151 @@ function proximoIdPedidoMS(pedidos) {
   const ids = (pedidos || []).map((p) => Number(p.id) || 0);
   return ids.length ? Math.max(...ids) + 1 : 1;
 }
+
+
+// =========================================================
+// PIX DIRETO NA LOJA - MS MATIAS STYLE
+// Gera o QR Code pela API de pagamentos do Mercado Pago sem
+// mandar o cliente para outra página ou outra aba.
+// =========================================================
+app.post("/criar-pagamento-pix", async (req, res) => {
+  try {
+    garantirMercadoPagoConfigurado();
+
+    const body = req.body || {};
+    const carrinhoItems = body.items || body.carrinho || [];
+    const nome = String(body.nome || body.cliente?.nome || "").trim();
+    const telefone = String(body.telefone || body.whatsapp || body.cliente?.telefone || "").trim();
+    const emailInformado = String(body.email || body.cliente?.email || "").trim();
+    const emailPagador = emailInformado || process.env.MS_EMAIL_FALLBACK || "bielandre67@gmail.com";
+
+    let cep = body.cep || body.endereco?.cep || "";
+    let rua = body.rua || body.endereco?.rua || body.endereco?.endereco || "";
+    let numero = body.numero || body.endereco?.numero || "";
+    let complemento = body.complemento || body.endereco?.complemento || "";
+    let bairro = body.bairro || body.endereco?.bairro || "";
+    let cidade = body.cidade || body.endereco?.cidade || "";
+    let estado = body.estado || body.endereco?.estado || "";
+
+    const tipoEntrega = String(body.tipoEntrega || "entrega").toLowerCase();
+    const freteSelecionado = body.freteSelecionado || null;
+    const retiradaLocal = body.retiradaLocal === true || tipoEntrega === "retirada" || String(freteSelecionado?.nome || "").toLowerCase().includes("retirada");
+    const valorFrete = retiradaLocal ? 0 : (Number(body.valorFrete) || 0);
+    const codigoCupom = String(body.codigoCupom || "").trim().toUpperCase();
+
+    if (retiradaLocal) {
+      cep = cep || "00000000";
+      rua = "Retirada no local";
+      numero = "S/N";
+      complemento = complemento || "Cliente retirará o pedido no local";
+      bairro = bairro || "Retirada";
+      cidade = cidade || "Retirada no local";
+      estado = estado || "RS";
+    }
+
+    if (!carrinhoItems.length) return res.status(400).json({ erro:true, mensagem:"Carrinho vazio." });
+    if (!nome || !telefone || !cep || !rua || !numero || !bairro || !cidade || !estado) {
+      return res.status(400).json({ erro:true, mensagem:"Preencha os dados do cliente e o endereço antes de pagar." });
+    }
+
+    const validacaoEstoque = validarCarrinhoEstoqueMS(carrinhoItems);
+    if (!validacaoEstoque.ok) return res.status(400).json({ erro:true, mensagem:validacaoEstoque.mensagem });
+
+    const subtotal = carrinhoItems.reduce((soma, item) => soma + Number(item.preco || item.unit_price || 0) * Number(item.quantidade || item.quantity || 1), 0);
+    const validacaoCupom = codigoCupom ? await validarCupomBancoMS(codigoCupom, subtotal) : { valido:false, percentual:0 };
+    if (codigoCupom && !validacaoCupom.valido) return res.status(400).json({ erro:true, mensagem:validacaoCupom.mensagem });
+    const desconto = validacaoCupom.valido ? Number(validacaoCupom.percentual) : 0;
+    const totalPedido = Number((subtotal - subtotal * desconto / 100 + valorFrete).toFixed(2));
+    if (!(totalPedido > 0)) return res.status(400).json({ erro:true, mensagem:"O total do pedido é inválido." });
+
+    const pedidos = lerPedidos();
+    const idPedido = proximoIdPedidoMS(pedidos);
+    const agoraBrasil = new Date().toLocaleString("pt-BR", { timeZone:"America/Sao_Paulo", hour12:false });
+    const pedidoNovo = {
+      id:idPedido, nome, telefone, whatsapp:telefone, email:emailInformado,
+      cep, rua, numero, complemento, bairro, cidade, estado,
+      cliente:{ nome, telefone, email:emailInformado },
+      endereco:{ cep, rua, numero, complemento, bairro, cidade, estado },
+      produtos:carrinhoItems, tipoEntrega:retiradaLocal ? "retirada" : "entrega",
+      retiradaLocal, frete:freteSelecionado, subtotal, desconto,
+      codigoCupom:codigoCupom || null, total:totalPedido,
+      status:"aguardando pagamento", data:agoraBrasil
+    };
+    pedidos.push(pedidoNovo);
+    salvarPedidos(pedidos);
+    reservarEstoquePedidoMS(carrinhoItems, idPedido);
+
+    const backendUrl = (process.env.BACKEND_URL || "https://ms-matias-style.onrender.com").replace(/\/$/, "");
+    const nomes = nome.split(/\s+/).filter(Boolean);
+    const primeiroNome = nomes.shift() || "Cliente";
+    const sobrenome = nomes.join(" ") || "MS";
+    const idempotencyKey = `ms-pix-${idPedido}-${Date.now()}`;
+
+    const respostaMP = await fetch("https://api.mercadopago.com/v1/payments", {
+      method:"POST",
+      headers:{
+        Authorization:`Bearer ${accessToken}`,
+        "Content-Type":"application/json",
+        "X-Idempotency-Key":idempotencyKey
+      },
+      body:JSON.stringify({
+        transaction_amount:totalPedido,
+        description:`Pedido #${idPedido} - MS Matias Style`,
+        payment_method_id:"pix",
+        external_reference:String(idPedido),
+        notification_url:`${backendUrl}/webhook`,
+        payer:{ email:emailPagador, first_name:primeiroNome, last_name:sobrenome }
+      })
+    });
+
+    const pagamento = await respostaMP.json();
+    if (!respostaMP.ok) {
+      liberarReservaPedidoMS(idPedido);
+      salvarPedidos(lerPedidos().filter(p => !idsIguaisMS(p.id, idPedido)));
+      const erro = new Error(pagamento?.message || "O Mercado Pago não conseguiu gerar o PIX.");
+      erro.statusCode = respostaMP.status;
+      erro.respostaMercadoPago = pagamento;
+      throw erro;
+    }
+
+    const transacao = pagamento?.point_of_interaction?.transaction_data || {};
+    if (!transacao.qr_code) {
+      liberarReservaPedidoMS(idPedido);
+      salvarPedidos(lerPedidos().filter(p => !idsIguaisMS(p.id, idPedido)));
+      const erro = new Error("O Mercado Pago não retornou o código PIX.");
+      erro.respostaMercadoPago = pagamento;
+      throw erro;
+    }
+
+    const pedidosAtualizados = lerPedidos();
+    const pedidoAtualizado = pedidosAtualizados.find(p => idsIguaisMS(p.id, idPedido));
+    if (pedidoAtualizado) {
+      pedidoAtualizado.pagamento = {
+        metodo:"PIX Mercado Pago", status:String(pagamento.status || "pending"),
+        paymentId:String(pagamento.id), idempotencyKey,
+        expiracao:pagamento.date_of_expiration || null,
+        atualizadoEm:new Date().toISOString()
+      };
+      salvarPedidos(pedidosAtualizados);
+    }
+
+    if (codigoCupom && validacaoCupom.valido && pool) {
+      await pool.query("UPDATE cupons SET usos=usos+1, atualizado_em=NOW() WHERE id=$1", [validacaoCupom.cupom.id]);
+    }
+
+    return res.json({
+      sucesso:true, pedido:idPedido, payment_id:pagamento.id,
+      status:pagamento.status, total:totalPedido,
+      qr_code:transacao.qr_code,
+      qr_code_base64:transacao.qr_code_base64 || null,
+      ticket_url:transacao.ticket_url || null,
+      status_url:`/pagamento/status/${idPedido}`
+    });
+  } catch (error) {
+    console.error("ERRO PIX DIRETO MS:", error.message, error.respostaMercadoPago || "");
+    return res.status(error.statusCode || 500).json({ erro:true, mensagem:error.message, detalhes:error.respostaMercadoPago || null });
+  }
+});
 
 app.post("/criar-pagamento", async (req, res) => {
   try {
