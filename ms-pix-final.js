@@ -28,7 +28,13 @@
       estado:campoMS("estadoClienteMobile","estadoCliente","estadoCheckout","state")||salvo.estado||""
     };
   }
-  function itensMS(lista){ return (lista||[]).map(i=>({nome:i.nome||i.title||"Produto MS",preco:Number(i.preco||i.unit_price||0),quantidade:Number(i.quantidade||i.quantity||1),tamanho:i.tamanho||"",imagem:i.imagem||i.img||""})); }
+  function numeroMS(v){
+    if(typeof v === "number") return Number.isFinite(v) ? v : 0;
+    var t=String(v ?? "").trim().replace(/R\$\s?/gi,"").replace(/\s/g,"");
+    if(t.includes(",")) t=t.replace(/\./g,"").replace(",",".");
+    return Number(t) || 0;
+  }
+  function itensMS(lista){ return (lista||[]).map(i=>({nome:i.nome||i.title||"Produto MS",preco:numeroMS(i.preco ?? i.unit_price ?? i.valor ?? i.price ?? 0),quantidade:Number(i.quantidade||i.quantity||i.qtd||1),tamanho:i.tamanho||"",imagem:i.imagem||i.img||""})); }
   function dinheiroMS(v){ return Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"}); }
 
   function garantirModalMS(){
@@ -99,11 +105,82 @@
       if(!c.nome||!c.telefone){alert("Informe nome completo e WhatsApp antes de pagar.");return false;}
       if(!retirada&&(!c.cep||!c.rua||!c.numero||!c.bairro||!c.cidade||!c.estado)){alert("Preencha o endereço completo antes de pagar.");return false;}
       const modal=garantirModalMS(); modal.style.display="flex";
-      const r=await fetch(`${apiMS()}/criar-pagamento-pix`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({tipoEntrega:tipo,retiradaLocal:retirada,items:itensMS(lista),nome:c.nome,telefone:c.telefone,email:c.email,cep:c.cep,rua:c.rua,numero:c.numero,complemento:c.complemento,bairro:c.bairro,cidade:c.cidade,estado:c.estado,cliente:c,endereco:c,valorFrete:Number(window.valorFrete||((typeof valorFrete!=="undefined")?valorFrete:0)||localStorage.getItem("valorFreteMS")||0),freteSelecionado:window.freteSelecionado||((typeof freteSelecionado!=="undefined")?freteSelecionado:null),codigoCupom:(typeof codigoCupomAplicadoMS!=="undefined"?codigoCupomAplicadoMS:"")})});
+      const r=await fetch(`${apiMS()}/criar-pagamento-pix`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({tipoEntrega:tipo,retiradaLocal:retirada,items:itensMS(lista),nome:c.nome,telefone:c.telefone,email:c.email,cep:c.cep,rua:c.rua,numero:c.numero,complemento:c.complemento,bairro:c.bairro,cidade:c.cidade,estado:c.estado,cliente:c,endereco:c,valorFrete:retirada?0:numeroMS(window.valorFrete||((typeof valorFrete!=="undefined")?valorFrete:0)||localStorage.getItem("valorFreteMS")||0),freteSelecionado:retirada?{nome:"Buscar no local",preco:0,prazo:0,tipo:"retirada"}:(window.freteSelecionado||((typeof freteSelecionado!=="undefined")?freteSelecionado:null)),codigoCupom:(typeof codigoCupomAplicadoMS!=="undefined"?codigoCupomAplicadoMS:""),desconto:Number((typeof descontoCupomMS!=="undefined"?descontoCupomMS:window.descontoCupomMS)||0),totalComFrete:Number(window.totalComCupomMS||window.totalComFrete||0)})});
       const d=await r.json(); if(!r.ok) throw new Error(d.mensagem||"Não foi possível gerar o PIX."); mostrarPixMS(d); return false;
     }catch(e){ const m=document.getElementById("msPixModal"); if(m)m.style.display="none"; alert(e.message||"Não foi possível gerar o PIX."); return false; }
   }
 
   window.finalizarCompra=pagarPixDentroDaLoja; window.finalizarCompraFinal=pagarPixDentroDaLoja; window.finalizarPagamento=pagarPixDentroDaLoja; window.pagarMercadoPago=pagarPixDentroDaLoja; window.msFinalizarPagamento=pagarPixDentroDaLoja;
   window.addEventListener("click",function(e){ const b=e.target.closest("button,a,input[type=button],input[type=submit]"); if(!b)return; const t=String(b.innerText||b.value||b.id||b.className||"").toLowerCase(); if((t.includes("pagar")||t.includes("finalizar pedido")||t.includes("mercado pago")||t.includes("finalizar compra")) && b.closest("#carrinhoModal,#carrinhoMobile,.carrinho,.checkout,form")){ pagarPixDentroDaLoja(e); } },true);
+})();
+
+
+/* CORREÇÃO FINAL DO RESUMO MOBILE: PRODUTOS, RETIRADA E CUPOM */
+(function(){
+  function numero(v){
+    if(typeof v === 'number') return Number.isFinite(v) ? v : 0;
+    var t=String(v ?? '').trim().replace(/R\$\s?/gi,'').replace(/\s/g,'');
+    if(t.includes(',')) t=t.replace(/\./g,'').replace(',','.');
+    return Number(t)||0;
+  }
+  function dinheiro(v){ return numero(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
+  function itens(){
+    try { var a=JSON.parse(localStorage.getItem('carrinho')||'[]'); return Array.isArray(a)?a:[]; }
+    catch(e){ return []; }
+  }
+  function subtotal(){
+    return itens().reduce(function(s,i){
+      return s + numero(i.preco ?? i.valor ?? i.price ?? i.unit_price ?? 0) * Number(i.quantidade ?? i.qtd ?? i.quantity ?? 1);
+    },0);
+  }
+  function retirada(){ return (localStorage.getItem('tipoEntregaMS')||'entrega')==='retirada'; }
+  function frete(){
+    if(retirada()) return 0;
+    var salvo=null; try{ salvo=JSON.parse(localStorage.getItem('freteSelecionadoMS')||'null'); }catch(e){}
+    return numero(salvo?.preco ?? window.valorFrete ?? localStorage.getItem('valorFreteMS') ?? 0);
+  }
+  function percentualCupom(){
+    return numero((typeof descontoCupomMS!=='undefined'?descontoCupomMS:window.descontoCupomMS)||0);
+  }
+  function atualizar(){
+    var sub=subtotal(), fr=frete(), pct=percentualCupom(), desc=sub*(pct/100), total=Math.max(0,sub-desc+fr);
+    if(retirada()){
+      window.valorFrete=0;
+      try{ valorFrete=0; }catch(e){}
+      localStorage.setItem('valorFreteMS','0');
+      localStorage.setItem('freteSelecionadoMS',JSON.stringify({nome:'Buscar no local',preco:0,prazo:0,tipo:'retirada'}));
+    }
+    var p=document.getElementById('valorProdutosPagamento'); if(p) p.textContent=dinheiro(sub);
+    var f=document.getElementById('valorFretePagamento'); if(f) f.textContent=dinheiro(fr);
+    var t=document.getElementById('valorTotalPagamento'); if(t) t.textContent=dinheiro(total);
+    var tm=document.getElementById('totalPagamentoMobile'); if(tm) tm.textContent=dinheiro(total);
+    window.totalComFrete=total; window.totalComCupomMS=total; window.valorDescontoCupomMS=desc;
+    var linha=document.getElementById('linhaDescontoCupomMSMobile');
+    if(linha){
+      linha.style.display=pct>0?'flex':'none';
+      var v=document.getElementById('valorDescontoCupomMSMobile'); if(v) v.textContent='- '+dinheiro(desc);
+    }
+    return total;
+  }
+  var ir=window.irPagamentoMS;
+  window.irPagamentoMS=function(){
+    var r=typeof ir==='function'?ir.apply(this,arguments):undefined;
+    setTimeout(atualizar,0); setTimeout(atualizar,200);
+    return r;
+  };
+  var aplicar=window.aplicarCupomMS;
+  window.aplicarCupomMS=async function(){
+    var r=typeof aplicar==='function'?await aplicar.apply(this,arguments):undefined;
+    atualizar(); setTimeout(atualizar,150);
+    return r;
+  };
+  document.addEventListener('click',function(e){
+    if(e.target.closest('.cupom-linha-ms button')) setTimeout(atualizar,350);
+  },true);
+  document.addEventListener('change',function(e){
+    if(e.target.matches('input[name="tipoEntregaMobileMS"]')) setTimeout(atualizar,0);
+  });
+  window.atualizarResumoPagamentoMS=atualizar;
+  window.atualizarResumoPagamentoMSComCupom=atualizar;
+  window.msAtualizarResumoMobile=atualizar;
 })();
