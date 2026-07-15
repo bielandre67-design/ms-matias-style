@@ -1230,16 +1230,28 @@ app.post("/criar-pagamento", async (req, res) => {
     const nome = body.nome || body.cliente?.nome || "";
     const telefone = body.telefone || body.whatsapp || body.cliente?.telefone || "";
     const email = body.email || body.cliente?.email || "";
-    const cep = body.cep || body.endereco?.cep || "";
-    const rua = body.rua || body.endereco?.rua || body.endereco?.endereco || "";
-    const numero = body.numero || body.endereco?.numero || "";
-    const complemento = body.complemento || body.endereco?.complemento || "";
-    const bairro = body.bairro || body.endereco?.bairro || "";
-    const cidade = body.cidade || body.endereco?.cidade || "";
-    const estado = body.estado || body.endereco?.estado || "";
+    let cep = body.cep || body.endereco?.cep || "";
+    let rua = body.rua || body.endereco?.rua || body.endereco?.endereco || "";
+    let numero = body.numero || body.endereco?.numero || "";
+    let complemento = body.complemento || body.endereco?.complemento || "";
+    let bairro = body.bairro || body.endereco?.bairro || "";
+    let cidade = body.cidade || body.endereco?.cidade || "";
+    let estado = body.estado || body.endereco?.estado || "";
 
-    const valorFrete = Number(body.valorFrete) || 0;
+    const tipoEntrega = String(body.tipoEntrega || "entrega").toLowerCase();
     const freteSelecionado = body.freteSelecionado || null;
+    const retiradaLocal = body.retiradaLocal === true || tipoEntrega === "retirada" || String(freteSelecionado?.nome || "").toLowerCase().includes("retirada");
+    const valorFrete = retiradaLocal ? 0 : (Number(body.valorFrete) || 0);
+
+    if (retiradaLocal) {
+      cep = cep || "00000000";
+      rua = "Retirada no local";
+      numero = "S/N";
+      complemento = complemento || "Cliente retirará o pedido no local";
+      bairro = bairro || "Retirada";
+      cidade = cidade || "Retirada no local";
+      estado = estado || "RS";
+    }
     const codigoCupom = String(body.codigoCupom || "").trim().toUpperCase();
 
     if (!carrinhoItems.length) {
@@ -1297,6 +1309,8 @@ app.post("/criar-pagamento", async (req, res) => {
       cliente: { nome, telefone, email },
       endereco: { cep, rua, numero, complemento, bairro, cidade, estado },
       produtos: carrinhoItems,
+      tipoEntrega: retiradaLocal ? "retirada" : "entrega",
+      retiradaLocal,
       frete: freteSelecionado,
       subtotal,
       desconto,

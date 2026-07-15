@@ -14646,3 +14646,34 @@ body.aviso-ms-aberto{overflow:hidden!important;}
 
 /* Cupons no painel */
 .cupom-form-admin-ms{display:grid;grid-template-columns:repeat(3,minmax(180px,1fr));gap:14px;margin-bottom:18px}.cupom-form-admin-ms label{display:flex;flex-direction:column;gap:7px;font-weight:700}.cupom-form-admin-ms input{background:#15171c;border:1px solid #343741;color:#fff;border-radius:12px;padding:12px}.cupom-ativo-admin-ms{justify-content:center}.cupom-ativo-admin-ms input{width:20px;height:20px}.cupom-acoes-admin-ms{display:flex;gap:10px;align-items:end}@media(max-width:800px){.cupom-form-admin-ms{grid-template-columns:1fr}.cupom-acoes-admin-ms{align-items:stretch;flex-direction:column}}
+
+
+/* MS: escolha entre entrega e retirada no carrinho lateral */
+.tipo-entrega-ms {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 14px 0;
+}
+.tipo-entrega-opcao-ms {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 62px;
+  padding: 11px 12px;
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 13px;
+  cursor: pointer;
+  background: rgba(255,255,255,.04);
+}
+.tipo-entrega-opcao-ms:has(input:checked) {
+  border-color: #fff;
+  background: rgba(255,255,255,.10);
+}
+.tipo-entrega-opcao-ms input { accent-color: #fff; }
+.tipo-entrega-opcao-ms span { display: flex; flex-direction: column; line-height: 1.2; }
+.tipo-entrega-opcao-ms small { opacity: .72; margin-top: 4px; }
+.retirada-local-ms { padding: 14px; border: 1px solid rgba(255,255,255,.18); border-radius: 13px; }
+@media (max-width: 520px) {
+  .tipo-entrega-ms { grid-template-columns: 1fr; }
+}

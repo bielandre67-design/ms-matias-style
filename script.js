@@ -605,13 +605,20 @@ function irPagamentoPC() {
   const nome = document.getElementById("nomeCliente")?.value.trim();
   const telefone = document.getElementById("telefoneCliente")?.value.trim();
   const cep = document.getElementById("cepCliente")?.value.trim();
+  const tipoEntrega = localStorage.getItem("tipoEntregaMS") || "entrega";
+  const retirada = tipoEntrega === "retirada";
 
-  if (!nome || !telefone || !cep) {
-    alert("Quase lá! Complete os dados de entrega para continuar.");
+  if (!nome || !telefone) {
+    alert("Quase lá! Informe seu nome completo e WhatsApp para continuar.");
     return;
   }
 
-  if (valorFrete <= 0) {
+  if (!retirada && !cep) {
+    alert("Informe o CEP para continuar com a entrega.");
+    return;
+  }
+
+  if (!retirada && (!freteSelecionado || Number(valorFrete) <= 0)) {
     alert("Escolha uma opção de entrega para continuar.");
     return;
   }
@@ -705,6 +712,67 @@ function formatarWhatsapp(input) {
 
   input.value = valor;
 }
+// ===============================
+// TIPO DE ENTREGA: ENTREGA OU RETIRADA
+// ===============================
+function selecionarTipoEntregaMS(tipo) {
+  const retirada = tipo === "retirada";
+
+  localStorage.setItem("tipoEntregaMS", tipo);
+
+  const botaoFrete = document.getElementById("btnCalcularFreteMS");
+  const resultadoFrete = document.getElementById("resultadoFrete");
+
+  if (retirada) {
+    valorFrete = 0;
+    window.valorFrete = 0;
+    freteSelecionado = {
+      nome: "Retirada no local",
+      preco: 0,
+      prazo: 0,
+      tipo: "retirada"
+    };
+
+    localStorage.setItem("valorFreteMS", "0");
+    localStorage.setItem("freteSelecionadoMS", JSON.stringify(freteSelecionado));
+
+    if (botaoFrete) botaoFrete.style.display = "none";
+    if (resultadoFrete) {
+      resultadoFrete.innerHTML = `
+        <div class="frete-escolhido retirada-local-ms">
+          <strong>Retirada no local</strong><br>
+          Frete grátis
+        </div>
+      `;
+    }
+  } else {
+    valorFrete = 0;
+    window.valorFrete = 0;
+    freteSelecionado = null;
+
+    localStorage.removeItem("valorFreteMS");
+    localStorage.removeItem("freteSelecionadoMS");
+
+    if (botaoFrete) botaoFrete.style.display = "block";
+    if (resultadoFrete) resultadoFrete.innerHTML = "";
+  }
+
+  atualizarCarrinho();
+}
+
+function restaurarTipoEntregaMS() {
+  const tipo = localStorage.getItem("tipoEntregaMS") || "entrega";
+  const radio = document.querySelector(`input[name="tipoEntregaMS"][value="${tipo}"]`);
+  if (radio) radio.checked = true;
+  selecionarTipoEntregaMS(tipo);
+}
+
+window.selecionarTipoEntregaMS = selecionarTipoEntregaMS;
+
+document.addEventListener("DOMContentLoaded", () => {
+  if (document.getElementById("tipoEntregaMS")) restaurarTipoEntregaMS();
+});
+
 // ===============================
 // FRETE
 // ===============================
@@ -4579,9 +4647,18 @@ document.addEventListener('DOMContentLoaded', () => {
       console.log("MS PAGAMENTO: chamando", apiBase + "/criar-pagamento");
 
       var clienteMS = msDadosClientePagamento();
-      if(!clienteMS.nome || !clienteMS.telefone || !clienteMS.cep || !clienteMS.rua || !clienteMS.numero || !clienteMS.bairro || !clienteMS.cidade || !clienteMS.estado){
+      var tipoEntregaMS = localStorage.getItem("tipoEntregaMS") || "entrega";
+      var retiradaLocalMS = tipoEntregaMS === "retirada";
+
+      if(!clienteMS.nome || !clienteMS.telefone){
         if(typeof esconderLoadingCheckout === "function") esconderLoadingCheckout();
-        alert("Volte à etapa Entrega e preencha nome, WhatsApp e endereço completo antes de finalizar.");
+        alert("Volte à etapa Entrega e informe nome completo e WhatsApp antes de finalizar.");
+        return false;
+      }
+
+      if(!retiradaLocalMS && (!clienteMS.cep || !clienteMS.rua || !clienteMS.numero || !clienteMS.bairro || !clienteMS.cidade || !clienteMS.estado)){
+        if(typeof esconderLoadingCheckout === "function") esconderLoadingCheckout();
+        alert("Volte à etapa Entrega e preencha o endereço completo antes de finalizar.");
         return false;
       }
 
@@ -4589,6 +4666,8 @@ document.addEventListener('DOMContentLoaded', () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          tipoEntrega: tipoEntregaMS,
+          retiradaLocal: retiradaLocalMS,
           items: msNormalizarItensPagamento(lista),
           carrinho: msNormalizarItensPagamento(lista),
           nome: clienteMS.nome,

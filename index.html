@@ -2468,7 +2468,18 @@ data-img="conjunto-bege.jpeg">
           <input type="text" id="complementoCliente" placeholder="Complemento">
         </div>
 
-        <button onclick="calcularFrete()">Calcular frete</button>
+        <div class="tipo-entrega-ms" id="tipoEntregaMS">
+          <label class="tipo-entrega-opcao-ms">
+            <input type="radio" name="tipoEntregaMS" value="entrega" checked onchange="selecionarTipoEntregaMS('entrega')">
+            <span><strong>Entrega</strong><small>Calcular frete pelo CEP</small></span>
+          </label>
+          <label class="tipo-entrega-opcao-ms">
+            <input type="radio" name="tipoEntregaMS" value="retirada" onchange="selecionarTipoEntregaMS('retirada')">
+            <span><strong>Retirada no local</strong><small>Grátis</small></span>
+          </label>
+        </div>
+
+        <button id="btnCalcularFreteMS" onclick="calcularFrete()">Calcular frete</button>
         <p id="resultadoFrete"></p>
       </div>
 
