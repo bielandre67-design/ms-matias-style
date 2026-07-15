@@ -1,16 +1,12 @@
-MS MATIAS STYLE - CORREÇÃO FINAL PIX
+MS Matias Style - Carrinho mobile corrigido
 
-Envie estes 3 arquivos para a raiz do projeto:
-1. server.js (substituir)
-2. index.html (substituir)
-3. ms-pix-final.js (arquivo novo)
+1. Substitua apenas o arquivo carrinho.html antigo por este.
+2. Não substitua script.js nem style.css nesta etapa.
+3. Envie para o GitHub e aguarde a atualização do Vercel.
+4. No celular, atualize a página limpando o cache ou use uma aba privada.
 
-Depois rode:
-git add .
-git commit -m "Corrige PIX na mesma tela"
-git push
-
-Espere Render e Vercel concluírem o deploy.
-No navegador, abra a loja com Ctrl+F5 para limpar o JavaScript antigo em cache.
-
-Sinal de que funcionou: ao clicar em Finalizar pagamento, deve aparecer um modal preto/branco da MS dentro da loja. A URL não deve mudar para mercadopago.com.br.
+Alterações:
+- opção "Buscar no local" com frete grátis;
+- retirada não exige CEP nem endereço;
+- opções de frete com layout responsivo e texto sem cortes;
+- retirada salva valor de frete R$ 0,00 no pedido.

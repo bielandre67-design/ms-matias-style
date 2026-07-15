@@ -20,10 +20,19 @@
     .ms-summary{margin-top:18px;border:1px solid var(--line);border-radius:22px;padding:20px;background:var(--card)}.ms-row{display:flex;justify-content:space-between;gap:16px;margin:10px 0;color:var(--muted)}.ms-row strong{color:#fff}.ms-row.total{border-top:1px solid #333;padding-top:16px;margin-top:16px;font-size:19px}.ms-row.total strong{font-size:30px;color:var(--gold)}
     .ms-btn{width:100%;border:0;border-radius:16px;padding:17px 16px;font-weight:900;margin-top:12px;background:var(--gold);color:#050505}.ms-btn.secondary{background:transparent;color:var(--danger);border:2px solid var(--danger)}.ms-btn.back{background:#151515;color:#fff;border:1px solid #333}
     .ms-form{display:grid;gap:12px}.ms-field-label{display:block;margin:2px 0 -6px 4px;color:#fff;font-size:13px;font-weight:800}.ms-form input{width:100%;border:1px solid #4b3b0b;background:#111;color:#fff;border-radius:14px;padding:15px;outline:0}.ms-form input:focus{border-color:var(--gold)}.ms-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.ms-title{font-size:20px;margin:0 0 14px}
-    .ms-shipping{display:grid;gap:10px;margin-top:14px}.ms-ship{border:1px solid #4b3b0b;border-radius:14px;padding:14px;display:flex;justify-content:space-between;gap:10px;background:#101010}.ms-ship.selected{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}.ms-ship small{color:var(--muted)}
-    .ms-delivery-mode{display:grid;gap:10px;margin-bottom:4px}.ms-delivery-choice{display:flex;align-items:center;gap:12px;border:1px solid #4b3b0b;border-radius:14px;padding:14px;background:#101010;cursor:pointer}.ms-delivery-choice:has(input:checked){border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}.ms-delivery-choice input{width:20px;height:20px;accent-color:var(--gold);flex:0 0 auto}.ms-delivery-choice strong{display:block}.ms-delivery-choice small{display:block;margin-top:3px;color:var(--muted)}
+    .ms-shipping{display:grid;gap:12px;margin-top:16px}
+    .ms-ship{width:100%;min-width:0;border:1px solid #4b3b0b;border-radius:18px;padding:15px 16px;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:14px;background:#101010;color:#fff;text-align:left;overflow:hidden;transition:.2s ease}
+    button.ms-ship:hover{border-color:#967616;transform:translateY(-1px)}
+    .ms-ship.selected{border-color:var(--gold);background:linear-gradient(135deg,#171305,#101010);box-shadow:0 0 0 1px var(--gold),0 10px 28px rgba(225,185,47,.12)}
+    .ms-ship-info{min-width:0}.ms-ship-name{display:block;font-size:15px;line-height:1.3;overflow-wrap:anywhere}.ms-ship small{display:block;margin-top:5px;color:var(--muted);line-height:1.35}.ms-ship-price{white-space:nowrap;color:var(--gold);font-size:16px;font-weight:900}
+    .ms-delivery-title{margin:4px 0 0;font-size:14px;color:#ddd;font-weight:800}
+    .ms-delivery-mode{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 6px}
+    .ms-delivery-choice{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:11px;min-width:0;border:1px solid #4b3b0b;border-radius:17px;padding:14px;background:#101010;cursor:pointer;transition:.2s ease}
+    .ms-delivery-choice:hover{border-color:#967616}.ms-delivery-choice:has(input:checked){border-color:var(--gold);background:linear-gradient(135deg,#1a1608,#101010);box-shadow:0 0 0 1px var(--gold),0 8px 24px rgba(225,185,47,.12)}
+    .ms-delivery-choice input{width:20px;height:20px;margin:0;accent-color:var(--gold);flex:0 0 auto}.ms-delivery-choice strong{display:block;font-size:14px;line-height:1.25}.ms-delivery-choice small{display:block;margin-top:4px;color:var(--muted);font-size:12px;line-height:1.3}.ms-delivery-badge{position:absolute;right:10px;top:10px;border-radius:999px;background:var(--gold);color:#050505;font-size:10px;font-weight:900;padding:4px 7px}
+    .ms-shipping-fields[hidden]{display:none!important}.ms-pickup-note{display:none;border:1px solid var(--gold);border-radius:16px;padding:15px;background:linear-gradient(135deg,#1a1608,#101010);color:#fff;line-height:1.45}.ms-pickup-note.active{display:block}.ms-pickup-note strong{color:var(--gold)}
     .ms-review{display:grid;gap:10px}.ms-review-item{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid #282828}.ms-note{color:var(--muted);line-height:1.5}.ms-loading{display:none;text-align:center;color:var(--muted);padding:12px}.ms-loading.active{display:block}.ms-coupon{margin-top:18px;border:1px solid var(--line);border-radius:22px;padding:18px;background:var(--card)}.ms-coupon h2{margin:0 0 12px;font-size:18px}.ms-coupon-line{display:grid;grid-template-columns:1fr auto;gap:10px}.ms-coupon input{min-width:0;border:1px solid #4b3b0b;background:#111;color:#fff;border-radius:14px;padding:15px;outline:0;text-transform:uppercase}.ms-coupon button{border:0;border-radius:14px;padding:0 18px;background:var(--gold);color:#050505;font-weight:900}.ms-coupon-msg{min-height:20px;margin:10px 0 0;color:var(--muted);font-size:14px}.ms-coupon-msg.ok{color:#22c55e}.ms-coupon-msg.error{color:#ff6b7d}.ms-row.discount{color:#22c55e}.ms-row.discount strong{color:#22c55e}
-    @media(max-width:390px){.ms-cart{padding-left:12px;padding-right:12px}.ms-item{grid-template-columns:78px 1fr}.ms-item img{width:78px;height:102px}.ms-head h1{font-size:24px}.ms-step{font-size:12px}}
+    @media(max-width:390px){.ms-cart{padding-left:12px;padding-right:12px}.ms-item{grid-template-columns:78px 1fr}.ms-item img{width:78px;height:102px}.ms-head h1{font-size:24px}.ms-step{font-size:12px}.ms-delivery-mode{grid-template-columns:1fr}.ms-ship{padding:14px}.ms-ship-name{font-size:14px}.ms-ship-price{font-size:15px}}
   </style>
 </head>
 <body>
@@ -45,24 +54,29 @@
       <input id="customerName" name="customerName" placeholder="Digite nome e sobrenome" autocomplete="name" required>
       <input id="customerPhone" placeholder="WhatsApp com DDD" inputmode="tel" autocomplete="tel">
       <input id="customerEmail" placeholder="E-mail (opcional)" type="email" autocomplete="email">
+      <p class="ms-delivery-title">Como você quer receber?</p>
       <div class="ms-delivery-mode" aria-label="Forma de entrega">
         <label class="ms-delivery-choice">
           <input type="radio" name="deliveryMode" id="deliveryModeShipping" value="shipping" checked>
-          <span><strong>Entrega</strong><small>Calcule o frete pelo CEP</small></span>
+          <span><strong>Receber no endereço</strong><small>Consulte valores e prazos pelo CEP</small></span>
         </label>
         <label class="ms-delivery-choice">
           <input type="radio" name="deliveryMode" id="deliveryModePickup" value="pickup">
-          <span><strong>Retirada no local</strong><small>Grátis</small></span>
+          <span><strong>Buscar no local</strong><small>Sem cobrança de frete</small></span>
+          <b class="ms-delivery-badge">GRÁTIS</b>
         </label>
       </div>
-      <input id="zip" placeholder="CEP" inputmode="numeric" maxlength="9" autocomplete="postal-code">
-      <button class="ms-btn" id="calcShipping">Calcular frete</button>
-      <div id="loadingShipping" class="ms-loading">Calculando opções de entrega...</div>
-      <div id="shippingOptions" class="ms-shipping"></div>
-      <input id="street" placeholder="Rua / Avenida" autocomplete="address-line1">
-      <div class="ms-grid"><input id="number" placeholder="Número"><input id="district" placeholder="Bairro"></div>
-      <input id="complement" placeholder="Complemento (opcional)" autocomplete="address-line2">
-      <div class="ms-grid"><input id="city" placeholder="Cidade" autocomplete="address-level2"><input id="state" placeholder="UF" maxlength="2" autocomplete="address-level1"></div>
+      <div id="pickupNote" class="ms-pickup-note"><strong>Retirada gratuita selecionada.</strong><br>Após o pagamento, a loja combina o endereço e o horário da retirada pelo WhatsApp.</div>
+      <div id="shippingFields" class="ms-shipping-fields">
+        <input id="zip" placeholder="CEP" inputmode="numeric" maxlength="9" autocomplete="postal-code">
+        <button class="ms-btn" id="calcShipping">Calcular frete</button>
+        <div id="loadingShipping" class="ms-loading">Calculando opções de entrega...</div>
+        <div id="shippingOptions" class="ms-shipping"></div>
+        <input id="street" placeholder="Rua / Avenida" autocomplete="address-line1">
+        <div class="ms-grid"><input id="number" placeholder="Número"><input id="district" placeholder="Bairro"></div>
+        <input id="complement" placeholder="Complemento (opcional)" autocomplete="address-line2">
+        <div class="ms-grid"><input id="city" placeholder="Cidade" autocomplete="address-level2"><input id="state" placeholder="UF" maxlength="2" autocomplete="address-level1"></div>
+      </div>
     </div>
     <div class="ms-summary"><div class="ms-row"><span>Subtotal</span><strong id="shippingSubtotal">R$ 0,00</strong></div><div class="ms-row"><span>Frete</span><strong id="shippingValue">R$ 0,00</strong></div><div class="ms-row total"><span>Total</span><strong id="shippingTotal">R$ 0,00</strong></div><button class="ms-btn" id="toPayment">Continuar para pagamento</button><button class="ms-btn back" data-back="1">Voltar aos produtos</button></div>
   </section>
@@ -129,12 +143,15 @@
   function showStep(n){ document.querySelectorAll('.ms-panel').forEach((p,i)=>p.classList.toggle('active',i===n-1)); document.querySelectorAll('.ms-step').forEach(s=>s.classList.toggle('active',Number(s.dataset.step)===n)); $('pageTitle').textContent=n===1?'Meu carrinho':n===2?'Entrega':'Pagamento'; if(n===3)renderReview(); window.scrollTo({top:0,behavior:'smooth'}) }
 
   function setDeliveryMode(mode){
-    if(mode==='pickup'){
+    const pickup = mode==='pickup';
+    $('shippingFields').hidden=pickup;
+    $('pickupNote').classList.toggle('active',pickup);
+    if(pickup){
       shipping={nome:'Retirada no local',preco:0,prazo:0,tipo:'retirada'};
       shippingValue=0;
       localStorage.setItem('freteSelecionadoMS',JSON.stringify(shipping));
       localStorage.setItem('valorFreteMS','0');
-      $('shippingOptions').innerHTML='<div class="ms-ship selected"><span><strong>Retirada no local</strong><br><small>Combine o horário após a confirmação do pagamento</small></span><strong>Grátis</strong></div>';
+      $('shippingOptions').innerHTML='';
     }else{
       if(shipping?.tipo==='retirada'||shipping?.nome==='Retirada no local'){
         shipping=null;
@@ -147,14 +164,29 @@
     updateTotals();
   }
 
-  function validateDelivery(){ const fullName=$('customerName').value.trim().replace(/\s+/g,' '); const phone=$('customerPhone').value.replace(/\D/g,''); const required=[$('customerName'),$('zip'),$('street'),$('number'),$('district'),$('city'),$('state')]; if(required.some(el=>!el.value.trim())){alert('Complete o nome do cliente e o endereço para continuar.');return false} if(fullName.split(' ').length<2){alert('Informe o nome completo do cliente.');$('customerName').focus();return false} if(phone.length<10){alert('Informe um WhatsApp válido com DDD.');return false} if(!shipping){alert('Escolha uma opção de entrega para continuar.');return false} return true }
+  function validateDelivery(){
+    const fullName=$('customerName').value.trim().replace(/\s+/g,' ');
+    const phone=$('customerPhone').value.replace(/\D/g,'');
+    const pickup=$('deliveryModePickup').checked;
+    if(!fullName){alert('Informe o nome completo do cliente.');$('customerName').focus();return false}
+    if(fullName.split(' ').length<2){alert('Informe nome e sobrenome do cliente.');$('customerName').focus();return false}
+    if(phone.length<10){alert('Informe um WhatsApp válido com DDD.');$('customerPhone').focus();return false}
+    if(!pickup){
+      const required=[$('zip'),$('street'),$('number'),$('district'),$('city'),$('state')];
+      if(required.some(el=>!el.value.trim())){alert('Complete o CEP e o endereço para continuar.');return false}
+      if(!shipping){alert('Escolha uma opção de entrega para continuar.');return false}
+    }else if(!shipping||shipping.tipo!=='retirada'){
+      setDeliveryMode('pickup');
+    }
+    return true;
+  }
 
   async function calculateShipping(){ if($('deliveryModePickup').checked){alert('A opção Retirada no local já está selecionada e não possui frete.');return} const zip=$('zip').value.replace(/\D/g,''); if(zip.length!==8){alert('Informe um CEP válido para calcular a entrega.');return} $('loadingShipping').classList.add('active'); $('shippingOptions').innerHTML=''; try{
     const cepRes=await fetch(`https://viacep.com.br/ws/${zip}/json/`); const address=await cepRes.json(); if(!address.erro){$('street').value=address.logradouro||'';$('district').value=address.bairro||'';$('city').value=address.localidade||'';$('state').value=address.uf||''}
     const res=await fetch(`${API}/calcular-frete`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cep:zip})}); const data=await res.json(); if(!Array.isArray(data))throw new Error('Resposta de frete inválida');
     const valid=data.filter(f=>!f.error&&f.price).filter(f=>{const c=(f.company?.name||'').toLowerCase(),n=(f.name||'').toLowerCase();return n.includes('pac')||n.includes('sedex')||(c.includes('jadlog')&&n.includes('package')&&!n.includes('centralizado'))});
     if(!valid.length){$('shippingOptions').innerHTML='<div class="ms-empty">Nenhuma opção de entrega encontrada para este CEP.</div>';return}
-    $('shippingOptions').innerHTML=valid.map((f,i)=>`<button type="button" class="ms-ship" data-ship="${i}"><span><strong>${escapeHtml((f.company?.name||'')+' - '+(f.name||''))}</strong><br><small>Prazo: ${Number(f.delivery_time)||0} dias úteis</small></span><strong>${brl(f.price)}</strong></button>`).join('');
+    $('shippingOptions').innerHTML=valid.map((f,i)=>`<button type="button" class="ms-ship" data-ship="${i}"><span class="ms-ship-info"><strong class="ms-ship-name">${escapeHtml((f.company?.name||'')+' - '+(f.name||''))}</strong><small>Chega em até ${Number(f.delivery_time)||0} dias úteis</small></span><strong class="ms-ship-price">${brl(f.price)}</strong></button>`).join('');
     document.querySelectorAll('[data-ship]').forEach(btn=>btn.onclick=()=>{document.querySelectorAll('.ms-ship').forEach(x=>x.classList.remove('selected'));btn.classList.add('selected');const f=valid[Number(btn.dataset.ship)];shipping={nome:`${f.company?.name||''} - ${f.name||''}`,preco:moneyNumber(f.price),prazo:Number(f.delivery_time)||0};shippingValue=shipping.preco;localStorage.setItem('freteSelecionadoMS',JSON.stringify(shipping));localStorage.setItem('valorFreteMS',String(shippingValue));updateTotals()})
   }catch(e){console.error(e);alert('Não foi possível calcular a entrega agora. Tente novamente em instantes.')}finally{$('loadingShipping').classList.remove('active')} }
 
