@@ -1,3 +1,1 @@
-Substitua os 4 arquivos na pasta principal do projeto.
-Depois: git add . && git commit -m "Corrige total e cupom mobile" && git push
-Abra com Ctrl+F5 após o deploy.
+Substitua index.html, script.js, style.css e ms-pix-final.js. Depois faça git add ., git commit e git push. Atualize com Ctrl+F5.

@@ -14704,3 +14704,7 @@ body.aviso-ms-aberto{overflow:hidden!important;}
 #cmmsEtapaFrete #opcoesFreteCheckout .frete-opcao>strong:last-child{white-space:nowrap!important;color:#f1c94a!important;font-size:15px!important;text-align:right!important}
 #cmmsEtapaFrete .cmms-retirada-card{pointer-events:none}
 @media(max-width:390px){#cmmsEtapaFrete .cmms-modo-grid{grid-template-columns:1fr}#cmmsEtapaFrete #opcoesFreteCheckout .frete-opcao{padding:12px!important;gap:9px!important}}
+
+/* Cupom visível no resumo mobile */
+#linhaDescontoCupomMSMobile{align-items:center;justify-content:space-between;gap:16px;}
+#linhaDescontoCupomMSMobile strong{white-space:nowrap;}

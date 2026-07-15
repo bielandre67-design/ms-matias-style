@@ -156,8 +156,21 @@
     var tm=document.getElementById('totalPagamentoMobile'); if(tm) tm.textContent=dinheiro(total);
     window.totalComFrete=total; window.totalComCupomMS=total; window.valorDescontoCupomMS=desc;
     var linha=document.getElementById('linhaDescontoCupomMSMobile');
+    if(!linha){
+      var totalLinha=document.getElementById('valorTotalPagamento')?.closest('.linha-total');
+      if(totalLinha && totalLinha.parentElement){
+        linha=document.createElement('div');
+        linha.id='linhaDescontoCupomMSMobile';
+        linha.className='linha-resumo linha-desconto-cupom-ms';
+        linha.style.color='#22c55e';
+        linha.innerHTML='<span id="rotuloDescontoCupomMSMobile">Desconto</span><strong id="valorDescontoCupomMSMobile">- R$ 0,00</strong>';
+        totalLinha.parentElement.insertBefore(linha,totalLinha);
+      }
+    }
     if(linha){
       linha.style.display=pct>0?'flex':'none';
+      var r=document.getElementById('rotuloDescontoCupomMSMobile');
+      if(r) r.textContent='Desconto '+((typeof codigoCupomAplicadoMS!=='undefined'&&codigoCupomAplicadoMS)?codigoCupomAplicadoMS:'cupom');
       var v=document.getElementById('valorDescontoCupomMSMobile'); if(v) v.textContent='- '+dinheiro(desc);
     }
     return total;
