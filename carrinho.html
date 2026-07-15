@@ -21,6 +21,7 @@
     .ms-btn{width:100%;border:0;border-radius:16px;padding:17px 16px;font-weight:900;margin-top:12px;background:var(--gold);color:#050505}.ms-btn.secondary{background:transparent;color:var(--danger);border:2px solid var(--danger)}.ms-btn.back{background:#151515;color:#fff;border:1px solid #333}
     .ms-form{display:grid;gap:12px}.ms-field-label{display:block;margin:2px 0 -6px 4px;color:#fff;font-size:13px;font-weight:800}.ms-form input{width:100%;border:1px solid #4b3b0b;background:#111;color:#fff;border-radius:14px;padding:15px;outline:0}.ms-form input:focus{border-color:var(--gold)}.ms-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.ms-title{font-size:20px;margin:0 0 14px}
     .ms-shipping{display:grid;gap:10px;margin-top:14px}.ms-ship{border:1px solid #4b3b0b;border-radius:14px;padding:14px;display:flex;justify-content:space-between;gap:10px;background:#101010}.ms-ship.selected{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}.ms-ship small{color:var(--muted)}
+    .ms-delivery-mode{display:grid;gap:10px;margin-bottom:4px}.ms-delivery-choice{display:flex;align-items:center;gap:12px;border:1px solid #4b3b0b;border-radius:14px;padding:14px;background:#101010;cursor:pointer}.ms-delivery-choice:has(input:checked){border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}.ms-delivery-choice input{width:20px;height:20px;accent-color:var(--gold);flex:0 0 auto}.ms-delivery-choice strong{display:block}.ms-delivery-choice small{display:block;margin-top:3px;color:var(--muted)}
     .ms-review{display:grid;gap:10px}.ms-review-item{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid #282828}.ms-note{color:var(--muted);line-height:1.5}.ms-loading{display:none;text-align:center;color:var(--muted);padding:12px}.ms-loading.active{display:block}.ms-coupon{margin-top:18px;border:1px solid var(--line);border-radius:22px;padding:18px;background:var(--card)}.ms-coupon h2{margin:0 0 12px;font-size:18px}.ms-coupon-line{display:grid;grid-template-columns:1fr auto;gap:10px}.ms-coupon input{min-width:0;border:1px solid #4b3b0b;background:#111;color:#fff;border-radius:14px;padding:15px;outline:0;text-transform:uppercase}.ms-coupon button{border:0;border-radius:14px;padding:0 18px;background:var(--gold);color:#050505;font-weight:900}.ms-coupon-msg{min-height:20px;margin:10px 0 0;color:var(--muted);font-size:14px}.ms-coupon-msg.ok{color:#22c55e}.ms-coupon-msg.error{color:#ff6b7d}.ms-row.discount{color:#22c55e}.ms-row.discount strong{color:#22c55e}
     @media(max-width:390px){.ms-cart{padding-left:12px;padding-right:12px}.ms-item{grid-template-columns:78px 1fr}.ms-item img{width:78px;height:102px}.ms-head h1{font-size:24px}.ms-step{font-size:12px}}
   </style>
@@ -44,6 +45,16 @@
       <input id="customerName" name="customerName" placeholder="Digite nome e sobrenome" autocomplete="name" required>
       <input id="customerPhone" placeholder="WhatsApp com DDD" inputmode="tel" autocomplete="tel">
       <input id="customerEmail" placeholder="E-mail (opcional)" type="email" autocomplete="email">
+      <div class="ms-delivery-mode" aria-label="Forma de entrega">
+        <label class="ms-delivery-choice">
+          <input type="radio" name="deliveryMode" id="deliveryModeShipping" value="shipping" checked>
+          <span><strong>Entrega</strong><small>Calcule o frete pelo CEP</small></span>
+        </label>
+        <label class="ms-delivery-choice">
+          <input type="radio" name="deliveryMode" id="deliveryModePickup" value="pickup">
+          <span><strong>Retirada no local</strong><small>Grátis</small></span>
+        </label>
+      </div>
       <input id="zip" placeholder="CEP" inputmode="numeric" maxlength="9" autocomplete="postal-code">
       <button class="ms-btn" id="calcShipping">Calcular frete</button>
       <div id="loadingShipping" class="ms-loading">Calculando opções de entrega...</div>
@@ -117,9 +128,28 @@
   function renderReview(){ $('review').innerHTML=cart.map(item=>`<div class="ms-review-item"><span>${escapeHtml(item.nome||'Produto')} × ${qty(item)}</span><strong>${brl(itemPrice(item)*qty(item))}</strong></div>`).join(''); updateTotals() }
   function showStep(n){ document.querySelectorAll('.ms-panel').forEach((p,i)=>p.classList.toggle('active',i===n-1)); document.querySelectorAll('.ms-step').forEach(s=>s.classList.toggle('active',Number(s.dataset.step)===n)); $('pageTitle').textContent=n===1?'Meu carrinho':n===2?'Entrega':'Pagamento'; if(n===3)renderReview(); window.scrollTo({top:0,behavior:'smooth'}) }
 
+  function setDeliveryMode(mode){
+    if(mode==='pickup'){
+      shipping={nome:'Retirada no local',preco:0,prazo:0,tipo:'retirada'};
+      shippingValue=0;
+      localStorage.setItem('freteSelecionadoMS',JSON.stringify(shipping));
+      localStorage.setItem('valorFreteMS','0');
+      $('shippingOptions').innerHTML='<div class="ms-ship selected"><span><strong>Retirada no local</strong><br><small>Combine o horário após a confirmação do pagamento</small></span><strong>Grátis</strong></div>';
+    }else{
+      if(shipping?.tipo==='retirada'||shipping?.nome==='Retirada no local'){
+        shipping=null;
+        shippingValue=0;
+        localStorage.removeItem('freteSelecionadoMS');
+        localStorage.setItem('valorFreteMS','0');
+      }
+      $('shippingOptions').innerHTML='';
+    }
+    updateTotals();
+  }
+
   function validateDelivery(){ const fullName=$('customerName').value.trim().replace(/\s+/g,' '); const phone=$('customerPhone').value.replace(/\D/g,''); const required=[$('customerName'),$('zip'),$('street'),$('number'),$('district'),$('city'),$('state')]; if(required.some(el=>!el.value.trim())){alert('Complete o nome do cliente e o endereço para continuar.');return false} if(fullName.split(' ').length<2){alert('Informe o nome completo do cliente.');$('customerName').focus();return false} if(phone.length<10){alert('Informe um WhatsApp válido com DDD.');return false} if(!shipping){alert('Escolha uma opção de entrega para continuar.');return false} return true }
 
-  async function calculateShipping(){ const zip=$('zip').value.replace(/\D/g,''); if(zip.length!==8){alert('Informe um CEP válido para calcular a entrega.');return} $('loadingShipping').classList.add('active'); $('shippingOptions').innerHTML=''; try{
+  async function calculateShipping(){ if($('deliveryModePickup').checked){alert('A opção Retirada no local já está selecionada e não possui frete.');return} const zip=$('zip').value.replace(/\D/g,''); if(zip.length!==8){alert('Informe um CEP válido para calcular a entrega.');return} $('loadingShipping').classList.add('active'); $('shippingOptions').innerHTML=''; try{
     const cepRes=await fetch(`https://viacep.com.br/ws/${zip}/json/`); const address=await cepRes.json(); if(!address.erro){$('street').value=address.logradouro||'';$('district').value=address.bairro||'';$('city').value=address.localidade||'';$('state').value=address.uf||''}
     const res=await fetch(`${API}/calcular-frete`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cep:zip})}); const data=await res.json(); if(!Array.isArray(data))throw new Error('Resposta de frete inválida');
     const valid=data.filter(f=>!f.error&&f.price).filter(f=>{const c=(f.company?.name||'').toLowerCase(),n=(f.name||'').toLowerCase();return n.includes('pac')||n.includes('sedex')||(c.includes('jadlog')&&n.includes('package')&&!n.includes('centralizado'))});
@@ -156,10 +186,18 @@
   $('toShipping').onclick=()=>{if(!cart.length){alert('Seu carrinho está vazio.');return}showStep(2)};
   $('toPayment').onclick=()=>{if(validateDelivery())showStep(3)};
   $('calcShipping').onclick=calculateShipping; $('payButton').onclick=pay; $('applyCoupon').onclick=applyCoupon;
+  $('deliveryModeShipping').addEventListener('change',()=>setDeliveryMode('shipping'));
+  $('deliveryModePickup').addEventListener('change',()=>setDeliveryMode('pickup'));
   $('couponCode').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();applyCoupon()}});
   document.querySelectorAll('[data-back]').forEach(b=>b.onclick=()=>showStep(Number(b.dataset.back)));
   $('zip').addEventListener('input',e=>{let v=e.target.value.replace(/\D/g,'').slice(0,8);e.target.value=v.length>5?v.slice(0,5)+'-'+v.slice(5):v});
   $('customerPhone').addEventListener('input',e=>{let v=e.target.value.replace(/\D/g,'').slice(0,11);e.target.value=v.length>10?`(${v.slice(0,2)}) ${v.slice(2,7)}-${v.slice(7)}`:v.length>6?`(${v.slice(0,2)}) ${v.slice(2,6)}-${v.slice(6)}`:v.length>2?`(${v.slice(0,2)}) ${v.slice(2)}`:v});
+  if(shipping?.tipo==='retirada'||shipping?.nome==='Retirada no local'){
+    $('deliveryModePickup').checked=true;
+    setDeliveryMode('pickup');
+  }else{
+    $('deliveryModeShipping').checked=true;
+  }
   renderCart();
 })();
 </script>
