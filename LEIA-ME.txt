@@ -1,9 +1,16 @@
-MS MATIAS STYLE - PIX DENTRO DA LOJA
+MS MATIAS STYLE - CORREÇÃO FINAL PIX
 
-1. Substitua server.js no backend/Render.
-2. Substitua script.js no site/Vercel.
-3. index.html foi mantido igual e está incluído apenas como referência.
-4. Faça git add ., git commit e git push.
-5. Aguarde Render e Vercel concluírem o deploy antes de testar.
+Envie estes 3 arquivos para a raiz do projeto:
+1. server.js (substituir)
+2. index.html (substituir)
+3. ms-pix-final.js (arquivo novo)
 
-O cliente agora vê o QR Code PIX dentro da loja. A página verifica o webhook automaticamente e mostra Pagamento confirmado sem abrir outra aba.
+Depois rode:
+git add .
+git commit -m "Corrige PIX na mesma tela"
+git push
+
+Espere Render e Vercel concluírem o deploy.
+No navegador, abra a loja com Ctrl+F5 para limpar o JavaScript antigo em cache.
+
+Sinal de que funcionou: ao clicar em Finalizar pagamento, deve aparecer um modal preto/branco da MS dentro da loja. A URL não deve mudar para mercadopago.com.br.
