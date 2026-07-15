@@ -1,12 +1,10 @@
-MS Matias Style - Carrinho mobile corrigido
+SUBSTITUA ESTES 4 ARQUIVOS NA PASTA PRINCIPAL DO PROJETO:
+- index.html
+- script.js
+- style.css
+- ms-pix-final.js
 
-1. Substitua apenas o arquivo carrinho.html antigo por este.
-2. Não substitua script.js nem style.css nesta etapa.
-3. Envie para o GitHub e aguarde a atualização do Vercel.
-4. No celular, atualize a página limpando o cache ou use uma aba privada.
+Depois: git add . / git commit / git push.
+Atualize a loja com Ctrl+F5.
 
-Alterações:
-- opção "Buscar no local" com frete grátis;
-- retirada não exige CEP nem endereço;
-- opções de frete com layout responsivo e texto sem cortes;
-- retirada salva valor de frete R$ 0,00 no pedido.
+Esta correção atua no carrinho mobile real que fica dentro do index.html.

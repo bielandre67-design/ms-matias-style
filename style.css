@@ -14677,3 +14677,30 @@ body.aviso-ms-aberto{overflow:hidden!important;}
 @media (max-width: 520px) {
   .tipo-entrega-ms { grid-template-columns: 1fr; }
 }
+
+
+/* ===== FRETE MOBILE MS: CORRECAO REAL ===== */
+#cmmsEtapaFrete .cmms-modo-entrega{margin:0 0 18px;padding:0}
+#cmmsEtapaFrete .cmms-modo-titulo{margin:0 0 10px;color:#fff;font-size:15px;font-weight:800}
+#cmmsEtapaFrete .cmms-modo-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+#cmmsEtapaFrete .cmms-modo-card{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:10px;min-height:76px;padding:13px;border:1px solid rgba(212,175,55,.35);border-radius:16px;background:#111;color:#fff;cursor:pointer;box-sizing:border-box}
+#cmmsEtapaFrete .cmms-modo-card:has(input:checked){border-color:#f1c94a;box-shadow:0 0 0 1px #f1c94a,0 8px 22px rgba(212,175,55,.16);background:linear-gradient(145deg,#191607,#0d0d0d)}
+#cmmsEtapaFrete .cmms-modo-card input{width:18px;height:18px;margin:0;accent-color:#f1c94a}
+#cmmsEtapaFrete .cmms-modo-icone{font-size:21px}
+#cmmsEtapaFrete .cmms-modo-card strong{display:block;font-size:13px;line-height:1.25;text-align:left}
+#cmmsEtapaFrete .cmms-modo-card small{display:block;margin-top:4px;color:#aaa;font-size:11px;line-height:1.25;text-align:left}
+#cmmsEtapaFrete .cmms-gratis{position:absolute;right:8px;top:7px;padding:3px 6px;border-radius:999px;background:#f1c94a;color:#080808;font-size:9px;font-weight:900}
+#cmmsEtapaFrete .cmms-aviso-retirada{display:grid;gap:3px;margin-top:10px;padding:13px;border:1px solid rgba(212,175,55,.35);border-radius:14px;background:rgba(212,175,55,.08);color:#fff}
+#cmmsEtapaFrete .cmms-aviso-retirada[hidden]{display:none!important}
+#cmmsEtapaFrete .cmms-aviso-retirada strong{color:#f1c94a;font-size:13px}
+#cmmsEtapaFrete .cmms-aviso-retirada span{font-size:12px;color:#bbb;line-height:1.4}
+#cmmsEtapaFrete #opcoesFreteCheckout{display:grid!important;gap:10px!important;margin:16px 0!important}
+#cmmsEtapaFrete #opcoesFreteCheckout .frete-opcao{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;align-items:center!important;gap:14px!important;width:100%!important;height:auto!important;min-height:68px!important;padding:13px 15px!important;border:1px solid rgba(212,175,55,.5)!important;border-radius:16px!important;background:#141414!important;color:#fff!important;box-shadow:none!important;text-align:left!important;overflow:visible!important;transform:none!important}
+#cmmsEtapaFrete #opcoesFreteCheckout .frete-opcao:hover{transform:none!important;border-color:#f1c94a!important}
+#cmmsEtapaFrete #opcoesFreteCheckout .frete-opcao.selecionado{background:linear-gradient(145deg,#201b09,#111)!important;border-color:#f1c94a!important;box-shadow:0 0 0 1px #f1c94a!important}
+#cmmsEtapaFrete #opcoesFreteCheckout .frete-opcao span{min-width:0!important;display:block!important;text-align:left!important}
+#cmmsEtapaFrete #opcoesFreteCheckout .frete-opcao span strong{display:block!important;white-space:normal!important;word-break:normal!important;overflow-wrap:anywhere!important;font-size:14px!important;line-height:1.25!important;text-align:left!important}
+#cmmsEtapaFrete #opcoesFreteCheckout .frete-opcao small{display:block!important;margin-top:5px!important;color:#aaa!important;font-size:12px!important;line-height:1.25!important;text-align:left!important}
+#cmmsEtapaFrete #opcoesFreteCheckout .frete-opcao>strong:last-child{white-space:nowrap!important;color:#f1c94a!important;font-size:15px!important;text-align:right!important}
+#cmmsEtapaFrete .cmms-retirada-card{pointer-events:none}
+@media(max-width:390px){#cmmsEtapaFrete .cmms-modo-grid{grid-template-columns:1fr}#cmmsEtapaFrete #opcoesFreteCheckout .frete-opcao{padding:12px!important;gap:9px!important}}

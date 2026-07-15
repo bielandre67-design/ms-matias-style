@@ -3130,6 +3130,27 @@ onclick="window.scrollTo({top:0, behavior:'smooth'})">
   </div>
 
   <div id="cmmsEtapaFrete" class="cmms-etapa">
+
+    <div class="cmms-modo-entrega" aria-label="Escolha a forma de entrega">
+      <p class="cmms-modo-titulo">Como você quer receber?</p>
+      <div class="cmms-modo-grid">
+        <label class="cmms-modo-card">
+          <input type="radio" name="tipoEntregaMobileMS" value="entrega" checked>
+          <span class="cmms-modo-icone">🚚</span>
+          <span><strong>Receber no endereço</strong><small>Calcule pelo CEP</small></span>
+        </label>
+        <label class="cmms-modo-card">
+          <input type="radio" name="tipoEntregaMobileMS" value="retirada">
+          <span class="cmms-modo-icone">📍</span>
+          <span><strong>Buscar no local</strong><small>Sem cobrança de frete</small></span>
+          <b class="cmms-gratis">GRÁTIS</b>
+        </label>
+      </div>
+      <div id="cmmsAvisoRetirada" class="cmms-aviso-retirada" hidden>
+        <strong>Retirada gratuita selecionada</strong>
+        <span>Depois do pagamento, combinamos endereço e horário pelo WhatsApp.</span>
+      </div>
+    </div>
     
 
 <input

@@ -6645,3 +6645,64 @@ document.addEventListener("DOMContentLoaded", () => {
   window.finalizarCompra=pagarPixDentroDaLoja; window.finalizarCompraFinal=pagarPixDentroDaLoja; window.finalizarPagamento=pagarPixDentroDaLoja; window.pagarMercadoPago=pagarPixDentroDaLoja; window.msFinalizarPagamento=pagarPixDentroDaLoja;
   document.addEventListener("click",function(e){ const b=e.target.closest("button,a,input[type=button],input[type=submit]"); if(!b)return; const t=String(b.innerText||b.value||b.id||b.className||"").toLowerCase(); if((t.includes("pagar")||t.includes("finalizar pedido")||t.includes("mercado pago")||t.includes("finalizar compra")) && b.closest("#carrinhoModal,#carrinhoMobile,.carrinho,.checkout,form")){ pagarPixDentroDaLoja(e); } },true);
 })();
+
+
+/* =========================================================
+   CORRECAO REAL DO FRETE MOBILE: ENTREGA OU RETIRADA
+   ========================================================= */
+(function(){
+  function $(id){ return document.getElementById(id); }
+  const idsEndereco=['cepCheckout','ruaClienteMobile','numeroCasaMobile','complementoCasa','bairroClienteMobile','cidadeClienteMobile','estadoClienteMobile'];
+  function botaoCalcular(){ return document.querySelector('#cmmsEtapaFrete button[onclick="calcularFreteCheckout()"]'); }
+  function modoAtual(){ return document.querySelector('input[name="tipoEntregaMobileMS"]:checked')?.value || localStorage.getItem('tipoEntregaMS') || 'entrega'; }
+  function definirGlobaisRetirada(){
+    const f={nome:'Retirada no local',preco:0,prazo:0,tipo:'retirada'};
+    try{ valorFrete=0; freteSelecionado=f; }catch(e){}
+    window.valorFrete=0; window.freteSelecionado=f;
+    localStorage.setItem('tipoEntregaMS','retirada');
+    localStorage.setItem('valorFreteMS','0');
+    localStorage.setItem('freteSelecionadoMS',JSON.stringify(f));
+  }
+  function aplicarModo(tipo){
+    const retirada=tipo==='retirada';
+    localStorage.setItem('tipoEntregaMS',retirada?'retirada':'entrega');
+    idsEndereco.forEach(id=>{ const el=$(id); if(el) el.style.display=retirada?'none':''; });
+    const calc=botaoCalcular(); if(calc) calc.style.display=retirada?'none':'';
+    const opcoes=$('opcoesFreteCheckout');
+    const aviso=$('cmmsAvisoRetirada'); if(aviso) aviso.hidden=!retirada;
+    if(retirada){
+      definirGlobaisRetirada();
+      if(opcoes) opcoes.innerHTML='<button type="button" class="frete-opcao selecionado cmms-retirada-card"><span class="frete-info"><strong>Buscar no local</strong><small>Combine o horário pelo WhatsApp</small></span><strong class="frete-preco">Grátis</strong></button>';
+    } else {
+      try{ if(freteSelecionado?.tipo==='retirada'){ freteSelecionado=null; valorFrete=0; } }catch(e){}
+      window.valorFrete=0; window.freteSelecionado=null;
+      localStorage.removeItem('freteSelecionadoMS'); localStorage.setItem('valorFreteMS','0');
+      if(opcoes && opcoes.querySelector('.cmms-retirada-card')) opcoes.innerHTML='';
+    }
+    if(typeof atualizarTotais==='function') atualizarTotais();
+    if(typeof atualizarResumoPagamentoMS==='function') atualizarResumoPagamentoMS();
+  }
+  function instalar(){
+    document.querySelectorAll('input[name="tipoEntregaMobileMS"]').forEach(r=>r.addEventListener('change',()=>aplicarModo(r.value)));
+    const salvo=localStorage.getItem('tipoEntregaMS')||'entrega';
+    const radio=document.querySelector(`input[name="tipoEntregaMobileMS"][value="${salvo}"]`);
+    if(radio) radio.checked=true;
+    aplicarModo(salvo);
+  }
+  const irPagamentoOriginal=window.irPagamentoMS;
+  window.irPagamentoMS=function(){
+    const nome=String($('nomeClienteMobile')?.value||'').trim();
+    const telefone=String($('telefoneClienteMobile')?.value||'').replace(/\D/g,'');
+    if(nome.split(/\s+/).length<2){ alert('Informe o nome completo do cliente.'); $('nomeClienteMobile')?.focus(); return; }
+    if(telefone.length<10){ alert('Informe um WhatsApp válido com DDD.'); $('telefoneClienteMobile')?.focus(); return; }
+    if(modoAtual()==='entrega'){
+      const obrigatorios=['cepCheckout','ruaClienteMobile','numeroCasaMobile','bairroClienteMobile','cidadeClienteMobile','estadoClienteMobile'];
+      const faltando=obrigatorios.find(id=>!String($(id)?.value||'').trim());
+      if(faltando){ alert('Preencha o endereço completo para continuar.'); $(faltando)?.focus(); return; }
+      const salvo=JSON.parse(localStorage.getItem('freteSelecionadoMS')||'null');
+      if(!salvo || salvo.tipo==='retirada' || Number(salvo.preco)<=0){ alert('Escolha uma opção de frete para continuar.'); return; }
+    } else definirGlobaisRetirada();
+    return typeof irPagamentoOriginal==='function' ? irPagamentoOriginal.apply(this,arguments) : undefined;
+  };
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',instalar); else instalar();
+})();
