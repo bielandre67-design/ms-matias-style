@@ -981,7 +981,11 @@ async function buscarEndereco() {
   }
 }
 
+let cupomValidandoMS = false;
+
 async function aplicarCupom() {
+  if (cupomValidandoMS) return;
+  cupomValidandoMS = true;
   // Aceita tanto os IDs do carrinho lateral quanto os IDs do checkout mobile.
   const input =
     document.getElementById("cupomPagamentoMS") ||
@@ -1012,11 +1016,21 @@ async function aplicarCupom() {
   mensagem.textContent = "Validando cupom...";
   mensagem.style.color = "#d6b24c";
 
+  const botaoCupom = document.querySelector(".cupom-linha-ms button") || document.querySelector("#cupomInput + button");
+  if (botaoCupom) {
+    botaoCupom.disabled = true;
+    botaoCupom.textContent = "Validando...";
+  }
+
+  const controller = new AbortController();
+  const timeoutCupom = setTimeout(() => controller.abort(), 15000);
+
   try {
     const resposta = await fetch(`${API_BASE}/cupons/validar`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ codigo, subtotal })
+      body: JSON.stringify({ codigo, subtotal }),
+      signal: controller.signal
     });
 
     const dados = await resposta.json();
@@ -1034,8 +1048,17 @@ async function aplicarCupom() {
   } catch (erro) {
     descontoCupomMS = 0;
     codigoCupomAplicadoMS = "";
-    mensagem.textContent = erro.message || "Cupom inválido.";
+    mensagem.textContent = erro?.name === "AbortError"
+      ? "O servidor demorou para responder. Tente novamente."
+      : (erro.message || "Cupom inválido.");
     mensagem.style.color = "#ff4d6d";
+  } finally {
+    clearTimeout(timeoutCupom);
+    cupomValidandoMS = false;
+    if (botaoCupom) {
+      botaoCupom.disabled = false;
+      botaoCupom.textContent = "Aplicar";
+    }
   }
 
   // Atualiza os dois resumos. Antes, somente o resumo do PC era recalculado,
@@ -2606,13 +2629,6 @@ function atualizarResumoPagamentoMSComCupom() {
 
 window.aplicarCupomMS = aplicarCupomMS;
 window.atualizarResumoPagamentoMSComCupom = atualizarResumoPagamentoMSComCupom;
-
-document.addEventListener("click", function (event) {
-  const botao = event.target.closest(".cupom-linha-ms button");
-  if (!botao) return;
-  event.preventDefault();
-  aplicarCupomMS();
-});
 
 document.addEventListener("keydown", function (event) {
   if (event.key === "Enter" && ["cupomPagamentoMS", "cupomInput"].includes(event.target?.id)) {
