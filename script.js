@@ -1249,8 +1249,19 @@ async function finalizarCompra(event) {
         items: carrinho,
         valorFrete: Number(valorFrete || 0),
         freteSelecionado,
-        desconto,
-        totalComFrete: Number(totalComFrete || 0)
+        // Usa o cupom realmente aplicado no mobile/desktop.
+        codigoCupom: String(window.codigoCupomAplicadoMS || codigoCupomAplicadoMS || "").trim().toUpperCase(),
+        desconto: Number(window.descontoCupomMS || descontoCupomMS || desconto || 0),
+        totalComFrete: Number(window.totalComCupomMS || totalComFrete || 0),
+        nome: document.getElementById("nomeClienteMobile")?.value || document.getElementById("nomeCliente")?.value || "",
+        telefone: document.getElementById("telefoneClienteMobile")?.value || document.getElementById("telefoneCliente")?.value || "",
+        email: document.getElementById("emailClienteMobile")?.value || "",
+        cep: document.getElementById("cepCheckout")?.value || document.getElementById("cepCliente")?.value || "",
+        rua: document.getElementById("ruaClienteMobile")?.value || document.getElementById("ruaCliente")?.value || "",
+        numero: document.getElementById("numeroCasaMobile")?.value || document.getElementById("numeroCliente")?.value || "",
+        bairro: document.getElementById("bairroClienteMobile")?.value || document.getElementById("bairroCliente")?.value || "",
+        cidade: document.getElementById("cidadeClienteMobile")?.value || document.getElementById("cidadeCliente")?.value || "",
+        estado: document.getElementById("estadoClienteMobile")?.value || document.getElementById("estadoCliente")?.value || ""
       })
     });
 

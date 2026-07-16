@@ -2,2805 +2,315 @@
   {
     "id": 1,
     "cep": "90640130",
-    "rua": "Rua Livramento",
-    "data": "20/05/2026, 22:29:54",
+    "rua": "Retirada no local",
+    "data": "15/07/2026, 21:31:27",
     "nome": "eu tu",
-    "total": 93.72,
+    "email": "",
+    "frete": {
+      "nome": "Buscar no local",
+      "tipo": "retirada",
+      "prazo": 0,
+      "preco": 0
+    },
+    "total": 0.25,
     "bairro": "Santana",
     "cidade": "Porto Alegre",
     "estado": "RS",
-    "numero": "841",
-    "status": "aguardando pagamento",
+    "numero": "S/N",
+    "pagoEm": "2026-07-15T20:31:57.000-04:00",
+    "status": "pago",
+    "cliente": {
+      "nome": "eu tu",
+      "email": "",
+      "telefone": "(51) 99344-5678"
+    },
+    "desconto": 50,
+    "endereco": {
+      "cep": "90640130",
+      "rua": "Retirada no local",
+      "bairro": "Santana",
+      "cidade": "Porto Alegre",
+      "estado": "RS",
+      "numero": "S/N",
+      "complemento": "casa"
+    },
     "produtos": [
       {
-        "nome": "Touca MS",
-        "preco": 79,
-        "imagem": "touca-preta.png",
-        "tamanho": "ÚNICO",
+        "nome": "Moletom Preto MS",
+        "preco": 0.5,
+        "imagem": "MOLETOM-PRETO.jpeg",
+        "tamanho": "M",
         "quantidade": 1
       }
     ],
+    "subtotal": 0.5,
     "telefone": "(51) 99344-5678",
-    "complemento": "casa"
+    "whatsapp": "(51) 99344-5678",
+    "pagamento": {
+      "metodo": "Mercado Pago",
+      "status": "approved",
+      "expiracao": "2026-07-16T20:31:28.325-04:00",
+      "paymentId": "168142801097",
+      "atualizadoEm": "2026-07-16T00:31:58.573Z",
+      "preferenceId": null,
+      "statusDetail": "accredited",
+      "idempotencyKey": "ms-pix-1-1784161887963"
+    },
+    "codigoCupom": "MS2",
+    "complemento": "casa",
+    "tipoEntrega": "retirada",
+    "retiradaLocal": true,
+    "estoqueBaixado": true
   },
   {
     "id": 2,
-    "cep": "90640130",
-    "rua": "Rua Livramento",
-    "data": "20/05/2026, 22:31:42",
-    "nome": "sss",
-    "total": 93.72,
+    "cep": "90.640-130",
+    "rua": "Retirada no local",
+    "data": "16/07/2026, 09:08:30",
+    "nome": "Marilane Silva Andre",
+    "email": "",
+    "frete": {
+      "nome": "Buscar no local",
+      "tipo": "retirada",
+      "prazo": 0,
+      "preco": 0
+    },
+    "total": 0.4,
     "bairro": "Santana",
     "cidade": "Porto Alegre",
     "estado": "RS",
-    "numero": "841",
+    "numero": "S/N",
     "status": "aguardando pagamento",
+    "cliente": {
+      "nome": "Marilane Silva Andre",
+      "email": "",
+      "telefone": "(51) 99344-6569"
+    },
+    "desconto": 20,
+    "endereco": {
+      "cep": "90.640-130",
+      "rua": "Retirada no local",
+      "bairro": "Santana",
+      "cidade": "Porto Alegre",
+      "estado": "RS",
+      "numero": "S/N",
+      "complemento": "casa"
+    },
     "produtos": [
       {
-        "nome": "Touca MS",
-        "preco": 79,
-        "imagem": "touca-preta.png",
-        "tamanho": "ÚNICO",
+        "nome": "Moletom Preto MS",
+        "preco": 0.5,
+        "imagem": "MOLETOM-PRETO.jpeg",
+        "tamanho": "P",
         "quantidade": 1
       }
     ],
-    "telefone": "(51) 99344-5678",
-    "complemento": "casa"
+    "subtotal": 0.5,
+    "telefone": "(51) 99344-6569",
+    "whatsapp": "(51) 99344-6569",
+    "pagamento": {
+      "metodo": "Mercado Pago",
+      "status": "pending",
+      "expiracao": "2026-07-17T08:08:30.865-04:00",
+      "paymentId": "168190448389",
+      "atualizadoEm": "2026-07-16T12:08:31.850Z",
+      "preferenceId": null,
+      "statusDetail": "pending_waiting_transfer",
+      "idempotencyKey": "ms-pix-2-1784203710241"
+    },
+    "codigoCupom": "MS1",
+    "complemento": "casa",
+    "tipoEntrega": "retirada",
+    "retiradaLocal": true
   },
   {
     "id": 3,
-    "cep": "90640130",
-    "rua": "Rua Livramento",
-    "data": "20/05/2026, 22:32:03",
-    "nome": "FA",
-    "total": 94.4,
+    "cep": "90.640-130",
+    "rua": "Retirada no local",
+    "data": "16/07/2026, 10:53:27",
+    "nome": "Marilane Silva Andre",
+    "email": "",
+    "frete": {
+      "nome": "Buscar no local",
+      "tipo": "retirada",
+      "prazo": 0,
+      "preco": 0
+    },
+    "total": 0.4,
     "bairro": "Santana",
     "cidade": "Porto Alegre",
-    "estado": "",
-    "numero": "43",
+    "estado": "RS",
+    "numero": "S/N",
     "status": "aguardando pagamento",
+    "cliente": {
+      "nome": "Marilane Silva Andre",
+      "email": "",
+      "telefone": "(51) 99344-6569"
+    },
+    "desconto": 20,
+    "endereco": {
+      "cep": "90.640-130",
+      "rua": "Retirada no local",
+      "bairro": "Santana",
+      "cidade": "Porto Alegre",
+      "estado": "RS",
+      "numero": "S/N",
+      "complemento": "casa"
+    },
     "produtos": [
       {
-        "nome": "Touca MS",
-        "preco": 79,
-        "imagem": "touca-preta.png",
-        "tamanho": "ÚNICO",
+        "nome": "Moletom Preto MS",
+        "preco": 0.5,
+        "imagem": "MOLETOM-PRETO.jpeg",
+        "tamanho": "P",
         "quantidade": 1
       }
     ],
+    "subtotal": 0.5,
     "telefone": "(51) 99344-6569",
-    "complemento": ""
+    "whatsapp": "(51) 99344-6569",
+    "pagamento": {
+      "metodo": "Mercado Pago",
+      "status": "pending",
+      "expiracao": "2026-07-17T09:53:28.088-04:00",
+      "paymentId": "168201817655",
+      "atualizadoEm": "2026-07-16T13:53:28.951Z",
+      "preferenceId": null,
+      "statusDetail": "pending_waiting_transfer",
+      "idempotencyKey": "ms-pix-3-1784210007676"
+    },
+    "codigoCupom": "MS1",
+    "complemento": "casa",
+    "tipoEntrega": "retirada",
+    "retiradaLocal": true
   },
   {
     "id": 4,
-    "cep": "90640130",
-    "rua": "Rua Livramento",
-    "data": "20/05/2026, 22:37:06",
-    "nome": "eu tu",
-    "total": 94.72,
+    "cep": "90.640-130",
+    "rua": "Retirada no local",
+    "data": "16/07/2026, 11:19:20",
+    "nome": "Marilane Silva Andre",
+    "email": "",
+    "frete": {
+      "nome": "Buscar no local",
+      "tipo": "retirada",
+      "prazo": 0,
+      "preco": 0
+    },
+    "total": 0.4,
     "bairro": "Santana",
     "cidade": "Porto Alegre",
     "estado": "RS",
-    "numero": "841",
+    "numero": "S/N",
     "status": "aguardando pagamento",
+    "cliente": {
+      "nome": "Marilane Silva Andre",
+      "email": "",
+      "telefone": "(51) 99344-6569"
+    },
+    "desconto": 20,
+    "endereco": {
+      "cep": "90.640-130",
+      "rua": "Retirada no local",
+      "bairro": "Santana",
+      "cidade": "Porto Alegre",
+      "estado": "RS",
+      "numero": "S/N",
+      "complemento": "casa"
+    },
     "produtos": [
       {
-        "nome": "Touca MS",
-        "preco": 79,
-        "imagem": "touca-preta.png",
-        "tamanho": "ÚNICO",
-        "quantidade": 1
-      },
-      {
-        "nome": "Moletom Rosa MS",
-        "preco": 1,
-        "imagem": "moletom-rosa.png",
-        "tamanho": "M",
+        "nome": "Moletom Preto MS",
+        "preco": 0.5,
+        "imagem": "MOLETOM-PRETO.jpeg",
+        "tamanho": "P",
         "quantidade": 1
       }
     ],
-    "telefone": "(51) 99344-5678",
-    "complemento": "casa"
+    "subtotal": 0.5,
+    "telefone": "(51) 99344-6569",
+    "whatsapp": "(51) 99344-6569",
+    "pagamento": {
+      "metodo": "Mercado Pago",
+      "status": "pending",
+      "expiracao": "2026-07-17T10:19:20.806-04:00",
+      "paymentId": "169073687622",
+      "atualizadoEm": "2026-07-16T14:19:21.713Z",
+      "preferenceId": null,
+      "statusDetail": "pending_waiting_transfer",
+      "idempotencyKey": "ms-pix-4-1784211560407"
+    },
+    "codigoCupom": "MS1",
+    "complemento": "casa",
+    "tipoEntrega": "retirada",
+    "retiradaLocal": true
   },
   {
     "id": 5,
-    "cep": "90640130",
-    "rua": "Rua Livramento",
-    "data": "20/05/2026, 22:39:50",
-    "nome": "eu tu",
-    "total": 94.72,
-    "bairro": "Santana",
-    "cidade": "Porto Alegre",
-    "estado": "RS",
-    "numero": "841",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Touca MS",
-        "preco": 79,
-        "imagem": "touca-preta.png",
-        "tamanho": "ÚNICO",
-        "quantidade": 1
-      },
-      {
-        "nome": "Moletom Rosa MS",
-        "preco": 1,
-        "imagem": "moletom-rosa.png",
-        "tamanho": "M",
-        "quantidade": 1
-      }
-    ],
-    "telefone": "(51) 99344-5678",
-    "complemento": "casa"
-  },
-  {
-    "id": 6,
-    "cep": "90640130",
-    "rua": "Rua Livramento",
-    "data": "20/05/2026, 22:40:37",
-    "nome": "eu tu",
-    "total": 95.72,
-    "bairro": "Santana",
-    "cidade": "Porto Alegre",
-    "estado": "RS",
-    "numero": "841",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Touca MS",
-        "preco": 79,
-        "imagem": "touca-preta.png",
-        "tamanho": "ÚNICO",
-        "quantidade": 1
-      },
-      {
-        "nome": "Moletom Rosa MS",
-        "preco": 1,
-        "imagem": "moletom-rosa.png",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Moletom Preto MS",
-        "preco": 1,
-        "imagem": "MOLETOM-PRETO.png",
-        "tamanho": "M",
-        "quantidade": 1
-      }
-    ],
-    "telefone": "(51) 99344-5678",
-    "complemento": "casa"
-  },
-  {
-    "id": 7,
-    "cep": "94445550",
-    "rua": "Rua Jesuitas",
-    "data": "23/05/2026, 12:55:23",
-    "nome": "eu tu",
-    "total": 114.59,
-    "bairro": "Santo Onofre",
-    "cidade": "Viamão",
-    "estado": "RS",
-    "numero": "3",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Cinza MS",
-        "preco": 100,
-        "imagem": "moletom-cinza.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      }
-    ],
-    "telefone": "(51) 99344-5678",
-    "complemento": "2"
-  },
-  {
-    "id": 8,
-    "cep": "90640130",
-    "rua": "Rua Livramento",
-    "data": "23/05/2026, 12:56:06",
-    "nome": "SDSD",
-    "total": 3105.4,
-    "bairro": "Santana",
-    "cidade": "Porto Alegre",
-    "estado": "",
-    "numero": "4",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Cinza MS",
-        "preco": 100,
-        "imagem": "moletom-cinza.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Meia MS Cano Alto",
-        "preco": 2990,
-        "imagem": "meia branca.png",
-        "tamanho": "M",
-        "quantidade": 1
-      }
-    ],
-    "telefone": "(51) 99344-6569",
-    "complemento": ""
-  },
-  {
-    "id": 9,
-    "cep": "90640130",
-    "rua": "Rua Livramento4",
-    "data": "23/05/2026, 13:15:03",
-    "nome": "SDSD",
-    "total": 3105.4,
-    "bairro": "Santana",
-    "cidade": "Porto Alegre",
-    "estado": "",
-    "numero": "3",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Cinza MS",
-        "preco": 100,
-        "imagem": "moletom-cinza.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Meia MS Cano Alto",
-        "preco": 2990,
-        "imagem": "meia branca.png",
-        "tamanho": "M",
-        "quantidade": 1
-      }
-    ],
-    "telefone": "(51) 99344-6569",
-    "complemento": ""
-  },
-  {
-    "id": 10,
-    "cep": "90640130",
-    "rua": "Rua Livramento",
-    "data": "23/05/2026, 13:15:44",
-    "nome": "eu tu",
-    "total": 3105.59,
-    "bairro": "Santana",
-    "cidade": "Porto Alegre",
-    "estado": "RS",
-    "numero": "841",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Cinza MS",
-        "preco": 100,
-        "imagem": "moletom-cinza.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Meia MS Cano Alto",
-        "preco": 2990,
-        "imagem": "meia branca.png",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Moletom Rosa MS",
-        "preco": 1,
-        "imagem": "moletom-rosa.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      }
-    ],
-    "telefone": "(51) 99344-5678",
-    "complemento": "casa"
-  },
-  {
-    "id": 11,
-    "cep": "90640130",
-    "rua": "Rua Livramento",
-    "data": "23/05/2026, 13:20:31",
-    "nome": "sss",
-    "total": 15.59,
-    "bairro": "Santana",
-    "cidade": "Porto Alegre",
-    "estado": "RS",
-    "numero": "2",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Rosa MS",
-        "preco": 1,
-        "imagem": "moletom-rosa.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      }
-    ],
-    "telefone": "(51) 99344-5678",
-    "complemento": "3"
-  },
-  {
-    "id": 12,
-    "cep": "94445550",
-    "rua": "Rua Jesuitas",
-    "data": "23/05/2026, 13:22:48",
-    "nome": "eu tu",
-    "total": 16.59,
-    "bairro": "Santo Onofre",
-    "cidade": "Viamão",
-    "estado": "RS",
-    "numero": "2",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Rosa MS",
-        "preco": 1,
-        "imagem": "moletom-rosa.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Moletom Preto MS",
-        "preco": 1,
-        "imagem": "MOLETOM-PRETO.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      }
-    ],
-    "telefone": "(51) 99344-5678",
-    "complemento": "casa"
-  },
-  {
-    "id": 13,
-    "cep": "90640130",
-    "rua": "Rua Livramento",
-    "data": "23/05/2026, 13:26:16",
-    "nome": "sss",
-    "total": 3006.59,
-    "bairro": "Santana",
-    "cidade": "Porto Alegre",
-    "estado": "RS",
-    "numero": "33",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Rosa MS",
-        "preco": 1,
-        "imagem": "moletom-rosa.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Moletom Preto MS",
-        "preco": 1,
-        "imagem": "MOLETOM-PRETO.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Meia MS Cano Alto",
-        "preco": 2990,
-        "imagem": "meia branca.png",
-        "tamanho": "M",
-        "quantidade": 1
-      }
-    ],
-    "telefone": "(51) 99344-5678",
-    "complemento": "2"
-  },
-  {
-    "id": 14,
-    "cep": "94445550",
-    "rua": "Rua Jesuitas",
-    "data": "23/05/2026, 13:27:51",
-    "nome": "sss",
-    "total": 3007.59,
-    "bairro": "Santo Onofre",
-    "cidade": "Viamão",
-    "estado": "RS",
-    "numero": "5",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Rosa MS",
-        "preco": 1,
-        "imagem": "moletom-rosa.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Moletom Preto MS",
-        "preco": 1,
-        "imagem": "MOLETOM-PRETO.jpeg",
-        "tamanho": "M",
-        "quantidade": 2
-      },
-      {
-        "nome": "Meia MS Cano Alto",
-        "preco": 2990,
-        "imagem": "meia branca.png",
-        "tamanho": "M",
-        "quantidade": 1
-      }
-    ],
-    "telefone": "(51) 99344-5678",
-    "complemento": "33"
-  },
-  {
-    "id": 15,
-    "cep": "90640130",
-    "rua": "Rua Livramento",
-    "data": "23/05/2026, 13:30:37",
-    "nome": "eu tu",
-    "total": 3097.4900000000002,
-    "bairro": "Santana",
-    "cidade": "Porto Alegre",
-    "estado": "RS",
-    "numero": "841",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Rosa MS",
-        "preco": 1,
-        "imagem": "moletom-rosa.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Moletom Preto MS",
-        "preco": 1,
-        "imagem": "MOLETOM-PRETO.jpeg",
-        "tamanho": "M",
-        "quantidade": 2
-      },
-      {
-        "nome": "Meia MS Cano Alto",
-        "preco": 2990,
-        "imagem": "meia branca.png",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Camiseta Oversized Off White",
-        "preco": 89.9,
-        "imagem": "Camiseta Oversized Off-White.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      }
-    ],
-    "telefone": "(51) 99344-5678",
-    "complemento": "casa"
-  },
-  {
-    "id": 16,
-    "cep": "",
-    "rua": "",
-    "data": "23/05/2026, 13:42:52",
-    "nome": "",
-    "total": 1,
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "numero": "",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Teste MS",
-        "preco": 1,
-        "quantidade": 1
-      }
-    ],
-    "telefone": "",
-    "complemento": ""
-  },
-  {
-    "id": 17,
-    "cep": "94445550",
-    "rua": "Rua Jesuitas",
-    "data": "23/05/2026, 13:46:06",
-    "nome": "eu tu",
-    "total": 3277.29,
-    "bairro": "Santo Onofre",
-    "cidade": "Viamão",
-    "estado": "RS",
-    "numero": "841",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Rosa MS",
-        "preco": 1,
-        "imagem": "moletom-rosa.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Moletom Preto MS",
-        "preco": 1,
-        "imagem": "MOLETOM-PRETO.jpeg",
-        "tamanho": "M",
-        "quantidade": 2
-      },
-      {
-        "nome": "Meia MS Cano Alto",
-        "preco": 2990,
-        "imagem": "meia branca.png",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Camiseta Oversized Off White",
-        "preco": 89.9,
-        "imagem": "Camiseta Oversized Off-White.jpeg",
-        "tamanho": "M",
-        "quantidade": 3
-      }
-    ],
-    "telefone": "(51) 99344-5678",
-    "complemento": "casa"
-  },
-  {
-    "id": 18,
-    "cep": "90640130",
-    "rua": "Rua Livramento",
-    "data": "23/05/2026, 13:47:03",
-    "nome": "SDSD",
-    "total": 3278.1,
-    "bairro": "Santana",
-    "cidade": "Porto Alegre",
-    "estado": "",
-    "numero": "4",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Rosa MS",
-        "preco": 1,
-        "imagem": "moletom-rosa.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Moletom Preto MS",
-        "preco": 1,
-        "imagem": "MOLETOM-PRETO.jpeg",
-        "tamanho": "M",
-        "quantidade": 2
-      },
-      {
-        "nome": "Meia MS Cano Alto",
-        "preco": 2990,
-        "imagem": "meia branca.png",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Camiseta Oversized Off White",
-        "preco": 89.9,
-        "imagem": "Camiseta Oversized Off-White.jpeg",
-        "tamanho": "M",
-        "quantidade": 3
-      }
-    ],
-    "telefone": "(51) 99344-6569",
-    "complemento": ""
-  },
-  {
-    "id": 19,
-    "cep": "90640130",
-    "rua": "Rua Livramento",
-    "data": "23/05/2026, 13:49:56",
-    "nome": "SDSD",
-    "total": 3278.1,
-    "bairro": "Santana",
-    "cidade": "Porto Alegre",
-    "estado": "",
-    "numero": "4",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Rosa MS",
-        "preco": 1,
-        "imagem": "moletom-rosa.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Moletom Preto MS",
-        "preco": 1,
-        "imagem": "MOLETOM-PRETO.jpeg",
-        "tamanho": "M",
-        "quantidade": 2
-      },
-      {
-        "nome": "Meia MS Cano Alto",
-        "preco": 2990,
-        "imagem": "meia branca.png",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Camiseta Oversized Off White",
-        "preco": 89.9,
-        "imagem": "Camiseta Oversized Off-White.jpeg",
-        "tamanho": "M",
-        "quantidade": 3
-      }
-    ],
-    "telefone": "(51) 99344-6569",
-    "complemento": ""
-  },
-  {
-    "id": 20,
-    "cep": "90640130",
-    "rua": "Rua Livramento",
-    "data": "23/05/2026, 13:55:28",
-    "nome": "SDSD",
-    "total": 16.4,
-    "bairro": "Santana",
-    "cidade": "Porto Alegre",
-    "estado": "",
-    "numero": "8",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Rosa MS",
-        "preco": 1,
-        "imagem": "moletom-rosa.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      }
-    ],
-    "telefone": "(51) 99344-6569",
-    "complemento": ""
-  },
-  {
-    "id": 21,
-    "cep": "90640130",
-    "rua": "Rua Livramento",
-    "data": "23/05/2026, 13:55:54",
-    "nome": "sss",
-    "total": 45.489999999999995,
-    "bairro": "Santana",
-    "cidade": "Porto Alegre",
-    "estado": "RS",
-    "numero": "33",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Rosa MS",
-        "preco": 1,
-        "imagem": "moletom-rosa.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Meia MS Cano Alto",
-        "preco": 29.9,
-        "imagem": "meia branca.png",
-        "tamanho": "ÚNICO",
-        "quantidade": 1
-      }
-    ],
-    "telefone": "(51) 99344-5678",
-    "complemento": "casa"
-  },
-  {
-    "id": 22,
-    "cep": "94445550",
-    "rua": "Rua Jesuitas",
-    "data": "23/05/2026, 14:04:12",
-    "nome": "eu tu",
-    "total": 75.39,
-    "bairro": "Santo Onofre",
-    "cidade": "Viamão",
-    "estado": "RS",
-    "numero": "5",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Rosa MS",
-        "preco": 1,
-        "imagem": "moletom-rosa.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Meia MS Cano Alto",
-        "preco": 29.9,
-        "imagem": "meia branca.png",
-        "tamanho": "ÚNICO",
-        "quantidade": 2
-      }
-    ],
-    "telefone": "(51) 99344-5678",
-    "complemento": "33"
-  },
-  {
-    "id": 23,
-    "cep": "94445550",
-    "rua": "Rua Jesuitas",
-    "data": "23/05/2026, 14:05:55",
-    "nome": "eu tu",
-    "total": 105.28999999999999,
-    "bairro": "Santo Onofre",
-    "cidade": "Viamão",
-    "estado": "RS",
-    "numero": "6",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Rosa MS",
-        "preco": 1,
-        "imagem": "moletom-rosa.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Meia MS Cano Alto",
-        "preco": 29.9,
-        "imagem": "meia branca.png",
-        "tamanho": "ÚNICO",
-        "quantidade": 3
-      }
-    ],
-    "telefone": "(51) 99344-5678",
-    "complemento": "2"
-  },
-  {
-    "id": 24,
-    "cep": "90640130",
-    "rua": "Rua Livramento",
-    "data": "23/05/2026, 14:13:43",
-    "nome": "eu tu",
-    "total": 195.19,
-    "bairro": "Santana",
-    "cidade": "Porto Alegre",
-    "estado": "RS",
-    "numero": "43",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Rosa MS",
-        "preco": 1,
-        "imagem": "moletom-rosa.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Meia MS Cano Alto",
-        "preco": 29.9,
-        "imagem": "meia branca.png",
-        "tamanho": "ÚNICO",
-        "quantidade": 3
-      },
-      {
-        "nome": "Camiseta Oversized Preta",
-        "preco": 89.9,
-        "imagem": "Camiseta Oversized Preta.jpeg",
-        "tamanho": "G",
-        "quantidade": 1
-      }
-    ],
-    "telefone": "(51) 99344-5678",
-    "complemento": "casa"
-  },
-  {
-    "id": 25,
-    "cep": "90640130",
-    "rua": "Rua Livramento",
-    "data": "23/05/2026, 14:14:34",
-    "nome": "eu tu",
-    "total": 195.19,
-    "bairro": "Santana",
-    "cidade": "Porto Alegre",
-    "estado": "RS",
-    "numero": "2",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Rosa MS",
-        "preco": 1,
-        "imagem": "moletom-rosa.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Meia MS Cano Alto",
-        "preco": 29.9,
-        "imagem": "meia branca.png",
-        "tamanho": "ÚNICO",
-        "quantidade": 3
-      },
-      {
-        "nome": "Camiseta Oversized Preta",
-        "preco": 89.9,
-        "imagem": "Camiseta Oversized Preta.jpeg",
-        "tamanho": "G",
-        "quantidade": 1
-      }
-    ],
-    "telefone": "(51) 99344-5678",
-    "complemento": "33"
-  },
-  {
-    "id": 26,
-    "cep": "90640130",
-    "rua": "Rua Livramento",
-    "data": "23/05/2026, 14:16:25",
-    "nome": "eu tu",
-    "total": 195.19,
-    "bairro": "Santana",
-    "cidade": "Porto Alegre",
-    "estado": "RS",
-    "numero": "6",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Rosa MS",
-        "preco": 1,
-        "imagem": "moletom-rosa.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Meia MS Cano Alto",
-        "preco": 29.9,
-        "imagem": "meia branca.png",
-        "tamanho": "ÚNICO",
-        "quantidade": 3
-      },
-      {
-        "nome": "Camiseta Oversized Preta",
-        "preco": 89.9,
-        "imagem": "Camiseta Oversized Preta.jpeg",
-        "tamanho": "G",
-        "quantidade": 1
-      }
-    ],
-    "telefone": "(51) 99344-5678",
-    "complemento": "2"
-  },
-  {
-    "id": 27,
-    "cep": "94445550",
-    "rua": "Rua Jesuitas",
-    "data": "23/05/2026, 14:22:24",
-    "nome": "sss",
-    "total": 195.19,
-    "bairro": "Santo Onofre",
-    "cidade": "Viamão",
-    "estado": "RS",
-    "numero": "33",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Rosa MS",
-        "preco": 1,
-        "imagem": "moletom-rosa.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Meia MS Cano Alto",
-        "preco": 29.9,
-        "imagem": "meia branca.png",
-        "tamanho": "ÚNICO",
-        "quantidade": 3
-      },
-      {
-        "nome": "Camiseta Oversized Preta",
-        "preco": 89.9,
-        "imagem": "Camiseta Oversized Preta.jpeg",
-        "tamanho": "G",
-        "quantidade": 1
-      }
-    ],
-    "telefone": "(51) 99344-6569",
-    "complemento": "33"
-  },
-  {
-    "id": 28,
-    "cep": "90640130",
-    "rua": "Rua Livramento",
-    "data": "23/05/2026, 14:24:35",
-    "nome": "eu tu",
-    "total": 195.19,
-    "bairro": "Santana",
-    "cidade": "Porto Alegre",
-    "estado": "RS",
-    "numero": "5",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Rosa MS",
-        "preco": 1,
-        "imagem": "moletom-rosa.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Meia MS Cano Alto",
-        "preco": 29.9,
-        "imagem": "meia branca.png",
-        "tamanho": "ÚNICO",
-        "quantidade": 3
-      },
-      {
-        "nome": "Camiseta Oversized Preta",
-        "preco": 89.9,
-        "imagem": "Camiseta Oversized Preta.jpeg",
-        "tamanho": "G",
-        "quantidade": 1
-      }
-    ],
-    "telefone": "(51) 99344-5678",
-    "complemento": "casa"
-  },
-  {
-    "id": 29,
-    "cep": "",
-    "rua": "",
-    "data": "23/05/2026, 14:30:25",
-    "nome": "",
-    "total": 195.19,
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "numero": "",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Rosa MS",
-        "preco": 1,
-        "imagem": "moletom-rosa.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Meia MS Cano Alto",
-        "preco": 29.9,
-        "imagem": "meia branca.png",
-        "tamanho": "ÚNICO",
-        "quantidade": 3
-      },
-      {
-        "nome": "Camiseta Oversized Preta",
-        "preco": 89.9,
-        "imagem": "Camiseta Oversized Preta.jpeg",
-        "tamanho": "G",
-        "quantidade": 1
-      }
-    ],
-    "telefone": "",
-    "complemento": ""
-  },
-  {
-    "id": 30,
-    "cep": "",
-    "rua": "",
-    "data": "23/05/2026, 14:31:17",
-    "nome": "",
-    "total": 15.59,
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "numero": "",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Rosa MS",
-        "preco": 1,
-        "imagem": "moletom-rosa.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      }
-    ],
-    "telefone": "",
-    "complemento": ""
-  },
-  {
-    "id": 31,
-    "cep": "",
-    "rua": "",
-    "data": "23/05/2026, 14:32:35",
-    "nome": "",
-    "total": 115.59,
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "numero": "",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Rosa MS",
-        "preco": 1,
-        "imagem": "moletom-rosa.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Moletom Preto MS",
-        "preco": 100,
-        "imagem": "MOLETOM-PRETO.jpeg",
-        "tamanho": "P",
-        "quantidade": 1
-      }
-    ],
-    "telefone": "",
-    "complemento": ""
-  },
-  {
-    "id": 32,
-    "cep": "",
-    "rua": "",
-    "data": "23/05/2026, 14:33:24",
-    "nome": "",
-    "total": 205.49,
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "numero": "",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Rosa MS",
-        "preco": 1,
-        "imagem": "moletom-rosa.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Moletom Preto MS",
-        "preco": 100,
-        "imagem": "MOLETOM-PRETO.jpeg",
-        "tamanho": "P",
-        "quantidade": 1
-      },
-      {
-        "nome": "Camiseta Oversized Branca",
-        "preco": 89.9,
-        "imagem": "Camiseta Oversized Bege.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      }
-    ],
-    "telefone": "",
-    "complemento": ""
-  },
-  {
-    "id": 33,
-    "cep": "",
-    "rua": "",
-    "data": "23/05/2026, 14:37:02",
-    "nome": "",
-    "total": 205.49,
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "numero": "",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Rosa MS",
-        "preco": 1,
-        "imagem": "moletom-rosa.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Moletom Preto MS",
-        "preco": 100,
-        "imagem": "MOLETOM-PRETO.jpeg",
-        "tamanho": "P",
-        "quantidade": 1
-      },
-      {
-        "nome": "Camiseta Oversized Branca",
-        "preco": 89.9,
-        "imagem": "Camiseta Oversized Bege.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      }
-    ],
-    "telefone": "",
-    "complemento": ""
-  },
-  {
-    "id": 34,
-    "cep": "",
-    "rua": "",
-    "data": "23/05/2026, 14:40:30",
-    "nome": "",
-    "total": 205.49,
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "numero": "",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Rosa MS",
-        "preco": 1,
-        "imagem": "moletom-rosa.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Moletom Preto MS",
-        "preco": 100,
-        "imagem": "MOLETOM-PRETO.jpeg",
-        "tamanho": "P",
-        "quantidade": 1
-      },
-      {
-        "nome": "Camiseta Oversized Branca",
-        "preco": 89.9,
-        "imagem": "Camiseta Oversized Bege.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      }
-    ],
-    "telefone": "",
-    "complemento": ""
-  },
-  {
-    "id": 35,
-    "cep": "",
-    "rua": "",
-    "data": "23/05/2026, 14:42:53",
-    "nome": "",
-    "total": 206.3,
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "numero": "",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Rosa MS",
-        "preco": 1,
-        "imagem": "moletom-rosa.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Moletom Preto MS",
-        "preco": 100,
-        "imagem": "MOLETOM-PRETO.jpeg",
-        "tamanho": "P",
-        "quantidade": 1
-      },
-      {
-        "nome": "Camiseta Oversized Branca",
-        "preco": 89.9,
-        "imagem": "Camiseta Oversized Bege.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      }
-    ],
-    "telefone": "",
-    "complemento": ""
-  },
-  {
-    "id": 36,
-    "cep": "",
-    "rua": "",
-    "data": "23/05/2026, 14:43:54",
-    "nome": "",
-    "total": 206.3,
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "numero": "",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Rosa MS",
-        "preco": 1,
-        "imagem": "moletom-rosa.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Moletom Preto MS",
-        "preco": 100,
-        "imagem": "MOLETOM-PRETO.jpeg",
-        "tamanho": "P",
-        "quantidade": 1
-      },
-      {
-        "nome": "Camiseta Oversized Branca",
-        "preco": 89.9,
-        "imagem": "Camiseta Oversized Bege.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      }
-    ],
-    "telefone": "",
-    "complemento": ""
-  },
-  {
-    "id": 37,
-    "cep": "",
-    "rua": "",
-    "data": "23/05/2026, 14:46:01",
-    "nome": "",
-    "total": 206.3,
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "numero": "",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Rosa MS",
-        "preco": 1,
-        "imagem": "moletom-rosa.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Moletom Preto MS",
-        "preco": 100,
-        "imagem": "MOLETOM-PRETO.jpeg",
-        "tamanho": "P",
-        "quantidade": 1
-      },
-      {
-        "nome": "Camiseta Oversized Branca",
-        "preco": 89.9,
-        "imagem": "Camiseta Oversized Bege.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      }
-    ],
-    "telefone": "",
-    "complemento": ""
-  },
-  {
-    "id": 38,
-    "cep": "",
-    "rua": "",
-    "data": "23/05/2026, 14:46:25",
-    "nome": "",
-    "total": 205.49,
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "numero": "",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Rosa MS",
-        "preco": 1,
-        "imagem": "moletom-rosa.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Moletom Preto MS",
-        "preco": 100,
-        "imagem": "MOLETOM-PRETO.jpeg",
-        "tamanho": "P",
-        "quantidade": 1
-      },
-      {
-        "nome": "Camiseta Oversized Branca",
-        "preco": 89.9,
-        "imagem": "Camiseta Oversized Bege.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      }
-    ],
-    "telefone": "",
-    "complemento": ""
-  },
-  {
-    "id": 39,
-    "cep": "",
-    "rua": "",
-    "data": "23/05/2026, 14:47:37",
-    "nome": "",
-    "total": 206.3,
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "numero": "",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Rosa MS",
-        "preco": 1,
-        "imagem": "moletom-rosa.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Moletom Preto MS",
-        "preco": 100,
-        "imagem": "MOLETOM-PRETO.jpeg",
-        "tamanho": "P",
-        "quantidade": 1
-      },
-      {
-        "nome": "Camiseta Oversized Branca",
-        "preco": 89.9,
-        "imagem": "Camiseta Oversized Bege.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      }
-    ],
-    "telefone": "",
-    "complemento": ""
-  },
-  {
-    "id": 40,
-    "cep": "",
-    "rua": "",
-    "data": "23/05/2026, 14:51:29",
-    "nome": "",
-    "total": 206.3,
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "numero": "",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Rosa MS",
-        "preco": 1,
-        "imagem": "moletom-rosa.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Moletom Preto MS",
-        "preco": 100,
-        "imagem": "MOLETOM-PRETO.jpeg",
-        "tamanho": "P",
-        "quantidade": 1
-      },
-      {
-        "nome": "Camiseta Oversized Branca",
-        "preco": 89.9,
-        "imagem": "Camiseta Oversized Bege.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      }
-    ],
-    "telefone": "",
-    "complemento": ""
-  },
-  {
-    "id": 41,
-    "cep": "",
-    "rua": "",
-    "data": "23/05/2026, 14:52:45",
-    "nome": "",
-    "total": 206.3,
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "numero": "",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Rosa MS",
-        "preco": 1,
-        "imagem": "moletom-rosa.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Moletom Preto MS",
-        "preco": 100,
-        "imagem": "MOLETOM-PRETO.jpeg",
-        "tamanho": "P",
-        "quantidade": 1
-      },
-      {
-        "nome": "Camiseta Oversized Branca",
-        "preco": 89.9,
-        "imagem": "Camiseta Oversized Bege.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      }
-    ],
-    "telefone": "",
-    "complemento": ""
-  },
-  {
-    "id": 42,
-    "cep": "",
-    "rua": "",
-    "data": "23/05/2026, 14:56:52",
-    "nome": "",
-    "total": 206.3,
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "numero": "",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Rosa MS",
-        "preco": 1,
-        "imagem": "moletom-rosa.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Moletom Preto MS",
-        "preco": 100,
-        "imagem": "MOLETOM-PRETO.jpeg",
-        "tamanho": "P",
-        "quantidade": 1
-      },
-      {
-        "nome": "Camiseta Oversized Branca",
-        "preco": 89.9,
-        "imagem": "Camiseta Oversized Bege.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      }
-    ],
-    "telefone": "",
-    "complemento": ""
-  },
-  {
-    "id": 43,
-    "cep": "",
-    "rua": "",
-    "data": "23/05/2026, 14:57:09",
-    "nome": "",
-    "total": 206.3,
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "numero": "",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Rosa MS",
-        "preco": 1,
-        "imagem": "moletom-rosa.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Moletom Preto MS",
-        "preco": 100,
-        "imagem": "MOLETOM-PRETO.jpeg",
-        "tamanho": "P",
-        "quantidade": 1
-      },
-      {
-        "nome": "Camiseta Oversized Branca",
-        "preco": 89.9,
-        "imagem": "Camiseta Oversized Bege.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      }
-    ],
-    "telefone": "",
-    "complemento": ""
-  },
-  {
-    "id": 44,
-    "cep": "",
-    "rua": "",
-    "data": "23/05/2026, 14:58:20",
-    "nome": "",
-    "total": 206.3,
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "numero": "",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Rosa MS",
-        "preco": 1,
-        "imagem": "moletom-rosa.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Moletom Preto MS",
-        "preco": 100,
-        "imagem": "MOLETOM-PRETO.jpeg",
-        "tamanho": "P",
-        "quantidade": 1
-      },
-      {
-        "nome": "Camiseta Oversized Branca",
-        "preco": 89.9,
-        "imagem": "Camiseta Oversized Bege.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      }
-    ],
-    "telefone": "",
-    "complemento": ""
-  },
-  {
-    "id": 45,
-    "cep": "",
-    "rua": "",
-    "data": "23/05/2026, 14:58:42",
-    "nome": "",
-    "total": 206.3,
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "numero": "",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Rosa MS",
-        "preco": 1,
-        "imagem": "moletom-rosa.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Moletom Preto MS",
-        "preco": 100,
-        "imagem": "MOLETOM-PRETO.jpeg",
-        "tamanho": "P",
-        "quantidade": 1
-      },
-      {
-        "nome": "Camiseta Oversized Branca",
-        "preco": 89.9,
-        "imagem": "Camiseta Oversized Bege.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      }
-    ],
-    "telefone": "",
-    "complemento": ""
-  },
-  {
-    "id": 46,
-    "cep": "",
-    "rua": "",
-    "data": "23/05/2026, 15:01:54",
-    "nome": "",
-    "total": 206.3,
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "numero": "",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Rosa MS",
-        "preco": 1,
-        "imagem": "moletom-rosa.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Moletom Preto MS",
-        "preco": 100,
-        "imagem": "MOLETOM-PRETO.jpeg",
-        "tamanho": "P",
-        "quantidade": 1
-      },
-      {
-        "nome": "Camiseta Oversized Branca",
-        "preco": 89.9,
-        "imagem": "Camiseta Oversized Bege.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      }
-    ],
-    "telefone": "",
-    "complemento": ""
-  },
-  {
-    "id": 47,
-    "cep": "",
-    "rua": "",
-    "data": "23/05/2026, 15:02:19",
-    "nome": "",
-    "total": 206.49,
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "numero": "",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Rosa MS",
-        "preco": 1,
-        "imagem": "moletom-rosa.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Moletom Preto MS",
-        "preco": 100,
-        "imagem": "MOLETOM-PRETO.jpeg",
-        "tamanho": "P",
-        "quantidade": 1
-      },
-      {
-        "nome": "Camiseta Oversized Branca",
-        "preco": 89.9,
-        "imagem": "Camiseta Oversized Bege.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Moletom Preto MS",
-        "preco": 1,
-        "imagem": "MOLETOM-PRETO.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      }
-    ],
-    "telefone": "",
-    "complemento": ""
-  },
-  {
-    "id": 48,
-    "cep": "",
-    "rua": "",
-    "data": "23/05/2026, 15:04:54",
-    "nome": "",
-    "total": 105.30000000000001,
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "numero": "",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Camiseta Oversized Branca",
-        "preco": 89.9,
-        "imagem": "Camiseta Oversized Bege.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      }
-    ],
-    "telefone": "",
-    "complemento": ""
-  },
-  {
-    "id": 49,
-    "cep": "",
-    "rua": "",
-    "data": "24/05/2026, 12:20:52",
-    "nome": "",
-    "total": 106.30000000000001,
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "numero": "",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Camiseta Oversized Branca",
-        "preco": 89.9,
-        "imagem": "Camiseta Oversized Bege.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Moletom Preto MS",
-        "preco": 1,
-        "imagem": "MOLETOM-PRETO.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      }
-    ],
-    "telefone": "",
-    "complemento": ""
-  },
-  {
-    "id": 50,
-    "cep": "",
-    "rua": "",
-    "data": "24/05/2026, 12:24:33",
-    "nome": "",
-    "total": 105.49000000000001,
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "numero": "",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Camiseta Oversized Branca",
-        "preco": 89.9,
-        "imagem": "Camiseta Oversized Bege.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Moletom Preto MS",
-        "preco": 1,
-        "imagem": "MOLETOM-PRETO.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      }
-    ],
-    "telefone": "",
-    "complemento": ""
-  },
-  {
-    "id": 51,
-    "cep": "",
-    "rua": "",
-    "data": "24/05/2026, 12:25:17",
-    "nome": "",
-    "total": 105.49000000000001,
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "numero": "",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Camiseta Oversized Branca",
-        "preco": 89.9,
-        "imagem": "Camiseta Oversized Bege.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Moletom Preto MS",
-        "preco": 1,
-        "imagem": "MOLETOM-PRETO.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      }
-    ],
-    "telefone": "",
-    "complemento": ""
-  },
-  {
-    "id": 52,
-    "cep": "",
-    "rua": "",
-    "data": "24/05/2026, 12:30:49",
-    "nome": "",
-    "total": 105.49000000000001,
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "numero": "",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Camiseta Oversized Branca",
-        "preco": 89.9,
-        "imagem": "Camiseta Oversized Bege.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Moletom Preto MS",
-        "preco": 1,
-        "imagem": "MOLETOM-PRETO.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      }
-    ],
-    "telefone": "",
-    "complemento": ""
-  },
-  {
-    "id": 53,
-    "cep": "",
-    "rua": "",
-    "data": "24/05/2026, 12:34:53",
-    "nome": "",
-    "total": 105.49000000000001,
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "numero": "",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Camiseta Oversized Branca",
-        "preco": 89.9,
-        "imagem": "Camiseta Oversized Bege.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Moletom Preto MS",
-        "preco": 1,
-        "imagem": "MOLETOM-PRETO.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      }
-    ],
-    "telefone": "",
-    "complemento": ""
-  },
-  {
-    "id": 54,
-    "cep": "",
-    "rua": "",
-    "data": "24/05/2026, 13:09:52",
-    "nome": "",
-    "total": 335.48999999999995,
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "numero": "",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Camiseta Oversized Branca",
-        "preco": 89.9,
-        "imagem": "Camiseta Oversized Bege.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Moletom Preto MS",
-        "preco": 1,
-        "imagem": "MOLETOM-PRETO.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Moletom Marrom MS",
-        "preco": 100,
-        "imagem": "moletom-marrom.jpeg",
-        "tamanho": "M",
-        "quantidade": 2
-      },
-      {
-        "nome": "Moletom Off White MS",
-        "preco": 15,
-        "imagem": "moletom-offwhite.png",
-        "tamanho": "M",
-        "quantidade": 2
-      }
-    ],
-    "telefone": "",
-    "complemento": ""
-  },
-  {
-    "id": 55,
-    "cep": "",
-    "rua": "",
-    "data": "24/05/2026, 13:12:08",
-    "nome": "",
-    "total": 335.48999999999995,
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "numero": "",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Camiseta Oversized Branca",
-        "preco": 89.9,
-        "imagem": "Camiseta Oversized Bege.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Moletom Preto MS",
-        "preco": 1,
-        "imagem": "MOLETOM-PRETO.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Moletom Marrom MS",
-        "preco": 100,
-        "imagem": "moletom-marrom.jpeg",
-        "tamanho": "M",
-        "quantidade": 2
-      },
-      {
-        "nome": "Moletom Off White MS",
-        "preco": 15,
-        "imagem": "moletom-offwhite.png",
-        "tamanho": "M",
-        "quantidade": 2
-      }
-    ],
-    "telefone": "",
-    "complemento": ""
-  },
-  {
-    "id": 56,
-    "cep": "",
-    "rua": "",
-    "data": "24/05/2026, 13:18:38",
-    "nome": "",
-    "total": 335.48999999999995,
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "numero": "",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Camiseta Oversized Branca",
-        "preco": 89.9,
-        "imagem": "Camiseta Oversized Bege.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Moletom Preto MS",
-        "preco": 1,
-        "imagem": "MOLETOM-PRETO.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Moletom Marrom MS",
-        "preco": 100,
-        "imagem": "moletom-marrom.jpeg",
-        "tamanho": "M",
-        "quantidade": 2
-      },
-      {
-        "nome": "Moletom Off White MS",
-        "preco": 15,
-        "imagem": "moletom-offwhite.png",
-        "tamanho": "M",
-        "quantidade": 2
-      }
-    ],
-    "telefone": "",
-    "complemento": ""
-  },
-  {
-    "id": 57,
-    "cep": "",
-    "rua": "",
-    "data": "24/05/2026, 13:21:33",
-    "nome": "",
-    "total": 335.48999999999995,
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "numero": "",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Camiseta Oversized Branca",
-        "preco": 89.9,
-        "imagem": "Camiseta Oversized Bege.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Moletom Preto MS",
-        "preco": 1,
-        "imagem": "MOLETOM-PRETO.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Moletom Marrom MS",
-        "preco": 100,
-        "imagem": "moletom-marrom.jpeg",
-        "tamanho": "M",
-        "quantidade": 2
-      },
-      {
-        "nome": "Moletom Off White MS",
-        "preco": 15,
-        "imagem": "moletom-offwhite.png",
-        "tamanho": "M",
-        "quantidade": 2
-      }
-    ],
-    "telefone": "",
-    "complemento": ""
-  },
-  {
-    "id": 58,
-    "cep": "",
-    "rua": "",
-    "data": "24/05/2026, 13:22:53",
-    "nome": "",
-    "total": 335.48999999999995,
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "numero": "",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Camiseta Oversized Branca",
-        "preco": 89.9,
-        "imagem": "Camiseta Oversized Bege.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Moletom Preto MS",
-        "preco": 1,
-        "imagem": "MOLETOM-PRETO.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Moletom Marrom MS",
-        "preco": 100,
-        "imagem": "moletom-marrom.jpeg",
-        "tamanho": "M",
-        "quantidade": 2
-      },
-      {
-        "nome": "Moletom Off White MS",
-        "preco": 15,
-        "imagem": "moletom-offwhite.png",
-        "tamanho": "M",
-        "quantidade": 2
-      }
-    ],
-    "telefone": "",
-    "complemento": ""
-  },
-  {
-    "id": 59,
-    "cep": "",
-    "rua": "",
-    "data": "24/05/2026, 13:23:56",
-    "nome": "",
-    "total": 244.59,
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "numero": "",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Marrom MS",
-        "preco": 100,
-        "imagem": "moletom-marrom.jpeg",
-        "tamanho": "M",
-        "quantidade": 2
-      },
-      {
-        "nome": "Moletom Off White MS",
-        "preco": 15,
-        "imagem": "moletom-offwhite.png",
-        "tamanho": "M",
-        "quantidade": 2
-      }
-    ],
-    "telefone": "",
-    "complemento": ""
-  },
-  {
-    "id": 60,
-    "cep": "",
-    "rua": "",
-    "data": "24/05/2026, 13:25:53",
-    "nome": "",
-    "total": 244.59,
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "numero": "",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Marrom MS",
-        "preco": 100,
-        "imagem": "moletom-marrom.jpeg",
-        "tamanho": "M",
-        "quantidade": 2
-      },
-      {
-        "nome": "Moletom Off White MS",
-        "preco": 15,
-        "imagem": "moletom-offwhite.png",
-        "tamanho": "M",
-        "quantidade": 2
-      }
-    ],
-    "telefone": "",
-    "complemento": ""
-  },
-  {
-    "id": 61,
-    "cep": "",
-    "rua": "",
-    "data": "24/05/2026, 13:28:47",
-    "nome": "",
-    "total": 244.59,
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "numero": "",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Marrom MS",
-        "preco": 100,
-        "imagem": "moletom-marrom.jpeg",
-        "tamanho": "M",
-        "quantidade": 2
-      },
-      {
-        "nome": "Moletom Off White MS",
-        "preco": 15,
-        "imagem": "moletom-offwhite.png",
-        "tamanho": "M",
-        "quantidade": 2
-      }
-    ],
-    "telefone": "",
-    "complemento": ""
-  },
-  {
-    "id": 62,
-    "cep": "",
-    "rua": "",
-    "data": "24/05/2026, 13:29:10",
-    "nome": "",
-    "total": 245.59,
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "numero": "",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Marrom MS",
-        "preco": 100,
-        "imagem": "moletom-marrom.jpeg",
-        "tamanho": "M",
-        "quantidade": 2
-      },
-      {
-        "nome": "Moletom Off White MS",
-        "preco": 15,
-        "imagem": "moletom-offwhite.png",
-        "tamanho": "M",
-        "quantidade": 2
-      },
-      {
-        "nome": "Moletom Preto MS",
-        "preco": 1,
-        "imagem": "MOLETOM-PRETO.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      }
-    ],
-    "telefone": "",
-    "complemento": ""
-  },
-  {
-    "id": 63,
-    "cep": "",
-    "rua": "",
-    "data": "24/05/2026, 13:32:26",
-    "nome": "",
-    "total": 214.59,
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "numero": "",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Marrom MS",
-        "preco": 100,
-        "imagem": "moletom-marrom.jpeg",
-        "tamanho": "M",
-        "quantidade": 2
-      }
-    ],
-    "telefone": "",
-    "complemento": ""
-  },
-  {
-    "id": 64,
-    "cep": "",
-    "rua": "",
-    "data": "24/05/2026, 13:34:06",
-    "nome": "",
-    "total": 314.59,
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "numero": "",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Marrom MS",
-        "preco": 100,
-        "imagem": "moletom-marrom.jpeg",
-        "tamanho": "M",
-        "quantidade": 3
-      }
-    ],
-    "telefone": "",
-    "complemento": ""
-  },
-  {
-    "id": 65,
-    "cep": "",
-    "rua": "",
-    "data": "24/05/2026, 13:38:14",
-    "nome": "",
-    "total": 414.59,
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "numero": "",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Marrom MS",
-        "preco": 100,
-        "imagem": "moletom-marrom.jpeg",
-        "tamanho": "M",
-        "quantidade": 4
-      }
-    ],
-    "telefone": "",
-    "complemento": ""
-  },
-  {
-    "id": 66,
-    "cep": "",
-    "rua": "",
-    "data": "24/05/2026, 13:42:43",
-    "nome": "",
-    "total": 529.59,
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "numero": "",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Marrom MS",
-        "preco": 100,
-        "imagem": "moletom-marrom.jpeg",
-        "tamanho": "M",
-        "quantidade": 5
-      },
-      {
-        "nome": "Moletom Off White MS",
-        "preco": 15,
-        "imagem": "moletom-offwhite.png",
-        "tamanho": "M",
-        "quantidade": 1
-      }
-    ],
-    "telefone": "",
-    "complemento": ""
-  },
-  {
-    "id": 67,
-    "cep": "",
-    "rua": "",
-    "data": "24/05/2026, 13:44:18",
-    "nome": "",
-    "total": 679.49,
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "numero": "",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Marrom MS",
-        "preco": 100,
-        "imagem": "moletom-marrom.jpeg",
-        "tamanho": "M",
-        "quantidade": 5
-      },
-      {
-        "nome": "Moletom Off White MS",
-        "preco": 15,
-        "imagem": "moletom-offwhite.png",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Calça Branca MS",
-        "preco": 149.9,
-        "imagem": "calca-branca.jpeg",
-        "tamanho": "40",
-        "quantidade": 1
-      }
-    ],
-    "telefone": "",
-    "complemento": ""
-  },
-  {
-    "id": 68,
-    "cep": "",
-    "rua": "",
-    "data": "24/05/2026, 20:07:39",
-    "nome": "",
-    "total": 15.59,
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "numero": "",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Rosa MS",
-        "preco": 1,
-        "imagem": "moletom-rosa.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      }
-    ],
-    "telefone": "",
-    "complemento": ""
-  },
-  {
-    "id": 69,
-    "cep": "",
-    "rua": "",
-    "data": "24/05/2026, 20:08:05",
-    "nome": "",
-    "total": 15.59,
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "numero": "",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Rosa MS",
-        "preco": 1,
-        "imagem": "moletom-rosa.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      }
-    ],
-    "telefone": "",
-    "complemento": ""
-  },
-  {
-    "id": 70,
-    "cep": "",
-    "rua": "",
-    "data": "26/05/2026, 19:15:22",
-    "nome": "",
-    "total": 165.49,
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "numero": "",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Calça Branca MS",
-        "preco": 149.9,
-        "imagem": "calca-branca.jpeg",
-        "tamanho": "40",
-        "quantidade": 1
-      },
-      {
-        "nome": "Moletom Preto MS",
-        "preco": 1,
-        "imagem": "MOLETOM-PRETO.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      }
-    ],
-    "telefone": "",
-    "complemento": ""
-  },
-  {
-    "id": 71,
-    "cep": "",
-    "rua": "",
-    "data": "26/05/2026, 19:39:38",
-    "nome": "",
-    "total": 214.59,
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "numero": "",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Azul MS",
-        "preco": 100,
-        "imagem": "moletom-azul.png",
-        "tamanho": "G",
-        "quantidade": 1
-      },
-      {
-        "nome": "Moletom Azul MS",
-        "preco": 100,
-        "imagem": "moletom-azul.png",
-        "tamanho": "G",
-        "quantidade": 1
-      }
-    ],
-    "telefone": "",
-    "complemento": ""
-  },
-  {
-    "id": 72,
-    "cep": "",
-    "rua": "",
-    "data": "26/05/2026, 20:14:18",
-    "nome": "",
-    "total": 229.59,
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "numero": "",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Azul MS",
-        "preco": 100,
-        "imagem": "moletom-azul.png",
-        "tamanho": "G",
-        "quantidade": 1
-      },
-      {
-        "nome": "Moletom Off White MS",
-        "preco": 15,
-        "imagem": "moletom-branco.png",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Moletom Bege MS",
-        "preco": 100,
-        "imagem": "moletom-bege.png",
-        "tamanho": "M",
-        "quantidade": 1
-      }
-    ],
-    "telefone": "",
-    "complemento": ""
-  },
-  {
-    "id": 73,
-    "cep": "",
-    "rua": "",
-    "data": "26/05/2026, 20:30:21",
-    "nome": "",
-    "total": 234.05,
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "numero": "",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Azul MS",
-        "preco": 100,
-        "imagem": "moletom-azul.png",
-        "tamanho": "G",
-        "quantidade": 1
-      },
-      {
-        "nome": "Moletom Off White MS",
-        "preco": 15,
-        "imagem": "moletom-branco.png",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "nome": "Moletom Bege MS",
-        "preco": 100,
-        "imagem": "moletom-bege.png",
-        "tamanho": "M",
-        "quantidade": 1
-      }
-    ],
-    "telefone": "",
-    "complemento": ""
-  },
-  {
-    "id": 74,
-    "cep": "",
-    "rua": "",
-    "data": "07/07/2026, 21:04:38",
-    "nome": "",
-    "total": 214.39000000000001,
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "numero": "",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "cor": "Preto",
-        "img": "MOLETOM-PRETO.jpeg",
-        "nome": "Moletom Preto MS",
-        "preco": 99.9,
-        "imagem": "MOLETOM-PRETO.jpeg",
-        "tamanho": "M",
-        "quantidade": 2
-      }
-    ],
-    "telefone": "",
-    "complemento": ""
-  },
-  {
-    "id": 75,
-    "cep": "",
-    "rua": "",
-    "data": "07/07/2026, 21:07:12",
-    "nome": "",
-    "total": 414.19,
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "numero": "",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "cor": "Preto",
-        "img": "MOLETOM-PRETO.jpeg",
-        "nome": "Moletom Preto MS",
-        "preco": 99.9,
-        "imagem": "MOLETOM-PRETO.jpeg",
-        "tamanho": "M",
-        "quantidade": 2
-      },
-      {
-        "cor": "Rosa",
-        "img": "moletom-rosa.jpeg",
-        "nome": "Moletom Rosa MS",
-        "preco": 99.9,
-        "imagem": "moletom-rosa.jpeg",
-        "tamanho": "M",
-        "quantidade": 2
-      }
-    ],
-    "telefone": "",
-    "complemento": ""
-  },
-  {
-    "id": 76,
-    "cep": "",
-    "rua": "",
-    "data": "07/07/2026, 21:15:06",
-    "nome": "",
-    "total": 514.09,
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "numero": "",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "cor": "Preto",
-        "img": "MOLETOM-PRETO.jpeg",
-        "nome": "Moletom Preto MS",
-        "preco": 99.9,
-        "imagem": "MOLETOM-PRETO.jpeg",
-        "tamanho": "M",
-        "quantidade": 2
-      },
-      {
-        "cor": "Rosa",
-        "img": "moletom-rosa.jpeg",
-        "nome": "Moletom Rosa MS",
-        "preco": 99.9,
-        "imagem": "moletom-rosa.jpeg",
-        "tamanho": "M",
-        "quantidade": 2
-      },
-      {
-        "nome": "Moletom Bege MS",
-        "preco": 99.9,
-        "imagem": "moletom-bege.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      }
-    ],
-    "telefone": "",
-    "complemento": ""
-  },
-  {
-    "id": 77,
-    "cep": "",
-    "rua": "",
-    "data": "07/07/2026, 21:21:40",
-    "nome": "",
-    "total": 713.89,
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "numero": "",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "cor": "Preto",
-        "img": "MOLETOM-PRETO.jpeg",
-        "nome": "Moletom Preto MS",
-        "preco": 99.9,
-        "imagem": "MOLETOM-PRETO.jpeg",
-        "tamanho": "M",
-        "quantidade": 2
-      },
-      {
-        "cor": "Rosa",
-        "img": "moletom-rosa.jpeg",
-        "nome": "Moletom Rosa MS",
-        "preco": 99.9,
-        "imagem": "moletom-rosa.jpeg",
-        "tamanho": "M",
-        "quantidade": 2
-      },
-      {
-        "nome": "Moletom Bege MS",
-        "preco": 99.9,
-        "imagem": "moletom-bege.jpeg",
-        "tamanho": "M",
-        "quantidade": 1
-      },
-      {
-        "cor": "Única",
-        "img": "moletom-bege.jpeg",
-        "nome": "Moleto-bege MS",
-        "preco": 99.9,
-        "imagem": "moletom-bege.jpeg",
-        "tamanho": "M",
-        "quantidade": 2
-      }
-    ],
-    "telefone": "",
-    "complemento": ""
-  },
-  {
-    "id": 78,
-    "cep": "",
-    "rua": "",
-    "data": "07/07/2026, 21:27:26",
-    "nome": "",
-    "total": 416.20000000000005,
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "numero": "",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Preto MS",
-        "preco": 99.9,
-        "title": "Moletom Preto MS",
-        "imagem": "MOLETOM-PRETO.jpeg",
-        "tamanho": "M",
-        "quantity": 2,
-        "quantidade": 2,
-        "unit_price": 99.9
-      },
-      {
-        "nome": "Moleto-bege MS",
-        "preco": 99.9,
-        "title": "Moleto-bege MS",
-        "imagem": "moletom-bege.jpeg",
-        "tamanho": "M",
-        "quantity": 2,
-        "quantidade": 2,
-        "unit_price": 99.9
-      }
-    ],
-    "telefone": "",
-    "complemento": ""
-  },
-  {
-    "id": 79,
-    "cep": "",
-    "rua": "",
-    "data": "07/07/2026, 21:28:11",
-    "nome": "",
-    "total": 414.19,
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "numero": "",
-    "status": "aguardando pagamento",
-    "produtos": [
-      {
-        "nome": "Moletom Preto MS",
-        "preco": 99.9,
-        "title": "Moletom Preto MS",
-        "imagem": "MOLETOM-PRETO.jpeg",
-        "tamanho": "M",
-        "quantity": 2,
-        "quantidade": 2,
-        "unit_price": 99.9
-      },
-      {
-        "nome": "Moleto-bege MS",
-        "preco": 99.9,
-        "title": "Moleto-bege MS",
-        "imagem": "moletom-bege.jpeg",
-        "tamanho": "M",
-        "quantity": 2,
-        "quantidade": 2,
-        "unit_price": 99.9
-      }
-    ],
-    "telefone": "",
-    "complemento": ""
-  },
-  {
-    "id": 80,
-    "cep": "",
-    "rua": "",
-    "data": "07/07/2026, 21:36:13",
-    "nome": "",
-    "total": 416.20000000000005,
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "numero": "",
-    "status": "pago",
-    "produtos": [
-      {
-        "nome": "Moletom Preto MS",
-        "preco": 99.9,
-        "title": "Moletom Preto MS",
-        "imagem": "MOLETOM-PRETO.jpeg",
-        "tamanho": "M",
-        "quantity": 2,
-        "quantidade": 2,
-        "unit_price": 99.9
-      },
-      {
-        "nome": "Moleto-bege MS",
-        "preco": 99.9,
-        "title": "Moleto-bege MS",
-        "imagem": "moletom-bege.jpeg",
-        "tamanho": "M",
-        "quantity": 2,
-        "quantidade": 2,
-        "unit_price": 99.9
-      }
-    ],
-    "telefone": "",
-    "complemento": ""
-  },
-  {
-    "id": 81,
-    "cep": "",
-    "rua": "",
-    "data": "10/07/2026, 16:21:28",
-    "nome": "",
+    "cep": "90.640-130",
+    "rua": "Retirada no local",
+    "data": "16/07/2026, 16:12:48",
+    "nome": "Marilane Silva Andre",
+    "email": "",
     "frete": {
-      "nome": "Jadlog - .Package",
-      "prazo": 4,
-      "preco": 16.6
+      "nome": "Buscar no local",
+      "tipo": "retirada",
+      "prazo": 0,
+      "preco": 0
     },
-    "total": 106.50999999999999,
-    "bairro": "",
-    "cidade": "",
-    "estado": "",
-    "numero": "",
-    "status": "pago",
+    "total": 1.65,
+    "bairro": "Santana",
+    "cidade": "Porto Alegre",
+    "estado": "RS",
+    "numero": "S/N",
+    "status": "aguardando pagamento",
+    "cliente": {
+      "nome": "Marilane Silva Andre",
+      "email": "",
+      "telefone": "(51) 99344-6569"
+    },
+    "desconto": 0,
+    "endereco": {
+      "cep": "90.640-130",
+      "rua": "Retirada no local",
+      "bairro": "Santana",
+      "cidade": "Porto Alegre",
+      "estado": "RS",
+      "numero": "S/N",
+      "complemento": "casa"
+    },
     "produtos": [
       {
         "nome": "Moletom Preto MS",
-        "preco": 99.9,
-        "title": "Moletom Preto MS",
+        "preco": 0.5,
         "imagem": "MOLETOM-PRETO.jpeg",
         "tamanho": "P",
-        "quantity": 1,
-        "quantidade": 1,
-        "unit_price": 99.9
+        "quantidade": 1
+      },
+      {
+        "nome": "Moletom Rosa MS",
+        "preco": 1.15,
+        "imagem": "moletom-rosa.jpeg",
+        "tamanho": "P",
+        "quantidade": 1
       }
     ],
-    "telefone": "",
-    "complemento": "",
-    "estoqueBaixado": true
+    "subtotal": 1.65,
+    "telefone": "(51) 99344-6569",
+    "whatsapp": "(51) 99344-6569",
+    "pagamento": {
+      "metodo": "Mercado Pago",
+      "status": "pending",
+      "expiracao": "2026-07-17T15:12:48.903-04:00",
+      "paymentId": "168253673127",
+      "atualizadoEm": "2026-07-16T19:12:49.896Z",
+      "preferenceId": null,
+      "statusDetail": "pending_waiting_transfer",
+      "idempotencyKey": "ms-pix-5-1784229168485"
+    },
+    "codigoCupom": null,
+    "complemento": "casa",
+    "tipoEntrega": "retirada",
+    "retiradaLocal": true
   }
 ]

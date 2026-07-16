@@ -1,11 +1,75 @@
 [
   {
+    "sku": "MS-OVR-PT-P",
+    "nome": "Camiseta Oversized",
+    "cor": "Preto",
+    "tamanho": "P",
+    "quantidade": 0,
+    "atualizadoEm": "2026-07-16T19:12:25.774Z"
+  },
+  {
+    "sku": "MS-MOL-BG-P",
+    "nome": "Moletom",
+    "cor": "Bege",
+    "tamanho": "P",
+    "quantidade": 0,
+    "atualizadoEm": "2026-07-16T19:12:25.774Z"
+  },
+  {
+    "sku": "MS-MOL-BR-G",
+    "nome": "Moletom",
+    "cor": "Branco",
+    "tamanho": "G",
+    "quantidade": 0,
+    "atualizadoEm": "2026-07-16T19:12:25.774Z"
+  },
+  {
+    "sku": "MS-MOL-BR-GG",
+    "nome": "Moletom",
+    "cor": "Branco",
+    "tamanho": "GG",
+    "quantidade": 0,
+    "atualizadoEm": "2026-07-16T19:12:25.774Z"
+  },
+  {
+    "sku": "MS-MOL-BR-M",
+    "nome": "Moletom",
+    "cor": "Branco",
+    "tamanho": "M",
+    "quantidade": 0,
+    "atualizadoEm": "2026-07-16T19:12:25.774Z"
+  },
+  {
     "sku": "MS-MOL-BR-P",
     "nome": "Moletom",
     "cor": "Branco",
     "tamanho": "P",
     "quantidade": 1,
-    "atualizadoEm": "2026-07-10T21:58:49.796Z"
+    "atualizadoEm": "2026-07-16T19:12:25.774Z"
+  },
+  {
+    "sku": "MS-MOL-PT-G",
+    "nome": "Moletom",
+    "cor": "Preto",
+    "tamanho": "G",
+    "quantidade": 0,
+    "atualizadoEm": "2026-07-16T19:12:25.774Z"
+  },
+  {
+    "sku": "MS-MOL-PT-GG",
+    "nome": "Moletom",
+    "cor": "Preto",
+    "tamanho": "GG",
+    "quantidade": 0,
+    "atualizadoEm": "2026-07-16T19:12:25.774Z"
+  },
+  {
+    "sku": "MS-MOL-PT-M",
+    "nome": "Moletom",
+    "cor": "Preto",
+    "tamanho": "M",
+    "quantidade": 0,
+    "atualizadoEm": "2026-07-16T19:12:25.774Z"
   },
   {
     "sku": "MS-MOL-PT-P",
@@ -13,7 +77,39 @@
     "cor": "Preto",
     "tamanho": "P",
     "quantidade": 1,
-    "atualizadoEm": "2026-07-10T21:58:49.796Z"
+    "atualizadoEm": "2026-07-16T19:12:25.774Z"
+  },
+  {
+    "sku": "MS-MOL-RS-G",
+    "nome": "Moletom",
+    "cor": "Rosa",
+    "tamanho": "G",
+    "quantidade": 0,
+    "atualizadoEm": "2026-07-16T19:12:25.774Z"
+  },
+  {
+    "sku": "MS-MOL-RS-GG",
+    "nome": "Moletom",
+    "cor": "Rosa",
+    "tamanho": "GG",
+    "quantidade": 0,
+    "atualizadoEm": "2026-07-16T19:12:25.774Z"
+  },
+  {
+    "sku": "MS-MOL-RS-M",
+    "nome": "Moletom",
+    "cor": "Rosa",
+    "tamanho": "M",
+    "quantidade": 0,
+    "atualizadoEm": "2026-07-16T19:12:25.774Z"
+  },
+  {
+    "sku": "MS-MOL-RS-P",
+    "nome": "Moletom",
+    "cor": "Rosa",
+    "tamanho": "P",
+    "quantidade": 2,
+    "atualizadoEm": "2026-07-16T19:12:25.774Z"
   },
   {
     "sku": "MS-MOL-VER-G",
@@ -21,7 +117,7 @@
     "cor": "verde",
     "tamanho": "G",
     "quantidade": 5,
-    "atualizadoEm": "2026-07-10T21:58:49.796Z"
+    "atualizadoEm": "2026-07-16T19:12:25.774Z"
   },
   {
     "sku": "MS-MOL-VER-M",
@@ -29,7 +125,7 @@
     "cor": "verde",
     "tamanho": "M",
     "quantidade": 5,
-    "atualizadoEm": "2026-07-10T21:58:49.796Z"
+    "atualizadoEm": "2026-07-16T19:12:25.774Z"
   },
   {
     "sku": "MS-MOL-VER-P",
@@ -37,6 +133,14 @@
     "cor": "verde",
     "tamanho": "P",
     "quantidade": 5,
-    "atualizadoEm": "2026-07-10T21:58:49.796Z"
+    "atualizadoEm": "2026-07-16T19:12:25.774Z"
+  },
+  {
+    "sku": "MS-PROD-UN-P",
+    "nome": "testee",
+    "cor": "unica",
+    "tamanho": "P",
+    "quantidade": 4,
+    "atualizadoEm": "2026-07-16T19:12:25.774Z"
   }
 ]

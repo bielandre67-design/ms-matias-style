@@ -1965,6 +1965,138 @@ app.get("/diagnostico-mercado-pago", async (req, res) => {
   }
 });
 
+// =========================================================
+// CHECKOUT BRICKS - PIX + CARTÕES NA PRÓPRIA PÁGINA
+// Configure MERCADO_PAGO_PUBLIC_KEY no Render.
+// =========================================================
+app.get("/config/mercadopago", (req, res) => {
+  res.set("Cache-Control", "no-store");
+  res.json({ publicKey: process.env.MERCADO_PAGO_PUBLIC_KEY || process.env.MP_PUBLIC_KEY || "" });
+});
+
+app.post("/processar-pagamento-brick", async (req, res) => {
+  let idPedido = null;
+  try {
+    garantirMercadoPagoConfigurado();
+    const paymentData = req.body?.paymentData || {};
+    const body = req.body?.pedido || {};
+    const carrinhoItems = Array.isArray(body.items) ? body.items : [];
+    const nome = String(body.nome || "").trim();
+    const telefone = String(body.telefone || "").trim();
+    const email = String(body.email || paymentData?.payer?.email || "").trim();
+    const retiradaLocal = body.retiradaLocal === true || String(body.tipoEntrega || "").toLowerCase() === "retirada";
+    const valorFrete = retiradaLocal ? 0 : Number(body.valorFrete || 0);
+    const codigoCupom = String(body.codigoCupom || "").trim().toUpperCase();
+
+    if (!carrinhoItems.length) return res.status(400).json({ erro:true, mensagem:"Carrinho vazio." });
+    if (!nome || !telefone) return res.status(400).json({ erro:true, mensagem:"Informe nome e WhatsApp antes de pagar." });
+    if (!retiradaLocal && (!body.cep || !body.rua || !body.numero || !body.bairro || !body.cidade || !body.estado)) {
+      return res.status(400).json({ erro:true, mensagem:"Preencha o endereço completo antes de pagar." });
+    }
+
+    const validacaoEstoque = validarCarrinhoEstoqueMS(carrinhoItems);
+    if (!validacaoEstoque.ok) return res.status(400).json({ erro:true, mensagem:validacaoEstoque.mensagem });
+
+    const subtotal = carrinhoItems.reduce((soma, item) => {
+      return soma + Number(item.preco || item.valor || item.price || 0) * Number(item.quantidade || item.qtd || 1);
+    }, 0);
+    const validacaoCupom = codigoCupom ? await validarCupomBancoMS(codigoCupom, subtotal) : { valido:false, percentual:0 };
+    if (codigoCupom && !validacaoCupom.valido) return res.status(400).json({ erro:true, mensagem:validacaoCupom.mensagem });
+    const percentualDesconto = validacaoCupom.valido ? Number(validacaoCupom.percentual) : 0;
+    const valorDesconto = subtotal * percentualDesconto / 100;
+    const totalPedido = Number((subtotal - valorDesconto + valorFrete).toFixed(2));
+    if (!(totalPedido > 0)) return res.status(400).json({ erro:true, mensagem:"Total do pedido inválido." });
+
+    const pedidos = lerPedidos();
+    idPedido = proximoIdPedidoMS(pedidos);
+    const pedidoNovo = {
+      id:idPedido, nome, telefone, whatsapp:telefone, email,
+      cep: retiradaLocal ? "00000000" : body.cep,
+      rua: retiradaLocal ? "Retirada no local" : body.rua,
+      numero: retiradaLocal ? "S/N" : body.numero,
+      complemento: body.complemento || "",
+      bairro: retiradaLocal ? "Retirada" : body.bairro,
+      cidade: retiradaLocal ? "Retirada no local" : body.cidade,
+      estado: retiradaLocal ? "RS" : body.estado,
+      cliente:{ nome, telefone, email },
+      endereco:{ cep:body.cep, rua:body.rua, numero:body.numero, complemento:body.complemento || "", bairro:body.bairro, cidade:body.cidade, estado:body.estado },
+      produtos:carrinhoItems,
+      tipoEntrega:retiradaLocal ? "retirada" : "entrega",
+      retiradaLocal,
+      frete:body.freteSelecionado || null,
+      subtotal,
+      desconto:percentualDesconto,
+      valorDesconto:Number(valorDesconto.toFixed(2)),
+      codigoCupom:codigoCupom || null,
+      total:totalPedido,
+      status:"aguardando pagamento",
+      data:new Date().toLocaleString("pt-BR", { timeZone:"America/Sao_Paulo", hour12:false })
+    };
+    pedidos.push(pedidoNovo);
+    salvarPedidos(pedidos);
+    reservarEstoquePedidoMS(carrinhoItems, idPedido);
+
+    const backendUrl = (process.env.BACKEND_URL || "https://ms-matias-style.onrender.com").replace(/\/$/, "");
+    const payload = {
+      ...paymentData,
+      transaction_amount: totalPedido,
+      description: `Pedido #${idPedido} - MS Matias Style`,
+      external_reference: String(idPedido),
+      notification_url: `${backendUrl}/webhook`,
+      payer: { ...(paymentData.payer || {}), email: email || paymentData?.payer?.email }
+    };
+    delete payload.transaction_details;
+
+    const respostaMP = await fetch("https://api.mercadopago.com/v1/payments", {
+      method:"POST",
+      headers:{
+        Authorization:`Bearer ${accessToken}`,
+        "Content-Type":"application/json",
+        "X-Idempotency-Key":`ms-brick-${idPedido}-${Date.now()}`
+      },
+      body:JSON.stringify(payload)
+    });
+    const pagamento = await respostaMP.json();
+    if (!respostaMP.ok) {
+      liberarReservaPedidoMS(idPedido);
+      salvarPedidos(lerPedidos().filter(p => !idsIguaisMS(p.id, idPedido)));
+      return res.status(respostaMP.status).json({ erro:true, mensagem:pagamento?.message || "Pagamento não aprovado pelo Mercado Pago.", detalhes:pagamento });
+    }
+
+    const atualizados = lerPedidos();
+    const pedido = atualizados.find(p => idsIguaisMS(p.id, idPedido));
+    if (pedido) {
+      pedido.status = statusPedidoMercadoPagoMS(pagamento.status);
+      pedido.pagamento = {
+        metodo:String(pagamento.payment_method_id || "Mercado Pago"),
+        status:String(pagamento.status || "pending"),
+        paymentId:String(pagamento.id),
+        statusDetail:pagamento.status_detail || "",
+        atualizadoEm:new Date().toISOString()
+      };
+      if (String(pagamento.status).toLowerCase() === "approved") {
+        baixarEstoquePedidoMS(pedido);
+        pedido.pagoEm = pagamento.date_approved || new Date().toISOString();
+      }
+      salvarPedidos(atualizados);
+    }
+
+    if (codigoCupom && validacaoCupom.valido && pool) {
+      await pool.query("UPDATE cupons SET usos=usos+1, atualizado_em=NOW() WHERE id=$1", [validacaoCupom.cupom.id]);
+    }
+
+    return res.json({ sucesso:true, pedido:idPedido, pagamento });
+  } catch (erro) {
+    console.error("ERRO CHECKOUT BRICKS:", erro);
+    if (idPedido !== null) {
+      liberarReservaPedidoMS(idPedido);
+      salvarPedidos(lerPedidos().filter(p => !idsIguaisMS(p.id, idPedido)));
+    }
+    return res.status(erro.statusCode || 500).json({ erro:true, mensagem:erro.message || "Erro ao processar pagamento." });
+  }
+});
+
+
 // Resposta JSON para rotas de API inexistentes.
 app.use((req, res, next) => {
   if (["GET", "HEAD"].includes(req.method) && !req.path.startsWith("/api/")) return next();
@@ -2006,3 +2138,4 @@ async function iniciarServidorMS() {
 }
 
 iniciarServidorMS();
+
