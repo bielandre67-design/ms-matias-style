@@ -2699,7 +2699,7 @@ window.atualizarResumoPagamentoMSComCupom = atualizarResumoPagamentoMSComCupom;
 document.addEventListener("keydown", function (event) {
   if (event.key === "Enter" && ["cupomPagamentoMS", "cupomInput"].includes(event.target?.id)) {
     event.preventDefault();
-    aplicarCupomMS();
+    window.aplicarCupomMS();
   }
 });
 
@@ -6924,4 +6924,134 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   window.aplicarCupomMS = validarCupomUnicoMS;
+})();
+
+
+// ==========================================================
+// CUPOM UNIFICADO MS - versão definitiva para PC e mobile
+// Mantido no final do arquivo para substituir rotinas antigas.
+// ==========================================================
+(() => {
+  let validacaoEmAndamento = false;
+
+  function obterSubtotalCupomMS() {
+    let lista = [];
+    try {
+      lista = JSON.parse(localStorage.getItem("carrinho") || "[]");
+    } catch (_) {
+      lista = [];
+    }
+
+    return Array.isArray(lista)
+      ? lista.reduce((soma, item) => {
+          const preco = typeof pegarPrecoNumero === "function"
+            ? pegarPrecoNumero(item.preco ?? item.valor ?? item.price ?? 0)
+            : Number(String(item.preco ?? item.valor ?? item.price ?? 0)
+                .replace(/[^0-9,.-]/g, "")
+                .replace(/\.(?=.*\.)/g, "")
+                .replace(",", ".")) || 0;
+          const qtd = Number(item.quantidade ?? item.qtd ?? 1) || 1;
+          return soma + preco * qtd;
+        }, 0)
+      : 0;
+  }
+
+  function elementosCupomMS(tipo) {
+    const mobile = tipo === "mobile";
+    const input = document.getElementById(mobile ? "cupomPagamentoMS" : "cupomInput");
+    const mensagem = document.getElementById(mobile ? "mensagemCupomMS" : "cupomMensagem");
+    const botao = input?.parentElement?.querySelector("button") ||
+      input?.closest(".cupom-linha-ms, .cupom-linha, .cmms-cupom-linha")?.querySelector("button");
+    return { input, mensagem, botao };
+  }
+
+  function atualizarTelasCupomMS(tipo) {
+    if (tipo === "mobile") {
+      if (typeof atualizarResumoPagamentoMSComCupom === "function") {
+        atualizarResumoPagamentoMSComCupom();
+      }
+    } else if (typeof montarResumoPagamentoPC === "function") {
+      montarResumoPagamentoPC();
+    }
+  }
+
+  async function validarCupomCompartilhadoMS(tipo) {
+    const { input, mensagem, botao } = elementosCupomMS(tipo);
+    if (!input || !mensagem) return;
+    if (validacaoEmAndamento) {
+      mensagem.textContent = "Aguarde a validação atual.";
+      return;
+    }
+
+    const codigo = input.value.trim().toUpperCase();
+    if (!codigo) {
+      mensagem.textContent = "Digite um cupom.";
+      mensagem.style.color = "#ff4d6d";
+      return;
+    }
+
+    validacaoEmAndamento = true;
+    cupomValidandoMS = true;
+    window.__cupomMobileValidandoMS = true;
+
+    mensagem.textContent = "Validando cupom...";
+    mensagem.style.color = "#d6b24c";
+    if (botao) {
+      botao.disabled = true;
+      botao.textContent = "Validando...";
+    }
+
+    const controller = new AbortController();
+    const temporizador = setTimeout(() => controller.abort(), 8000);
+
+    try {
+      const resposta = await fetch(`${API_BASE}/cupons/validar`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ codigo, subtotal: obterSubtotalCupomMS() }),
+        signal: controller.signal,
+        cache: "no-store"
+      });
+
+      const texto = await resposta.text();
+      let dados = {};
+      try { dados = texto ? JSON.parse(texto) : {}; } catch (_) {}
+
+      if (!resposta.ok || !dados.valido) {
+        throw new Error(dados.mensagem || dados.erro || "Cupom inválido.");
+      }
+
+      descontoCupomMS = Number(dados.percentual ?? dados.cupom?.percentual ?? dados.desconto ?? 0);
+      codigoCupomAplicadoMS = codigo;
+      window.descontoCupomMS = descontoCupomMS;
+      window.codigoCupomAplicadoMS = codigoCupomAplicadoMS;
+
+      atualizarTelasCupomMS(tipo);
+      mensagem.textContent = "Cupom aplicado com sucesso ✓";
+      mensagem.style.color = "#22c55e";
+    } catch (erro) {
+      descontoCupomMS = 0;
+      codigoCupomAplicadoMS = "";
+      window.descontoCupomMS = 0;
+      window.codigoCupomAplicadoMS = "";
+      atualizarTelasCupomMS(tipo);
+
+      mensagem.textContent = erro?.name === "AbortError"
+        ? "O servidor não respondeu em 8 segundos. Tente novamente."
+        : (erro?.message || "Não foi possível validar o cupom.");
+      mensagem.style.color = "#ff4d6d";
+    } finally {
+      clearTimeout(temporizador);
+      validacaoEmAndamento = false;
+      cupomValidandoMS = false;
+      window.__cupomMobileValidandoMS = false;
+      if (botao) {
+        botao.disabled = false;
+        botao.textContent = "Aplicar";
+      }
+    }
+  }
+
+  window.aplicarCupom = () => validarCupomCompartilhadoMS("desktop");
+  window.aplicarCupomMS = () => validarCupomCompartilhadoMS("mobile");
 })();
