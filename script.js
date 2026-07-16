@@ -1063,11 +1063,8 @@ async function aplicarCupom() {
 
   // Atualiza os dois resumos. Antes, somente o resumo do PC era recalculado,
   // por isso o cupom aparecia como aplicado no mobile, mas o total não mudava.
-  montarResumoPagamentoPC();
-  atualizarCarrinho();
-  if (typeof atualizarResumoPagamentoMSComCupom === "function") {
-    atualizarResumoPagamentoMSComCupom();
-  }
+  if (typeof montarResumoPagamentoPC === "function") montarResumoPagamentoPC();
+  if (typeof atualizarResumoPagamentoMSComCupom === "function") atualizarResumoPagamentoMSComCupom();
 }
 
 // ===============================
@@ -2552,7 +2549,76 @@ localStorage.removeItem("descontoCupomMS");
 localStorage.removeItem("cupomMS");
 
 async function aplicarCupomMS() {
-  return aplicarCupom();
+  if (window.__cupomMobileValidandoMS) return;
+
+  const input = document.getElementById("cupomPagamentoMS") || document.getElementById("cupomInput");
+  const mensagem = document.getElementById("mensagemCupomMS") || document.getElementById("cupomMensagem");
+  const botao = input?.closest(".cupom-linha-ms, .cmms-cupom-linha, div")?.querySelector("button") ||
+    document.querySelector("button[onclick*=\"aplicarCupomMS\"]");
+
+  if (!input || !mensagem) return;
+
+  const codigo = input.value.trim().toUpperCase();
+  if (!codigo) {
+    mensagem.textContent = "Digite um cupom.";
+    mensagem.style.color = "#ff4d6d";
+    return;
+  }
+
+  let itens = [];
+  try { itens = JSON.parse(localStorage.getItem("carrinho") || "[]"); } catch (_) {}
+  const subtotal = itens.reduce((soma, item) => {
+    return soma + pegarPrecoNumero(item.preco ?? item.valor ?? item.price ?? 0) * Number(item.quantidade ?? item.qtd ?? 1);
+  }, 0);
+
+  window.__cupomMobileValidandoMS = true;
+  mensagem.textContent = "Validando cupom...";
+  mensagem.style.color = "#f4ca38";
+  if (botao) { botao.disabled = true; botao.textContent = "Validando..."; }
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10000);
+
+  try {
+    const resposta = await fetch(`${API_BASE}/cupons/validar`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ codigo, subtotal }),
+      signal: controller.signal
+    });
+
+    const texto = await resposta.text();
+    let dados = {};
+    try { dados = texto ? JSON.parse(texto) : {}; } catch (_) {}
+
+    if (!resposta.ok || !dados.valido) {
+      throw new Error(dados.mensagem || "Cupom inválido.");
+    }
+
+    descontoCupomMS = Number(dados.percentual ?? dados.cupom?.percentual ?? 0);
+    codigoCupomAplicadoMS = codigo;
+    window.descontoCupomMS = descontoCupomMS;
+    window.codigoCupomAplicadoMS = codigo;
+
+    mensagem.textContent = "Cupom aplicado com sucesso ✓";
+    mensagem.style.color = "#22c55e";
+
+    // Atualiza apenas o resumo. Não reconstrói nem fecha o carrinho mobile.
+    atualizarResumoPagamentoMSComCupom();
+  } catch (erro) {
+    descontoCupomMS = 0;
+    codigoCupomAplicadoMS = "";
+    window.descontoCupomMS = 0;
+    atualizarResumoPagamentoMSComCupom();
+    mensagem.textContent = erro?.name === "AbortError"
+      ? "A validação demorou demais. Tente novamente."
+      : (erro.message || "Não foi possível validar o cupom.");
+    mensagem.style.color = "#ff4d6d";
+  } finally {
+    clearTimeout(timeout);
+    window.__cupomMobileValidandoMS = false;
+    if (botao) { botao.disabled = false; botao.textContent = "Aplicar"; }
+  }
 }
 function atualizarResumoPagamentoMSComCupom() {
   let itens = [];
