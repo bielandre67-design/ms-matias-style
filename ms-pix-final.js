@@ -197,3 +197,138 @@
   window.atualizarResumoPagamentoMSComCupom=atualizar;
   window.msAtualizarResumoMobile=atualizar;
 })();
+
+/* =========================================================
+   MS Matias Style - trava final do total com cupom no mobile
+   Evita que rotinas antigas sobrescrevam o total descontado.
+   ========================================================= */
+(function(){
+  'use strict';
+
+  var aplicandoCorrecao = false;
+  var observer = null;
+
+  function numeroMS(v){
+    if(typeof v === 'number') return Number.isFinite(v) ? v : 0;
+    var s=String(v == null ? '' : v).trim().replace(/R\$\s?/gi,'').replace(/\s/g,'');
+    if(s.indexOf(',') >= 0) s=s.replace(/\./g,'').replace(',','.');
+    return Number(s)||0;
+  }
+
+  function dinheiroMS(v){
+    return numeroMS(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+  }
+
+  function carrinhoMS(){
+    var chaves=['carrinho','carrinhoMS','carrinhoMobile'];
+    for(var i=0;i<chaves.length;i++){
+      try{
+        var dados=JSON.parse(localStorage.getItem(chaves[i])||'[]');
+        if(Array.isArray(dados) && dados.length) return dados;
+      }catch(e){}
+    }
+    return Array.isArray(window.carrinho) ? window.carrinho : [];
+  }
+
+  function subtotalMS(){
+    return carrinhoMS().reduce(function(s,item){
+      var preco=numeroMS(item.preco != null ? item.preco : (item.valor != null ? item.valor : item.price));
+      var qtd=Number(item.quantidade != null ? item.quantidade : (item.qtd != null ? item.qtd : 1))||1;
+      return s+(preco*qtd);
+    },0);
+  }
+
+  function retiradaMS(){
+    return localStorage.getItem('tipoEntregaMS')==='retirada' ||
+      document.querySelector('input[name="tipoEntregaMobileMS"][value="retirada"]:checked') !== null;
+  }
+
+  function freteMS(){
+    if(retiradaMS()) return 0;
+    try{
+      var salvo=JSON.parse(localStorage.getItem('freteSelecionadoMS')||'null');
+      if(salvo && salvo.preco != null) return numeroMS(salvo.preco);
+    }catch(e){}
+    return numeroMS(window.valorFrete != null ? window.valorFrete : localStorage.getItem('valorFreteMS'));
+  }
+
+  function percentualMS(){
+    var p=0;
+    try { if(typeof descontoCupomMS !== 'undefined') p=numeroMS(descontoCupomMS); } catch(e){}
+    if(!p) p=numeroMS(window.descontoCupomMS||0);
+    return p;
+  }
+
+  function codigoMS(){
+    try { if(typeof codigoCupomAplicadoMS !== 'undefined' && codigoCupomAplicadoMS) return codigoCupomAplicadoMS; } catch(e){}
+    return window.codigoCupomAplicadoMS||'cupom';
+  }
+
+  function corrigirTotalMS(){
+    if(aplicandoCorrecao) return;
+    var totalEl=document.getElementById('valorTotalPagamento');
+    if(!totalEl) return;
+
+    var sub=subtotalMS();
+    var frete=freteMS();
+    var percentual=percentualMS();
+    var desconto=sub*(percentual/100);
+    var total=Math.max(0,sub-desconto+frete);
+
+    aplicandoCorrecao=true;
+    var produtosEl=document.getElementById('valorProdutosPagamento');
+    var freteEl=document.getElementById('valorFretePagamento');
+    var totalMobile=document.getElementById('totalPagamentoMobile');
+    if(produtosEl && produtosEl.textContent!==dinheiroMS(sub)) produtosEl.textContent=dinheiroMS(sub);
+    if(freteEl && freteEl.textContent!==dinheiroMS(frete)) freteEl.textContent=dinheiroMS(frete);
+    if(totalEl.textContent!==dinheiroMS(total)) totalEl.textContent=dinheiroMS(total);
+    if(totalMobile && totalMobile.textContent!==dinheiroMS(total)) totalMobile.textContent=dinheiroMS(total);
+
+    var linha=document.getElementById('linhaDescontoCupomMSMobile');
+    if(linha){
+      linha.style.display=percentual>0?'flex':'none';
+      var rotulo=document.getElementById('rotuloDescontoCupomMSMobile');
+      var valor=document.getElementById('valorDescontoCupomMSMobile');
+      if(rotulo) rotulo.textContent='Desconto '+codigoMS();
+      if(valor) valor.textContent='- '+dinheiroMS(desconto);
+    }
+
+    window.totalComFrete=total;
+    window.totalComCupomMS=total;
+    window.valorDescontoCupomMS=desconto;
+    window.subtotalPagamentoMS=sub;
+    window.fretePagamentoMS=frete;
+    aplicandoCorrecao=false;
+  }
+
+  function instalarObserverMS(){
+    var alvo=document.getElementById('cmmsEtapaPagamento') || document.body;
+    if(observer) observer.disconnect();
+    observer=new MutationObserver(function(){
+      if(percentualMS()>0) corrigirTotalMS();
+    });
+    observer.observe(alvo,{subtree:true,childList:true,characterData:true});
+  }
+
+  document.addEventListener('click',function(e){
+    if(e.target.closest('.cupom-linha-ms button')){
+      [0,100,250,500,900,1500].forEach(function(ms){ setTimeout(corrigirTotalMS,ms); });
+    }
+    if(e.target.closest('#btnFinalizarPagamentoMS, .btn-finalizar-pagamento-ms, [onclick*="finalizarPagamento"]')){
+      corrigirTotalMS();
+    }
+  },true);
+
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Enter' && (e.target.id==='cupomPagamentoMS' || e.target.id==='cupomInput')){
+      [100,300,700,1300].forEach(function(ms){ setTimeout(corrigirTotalMS,ms); });
+    }
+  },true);
+
+  window.msCorrigirTotalCupomMobile=corrigirTotalMS;
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',function(){ instalarObserverMS(); corrigirTotalMS(); });
+  }else{
+    instalarObserverMS(); corrigirTotalMS();
+  }
+})();
