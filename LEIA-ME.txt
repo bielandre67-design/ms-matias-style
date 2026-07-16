@@ -1,1 +1,3 @@
-Substitua index.html, script.js, style.css e ms-pix-final.js. Depois faça git add ., git commit e git push. Atualize com Ctrl+F5.
+Substitua somente o script.js.
+Depois faça git add script.js, commit e push.
+Atualize o site com Ctrl+F5.
