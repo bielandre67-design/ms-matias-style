@@ -6788,3 +6788,140 @@ document.addEventListener("DOMContentLoaded", () => {
   };
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',instalar); else instalar();
 })();
+
+/* =========================================================
+   CORREÇÃO DEFINITIVA DO CUPOM MOBILE
+   Uma única validação, timeout real e UI sempre destravada.
+========================================================= */
+(() => {
+  let emValidacao = false;
+
+  function moedaBR(valor) {
+    return Number(valor || 0).toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    });
+  }
+
+  function lerCarrinhoCupomMS() {
+    try {
+      const dados = JSON.parse(localStorage.getItem('carrinho') || '[]');
+      return Array.isArray(dados) ? dados : [];
+    } catch (_) {
+      return [];
+    }
+  }
+
+  function subtotalCupomMS() {
+    return lerCarrinhoCupomMS().reduce((soma, item) => {
+      const preco = typeof pegarPrecoNumero === 'function'
+        ? pegarPrecoNumero(item.preco ?? item.valor ?? item.price ?? 0)
+        : Number(String(item.preco ?? item.valor ?? item.price ?? 0)
+            .replace(/[^0-9,.-]/g, '')
+            .replace('.', '')
+            .replace(',', '.')) || 0;
+      const qtd = Number(item.quantidade ?? item.qtd ?? 1) || 1;
+      return soma + (preco * qtd);
+    }, 0);
+  }
+
+  function freteCupomMS() {
+    const retirada = document.querySelector('#opcaoRetiradaMS:checked, input[value="retirada"]:checked, input[value="local"]:checked');
+    if (retirada || /buscar no local/i.test(document.querySelector('#resumoEntregaPagamentoMS, .resumo-entrega-ms')?.textContent || '')) {
+      return 0;
+    }
+    const texto = document.getElementById('valorFretePagamento')?.textContent || '0';
+    return Number(texto.replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
+  }
+
+  function atualizarResumoCupomUnico(percentual, codigo) {
+    const subtotal = subtotalCupomMS();
+    const frete = freteCupomMS();
+    const desconto = subtotal * (Number(percentual || 0) / 100);
+    const total = Math.max(0, subtotal + frete - desconto);
+
+    const elProdutos = document.getElementById('valorProdutosPagamento');
+    const elFrete = document.getElementById('valorFretePagamento');
+    const elTotal = document.getElementById('valorTotalPagamento');
+    const linha = document.getElementById('linhaDescontoCupomMSMobile');
+    const rotulo = document.getElementById('rotuloDescontoCupomMSMobile');
+    const valor = document.getElementById('valorDescontoCupomMSMobile');
+
+    if (elProdutos) elProdutos.textContent = moedaBR(subtotal);
+    if (elFrete) elFrete.textContent = moedaBR(frete);
+    if (elTotal) elTotal.textContent = moedaBR(total);
+    if (linha) linha.style.display = percentual > 0 ? 'flex' : 'none';
+    if (rotulo) rotulo.textContent = codigo ? `Desconto ${codigo}` : 'Desconto';
+    if (valor) valor.textContent = `- ${moedaBR(desconto)}`;
+
+    window.descontoCupomMS = Number(percentual || 0);
+    window.codigoCupomAplicadoMS = codigo || '';
+    window.totalPagamentoMS = total;
+  }
+
+  async function validarCupomUnicoMS() {
+    if (emValidacao) return;
+
+    const input = document.getElementById('cupomPagamentoMS');
+    const mensagem = document.getElementById('mensagemCupomMS');
+    const botao = input?.parentElement?.querySelector('button');
+    if (!input || !mensagem) return;
+
+    const codigo = input.value.trim().toUpperCase();
+    if (!codigo) {
+      mensagem.textContent = 'Digite um cupom.';
+      mensagem.style.color = '#ff4d6d';
+      return;
+    }
+
+    emValidacao = true;
+    mensagem.textContent = 'Validando cupom...';
+    mensagem.style.color = '#f4ca38';
+    if (botao) {
+      botao.disabled = true;
+      botao.textContent = 'Validando...';
+    }
+
+    const timeout = new Promise((_, rejeitar) => {
+      setTimeout(() => rejeitar(new Error('TIMEOUT_CUPOM')), 8000);
+    });
+
+    try {
+      const requisicao = fetch(`${API_BASE}/cupons/validar`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ codigo, subtotal: subtotalCupomMS() }),
+        cache: 'no-store'
+      }).then(async resposta => {
+        const dados = await resposta.json().catch(() => ({}));
+        if (!resposta.ok || !dados.valido) {
+          throw new Error(dados.mensagem || 'Cupom inválido.');
+        }
+        return dados;
+      });
+
+      const dados = await Promise.race([requisicao, timeout]);
+      const percentual = Number(dados.percentual ?? dados.cupom?.percentual ?? 0);
+
+      atualizarResumoCupomUnico(percentual, codigo);
+      mensagem.textContent = 'Cupom aplicado com sucesso ✓';
+      mensagem.style.color = '#22c55e';
+    } catch (erro) {
+      atualizarResumoCupomUnico(0, '');
+      mensagem.textContent = erro?.message === 'TIMEOUT_CUPOM'
+        ? 'O servidor não respondeu. Tente novamente.'
+        : (erro?.message || 'Não foi possível validar o cupom.');
+      mensagem.style.color = '#ff4d6d';
+    } finally {
+      emValidacao = false;
+      window.__cupomMobileValidandoMS = false;
+      cupomValidandoMS = false;
+      if (botao) {
+        botao.disabled = false;
+        botao.textContent = 'Aplicar';
+      }
+    }
+  }
+
+  window.aplicarCupomMS = validarCupomUnicoMS;
+})();
