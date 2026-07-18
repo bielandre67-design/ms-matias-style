@@ -1,0 +1,21 @@
+MS MATIAS STYLE - FRETE COM PESO E MEDIDAS DO PAINEL
+
+Arquivos alterados:
+- admin.html
+- admin.js
+- admin.css
+- server.js
+- script.js
+- carrinho.html
+
+Como funciona:
+1. No painel, abra ou cadastre um produto.
+2. Informe peso em kg e altura, largura e comprimento em cm.
+3. Salve o produto.
+4. A loja consulta esses dados no banco Neon ao calcular o frete.
+5. Se faltar alguma medida, o checkout informa qual produto precisa ser atualizado.
+
+IMPORTANTE:
+- Pese e meça o produto já com a embalagem usada no envio.
+- Não use peso aproximado se quiser que a cotação fique próxima do valor da etiqueta.
+- Produtos antigos precisam ser atualizados no painel antes do cálculo.

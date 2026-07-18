@@ -83,6 +83,10 @@ async function iniciarPostgresMS() {
       ativo BOOLEAN NOT NULL DEFAULT TRUE,
       destaque BOOLEAN NOT NULL DEFAULT FALSE,
       promocao BOOLEAN NOT NULL DEFAULT FALSE,
+      peso_kg NUMERIC(10,3) NOT NULL DEFAULT 0,
+      altura_cm NUMERIC(10,2) NOT NULL DEFAULT 0,
+      largura_cm NUMERIC(10,2) NOT NULL DEFAULT 0,
+      comprimento_cm NUMERIC(10,2) NOT NULL DEFAULT 0,
       criado_em TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       atualizado_em TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
@@ -90,6 +94,10 @@ async function iniciarPostgresMS() {
 
   await pool.query(`ALTER TABLE produtos ADD COLUMN IF NOT EXISTS cores JSONB NOT NULL DEFAULT '[]'::jsonb`);
   await pool.query(`ALTER TABLE produtos ADD COLUMN IF NOT EXISTS tamanhos JSONB NOT NULL DEFAULT '["P","M","G","GG"]'::jsonb`);
+  await pool.query(`ALTER TABLE produtos ADD COLUMN IF NOT EXISTS peso_kg NUMERIC(10,3) NOT NULL DEFAULT 0`);
+  await pool.query(`ALTER TABLE produtos ADD COLUMN IF NOT EXISTS altura_cm NUMERIC(10,2) NOT NULL DEFAULT 0`);
+  await pool.query(`ALTER TABLE produtos ADD COLUMN IF NOT EXISTS largura_cm NUMERIC(10,2) NOT NULL DEFAULT 0`);
+  await pool.query(`ALTER TABLE produtos ADD COLUMN IF NOT EXISTS comprimento_cm NUMERIC(10,2) NOT NULL DEFAULT 0`);
 
   await pool.query(`
     CREATE TABLE IF NOT EXISTS cupons (
@@ -303,34 +311,68 @@ async function criarPreferenciaMP({ carrinhoItems, valorFrete, freteSelecionado,
   };
 }
 
-function produtoFreteMS(item, indice) {
-  const nome = String(item?.nome || item?.name || "Produto").toLowerCase();
-  const quantidade = Math.max(1, Number(item?.quantidade || item?.quantity || 1));
+function normalizarNomeProdutoFreteMS(valor) {
+  return String(valor || "")
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .trim().toLowerCase();
+}
+
+async function buscarProdutoFreteBancoMS(item) {
+  if (!pool) return null;
+
+  const id = Number(item?.id || item?.produtoId || item?.idBanco || 0);
+  const chave = String(item?.chave || item?.produtoChave || "").trim();
+  const nome = String(item?.nome || item?.name || "").trim();
+
+  if (Number.isInteger(id) && id > 0) {
+    const r = await pool.query("SELECT * FROM produtos WHERE id=$1 LIMIT 1", [id]);
+    if (r.rowCount) return r.rows[0];
+  }
+
+  if (chave) {
+    const r = await pool.query("SELECT * FROM produtos WHERE chave=$1 LIMIT 1", [chaveProdutoMS(chave)]);
+    if (r.rowCount) return r.rows[0];
+  }
+
+  if (nome) {
+    const r = await pool.query(
+      "SELECT * FROM produtos WHERE LOWER(TRIM(nome))=LOWER(TRIM($1)) ORDER BY ativo DESC, id DESC LIMIT 1",
+      [nome]
+    );
+    if (r.rowCount) return r.rows[0];
+  }
+
+  return null;
+}
+
+async function produtoFreteMS(item, indice) {
+  const quantidade = Math.max(1, Math.floor(Number(item?.quantidade || item?.quantity || 1)));
   const preco = Math.max(1, Number(item?.preco || item?.price || 0));
+  const produtoBanco = await buscarProdutoFreteBancoMS(item);
+  const nome = String(produtoBanco?.nome || item?.nome || item?.name || `Produto ${indice + 1}`).trim();
 
-  let width = 20;
-  let height = 5;
-  let length = 25;
-  let weight = 0.45;
+  if (!produtoBanco) {
+    const erro = new Error(`O produto "${nome}" não foi encontrado no painel. Atualize o catálogo antes de calcular o frete.`);
+    erro.statusCode = 400;
+    erro.codigo = "PRODUTO_NAO_ENCONTRADO";
+    throw erro;
+  }
 
-  if (nome.includes("conjunto")) {
-    width = 28; height = 12; length = 36; weight = 1.15;
-  } else if (nome.includes("jaqueta") || nome.includes("corta vento")) {
-    width = 27; height = 10; length = 35; weight = 0.85;
-  } else if (nome.includes("moletom")) {
-    width = 27; height = 10; length = 35; weight = 0.80;
-  } else if (nome.includes("calça") || nome.includes("calca")) {
-    width = 25; height = 8; length = 33; weight = 0.65;
-  } else if (nome.includes("camiseta")) {
-    width = 22; height = 4; length = 30; weight = 0.30;
-  } else if (nome.includes("touca")) {
-    width = 16; height = 5; length = 20; weight = 0.15;
-  } else if (nome.includes("meia")) {
-    width = 12; height = 3; length = 18; weight = 0.10;
+  const weight = Number(produtoBanco.peso_kg || 0);
+  const height = Number(produtoBanco.altura_cm || 0);
+  const width = Number(produtoBanco.largura_cm || 0);
+  const length = Number(produtoBanco.comprimento_cm || 0);
+
+  if (!(weight > 0 && height > 0 && width > 0 && length > 0)) {
+    const erro = new Error(`Cadastre peso, altura, largura e comprimento de "${nome}" no painel antes de calcular o frete.`);
+    erro.statusCode = 400;
+    erro.codigo = "MEDIDAS_FRETE_PENDENTES";
+    erro.produto = { id: produtoBanco.id, nome };
+    throw erro;
   }
 
   return {
-    id: String(item?.id || indice + 1),
+    id: String(produtoBanco.id),
     width,
     height,
     length,
@@ -356,8 +398,11 @@ app.post("/calcular-frete", async (req, res) => {
       return res.status(500).json({ erro: true, mensagem: "MELHOR_ENVIO_TOKEN não está configurado." });
     }
 
-    const products = (itensRecebidos.length ? itensRecebidos : [{ nome: "Produto MS", preco: 89.9, quantidade: 1 }])
-      .map(produtoFreteMS);
+    if (!itensRecebidos.length) {
+      return res.status(400).json({ erro: true, mensagem: "O carrinho está vazio." });
+    }
+
+    const products = await Promise.all(itensRecebidos.map(produtoFreteMS));
 
     const response = await fetch("https://www.melhorenvio.com.br/api/v2/me/shipment/calculate", {
       method: "POST",
@@ -389,10 +434,11 @@ app.post("/calcular-frete", async (req, res) => {
     return res.json(data);
   } catch (error) {
     console.error("ERRO FRETE:", error);
-    return res.status(500).json({
+    return res.status(error.statusCode || 500).json({
       erro: true,
-      mensagem: "Erro ao calcular frete.",
-      detalhes: error.message
+      codigo: error.codigo || "ERRO_CALCULO_FRETE",
+      mensagem: error.message || "Erro ao calcular frete.",
+      produto: error.produto || null
     });
   }
 });
@@ -1841,6 +1887,17 @@ function chaveProdutoMS(valor) {
     .replace(/^-+|-+$/g, "").slice(0, 180);
 }
 
+function numeroMedidaProdutoMS(valor, campo) {
+  if (valor === undefined || valor === null || valor === '') return 0;
+  const numero = Number(String(valor).replace(',', '.'));
+  if (!Number.isFinite(numero) || numero < 0) {
+    const erro = new Error(`${campo} deve ser um número igual ou maior que zero.`);
+    erro.statusCode = 400;
+    throw erro;
+  }
+  return numero;
+}
+
 function produtoRespostaMS(row) {
   return {
     id: Number(row.id), chave: row.chave, nome: row.nome,
@@ -1850,6 +1907,9 @@ function produtoRespostaMS(row) {
     descricao: row.descricao || "", cores: Array.isArray(row.cores) ? row.cores : [],
     tamanhos: Array.isArray(row.tamanhos) ? row.tamanhos : ['P','M','G','GG'], ativo: Boolean(row.ativo),
     destaque: Boolean(row.destaque), promocao: Boolean(row.promocao),
+    pesoKg: Number(row.peso_kg || 0), alturaCm: Number(row.altura_cm || 0),
+    larguraCm: Number(row.largura_cm || 0), comprimentoCm: Number(row.comprimento_cm || 0),
+    medidasCompletas: Number(row.peso_kg || 0) > 0 && Number(row.altura_cm || 0) > 0 && Number(row.largura_cm || 0) > 0 && Number(row.comprimento_cm || 0) > 0,
     criadoEm: row.criado_em, atualizadoEm: row.atualizado_em
   };
 }
@@ -1898,18 +1958,21 @@ app.post("/produtos", async (req, res, next) => {
     if (!nome) return res.status(400).json({ erro: true, mensagem: "Informe o nome do produto." });
     const chave = chaveProdutoMS(p.chave || nome);
     const resultado = await pool.query(
-      `INSERT INTO produtos (chave,nome,categoria,preco,preco_antigo,imagem,imagens,descricao,cores,tamanhos,ativo,destaque,promocao)
-       VALUES ($1,$2,$3,$4,$5,$6,$7::jsonb,$8,$9::jsonb,$10::jsonb,$11,$12,$13)
+      `INSERT INTO produtos (chave,nome,categoria,preco,preco_antigo,imagem,imagens,descricao,cores,tamanhos,ativo,destaque,promocao,peso_kg,altura_cm,largura_cm,comprimento_cm)
+       VALUES ($1,$2,$3,$4,$5,$6,$7::jsonb,$8,$9::jsonb,$10::jsonb,$11,$12,$13,$14,$15,$16,$17)
        ON CONFLICT (chave) DO UPDATE SET nome=EXCLUDED.nome,categoria=EXCLUDED.categoria,
        preco=EXCLUDED.preco,preco_antigo=EXCLUDED.preco_antigo,imagem=EXCLUDED.imagem,
        imagens=EXCLUDED.imagens,descricao=EXCLUDED.descricao,cores=EXCLUDED.cores,tamanhos=EXCLUDED.tamanhos,ativo=EXCLUDED.ativo,
-       destaque=EXCLUDED.destaque,promocao=EXCLUDED.promocao,atualizado_em=NOW()
+       destaque=EXCLUDED.destaque,promocao=EXCLUDED.promocao,peso_kg=EXCLUDED.peso_kg,altura_cm=EXCLUDED.altura_cm,
+       largura_cm=EXCLUDED.largura_cm,comprimento_cm=EXCLUDED.comprimento_cm,atualizado_em=NOW()
        RETURNING *`,
       [chave,nome,String(p.categoria||"Roupas").slice(0,80),Number(p.preco)||0,
        p.precoAntigo==null||p.precoAntigo===""?null:Number(p.precoAntigo),String(p.imagem||""),
        JSON.stringify(Array.isArray(p.imagens)?p.imagens:[]),String(p.descricao||""),
        JSON.stringify(Array.isArray(p.cores)?p.cores:[]),JSON.stringify(Array.isArray(p.tamanhos)?p.tamanhos:['P','M','G','GG']),p.ativo!==false,
-       Boolean(p.destaque),Boolean(p.promocao)]
+       Boolean(p.destaque),Boolean(p.promocao),
+       numeroMedidaProdutoMS(p.pesoKg, 'Peso'), numeroMedidaProdutoMS(p.alturaCm, 'Altura'),
+       numeroMedidaProdutoMS(p.larguraCm, 'Largura'), numeroMedidaProdutoMS(p.comprimentoCm, 'Comprimento')]
     );
     res.json({ ok:true, produto:produtoRespostaMS(resultado.rows[0]) });
   } catch (erro) { next(erro); }
@@ -1923,14 +1986,20 @@ app.put("/produtos/:id", async (req, res, next) => {
       `UPDATE produtos SET nome=COALESCE($2,nome),categoria=COALESCE($3,categoria),
        preco=COALESCE($4,preco),preco_antigo=$5,imagem=COALESCE($6,imagem),
        descricao=COALESCE($7,descricao),ativo=COALESCE($8,ativo),destaque=COALESCE($9,destaque),
-       promocao=COALESCE($10,promocao),imagens=COALESCE($11::jsonb,imagens),cores=COALESCE($12::jsonb,cores),tamanhos=COALESCE($13::jsonb,tamanhos),atualizado_em=NOW() WHERE id=$1 RETURNING *`,
+       promocao=COALESCE($10,promocao),imagens=COALESCE($11::jsonb,imagens),cores=COALESCE($12::jsonb,cores),tamanhos=COALESCE($13::jsonb,tamanhos),
+       peso_kg=COALESCE($14,peso_kg),altura_cm=COALESCE($15,altura_cm),largura_cm=COALESCE($16,largura_cm),comprimento_cm=COALESCE($17,comprimento_cm),
+       atualizado_em=NOW() WHERE id=$1 RETURNING *`,
       [req.params.id,p.nome==null?null:String(p.nome).trim(),p.categoria==null?null:String(p.categoria),
        p.preco==null?null:Number(p.preco),p.precoAntigo==null||p.precoAntigo===""?null:Number(p.precoAntigo),
        p.imagem==null?null:String(p.imagem),p.descricao==null?null:String(p.descricao),
        p.ativo==null?null:Boolean(p.ativo),p.destaque==null?null:Boolean(p.destaque),p.promocao==null?null:Boolean(p.promocao),
        p.imagens==null?null:JSON.stringify(Array.isArray(p.imagens)?p.imagens:[]),
        p.cores==null?null:JSON.stringify(Array.isArray(p.cores)?p.cores:[]),
-       p.tamanhos==null?null:JSON.stringify(Array.isArray(p.tamanhos)?p.tamanhos:[])]
+       p.tamanhos==null?null:JSON.stringify(Array.isArray(p.tamanhos)?p.tamanhos:[]),
+       p.pesoKg==null?null:numeroMedidaProdutoMS(p.pesoKg, 'Peso'),
+       p.alturaCm==null?null:numeroMedidaProdutoMS(p.alturaCm, 'Altura'),
+       p.larguraCm==null?null:numeroMedidaProdutoMS(p.larguraCm, 'Largura'),
+       p.comprimentoCm==null?null:numeroMedidaProdutoMS(p.comprimentoCm, 'Comprimento')]
     );
     if(!resultado.rowCount) return res.status(404).json({erro:true,mensagem:"Produto não encontrado."});
     res.json({ok:true,produto:produtoRespostaMS(resultado.rows[0])});

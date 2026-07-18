@@ -775,12 +775,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function itensParaCalculoFreteMS() {
   const lista = Array.isArray(window.carrinho) ? window.carrinho : (Array.isArray(carrinho) ? carrinho : []);
-  return lista.map((item, indice) => ({
-    id: item.id || indice + 1,
-    nome: item.nome || item.name || "Produto MS",
-    preco: Number(item.preco || item.price || 0),
-    quantidade: Math.max(1, Number(item.quantidade || item.quantity || 1))
-  }));
+  const catalogo = Array.isArray(window.produtosBancoMS) ? window.produtosBancoMS : [];
+
+  return lista.map((item, indice) => {
+    const nome = String(item.nome || item.name || "Produto MS").trim();
+    const produtoBanco = catalogo.find((produto) =>
+      Number(produto.id) === Number(item.id || item.produtoId || item.idBanco) ||
+      (item.chave && String(produto.chave) === String(item.chave)) ||
+      String(produto.nome || "").trim().toLowerCase() === nome.toLowerCase()
+    );
+
+    return {
+      id: produtoBanco?.id || item.id || item.produtoId || item.idBanco || null,
+      chave: produtoBanco?.chave || item.chave || item.produtoChave || "",
+      nome,
+      preco: Number(item.preco || item.price || produtoBanco?.preco || 0),
+      quantidade: Math.max(1, Number(item.quantidade || item.quantity || 1))
+    };
+  });
 }
 
 // ===============================
@@ -935,8 +947,9 @@ async function calcularFrete() {
       body: JSON.stringify({ cep, items: itensParaCalculoFreteMS() })
     });
 
-    if (!resposta.ok) throw new Error(`Erro HTTP ${resposta.status}`);
-    const fretes = prepararOpcoesFreteMS(await resposta.json());
+    const dadosFrete = await resposta.json().catch(() => null);
+    if (!resposta.ok) throw new Error(dadosFrete?.mensagem || `Erro HTTP ${resposta.status}`);
+    const fretes = prepararOpcoesFreteMS(dadosFrete);
     if (!resultadoFrete) return;
 
     if (fretes.length === 0) {
@@ -999,8 +1012,9 @@ async function calcularFreteCheckout() {
       body: JSON.stringify({ cep, items: itensParaCalculoFreteMS() })
     });
 
-    if (!resposta.ok) throw new Error(`Erro HTTP ${resposta.status}`);
-    const fretes = prepararOpcoesFreteMS(await resposta.json());
+    const dadosFrete = await resposta.json().catch(() => null);
+    if (!resposta.ok) throw new Error(dadosFrete?.mensagem || `Erro HTTP ${resposta.status}`);
+    const fretes = prepararOpcoesFreteMS(dadosFrete);
     const container = document.getElementById("opcoesFreteCheckout");
     if (!container) return;
 
@@ -6678,7 +6692,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       if (!resposta.ok) {
-        throw new Error(dados?.erro || dados?.message || "Falha ao calcular o frete.");
+        throw new Error(dados?.mensagem || dados?.message || "Falha ao calcular o frete.");
       }
 
       const lista = Array.isArray(dados)
@@ -6775,7 +6789,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     } catch (erro) {
       console.error("Erro ao calcular frete mobile:", erro);
-      container.innerHTML = '<p class="frete-erro-ms">Não foi possível calcular a entrega. Tente novamente em instantes.</p>';
+      container.innerHTML = `<p class="frete-erro-ms">${String(erro.message || "Não foi possível calcular a entrega.")}</p>`;
     }
   };
 })();
