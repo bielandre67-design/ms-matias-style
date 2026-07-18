@@ -4844,10 +4844,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if(!ehPagamento) return;
 
-    // Botões diretos de PIX e cartão têm funções próprias.
-    // Não podem ser capturados pelo listener antigo de checkout.
-    if (alvo.matches("[data-ms-pagamento-direto], .btn-pix-pc-ms, .btn-cartao-pc-ms") || alvo.closest("#msEscolhaPagamento")) return;
-
     var dentroCheckout = alvo.closest("#carrinho, #carrinhoMobileMS, #checkoutMobile, .checkout-mobile, .carrinho, .carrinho-lateral, .modal-carrinho");
     if(!dentroCheckout && !texto.includes("mercado pago")) return;
 
@@ -6774,24 +6770,8 @@ document.addEventListener("DOMContentLoaded", () => {
     modal.style.display="flex"; return false;
   }
 
-  window.pagarPixDentroDaLojaMS = function(event){
-    if(event){ event.preventDefault(); event.stopPropagation(); event.stopImmediatePropagation?.(); }
-    return pagarPixDentroDaLoja(event);
-  };
-  window.pagarCartaoOutrosMSGlobal = function(event){
-    if(event){ event.preventDefault(); event.stopPropagation(); event.stopImmediatePropagation?.(); }
-    return pagarCartaoOutrosMS(event);
-  };
-  window.abrirEscolhaPagamentoMS = abrirEscolhaPagamentoMS;
   window.finalizarCompra=abrirEscolhaPagamentoMS; window.finalizarCompraFinal=abrirEscolhaPagamentoMS; window.finalizarPagamento=abrirEscolhaPagamentoMS; window.pagarMercadoPago=abrirEscolhaPagamentoMS; window.msFinalizarPagamento=abrirEscolhaPagamentoMS;
-  document.addEventListener("click",function(e){
-    const b=e.target.closest("button,a,input[type=button],input[type=submit]");
-    if(!b) return;
-    // PIX e cartão diretos não passam pelo capturador genérico.
-    if(b.matches("[data-ms-pagamento-direto], .btn-pix-pc-ms, .btn-cartao-pc-ms") || b.closest("#msEscolhaPagamento")) return;
-    const t=String(b.innerText||b.value||b.id||b.className||"").toLowerCase();
-    if((t.includes("pagar")||t.includes("finalizar pedido")||t.includes("mercado pago")||t.includes("finalizar compra")) && b.closest("#carrinhoModal,#carrinhoMobile,.carrinho,.checkout,form")){ abrirEscolhaPagamentoMS(e); }
-  },true);
+  document.addEventListener("click",function(e){ const b=e.target.closest("button,a,input[type=button],input[type=submit]"); if(!b)return; const t=String(b.innerText||b.value||b.id||b.className||"").toLowerCase(); if((t.includes("pagar")||t.includes("finalizar pedido")||t.includes("mercado pago")||t.includes("finalizar compra")) && b.closest("#carrinhoModal,#carrinhoMobile,.carrinho,.checkout,form")){ abrirEscolhaPagamentoMS(e); } },true);
 })();
 
 
@@ -7120,4 +7100,240 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.aplicarCupom = () => validarCupomCompartilhadoMS("desktop");
   window.aplicarCupomMS = () => validarCupomCompartilhadoMS("mobile");
+})();
+
+/* =========================================================
+   CHECKOUT PC DEFINITIVO: PIX NA LOJA + CARTAO EXTERNO
+   Não altera o fluxo mobile.
+   ========================================================= */
+(function () {
+  "use strict";
+
+  const API_PC_MS = (location.hostname === "localhost" || location.hostname === "127.0.0.1")
+    ? "http://127.0.0.1:3000"
+    : "https://ms-matias-style.onrender.com";
+
+  let timerPixPCMS = null;
+
+  function lerCampoPCMS(...ids) {
+    for (const id of ids) {
+      const el = document.getElementById(id);
+      if (el && String(el.value || "").trim()) return String(el.value).trim();
+    }
+    return "";
+  }
+
+  function lerCarrinhoPCMS() {
+    try {
+      const lista = JSON.parse(localStorage.getItem("carrinho") || "[]");
+      if (Array.isArray(lista) && lista.length) return lista;
+    } catch (_) {}
+    try {
+      if (Array.isArray(window.carrinho) && window.carrinho.length) return window.carrinho;
+    } catch (_) {}
+    return [];
+  }
+
+  function normalizarItensPCMS(lista) {
+    return (lista || []).map((item) => ({
+      nome: item.nome || item.title || "Produto MS",
+      preco: Number(item.preco || item.unit_price || 0),
+      quantidade: Number(item.quantidade || item.quantity || 1),
+      tamanho: item.tamanho || "",
+      imagem: item.imagem || item.img || ""
+    }));
+  }
+
+  function dadosPCMS() {
+    let salvo = {};
+    try { salvo = JSON.parse(localStorage.getItem("dadosClienteMS") || "{}"); } catch (_) {}
+
+    const cliente = {
+      nome: lerCampoPCMS("nomeCliente", "customerName") || salvo.nome || "",
+      telefone: lerCampoPCMS("telefoneCliente", "customerPhone", "whatsappCliente") || salvo.telefone || salvo.whatsapp || "",
+      email: lerCampoPCMS("emailCliente", "customerEmail") || salvo.email || "",
+      cep: lerCampoPCMS("cepCliente", "zip") || salvo.cep || "",
+      rua: lerCampoPCMS("ruaCliente", "ruaCheckout", "street") || salvo.rua || "",
+      numero: lerCampoPCMS("numeroCasa", "numeroCliente", "numeroCheckout", "number") || salvo.numero || "",
+      complemento: lerCampoPCMS("complementoCliente", "complementoCheckout", "complement") || salvo.complemento || "",
+      bairro: lerCampoPCMS("bairroCliente", "bairroCheckout", "district") || salvo.bairro || "",
+      cidade: lerCampoPCMS("cidadeCliente", "cidadeCheckout", "city") || salvo.cidade || "",
+      estado: lerCampoPCMS("estadoCliente", "estadoCheckout", "state") || salvo.estado || ""
+    };
+
+    const itens = lerCarrinhoPCMS();
+    const tipoEntrega = localStorage.getItem("tipoEntregaMS") || "entrega";
+    const retiradaLocal = tipoEntrega === "retirada";
+    let frete = 0;
+    try { frete = Number(window.valorFrete || valorFrete || localStorage.getItem("valorFreteMS") || 0); } catch (_) { frete = Number(localStorage.getItem("valorFreteMS") || 0); }
+    let freteObj = null;
+    try { freteObj = window.freteSelecionado || freteSelecionado || JSON.parse(localStorage.getItem("freteSelecionadoMS") || "null"); } catch (_) {}
+    let cupom = "";
+    try { cupom = String(window.codigoCupomAplicadoMS || codigoCupomAplicadoMS || localStorage.getItem("codigoCupomAplicadoMS") || ""); } catch (_) { cupom = localStorage.getItem("codigoCupomAplicadoMS") || ""; }
+
+    return {
+      itens,
+      cliente,
+      payload: {
+        tipoEntrega,
+        retiradaLocal,
+        items: normalizarItensPCMS(itens),
+        carrinho: normalizarItensPCMS(itens),
+        nome: cliente.nome,
+        telefone: cliente.telefone,
+        whatsapp: cliente.telefone,
+        email: cliente.email,
+        cep: cliente.cep,
+        rua: cliente.rua,
+        numero: cliente.numero,
+        complemento: cliente.complemento,
+        bairro: cliente.bairro,
+        cidade: cliente.cidade,
+        estado: cliente.estado,
+        cliente,
+        endereco: cliente,
+        valorFrete: retiradaLocal ? 0 : frete,
+        freteSelecionado: freteObj,
+        codigoCupom: cupom
+      }
+    };
+  }
+
+  function validarPCMS(dados) {
+    if (!dados.itens.length) {
+      alert("Seu carrinho está vazio.");
+      return false;
+    }
+    const c = dados.cliente;
+    if (!c.nome || !c.telefone) {
+      alert("Volte à etapa de entrega e informe nome completo e WhatsApp.");
+      return false;
+    }
+    if (!dados.payload.retiradaLocal && (!c.cep || !c.rua || !c.numero || !c.bairro || !c.cidade || !c.estado)) {
+      alert("Volte à etapa de entrega e preencha o endereço completo.");
+      return false;
+    }
+    return true;
+  }
+
+  function modalPixPCMS() {
+    let modal = document.getElementById("modalPixPCMSFinal");
+    if (modal) return modal;
+    modal = document.createElement("div");
+    modal.id = "modalPixPCMSFinal";
+    modal.innerHTML = `
+      <div class="caixa-pix-pc-ms-final">
+        <button type="button" class="fechar-pix-pc-ms-final">×</button>
+        <div class="logo-pix-pc-ms-final">MS</div>
+        <h2 id="tituloPixPCMSFinal">Gerando PIX...</h2>
+        <p id="textoPixPCMSFinal">Aguarde alguns segundos.</p>
+        <div id="loaderPixPCMSFinal" class="loader-pix-pc-ms-final"></div>
+        <img id="qrPixPCMSFinal" alt="QR Code PIX" hidden>
+        <strong id="valorPixPCMSFinal"></strong>
+        <textarea id="codigoPixPCMSFinal" readonly hidden></textarea>
+        <button type="button" id="copiarPixPCMSFinal" hidden>Copiar código PIX</button>
+        <div id="statusPixPCMSFinal">Aguardando pagamento...</div>
+      </div>`;
+    document.body.appendChild(modal);
+    const css = document.createElement("style");
+    css.textContent = `
+      #modalPixPCMSFinal{position:fixed;inset:0;z-index:2147483647;background:rgba(0,0,0,.86);display:flex;align-items:center;justify-content:center;padding:20px;font-family:Arial,sans-serif}
+      .caixa-pix-pc-ms-final{position:relative;width:min(430px,100%);max-height:94vh;overflow:auto;background:#fff;color:#111;padding:26px;border-radius:22px;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.5)}
+      .fechar-pix-pc-ms-final{position:absolute;right:13px;top:8px;border:0;background:transparent;font-size:31px;cursor:pointer}.logo-pix-pc-ms-final{width:58px;height:58px;margin:0 auto 12px;border-radius:50%;background:#111;color:#fff;display:grid;place-items:center;font-weight:900}
+      .loader-pix-pc-ms-final{width:42px;height:42px;margin:24px auto;border:4px solid #ddd;border-top-color:#111;border-radius:50%;animation:giraPixPCMS .8s linear infinite}@keyframes giraPixPCMS{to{transform:rotate(360deg)}}
+      #qrPixPCMSFinal{display:block;width:235px;max-width:82%;margin:12px auto}#qrPixPCMSFinal[hidden]{display:none}#valorPixPCMSFinal{display:block;font-size:22px;margin:10px}
+      #codigoPixPCMSFinal{width:100%;height:78px;box-sizing:border-box;border:1px solid #ddd;border-radius:10px;padding:10px;font-size:12px;resize:none}#copiarPixPCMSFinal{width:100%;padding:14px;margin-top:10px;border:0;border-radius:12px;background:#111;color:#fff;font-weight:800;cursor:pointer}#statusPixPCMSFinal{margin-top:15px;padding:12px;border-radius:10px;background:#f3f3f3;font-weight:800}`;
+    document.head.appendChild(css);
+    modal.querySelector(".fechar-pix-pc-ms-final").onclick = () => {
+      modal.style.display = "none";
+      clearInterval(timerPixPCMS);
+    };
+    document.getElementById("copiarPixPCMSFinal").onclick = async () => {
+      const campo = document.getElementById("codigoPixPCMSFinal");
+      try { await navigator.clipboard.writeText(campo.value); }
+      catch (_) { campo.select(); document.execCommand("copy"); }
+      document.getElementById("copiarPixPCMSFinal").textContent = "Código copiado ✓";
+    };
+    return modal;
+  }
+
+  async function consultarPixPCMS(pedido) {
+    try {
+      const resposta = await fetch(`${API_PC_MS}/pagamento/status/${encodeURIComponent(pedido)}?t=${Date.now()}`, { cache: "no-store" });
+      if (!resposta.ok) return;
+      const dados = await resposta.json();
+      const status = String(dados.status || dados.pagamento?.status || "").toLowerCase();
+      if (status === "pago" || status === "approved") {
+        clearInterval(timerPixPCMS);
+        document.querySelector("#modalPixPCMSFinal .caixa-pix-pc-ms-final").innerHTML = `<div style="font-size:62px">✅</div><h2>Pagamento confirmado!</h2><p>Pedido <strong>#${pedido}</strong> recebido com sucesso.</p><button type="button" id="voltarLojaPixPCMS" style="width:100%;padding:14px;border:0;border-radius:12px;background:#111;color:#fff;font-weight:800;cursor:pointer">Voltar para a loja</button>`;
+        localStorage.removeItem("carrinho");
+        document.getElementById("voltarLojaPixPCMS").onclick = () => location.href = "index.html";
+      }
+    } catch (_) {}
+  }
+
+  window.msPixPCDireto = async function (event) {
+    if (event) { event.preventDefault(); event.stopPropagation(); event.stopImmediatePropagation?.(); }
+    const botao = document.getElementById("btnPixPCMS");
+    const dados = dadosPCMS();
+    if (!validarPCMS(dados)) return false;
+    const modal = modalPixPCMS();
+    modal.style.display = "flex";
+    document.getElementById("tituloPixPCMSFinal").textContent = "Gerando PIX...";
+    document.getElementById("textoPixPCMSFinal").textContent = "Aguarde alguns segundos.";
+    document.getElementById("loaderPixPCMSFinal").hidden = false;
+    if (botao) botao.disabled = true;
+    try {
+      const resposta = await fetch(`${API_PC_MS}/criar-pagamento-pix`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(dados.payload)
+      });
+      const retorno = await resposta.json().catch(() => ({}));
+      if (!resposta.ok) throw new Error(retorno.mensagem || "Não foi possível gerar o PIX.");
+      document.getElementById("loaderPixPCMSFinal").hidden = true;
+      document.getElementById("tituloPixPCMSFinal").textContent = "Pague com PIX";
+      document.getElementById("textoPixPCMSFinal").textContent = `Pedido #${retorno.pedido}. Escaneie o QR Code ou copie o código.`;
+      document.getElementById("valorPixPCMSFinal").textContent = Number(retorno.total || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+      const qr = document.getElementById("qrPixPCMSFinal");
+      if (retorno.qr_code_base64) { qr.src = `data:image/png;base64,${retorno.qr_code_base64}`; qr.hidden = false; }
+      const codigo = document.getElementById("codigoPixPCMSFinal");
+      codigo.value = retorno.qr_code || ""; codigo.hidden = false;
+      document.getElementById("copiarPixPCMSFinal").hidden = false;
+      clearInterval(timerPixPCMS);
+      consultarPixPCMS(retorno.pedido);
+      timerPixPCMS = setInterval(() => consultarPixPCMS(retorno.pedido), 3000);
+    } catch (erro) {
+      modal.style.display = "none";
+      alert(erro.message || "Não foi possível gerar o PIX.");
+    } finally {
+      if (botao) botao.disabled = false;
+    }
+    return false;
+  };
+
+  window.msCartaoPCDireto = async function (event) {
+    if (event) { event.preventDefault(); event.stopPropagation(); event.stopImmediatePropagation?.(); }
+    const botao = document.getElementById("btnCartaoPCMS");
+    const dados = dadosPCMS();
+    if (!validarPCMS(dados)) return false;
+    if (botao) botao.disabled = true;
+    try {
+      const resposta = await fetch(`${API_PC_MS}/criar-pagamento`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(dados.payload)
+      });
+      const retorno = await resposta.json().catch(() => ({}));
+      if (!resposta.ok) throw new Error(retorno.mensagem || "Não foi possível abrir o cartão.");
+      const link = retorno.init_point || retorno.sandbox_init_point;
+      if (!link) throw new Error("O Mercado Pago não retornou o link de pagamento.");
+      window.location.href = link;
+    } catch (erro) {
+      alert(erro.message || "Não foi possível abrir o pagamento.");
+    } finally {
+      if (botao) botao.disabled = false;
+    }
+    return false;
+  };
 })();

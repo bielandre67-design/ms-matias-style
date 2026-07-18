@@ -1,13 +1,6 @@
-CORREÇÃO DO CHECKOUT PC
-
-Substitua estes arquivos no projeto:
+SUBSTITUA SOMENTE ESTES ARQUIVOS NO FRONT-END:
 - index.html
 - script.js
-- server.js
 
-O erro era que o index.html não carregava o script.js. Por isso os botões PIX e Cartão apareciam, mas não executavam nenhuma função.
-
-Depois execute:
-git add .
-git commit -m "Carrega script do checkout no PC"
-git push
+O carrinho mobile não foi alterado.
+O server.js não precisa ser substituído nesta correção porque a rota /criar-pagamento-pix já existe.

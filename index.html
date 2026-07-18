@@ -112,15 +112,12 @@
 </style>
 
 
-<style id="formas-pagamento-pc-ms-css">
-.formas-pagamento-pc-ms{margin-top:20px;padding:20px;border:1px solid #c99d00;border-radius:18px;background:#0c0c0c}
-.formas-pagamento-pc-ms h3{margin:0 0 10px;color:#fff;font-size:21px}
-.formas-pagamento-pc-ms p{margin:0 0 18px;color:#d0d0d0;line-height:1.45}
-.btn-pagamento-pc-ms{width:100%;padding:17px 18px;border-radius:14px;font-size:17px;font-weight:800;cursor:pointer;margin-top:10px}
-.btn-pix-pc-ms{background:#f0c52d;color:#050505;border:0}
-.btn-cartao-pc-ms{background:#fff;color:#050505;border:1px solid #d8d8d8}
-.btn-pagamento-pc-ms:hover{transform:translateY(-1px);filter:brightness(.97)}
-@media(max-width:768px){.formas-pagamento-pc-ms{display:none}}
+<style id="estilo-pagamento-pc-ms-final">
+.opcoes-pagamento-pc-ms{margin-top:18px;padding:20px;border:1px solid #d6ad00;border-radius:18px;background:#0b0b0b;color:#fff}
+.opcoes-pagamento-pc-ms h3{margin:0 0 8px;font-size:21px}.opcoes-pagamento-pc-ms p{margin:0 0 18px;line-height:1.45;color:#d8d8d8}
+.opcoes-pagamento-pc-ms button{display:block;width:100%;padding:17px 14px;border-radius:14px;font-size:17px;font-weight:800;cursor:pointer;margin-top:10px}
+.btn-pix-pc-ms{border:0;background:#f1c52c;color:#070707}.btn-cartao-pc-ms{border:1px solid #ddd;background:#fff;color:#111}
+.btn-pix-pc-ms:disabled,.btn-cartao-pc-ms:disabled{opacity:.65;cursor:wait}
 </style>
 </head>
 
@@ -2525,19 +2522,16 @@ data-img="conjunto-bege.jpeg">
         <p id="cupomMensagem"></p>
       </div>
 
-      <div class="formas-pagamento-pc-ms">
-        <h3>Como você prefere pagar?</h3>
-        <p>Escolha uma opção. No PIX, o QR Code abre aqui mesmo e a confirmação acontece automaticamente.</p>
-
-        <button type="button" class="btn-pagamento-pc-ms btn-pix-pc-ms" data-ms-pagamento-direto="pix" onclick="return window.pagarPixDentroDaLojaMS(event)">
-          ◆ Pagar com PIX
-        </button>
-
-        <button type="button" class="btn-pagamento-pc-ms btn-cartao-pc-ms" data-ms-pagamento-direto="cartao" onclick="return window.pagarCartaoOutrosMSGlobal(event)">
-          💳 Cartão e outras opções
-        </button>
-      </div>
-
+    <div id="opcoesPagamentoPCMS" class="opcoes-pagamento-pc-ms">
+      <h3>Como você prefere pagar?</h3>
+      <p>No PIX, o QR Code abre aqui na loja. No cartão, você continua no Mercado Pago.</p>
+      <button type="button" id="btnPixPCMS" class="btn-pix-pc-ms" onclick="return window.msPixPCDireto(event)">
+        ◆ PIX
+      </button>
+      <button type="button" id="btnCartaoPCMS" class="btn-cartao-pc-ms" onclick="return window.msCartaoPCDireto(event)">
+        💳 Cartão e outras opções
+      </button>
+    </div>
       <button class="btn-limpar-pc" onclick="limparCarrinhoPC()">Limpar carrinho</button>
     </div>
 
@@ -2568,7 +2562,7 @@ data-img="conjunto-bege.jpeg">
 
 
 </div>
-<script src="checkout-pagamento-v3.js?v=20260716-2305"></script>
+<script src="script.js?v=20260718-pc-pix-final"></script>
 
 <div id="msToast" class="ms-toast">
   <img src="logo.png" alt="MS">
@@ -3786,9 +3780,6 @@ window.fecharCarrinhoMobileMS = function(){
 </style>
 
 <!-- Controlador PIX final: precisa ficar por último -->
-
-<!-- Script principal da loja: carregado por último para ativar PIX e cartão no PC -->
-<script src="script.js?v=20260718-1519"></script>
 
 </body>
 </html>
