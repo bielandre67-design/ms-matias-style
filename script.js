@@ -955,8 +955,8 @@ async function calcularFrete() {
           <span class="frete-preco-ms">${dinheiro(frete._preco)}</span>
         </div>
         <div class="frete-selos-ms">${selosFreteMS(frete)}</div>
-        <div class="frete-data-ms">Receba entre ${previsao.inicio} e ${previsao.fim}</div>
-        <div class="frete-prazo-ms">Até ${previsao.dias} dias úteis após a postagem.</div>
+        <div class="frete-data-ms">Previsão de entrega: até ${previsao.dias} dias úteis após a postagem</div>
+        <div class="frete-prazo-ms">Prazo estimado pela transportadora e sujeito a variações.</div>
       `;
       div.onclick = () => selecionarFrete(nomeCompletoFreteMS(frete), frete._preco, frete._prazo);
       resultadoFrete.appendChild(div);
@@ -1020,8 +1020,8 @@ async function calcularFreteCheckout() {
           <span class="frete-preco-ms">${dinheiro(frete._preco)}</span>
         </div>
         <div class="frete-selos-ms">${selosFreteMS(frete)}</div>
-        <div class="frete-data-ms">Receba entre ${previsao.inicio} e ${previsao.fim}</div>
-        <div class="frete-prazo-ms">Até ${previsao.dias} dias úteis após a postagem.</div>
+        <div class="frete-data-ms">Previsão de entrega: até ${previsao.dias} dias úteis após a postagem</div>
+        <div class="frete-prazo-ms">Prazo estimado pela transportadora e sujeito a variações.</div>
       `;
 
       div.onclick = () => {
@@ -1059,8 +1059,8 @@ function selecionarFrete(nome, preco, prazo) {
       <div class="frete-escolhido">
         Frete escolhido: <strong>${nome}</strong><br>
         Valor: ${dinheiro(preco)}<br>
-        Receba entre <strong>${previsao.inicio}</strong> e <strong>${previsao.fim}</strong><br>
-        <small>Estimativa de até ${previsao.dias} dias úteis após a postagem.</small>
+        Previsão de entrega: <strong>até ${previsao.dias} dias úteis após a postagem</strong><br>
+        <small>Prazo estimado pela transportadora e sujeito a variações.</small>
       </div>
     `;
   }
