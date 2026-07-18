@@ -6145,6 +6145,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     return `<div class="card-produto produto-banco-ms"
       data-id-banco="${produto.id}"
+      data-promocao="${produto.promocao ? 'true' : 'false'}"
+      data-destaque="${produto.destaque ? 'true' : 'false'}"
       data-chave="${esc(produto.chave || normalizar(produto.nome))}"
       data-nome="${esc(produto.nome)}"
       data-preco="${preco.toFixed(2)}"
@@ -7694,4 +7696,132 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   window.addEventListener("pointerdown", acionarCartaoMobileMS, true);
+})();
+
+
+/* MENU PROFISSIONAL DE PRODUTOS E CATEGORIAS MS */
+(function menuProfissionalMS(){
+  const fecharDropdowns = (exceto = null) => {
+    document.querySelectorAll('.menu-dropdown-ms.aberto').forEach(drop => {
+      if (drop !== exceto) {
+        drop.classList.remove('aberto');
+        drop.querySelector('.menu-dropdown-toggle-ms')?.setAttribute('aria-expanded','false');
+      }
+    });
+  };
+
+  function prepararDropdowns(){
+    document.querySelectorAll('.menu-dropdown-toggle-ms').forEach(botao => {
+      if (botao.dataset.prontoMs) return;
+      botao.dataset.prontoMs = 'true';
+      botao.addEventListener('click', evento => {
+        evento.preventDefault();
+        evento.stopPropagation();
+        const drop = botao.closest('.menu-dropdown-ms');
+        const abrir = !drop.classList.contains('aberto');
+        fecharDropdowns(drop);
+        drop.classList.toggle('aberto', abrir);
+        botao.setAttribute('aria-expanded', String(abrir));
+      });
+    });
+  }
+
+  function nomeLimpoCategoria(titulo){
+    return String(titulo || 'Produtos')
+      .replace(/\s+MS$/i,'')
+      .replace(/^coleção\s*/i,'')
+      .trim();
+  }
+
+  function montarMenuCategorias(){
+    const painel = document.getElementById('menuCategoriasDinamicasMS');
+    const catalogo = document.getElementById('catalogoBancoMS');
+    if (!painel || !catalogo) return;
+
+    const secoes = [...catalogo.querySelectorAll(':scope > section[id]')];
+    painel.innerHTML = '';
+
+    if (!secoes.length) {
+      painel.innerHTML = '<div class="menu-dropdown-carregando-ms">Nenhuma categoria disponível.</div>';
+      return;
+    }
+
+    secoes.forEach(secao => {
+      const titulo = nomeLimpoCategoria(secao.querySelector('.titulo-section h2')?.textContent || secao.id);
+      const link = document.createElement('a');
+      link.href = `#${secao.id}`;
+      link.innerHTML = `<span>${titulo}</span>`;
+      link.addEventListener('click', evento => {
+        evento.preventDefault();
+        if (typeof fecharProdutoDetalhe === 'function') fecharProdutoDetalhe();
+        fecharDropdowns();
+        secao.scrollIntoView({behavior:'smooth', block:'start'});
+      });
+      painel.appendChild(link);
+    });
+
+    const verTodos = document.createElement('a');
+    verTodos.href = '#catalogoBancoMS';
+    verTodos.className = 'menu-ver-todos-ms';
+    verTodos.innerHTML = '<span>Ver todos os produtos</span>';
+    verTodos.addEventListener('click', evento => {
+      evento.preventDefault();
+      restaurarCatalogo();
+      fecharDropdowns();
+      catalogo.scrollIntoView({behavior:'smooth', block:'start'});
+    });
+    painel.appendChild(verTodos);
+  }
+
+  function restaurarCatalogo(){
+    document.querySelectorAll('#catalogoBancoMS .card-produto').forEach(card => card.style.display = '');
+    document.querySelectorAll('#catalogoBancoMS section.produtos').forEach(secao => secao.style.display = '');
+  }
+
+  function filtrarCatalogo(tipo){
+    const catalogo = document.getElementById('catalogoBancoMS');
+    if (!catalogo) return;
+    restaurarCatalogo();
+    if (!tipo) return;
+
+    catalogo.querySelectorAll('section.produtos').forEach(secao => {
+      let visiveis = 0;
+      secao.querySelectorAll('.card-produto').forEach(card => {
+        const mostrar = card.dataset[tipo] === 'true';
+        card.style.display = mostrar ? '' : 'none';
+        if (mostrar) visiveis++;
+      });
+      secao.style.display = visiveis ? '' : 'none';
+    });
+  }
+
+  document.addEventListener('click', evento => {
+    if (!evento.target.closest('.menu-dropdown-ms')) fecharDropdowns();
+
+    const filtro = evento.target.closest('[data-filtro-produto-ms]');
+    if (filtro) {
+      evento.preventDefault();
+      const tipo = filtro.dataset.filtroProdutoMs;
+      filtrarCatalogo(tipo);
+      fecharDropdowns();
+      document.getElementById('catalogoBancoMS')?.scrollIntoView({behavior:'smooth', block:'start'});
+    }
+
+    const todos = evento.target.closest('.menu-produtos-painel-ms a:not([data-filtro-produto-ms])');
+    if (todos) restaurarCatalogo();
+  });
+
+  document.addEventListener('keydown', evento => {
+    if (evento.key === 'Escape') fecharDropdowns();
+  });
+
+  document.addEventListener('catalogoMSCarregado', () => {
+    montarMenuCategorias();
+    prepararDropdowns();
+  });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    prepararDropdowns();
+    setTimeout(montarMenuCategorias, 800);
+  });
 })();

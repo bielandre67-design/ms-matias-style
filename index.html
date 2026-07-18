@@ -140,15 +140,25 @@
      INÍCIO
   </a>
 
-  <a href="#moletons"
-     onclick="fecharProdutoDetalhe();">
-     PRODUTOS⌄
-  </a>
+  <div class="menu-dropdown-ms" id="dropdownProdutosMS">
+    <button type="button" class="menu-dropdown-toggle-ms" aria-expanded="false">
+      PRODUTOS <span>⌄</span>
+    </button>
+    <div class="menu-dropdown-painel-ms menu-produtos-painel-ms">
+      <a href="#catalogoBancoMS" onclick="fecharProdutoDetalhe();">Todos os produtos</a>
+      <a href="#catalogoBancoMS" data-filtro-produto-ms="destaque">Lançamentos e destaques</a>
+      <a href="#catalogoBancoMS" data-filtro-produto-ms="promocao">Promoções</a>
+    </div>
+  </div>
 
-  <a href="#categoriasHome"
-     onclick="fecharProdutoDetalhe();">
-     CATEGORIAS⌄
-  </a>
+  <div class="menu-dropdown-ms menu-categorias-ms" id="dropdownCategoriasMS">
+    <button type="button" class="menu-dropdown-toggle-ms" aria-expanded="false">
+      CATEGORIAS <span>⌄</span>
+    </button>
+    <div class="menu-dropdown-painel-ms menu-categorias-painel-ms" id="menuCategoriasDinamicasMS">
+      <div class="menu-dropdown-carregando-ms">Carregando categorias...</div>
+    </div>
+  </div>
 
   <a href="javascript:void(0)"
      onclick="fecharProdutoDetalhe(); abrirFavoritos(); return false;">
