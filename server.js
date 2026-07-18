@@ -2030,6 +2030,48 @@ app.delete("/banners/:id", async (req, res, next) => {
 
 
 // CONFIGURAÇÃO DA HOME / PRODUTOS EM DESTAQUE -------------------------------
+
+
+// APARÊNCIA DA LOJA CONTROLADA PELO PAINEL ---------------------------------
+const APARENCIA_PADRAO_MS = {
+  logo: "logo.png", favicon: "logo.png", corPrincipal: "#d9aa35",
+  corSecundaria: "#111214", corBotao: "#d9aa35", corTextoBotao: "#111111",
+  corFundo: "#0b0b0c", corTexto: "#ffffff", corRodape: "#090909",
+  fonte: "Inter,Arial,sans-serif"
+};
+function corHexAparenciaMS(valor, padrao) { return /^#[0-9a-f]{6}$/i.test(String(valor || "")) ? String(valor) : padrao; }
+function limparAparenciaMS(body = {}) {
+  const fontePermitida = ["Inter,Arial,sans-serif","Montserrat,Arial,sans-serif","Arial,sans-serif","Georgia,serif"];
+  return {
+    logo: String(body.logo || APARENCIA_PADRAO_MS.logo).slice(0, 1000),
+    favicon: String(body.favicon || APARENCIA_PADRAO_MS.favicon).slice(0, 1000),
+    corPrincipal: corHexAparenciaMS(body.corPrincipal, APARENCIA_PADRAO_MS.corPrincipal),
+    corSecundaria: corHexAparenciaMS(body.corSecundaria, APARENCIA_PADRAO_MS.corSecundaria),
+    corBotao: corHexAparenciaMS(body.corBotao, APARENCIA_PADRAO_MS.corBotao),
+    corTextoBotao: corHexAparenciaMS(body.corTextoBotao, APARENCIA_PADRAO_MS.corTextoBotao),
+    corFundo: corHexAparenciaMS(body.corFundo, APARENCIA_PADRAO_MS.corFundo),
+    corTexto: corHexAparenciaMS(body.corTexto, APARENCIA_PADRAO_MS.corTexto),
+    corRodape: corHexAparenciaMS(body.corRodape, APARENCIA_PADRAO_MS.corRodape),
+    fonte: fontePermitida.includes(body.fonte) ? body.fonte : APARENCIA_PADRAO_MS.fonte
+  };
+}
+app.get("/aparencia-config", async (req, res, next) => {
+  if (!pool) return res.json(APARENCIA_PADRAO_MS);
+  try {
+    const r = await pool.query("SELECT dados FROM app_state WHERE chave=$1", ["aparencia_config"]);
+    res.json(limparAparenciaMS(r.rows[0]?.dados || APARENCIA_PADRAO_MS));
+  } catch (erro) { next(erro); }
+});
+app.put("/aparencia-config", async (req, res, next) => {
+  if (!pool) return res.status(503).json({ erro:true, mensagem:"PostgreSQL não configurado." });
+  try {
+    const aparencia = limparAparenciaMS(req.body || {});
+    await pool.query(`INSERT INTO app_state (chave,dados,atualizado_em) VALUES ($1,$2::jsonb,NOW())
+      ON CONFLICT(chave) DO UPDATE SET dados=EXCLUDED.dados, atualizado_em=NOW()`, ["aparencia_config", JSON.stringify(aparencia)]);
+    res.json({ ok:true, aparencia });
+  } catch (erro) { next(erro); }
+});
+
 app.get("/home-config", async (req, res, next) => {
   if (!pool) return res.json({ tituloDestaques:"DESTAQUES DA MS", mostrarDestaques:true });
   try {

@@ -15190,3 +15190,13 @@ body.aviso-ms-aberto{overflow:hidden!important;}
 .destaque-vazio-ms{grid-column:1/-1;padding:30px;border:1px dashed rgba(255,255,255,.13);border-radius:18px;text-align:center;color:#aeb3bf;background:rgba(12,13,16,.45)}
 @media(max-width:1100px){.grade-destaques-ms{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:760px){.grade-destaques-ms{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.card-destaque-info-ms{padding:11px}.card-destaque-actions-ms button{min-height:36px;padding:0 9px;font-size:.78rem}}
+
+
+/* APARÊNCIA DINÂMICA DA LOJA - ETAPA 5 */
+:root{--ms-cor-principal:#d9aa35;--ms-cor-secundaria:#111214;--ms-cor-botao:#d9aa35;--ms-cor-texto-botao:#111111;--ms-cor-fundo:#0b0b0c;--ms-cor-texto:#ffffff;--ms-cor-rodape:#090909;--ms-fonte:Inter,Arial,sans-serif}
+body{font-family:var(--ms-fonte)}
+body.aparencia-ms-ativa{background-color:var(--ms-cor-fundo);color:var(--ms-cor-texto)}
+body.aparencia-ms-ativa header,body.aparencia-ms-ativa nav.menu,body.aparencia-ms-ativa .menu-mobile-ms{background-color:var(--ms-cor-secundaria)}
+body.aparencia-ms-ativa footer,body.aparencia-ms-ativa .rodape,body.aparencia-ms-ativa .footer{background-color:var(--ms-cor-rodape)}
+body.aparencia-ms-ativa .btn-comprar,body.aparencia-ms-ativa .btn-adicionar,body.aparencia-ms-ativa button.finalizar,body.aparencia-ms-ativa .botao-comprar,body.aparencia-ms-ativa .btn-primary{background:var(--ms-cor-botao);color:var(--ms-cor-texto-botao)}
+body.aparencia-ms-ativa .preco,body.aparencia-ms-ativa .produto-preco,body.aparencia-ms-ativa .destaque-home-card-ms strong,body.aparencia-ms-ativa h2:after{color:var(--ms-cor-principal);border-color:var(--ms-cor-principal)}

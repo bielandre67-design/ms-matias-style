@@ -17,6 +17,10 @@
 <style>
 .destaques-intro-ms{display:flex;justify-content:space-between;align-items:center;gap:18px;padding:20px;border:1px solid var(--line);border-radius:20px;background:var(--panel2);margin-bottom:18px}.destaques-config-ms{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:end}.destaques-config-ms label{display:grid;gap:7px;font-weight:850}.destaques-config-ms input[type=text]{min-height:46px;border:1px solid var(--line);border-radius:13px;background:var(--panel);color:var(--text);padding:0 13px}.grade-destaques-ms{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.card-destaque-admin-ms{border:1px solid var(--line);border-radius:20px;overflow:hidden;background:var(--panel2)}.card-destaque-admin-ms img{width:100%;aspect-ratio:1/1;object-fit:cover;display:block;background:#111}.card-destaque-info-ms{padding:14px}.card-destaque-info-ms h3{margin:0 0 5px}.card-destaque-info-ms p{margin:0;color:var(--muted)}.card-destaque-actions-ms{display:grid;grid-template-columns:1fr 44px 44px;gap:8px;margin-top:12px}.card-destaque-actions-ms button{min-height:42px;border-radius:11px;border:1px solid var(--line);background:var(--panel);color:var(--text);font-weight:900;cursor:pointer}.card-destaque-actions-ms .ativo{background:#e3b93f;color:#111;border-color:#e3b93f}.destaque-vazio-ms{grid-column:1/-1;padding:34px;border:1px dashed var(--line);border-radius:18px;text-align:center;color:var(--muted)}@media(max-width:900px){.grade-destaques-ms{grid-template-columns:repeat(2,minmax(0,1fr))}.destaques-config-ms{grid-template-columns:1fr}}@media(max-width:580px){.grade-destaques-ms{grid-template-columns:1fr}.destaques-intro-ms{align-items:flex-start;flex-direction:column}}
 </style>
+
+<style>
+.aparencia-grid-ms{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(320px,.85fr);gap:20px}.aparencia-card-ms{border:1px solid var(--line);background:var(--panel2);border-radius:22px;padding:20px}.aparencia-card-ms h3{margin:0 0 6px}.aparencia-card-ms>p{margin:0 0 18px;color:var(--muted)}.aparencia-campos-ms{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.aparencia-campo-ms{display:grid;gap:8px;font-weight:850}.aparencia-campo-ms.full{grid-column:1/-1}.aparencia-campo-ms input[type=text],.aparencia-campo-ms input[type=url],.aparencia-campo-ms select{min-height:46px;border:1px solid var(--line);border-radius:13px;background:var(--panel);color:var(--text);padding:0 13px}.aparencia-cor-ms{display:grid;grid-template-columns:52px 1fr;gap:9px}.aparencia-cor-ms input[type=color]{width:52px;height:46px;padding:3px;border:1px solid var(--line);border-radius:13px;background:var(--panel);cursor:pointer}.aparencia-upload-ms{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.aparencia-upload-ms img{width:76px;height:76px;object-fit:contain;border-radius:16px;border:1px solid var(--line);background:#111;padding:7px}.aparencia-upload-ms button,.aparencia-actions-ms button{min-height:44px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--text);font-weight:900;padding:0 16px;cursor:pointer}.aparencia-actions-ms{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:18px}.aparencia-actions-ms .salvar{background:#e3b93f;color:#111;border-color:#e3b93f}.preview-loja-ms{position:sticky;top:18px;overflow:hidden;border:1px solid var(--line);border-radius:24px;background:#0b0b0c;min-height:520px;box-shadow:0 22px 70px rgba(0,0,0,.28)}.preview-top-ms{display:flex;align-items:center;justify-content:space-between;padding:15px 17px;background:#111;border-bottom:1px solid rgba(255,255,255,.1)}.preview-top-ms img{width:50px;height:50px;object-fit:contain}.preview-top-ms strong{color:#fff}.preview-hero-ms{min-height:180px;display:grid;place-items:center;text-align:center;padding:25px;background:linear-gradient(135deg,#111,#202020)}.preview-hero-ms h3{margin:0 0 8px;font-size:1.55rem}.preview-hero-ms p{margin:0 0 16px;opacity:.8}.preview-hero-ms button{border:0;border-radius:999px;min-height:42px;padding:0 18px;font-weight:900}.preview-produtos-ms{padding:18px}.preview-produtos-ms h4{margin:0 0 14px}.preview-mini-grid-ms{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.preview-mini-card-ms{border-radius:15px;padding:10px;border:1px solid rgba(255,255,255,.11);background:#171717}.preview-mini-card-ms div{aspect-ratio:1;background:#242424;border-radius:10px;margin-bottom:9px}.preview-mini-card-ms span{display:block;height:8px;border-radius:99px;background:rgba(255,255,255,.22);margin:7px 0}.preview-footer-ms{padding:17px;text-align:center;font-size:.82rem}.aparencia-status-ms{font-weight:800}.aparencia-status-ms.ok{color:#75df8e}.aparencia-status-ms.erro{color:#ff7d8f}@media(max-width:1000px){.aparencia-grid-ms{grid-template-columns:1fr}.preview-loja-ms{position:relative;top:auto}}@media(max-width:620px){.aparencia-campos-ms{grid-template-columns:1fr}.aparencia-campo-ms.full{grid-column:auto}}
+</style>
 </head>
 <body>
 <script>
@@ -40,6 +44,7 @@
       <button class="ms-tab" onclick="abrirAbaMS('produtosAba', this)"><span>▦</span> Produtos</button>
       <button class="ms-tab" onclick="abrirAbaMS('vitrineAba', this)"><span>▧</span> Vitrine do site</button>
       <button class="ms-tab" onclick="abrirAbaMS('destaquesAba', this)"><span>★</span> Destaques da home</button>
+      <button class="ms-tab" onclick="abrirAbaMS('aparenciaAba', this)"><span>🎨</span> Personalizar loja</button>
       <button class="ms-tab" onclick="abrirAbaMS('estoqueAba', this)"><span>◇</span> Estoque</button>
       <button class="ms-tab" onclick="abrirAbaMS('pedidosAba', this)"><span>◌</span> Pedidos</button>
       <button class="ms-tab" onclick="abrirAbaMS('cuponsAba', this)"><span>%</span> Cupons</button>
@@ -170,6 +175,42 @@
       </section>
     </section>
 
+
+    <section id="aparenciaAba" class="ms-painel">
+      <div class="card-header-ms"><div><h2>Personalizar loja</h2><p>Troque a identidade visual sem abrir o VS Code. A prévia muda na hora.</p></div></div>
+      <div class="aparencia-grid-ms">
+        <div>
+          <section class="aparencia-card-ms">
+            <h3>Identidade</h3><p>Logo e ícone exibidos para os clientes.</p>
+            <div class="aparencia-campos-ms">
+              <div class="aparencia-campo-ms full"><span>Logo da loja</span><div class="aparencia-upload-ms"><img id="aparenciaLogoPreviewMS" src="logo.png" alt="Logo atual"><button type="button" onclick="document.getElementById('aparenciaLogoArquivoMS').click()">📷 Trocar logo</button><input id="aparenciaLogoArquivoMS" type="file" accept="image/*" hidden></div></div>
+              <div class="aparencia-campo-ms full"><span>Favicon</span><div class="aparencia-upload-ms"><img id="aparenciaFaviconPreviewMS" src="logo.png" alt="Favicon atual"><button type="button" onclick="document.getElementById('aparenciaFaviconArquivoMS').click()">Trocar favicon</button><input id="aparenciaFaviconArquivoMS" type="file" accept="image/*" hidden></div></div>
+            </div>
+          </section>
+          <section class="aparencia-card-ms" style="margin-top:18px">
+            <h3>Cores da loja</h3><p>Clique nas cores. A mini loja ao lado mostra o resultado instantaneamente.</p>
+            <div class="aparencia-campos-ms">
+              <label class="aparencia-campo-ms">Cor principal<div class="aparencia-cor-ms"><input id="aparenciaCorPrincipalMS" type="color" value="#d9aa35"><input id="aparenciaCorPrincipalTextoMS" type="text" value="#d9aa35"></div></label>
+              <label class="aparencia-campo-ms">Cor secundária<div class="aparencia-cor-ms"><input id="aparenciaCorSecundariaMS" type="color" value="#111214"><input id="aparenciaCorSecundariaTextoMS" type="text" value="#111214"></div></label>
+              <label class="aparencia-campo-ms">Botões<div class="aparencia-cor-ms"><input id="aparenciaCorBotaoMS" type="color" value="#d9aa35"><input id="aparenciaCorBotaoTextoMS" type="text" value="#d9aa35"></div></label>
+              <label class="aparencia-campo-ms">Texto dos botões<div class="aparencia-cor-ms"><input id="aparenciaCorTextoBotaoMS" type="color" value="#111111"><input id="aparenciaCorTextoBotaoTextoMS" type="text" value="#111111"></div></label>
+              <label class="aparencia-campo-ms">Fundo da loja<div class="aparencia-cor-ms"><input id="aparenciaCorFundoMS" type="color" value="#0b0b0c"><input id="aparenciaCorFundoTextoMS" type="text" value="#0b0b0c"></div></label>
+              <label class="aparencia-campo-ms">Textos<div class="aparencia-cor-ms"><input id="aparenciaCorTextoMS" type="color" value="#ffffff"><input id="aparenciaCorTextoTextoMS" type="text" value="#ffffff"></div></label>
+              <label class="aparencia-campo-ms">Rodapé<div class="aparencia-cor-ms"><input id="aparenciaCorRodapeMS" type="color" value="#090909"><input id="aparenciaCorRodapeTextoMS" type="text" value="#090909"></div></label>
+              <label class="aparencia-campo-ms">Fonte<select id="aparenciaFonteMS"><option value="Inter,Arial,sans-serif">Moderna</option><option value="Montserrat,Arial,sans-serif">Montserrat</option><option value="Arial,sans-serif">Arial</option><option value="Georgia,serif">Elegante</option></select></label>
+            </div>
+            <div class="aparencia-actions-ms"><button class="salvar" onclick="salvarAparenciaMS()">Salvar aparência</button><button onclick="restaurarAparenciaMS()">Restaurar padrão</button><span id="aparenciaStatusMS" class="aparencia-status-ms"></span></div>
+          </section>
+        </div>
+        <aside id="previewLojaMS" class="preview-loja-ms">
+          <div class="preview-top-ms"><img id="previewLogoLojaMS" src="logo.png" alt="Logo"><strong>MS MATIAS STYLE</strong><span>☰</span></div>
+          <div class="preview-hero-ms"><div><h3>SEU ESTILO, SUA MARCA</h3><p>Prévia das cores escolhidas</p><button id="previewBotaoLojaMS">VER COLEÇÃO</button></div></div>
+          <div class="preview-produtos-ms"><h4>DESTAQUES</h4><div class="preview-mini-grid-ms"><div class="preview-mini-card-ms"><div></div><span></span><b>R$ 89,90</b></div><div class="preview-mini-card-ms"><div></div><span></span><b>R$ 149,90</b></div></div></div>
+          <div class="preview-footer-ms">© MS Matias Style</div>
+        </aside>
+      </div>
+    </section>
+
     <section id="estoqueAba" class="ms-painel">
       <div class="page-title-ms">
         <div>
@@ -297,10 +338,11 @@ function abrirAbaMS(id, btn){
   document.getElementById(id)?.classList.add('ativa');
   document.querySelectorAll('.ms-tab').forEach(b => b.classList.remove('ativa'));
   btn?.classList.add('ativa');
-  const titulos = {visao:'Dashboard', vitrineAba:'Vitrine do site', produtosAba:'Produtos', estoqueAba:'Estoque', pedidosAba:'Pedidos', cuponsAba:'Cupons', relatoriosAba:'Relatórios'};
+  const titulos = {visao:'Dashboard', vitrineAba:'Vitrine do site', destaquesAba:'Destaques da home', aparenciaAba:'Personalizar loja', produtosAba:'Produtos', estoqueAba:'Estoque', pedidosAba:'Pedidos', cuponsAba:'Cupons', relatoriosAba:'Relatórios'};
   const titulo = document.getElementById('tituloPaginaMS');
   if(titulo) titulo.innerText = titulos[id] || 'Painel ADM';
   if(id === 'vitrineAba') carregarBannersMS();
+  if(id === 'aparenciaAba') carregarAparenciaMS();
   if(id === 'estoqueAba') carregarEstoqueMS();
   if(id === 'produtosAba') carregarProdutosAdminMS();
   if(id === 'cuponsAba') carregarCuponsMS();
@@ -627,6 +669,22 @@ async function alternarBannerMS(id){const b=bannersAdminMS.find(x=>Number(x.id)=
 async function moverBannerMS(id,direcao){const i=bannersAdminMS.findIndex(x=>Number(x.id)===Number(id));const j=i+direcao;if(i<0||j<0||j>=bannersAdminMS.length)return;const a={...bannersAdminMS[i],ordem:j};const b={...bannersAdminMS[j],ordem:i};try{await Promise.all([atualizarBannerRapidoMS(a),atualizarBannerRapidoMS(b)]);await carregarBannersMS();}catch(e){alert(e.message);}}
 async function excluirBannerMS(id){if(!confirm('Excluir esta foto do slider?'))return;const r=await fetch(`${API_ADMIN_MS}/banners/${id}`,{method:'DELETE'});if(!r.ok)return alert('Não consegui excluir.');await carregarBannersMS();}
 document.addEventListener('change',e=>{if(e.target?.id==='bannerTrocaRapidaMS')processarTrocaRapidaMS(e.target.files?.[0]);});
+
+// APARÊNCIA DA LOJA ---------------------------------------------------------
+const APARENCIA_PADRAO_MS={logo:'logo.png',favicon:'logo.png',corPrincipal:'#d9aa35',corSecundaria:'#111214',corBotao:'#d9aa35',corTextoBotao:'#111111',corFundo:'#0b0b0c',corTexto:'#ffffff',corRodape:'#090909',fonte:'Inter,Arial,sans-serif'};
+let aparenciaAtualMS={...APARENCIA_PADRAO_MS};
+function normalizarCorMS(v,p){return /^#[0-9a-f]{6}$/i.test(String(v||''))?String(v):p;}
+function statusAparenciaMS(t,e=false){const x=document.getElementById('aparenciaStatusMS');if(x){x.textContent=t||'';x.className='aparencia-status-ms '+(e?'erro':'ok');}}
+function aplicarPreviewAparenciaMS(){const a=aparenciaAtualMS;const box=document.getElementById('previewLojaMS');if(!box)return;box.style.background=a.corFundo;box.style.color=a.corTexto;box.style.fontFamily=a.fonte;box.querySelector('.preview-top-ms').style.background=a.corSecundaria;box.querySelector('.preview-hero-ms').style.background=`linear-gradient(135deg,${a.corSecundaria},${a.corFundo})`;box.querySelector('.preview-footer-ms').style.background=a.corRodape;const bt=document.getElementById('previewBotaoLojaMS');bt.style.background=a.corBotao;bt.style.color=a.corTextoBotao;box.querySelectorAll('b').forEach(b=>b.style.color=a.corPrincipal);document.getElementById('previewLogoLojaMS').src=a.logo||'logo.png';}
+function preencherAparenciaMS(a){aparenciaAtualMS={...APARENCIA_PADRAO_MS,...a};const mapa={aparenciaCorPrincipalMS:'corPrincipal',aparenciaCorSecundariaMS:'corSecundaria',aparenciaCorBotaoMS:'corBotao',aparenciaCorTextoBotaoMS:'corTextoBotao',aparenciaCorFundoMS:'corFundo',aparenciaCorTextoMS:'corTexto',aparenciaCorRodapeMS:'corRodape'};Object.entries(mapa).forEach(([id,k])=>{const c=document.getElementById(id),t=document.getElementById(id.replace('MS','TextoMS'));if(c)c.value=normalizarCorMS(aparenciaAtualMS[k],APARENCIA_PADRAO_MS[k]);if(t)t.value=c?.value||aparenciaAtualMS[k];});document.getElementById('aparenciaFonteMS').value=aparenciaAtualMS.fonte||APARENCIA_PADRAO_MS.fonte;document.getElementById('aparenciaLogoPreviewMS').src=aparenciaAtualMS.logo||'logo.png';document.getElementById('aparenciaFaviconPreviewMS').src=aparenciaAtualMS.favicon||'logo.png';aplicarPreviewAparenciaMS();}
+async function carregarAparenciaMS(){statusAparenciaMS('Carregando...');try{const r=await fetch(`${API_ADMIN_MS}/aparencia-config?t=${Date.now()}`,{cache:'no-store'});const d=r.ok?await r.json():APARENCIA_PADRAO_MS;preencherAparenciaMS(d);statusAparenciaMS('');}catch(e){preencherAparenciaMS(APARENCIA_PADRAO_MS);statusAparenciaMS('Não consegui carregar. Mostrando o padrão.',true);}}
+async function uploadAparenciaMS(arq){const fd=new FormData();fd.append('imagens',arq);const r=await fetch(`${API_ADMIN_MS}/upload-imagens`,{method:'POST',body:fd});const d=await r.json();if(!r.ok)throw new Error(d.mensagem||'Erro no upload');return d.urls?.[0];}
+async function arquivoAparenciaMS(tipo,arq){if(!arq)return;statusAparenciaMS('Enviando imagem...');try{const url=await uploadAparenciaMS(arq);aparenciaAtualMS[tipo]=url;preencherAparenciaMS(aparenciaAtualMS);statusAparenciaMS('Imagem pronta. Clique em Salvar aparência.');}catch(e){statusAparenciaMS(e.message,true);}}
+async function salvarAparenciaMS(){statusAparenciaMS('Salvando...');try{const r=await fetch(`${API_ADMIN_MS}/aparencia-config`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(aparenciaAtualMS)});const d=await r.json();if(!r.ok)throw new Error(d.mensagem||'Erro ao salvar');preencherAparenciaMS(d.aparencia||aparenciaAtualMS);statusAparenciaMS('Aparência publicada na loja ✓');}catch(e){statusAparenciaMS(e.message||'Não consegui salvar.',true);}}
+function restaurarAparenciaMS(){if(!confirm('Restaurar as cores e imagens padrão da loja?'))return;preencherAparenciaMS(APARENCIA_PADRAO_MS);statusAparenciaMS('Padrão carregado. Clique em Salvar aparência.');}
+document.addEventListener('input',e=>{const pares={aparenciaCorPrincipalMS:'corPrincipal',aparenciaCorSecundariaMS:'corSecundaria',aparenciaCorBotaoMS:'corBotao',aparenciaCorTextoBotaoMS:'corTextoBotao',aparenciaCorFundoMS:'corFundo',aparenciaCorTextoMS:'corTexto',aparenciaCorRodapeMS:'corRodape'};let id=e.target?.id;if(!id)return;let base=id.replace('TextoMS','MS');let k=pares[base];if(k){const val=normalizarCorMS(e.target.value,aparenciaAtualMS[k]);aparenciaAtualMS[k]=val;const color=document.getElementById(base),text=document.getElementById(base.replace('MS','TextoMS'));if(color&&color!==e.target)color.value=val;if(text&&text!==e.target)text.value=val;aplicarPreviewAparenciaMS();}if(id==='aparenciaFonteMS'){aparenciaAtualMS.fonte=e.target.value;aplicarPreviewAparenciaMS();}});
+document.addEventListener('change',e=>{if(e.target?.id==='aparenciaLogoArquivoMS')arquivoAparenciaMS('logo',e.target.files?.[0]);if(e.target?.id==='aparenciaFaviconArquivoMS')arquivoAparenciaMS('favicon',e.target.files?.[0]);});
+
 </script>
 </body>
 </html>

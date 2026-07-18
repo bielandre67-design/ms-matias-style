@@ -7928,3 +7928,14 @@ document.addEventListener("DOMContentLoaded", () => {
   async function carregar(){try{cssHome();const [rp,rc]=await Promise.all([fetch(`${API_HOME_MS}/produtos?ativos=true&t=${Date.now()}`,{cache:'no-store'}),fetch(`${API_HOME_MS}/home-config?t=${Date.now()}`,{cache:'no-store'})]);if(!rp.ok)return;const dados=await rp.json();const produtos=Array.isArray(dados)?dados:(dados.produtos||[]);const cfg=rc.ok?await rc.json():{};const destaques=produtos.filter(p=>p.destaque).sort((a,b)=>Number(a.destaqueOrdem||9999)-Number(b.destaqueOrdem||9999)||Number(a.id)-Number(b.id));document.getElementById('destaquesHomeMS')?.remove();if(cfg.mostrarDestaques===false||!destaques.length)return;const sec=document.createElement('section');sec.id='destaquesHomeMS';sec.className='destaques-home-ms';sec.innerHTML=`<div class="destaques-home-topo-ms"><h2>${esc(cfg.tituloDestaques||'DESTAQUES DA MS')}</h2></div><div class="destaques-home-grade-ms">${destaques.map(card).join('')}</div>`;const cats=document.getElementById('categoriasHome');cats?.insertAdjacentElement('afterend',sec);}catch(e){console.warn('Destaques da home indisponíveis.',e);}}
   document.addEventListener('DOMContentLoaded',carregar);window.carregarDestaquesLojaMS=carregar;
 })();
+
+
+// APARÊNCIA DA LOJA CONTROLADA PELO PAINEL ---------------------------------
+(function(){
+  const API_APARENCIA_MS=(location.hostname==='localhost'||location.hostname==='127.0.0.1')?'http://localhost:3000':'https://ms-matias-style.onrender.com';
+  const padrao={logo:'logo.png',favicon:'logo.png',corPrincipal:'#d9aa35',corSecundaria:'#111214',corBotao:'#d9aa35',corTextoBotao:'#111111',corFundo:'#0b0b0c',corTexto:'#ffffff',corRodape:'#090909',fonte:'Inter,Arial,sans-serif'};
+  function aplicar(a){a={...padrao,...a};const r=document.documentElement.style;r.setProperty('--ms-cor-principal',a.corPrincipal);r.setProperty('--ms-cor-secundaria',a.corSecundaria);r.setProperty('--ms-cor-botao',a.corBotao);r.setProperty('--ms-cor-texto-botao',a.corTextoBotao);r.setProperty('--ms-cor-fundo',a.corFundo);r.setProperty('--ms-cor-texto',a.corTexto);r.setProperty('--ms-cor-rodape',a.corRodape);r.setProperty('--ms-fonte',a.fonte);document.body.classList.add('aparencia-ms-ativa');if(a.logo){document.querySelectorAll('img[src="logo.png"],img[data-logo-ms]').forEach(img=>{img.src=a.logo;img.dataset.logoMs='1';});}let fav=document.querySelector('link[rel~="icon"]');if(!fav){fav=document.createElement('link');fav.rel='icon';document.head.appendChild(fav);}fav.href=a.favicon||a.logo||'logo.png';}
+  async function carregar(){try{const r=await fetch(`${API_APARENCIA_MS}/aparencia-config?t=${Date.now()}`,{cache:'no-store'});aplicar(r.ok?await r.json():padrao);}catch(e){aplicar(padrao);console.warn('Aparência personalizada indisponível.',e);}}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',carregar);else carregar();
+  window.carregarAparenciaLojaMS=carregar;
+})();
