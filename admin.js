@@ -832,7 +832,7 @@ Equipe MS Matias Style 🤍`;
       .ms-prod-head h2{margin:0;font-size:28px}.ms-prod-btn{border:0;border-radius:14px;padding:12px 18px;font-weight:900;cursor:pointer;background:#d8ad43;color:#111}
       .ms-prod-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}.ms-prod-card{background:#14171d;border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:16px;display:grid;grid-template-columns:76px 1fr;gap:14px}
       .ms-prod-card img{width:76px;height:96px;object-fit:cover;border-radius:12px;background:#222}.ms-prod-card h3{margin:0 0 7px}.ms-prod-meta{font-size:13px;color:#aaa}.ms-prod-acoes{grid-column:1/-1;display:flex;gap:8px}.ms-prod-acoes button{flex:1;border:1px solid rgba(255,255,255,.13);background:#20242d;color:white;border-radius:12px;padding:10px;cursor:pointer}
-      .ms-prod-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;background:#14171d;border:1px solid rgba(255,255,255,.1);padding:18px;border-radius:20px;margin-bottom:18px}.ms-prod-form label{display:grid;gap:6px;font-size:13px;font-weight:800}.ms-prod-form input,.ms-prod-form textarea{background:#0f1116;color:white;border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:11px}.ms-prod-form textarea{min-height:85px;resize:vertical}.ms-prod-full{grid-column:1/-1}.ms-upload-box{grid-column:1/-1;border:1px dashed rgba(216,173,67,.45);background:rgba(216,173,67,.045);border-radius:16px;padding:14px}.ms-upload-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.ms-upload-title{font-weight:950}.ms-upload-help{font-size:12px;color:#aaa;margin-top:4px}.ms-file-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:12px;padding:11px 15px;background:#d8ad43;color:#111;font-weight:950;cursor:pointer}.ms-file-btn input{display:none}.ms-preview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(105px,1fr));gap:10px;margin-top:12px}.ms-preview-item{position:relative;border:1px solid rgba(255,255,255,.12);border-radius:14px;overflow:hidden;background:#0f1116;min-height:125px}.ms-preview-item img{width:100%;height:125px;object-fit:cover;display:block}.ms-preview-item button{position:absolute;right:6px;top:6px;width:30px;height:30px;border:0;border-radius:50%;background:rgba(0,0,0,.78);color:white;font-size:18px;cursor:pointer}.ms-preview-vazio{margin-top:10px;color:#888;font-size:12px}.ms-medidas-box{grid-column:1/-1;padding:14px;border:1px solid rgba(216,173,67,.28);border-radius:16px;background:rgba(216,173,67,.055)}.ms-medidas-title{font-weight:950;margin-bottom:4px}.ms-medidas-ajuda{font-size:12px;color:#aaa;margin-bottom:12px}.ms-medidas-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.ms-medidas-grid label{min-width:0}.ms-medidas-grid input{width:100%;box-sizing:border-box}.ms-medidas-status{margin-top:7px;font-size:12px;font-weight:850}.ms-medidas-ok{color:#66db7b}.ms-medidas-pendente{color:#ffd36a}.ms-checks{display:flex;gap:16px;align-items:center;flex-wrap:wrap}.ms-checks label{display:flex;grid-auto-flow:column;align-items:center}.ms-form-actions{display:flex;gap:10px}.ms-msg{padding:11px 13px;border-radius:12px;background:#20242d;margin-bottom:14px;display:none}@media(max-width:700px){.ms-prod-form{grid-template-columns:1fr}.ms-prod-full,.ms-medidas-box{grid-column:auto}.ms-medidas-grid{grid-template-columns:1fr 1fr}}@media(max-width:430px){.ms-medidas-grid{grid-template-columns:1fr}}
+      .ms-prod-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;background:#14171d;border:1px solid rgba(255,255,255,.1);padding:18px;border-radius:20px;margin-bottom:18px}.ms-prod-form label{display:grid;gap:6px;font-size:13px;font-weight:800}.ms-prod-form input,.ms-prod-form textarea{background:#0f1116;color:white;border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:11px}.ms-prod-form textarea{min-height:85px;resize:vertical}.ms-prod-full{grid-column:1/-1}.ms-upload-box{grid-column:1/-1;border:1px dashed rgba(216,173,67,.45);background:rgba(216,173,67,.045);border-radius:16px;padding:14px}.ms-upload-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.ms-upload-title{font-weight:950}.ms-upload-help{font-size:12px;color:#aaa;margin-top:4px}.ms-file-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:12px;padding:11px 15px;background:#d8ad43;color:#111;font-weight:950;cursor:pointer}.ms-file-btn input{display:none}.ms-preview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(105px,1fr));gap:10px;margin-top:12px}.ms-preview-item{position:relative;border:1px solid rgba(255,255,255,.12);border-radius:14px;overflow:hidden;background:#0f1116;min-height:125px}.ms-preview-item img{width:100%;height:125px;object-fit:cover;display:block}.ms-preview-item button{position:absolute;border:0;background:rgba(0,0,0,.82);color:white;cursor:pointer}.ms-preview-remove{right:6px;top:6px;width:30px;height:30px;border-radius:50%;font-size:18px}.ms-preview-capa{left:6px;bottom:6px;border-radius:9px;padding:7px 9px;font-size:11px;font-weight:900}.ms-preview-order{right:6px;bottom:6px;display:flex;gap:4px;background:transparent!important}.ms-preview-order button{position:static;width:28px;height:28px;border-radius:8px;font-size:14px}.ms-preview-count{font-size:12px;color:#d8ad43;font-weight:900;margin-top:8px}.ms-preview-vazio{margin-top:10px;color:#888;font-size:12px}.ms-medidas-box{grid-column:1/-1;padding:14px;border:1px solid rgba(216,173,67,.28);border-radius:16px;background:rgba(216,173,67,.055)}.ms-medidas-title{font-weight:950;margin-bottom:4px}.ms-medidas-ajuda{font-size:12px;color:#aaa;margin-bottom:12px}.ms-medidas-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.ms-medidas-grid label{min-width:0}.ms-medidas-grid input{width:100%;box-sizing:border-box}.ms-medidas-status{margin-top:7px;font-size:12px;font-weight:850}.ms-medidas-ok{color:#66db7b}.ms-medidas-pendente{color:#ffd36a}.ms-checks{display:flex;gap:16px;align-items:center;flex-wrap:wrap}.ms-checks label{display:flex;grid-auto-flow:column;align-items:center}.ms-form-actions{display:flex;gap:10px}.ms-msg{padding:11px 13px;border-radius:12px;background:#20242d;margin-bottom:14px;display:none}@media(max-width:700px){.ms-prod-form{grid-template-columns:1fr}.ms-prod-full,.ms-medidas-box{grid-column:auto}.ms-medidas-grid{grid-template-columns:1fr 1fr}}@media(max-width:430px){.ms-medidas-grid{grid-template-columns:1fr}}
       </style>
       <div class="ms-prod-head"><div><h2>Produtos</h2><div class="ms-prod-meta">Cadastre e edite sem mexer no HTML.</div></div><button class="ms-prod-btn" onclick="novoProdutoMS()">+ Novo produto</button></div>
       <div id="msgProdutoMS" class="ms-msg"></div>
@@ -847,7 +847,7 @@ Equipe MS Matias Style 🤍`;
           <div id="previewImagemPrincipalMS" class="ms-preview-grid"></div>
         </div>
         <div class="ms-upload-box">
-          <div class="ms-upload-top"><div><div class="ms-upload-title">🖼️ Outras imagens</div><div class="ms-upload-help">Você pode selecionar até 8 fotos de uma vez.</div></div><label class="ms-file-btn">Escolher várias<input id="produtoImagensArquivosMS" type="file" accept="image/jpeg,image/png,image/webp" multiple></label></div>
+          <div class="ms-upload-top"><div><div class="ms-upload-title">🖼️ Outras imagens</div><div class="ms-upload-help">Selecione até 12 fotos adicionais. Use as setas para mudar a ordem ou escolha uma delas como capa.</div></div><label class="ms-file-btn">Escolher várias<input id="produtoImagensArquivosMS" type="file" accept="image/jpeg,image/png,image/webp" multiple></label></div>
           <div id="previewOutrasImagensMS" class="ms-preview-grid"></div>
         </div>
         <label class="ms-prod-full">Descrição<textarea id="produtoDescricaoMS"></textarea></label>
@@ -877,7 +877,7 @@ Equipe MS Matias Style 🤍`;
   let imagemPrincipalSelecionadaMS = '';
   let outrasImagensSelecionadasMS = [];
 
-  function comprimirImagemMS(arquivo, maxDimensao=1400, qualidade=0.82){
+  function comprimirImagemMS(arquivo, maxDimensao=1200, qualidadeInicial=0.78){
     return new Promise((resolve,reject)=>{
       if(!arquivo || !arquivo.type?.startsWith('image/')) return reject(new Error('Selecione apenas arquivos de imagem.'));
       if(arquivo.size > 12 * 1024 * 1024) return reject(new Error(`A imagem ${arquivo.name} ultrapassa 12 MB.`));
@@ -892,8 +892,13 @@ Equipe MS Matias Style 🤍`;
           largura=Math.max(1,Math.round(largura*escala)); altura=Math.max(1,Math.round(altura*escala));
           const canvas=document.createElement('canvas'); canvas.width=largura; canvas.height=altura;
           const ctx=canvas.getContext('2d'); ctx.drawImage(img,0,0,largura,altura);
+          let qualidade=qualidadeInicial;
           let data=canvas.toDataURL('image/webp',qualidade);
           if(!data.startsWith('data:image/webp')) data=canvas.toDataURL('image/jpeg',qualidade);
+          while(data.length > 430000 && qualidade > 0.46){
+            qualidade -= 0.08;
+            data=canvas.toDataURL(data.startsWith('data:image/webp')?'image/webp':'image/jpeg',qualidade);
+          }
           resolve(data);
         };
         img.src=leitor.result;
@@ -902,15 +907,28 @@ Equipe MS Matias Style 🤍`;
     });
   }
 
+  function escaparAttrImagemMS(valor){
+    return String(valor||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function tamanhoTotalImagensMS(){
+    return (imagemPrincipalSelecionadaMS?.length||0)+outrasImagensSelecionadasMS.reduce((s,x)=>s+(x?.length||0),0);
+  }
+
   function renderPreviewsImagensMS(){
     const principal=document.getElementById('previewImagemPrincipalMS');
     const outras=document.getElementById('previewOutrasImagensMS');
     if(principal) principal.innerHTML=imagemPrincipalSelecionadaMS
-      ? `<div class="ms-preview-item"><img src="${imagemPrincipalSelecionadaMS}" alt="Prévia da imagem principal"><button type="button" onclick="removerImagemPrincipalMS()" title="Remover">×</button></div>`
+      ? `<div class="ms-preview-item"><img src="${escaparAttrImagemMS(imagemPrincipalSelecionadaMS)}" alt="Prévia da imagem principal"><button class="ms-preview-remove" type="button" onclick="removerImagemPrincipalMS()" title="Remover">×</button></div>`
       : '<div class="ms-preview-vazio">Nenhuma imagem principal selecionada.</div>';
-    if(outras) outras.innerHTML=outrasImagensSelecionadasMS.length
-      ? outrasImagensSelecionadasMS.map((src,i)=>`<div class="ms-preview-item"><img src="${src}" alt="Prévia adicional ${i+1}"><button type="button" onclick="removerOutraImagemMS(${i})" title="Remover">×</button></div>`).join('')
-      : '<div class="ms-preview-vazio">Nenhuma imagem adicional selecionada.</div>';
+    if(outras){
+      outras.innerHTML=outrasImagensSelecionadasMS.length
+        ? outrasImagensSelecionadasMS.map((src,i)=>`<div class="ms-preview-item"><img src="${escaparAttrImagemMS(src)}" alt="Prévia adicional ${i+1}"><button class="ms-preview-remove" type="button" onclick="removerOutraImagemMS(${i})" title="Remover">×</button><button class="ms-preview-capa" type="button" onclick="definirComoCapaMS(${i})">Usar como capa</button><div class="ms-preview-order"><button type="button" onclick="moverImagemMS(${i},-1)" ${i===0?'disabled':''}>←</button><button type="button" onclick="moverImagemMS(${i},1)" ${i===outrasImagensSelecionadasMS.length-1?'disabled':''}>→</button></div></div>`).join('')
+        : '<div class="ms-preview-vazio">Nenhuma imagem adicional selecionada.</div>';
+      outras.insertAdjacentHTML('afterend', `<div id="contadorFotosMS" class="ms-preview-count">${outrasImagensSelecionadasMS.length}/12 fotos adicionais</div>`);
+      const antigos=document.querySelectorAll('#contadorFotosMS');
+      antigos.forEach((el,i)=>{ if(i<antigos.length-1) el.remove(); });
+    }
     const principalHidden=document.getElementById('produtoImagemMS');
     const outrasHidden=document.getElementById('produtoImagensMS');
     if(principalHidden) principalHidden.value=imagemPrincipalSelecionadaMS;
@@ -919,6 +937,18 @@ Equipe MS Matias Style 🤍`;
 
   window.removerImagemPrincipalMS=function(){ imagemPrincipalSelecionadaMS=''; renderPreviewsImagensMS(); };
   window.removerOutraImagemMS=function(indice){ outrasImagensSelecionadasMS.splice(indice,1); renderPreviewsImagensMS(); };
+  window.moverImagemMS=function(indice,direcao){
+    const destino=indice+direcao;
+    if(destino<0||destino>=outrasImagensSelecionadasMS.length)return;
+    [outrasImagensSelecionadasMS[indice],outrasImagensSelecionadasMS[destino]]=[outrasImagensSelecionadasMS[destino],outrasImagensSelecionadasMS[indice]];
+    renderPreviewsImagensMS();
+  };
+  window.definirComoCapaMS=function(indice){
+    const novaCapa=outrasImagensSelecionadasMS.splice(indice,1)[0];
+    if(imagemPrincipalSelecionadaMS) outrasImagensSelecionadasMS.unshift(imagemPrincipalSelecionadaMS);
+    imagemPrincipalSelecionadaMS=novaCapa;
+    renderPreviewsImagensMS();
+  };
 
   function ativarUploadImagensMS(){
     const principal=document.getElementById('produtoImagemArquivoMS');
@@ -931,14 +961,17 @@ Equipe MS Matias Style 🤍`;
     });
     outras?.addEventListener('change',async e=>{
       const arquivos=[...(e.target.files||[])]; if(!arquivos.length)return;
-      const vagas=Math.max(0,8-outrasImagensSelecionadasMS.length);
-      if(!vagas){msg('O limite é de 8 imagens adicionais.',true);e.target.value='';return;}
+      const vagas=Math.max(0,12-outrasImagensSelecionadasMS.length);
+      if(!vagas){msg('O limite é de 12 imagens adicionais.',true);e.target.value='';return;}
       try{
         msg('Preparando imagens...');
         const novas=[];
         for(const arquivo of arquivos.slice(0,vagas)) novas.push(await comprimirImagemMS(arquivo));
-        outrasImagensSelecionadasMS.push(...novas); renderPreviewsImagensMS();
-        msg(`${novas.length} imagem(ns) adicionada(s).`);
+        outrasImagensSelecionadasMS.push(...novas);
+        if(tamanhoTotalImagensMS()>10*1024*1024){ outrasImagensSelecionadasMS.splice(-novas.length); throw new Error('As fotos juntas ficaram muito pesadas. Remova algumas ou use imagens menores.'); }
+        renderPreviewsImagensMS();
+        const ignoradas=Math.max(0,arquivos.length-novas.length);
+        msg(`${novas.length} imagem(ns) adicionada(s).${ignoradas?` ${ignoradas} não entrou(aram) por causa do limite de 12.`:''}`);
       }catch(erro){msg(erro.message,true)}
       e.target.value='';
     });

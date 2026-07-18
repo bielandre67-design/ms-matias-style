@@ -163,8 +163,8 @@ async function iniciarPostgresMS() {
 
 
 app.use(cors());
-app.use(express.json({ limit: "2mb" }));
-app.use(express.urlencoded({ extended: true, limit: "2mb" }));
+app.use(express.json({ limit: "15mb" }));
+app.use(express.urlencoded({ extended: true, limit: "15mb" }));
 
 // Entrega os arquivos da loja e do painel pelo próprio Node.
 // Assim, use http://localhost:3000/admin.html em vez do Live Server.
@@ -1877,6 +1877,20 @@ app.post("/cupons", async (req,res,next)=>{ if(!pool)return res.status(503).json
 app.put("/cupons/:id", async (req,res,next)=>{if(!pool)return res.status(503).json({mensagem:"Banco não configurado."});try{const b=req.body||{};const r=await pool.query(`UPDATE cupons SET codigo=UPPER($2),percentual=$3,ativo=$4,valor_minimo=$5,limite_usos=$6,validade=$7,atualizado_em=NOW() WHERE id=$1 RETURNING *`,[req.params.id,String(b.codigo||'').trim(),Number(b.percentual)||0,b.ativo!==false,Number(b.valorMinimo)||0,Math.max(0,Number(b.limiteUsos)||0),b.validade||null]);if(!r.rowCount)return res.status(404).json({mensagem:"Cupom não encontrado."});res.json({ok:true,cupom:cupomRespostaMS(r.rows[0])});}catch(e){next(e);} });
 app.delete("/cupons/:id", async(req,res,next)=>{if(!pool)return res.status(503).json({mensagem:"Banco não configurado."});try{await pool.query("DELETE FROM cupons WHERE id=$1",[req.params.id]);res.json({ok:true});}catch(e){next(e);} });
 
+
+function normalizarImagensProdutoMS(valor, limite = 12) {
+  if (!Array.isArray(valor)) return [];
+  return valor
+    .map((item) => String(item || "").trim())
+    .filter((item) => item && (item.startsWith("data:image/") || /^https?:\/\//i.test(item) || item.startsWith("/")))
+    .slice(0, limite);
+}
+
+function normalizarImagemPrincipalMS(valor) {
+  const item = String(valor || "").trim();
+  if (!item) return "";
+  return (item.startsWith("data:image/") || /^https?:\/\//i.test(item) || item.startsWith("/")) ? item : "";
+}
 // PRODUTOS NO POSTGRESQL ------------------------------------------------------
 // Esta API é compatível com o catálogo HTML atual. O front sincroniza os cards
 // existentes uma única vez e, depois, preços/visibilidade são controlados aqui.
@@ -1936,13 +1950,13 @@ app.post("/produtos/sincronizar-catalogo", async (req, res, next) => {
       const chave = chaveProdutoMS(p.chave || nome);
       const preco = Number(String(p.preco ?? 0).replace(",", ".")) || 0;
       const precoAntigo = p.precoAntigo == null || p.precoAntigo === "" ? null : Number(String(p.precoAntigo).replace(",", "."));
-      const imagens = Array.isArray(p.imagens) ? p.imagens.filter(Boolean).slice(0, 12) : [];
+      const imagens = normalizarImagensProdutoMS(p.imagens);
       const r = await pool.query(
         `INSERT INTO produtos (chave,nome,categoria,preco,preco_antigo,imagem,imagens,descricao)
          VALUES ($1,$2,$3,$4,$5,$6,$7::jsonb,$8)
          ON CONFLICT (chave) DO NOTHING RETURNING id`,
         [chave, nome, String(p.categoria || "Roupas").slice(0,80), preco, Number.isFinite(precoAntigo) ? precoAntigo : null,
-         String(p.imagem || imagens[0] || ""), JSON.stringify(imagens), String(p.descricao || "")]
+         normalizarImagemPrincipalMS(p.imagem || imagens[0] || ""), JSON.stringify(imagens), String(p.descricao || "")]
       );
       if (r.rowCount) inseridos++;
     }
@@ -1967,8 +1981,8 @@ app.post("/produtos", async (req, res, next) => {
        largura_cm=EXCLUDED.largura_cm,comprimento_cm=EXCLUDED.comprimento_cm,atualizado_em=NOW()
        RETURNING *`,
       [chave,nome,String(p.categoria||"Roupas").slice(0,80),Number(p.preco)||0,
-       p.precoAntigo==null||p.precoAntigo===""?null:Number(p.precoAntigo),String(p.imagem||""),
-       JSON.stringify(Array.isArray(p.imagens)?p.imagens:[]),String(p.descricao||""),
+       p.precoAntigo==null||p.precoAntigo===""?null:Number(p.precoAntigo),normalizarImagemPrincipalMS(p.imagem),
+       JSON.stringify(normalizarImagensProdutoMS(p.imagens)),String(p.descricao||""),
        JSON.stringify(Array.isArray(p.cores)?p.cores:[]),JSON.stringify(Array.isArray(p.tamanhos)?p.tamanhos:['P','M','G','GG']),p.ativo!==false,
        Boolean(p.destaque),Boolean(p.promocao),
        numeroMedidaProdutoMS(p.pesoKg, 'Peso'), numeroMedidaProdutoMS(p.alturaCm, 'Altura'),
@@ -1991,9 +2005,9 @@ app.put("/produtos/:id", async (req, res, next) => {
        atualizado_em=NOW() WHERE id=$1 RETURNING *`,
       [req.params.id,p.nome==null?null:String(p.nome).trim(),p.categoria==null?null:String(p.categoria),
        p.preco==null?null:Number(p.preco),p.precoAntigo==null||p.precoAntigo===""?null:Number(p.precoAntigo),
-       p.imagem==null?null:String(p.imagem),p.descricao==null?null:String(p.descricao),
+       p.imagem==null?null:normalizarImagemPrincipalMS(p.imagem),p.descricao==null?null:String(p.descricao),
        p.ativo==null?null:Boolean(p.ativo),p.destaque==null?null:Boolean(p.destaque),p.promocao==null?null:Boolean(p.promocao),
-       p.imagens==null?null:JSON.stringify(Array.isArray(p.imagens)?p.imagens:[]),
+       p.imagens==null?null:JSON.stringify(normalizarImagensProdutoMS(p.imagens)),
        p.cores==null?null:JSON.stringify(Array.isArray(p.cores)?p.cores:[]),
        p.tamanhos==null?null:JSON.stringify(Array.isArray(p.tamanhos)?p.tamanhos:[]),
        p.pesoKg==null?null:numeroMedidaProdutoMS(p.pesoKg, 'Peso'),
