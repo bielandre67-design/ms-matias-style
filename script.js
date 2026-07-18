@@ -6204,6 +6204,34 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  function iconeCategoriaMS(info){
+    const id = String(info?.id || '');
+    const titulo = normalizar(info?.titulo || '');
+    const chave = `${id} ${titulo}`;
+
+    if (chave.includes('conjunto')) return '▣';
+    if (chave.includes('jaqueta') || chave.includes('corta-vento')) return '◈';
+    if (chave.includes('moletom')) return '⬒';
+    if (chave.includes('acessor') || chave.includes('touca') || chave.includes('meia')) return '◉';
+    if (chave.includes('camiseta')) return '▣';
+    if (chave.includes('calca')) return '║';
+    if (chave.includes('sapato') || chave.includes('tenis')) return '◇';
+    if (chave.includes('bone')) return '◒';
+    if (chave.includes('bermuda') || chave.includes('short')) return '▤';
+    return '◆';
+  }
+
+  function atualizarFaixaCategoriasHomeMS(gruposOrdenados){
+    const faixa = document.getElementById('categoriasHome');
+    if (!faixa || !Array.isArray(gruposOrdenados) || !gruposOrdenados.length) return;
+
+    faixa.innerHTML = gruposOrdenados.map(({ info }) => `
+      <a href="#${esc(info.id)}" class="categoria-item" data-categoria-home-ms="${esc(info.id)}">
+        <span aria-hidden="true">${esc(iconeCategoriaMS(info))}</span>
+        <p>${esc(rotuloMenuCategoriaMS(info))}</p>
+      </a>`).join('');
+  }
+
   function montarCatalogo(produtos){
     const grupos = new Map();
 
@@ -6225,6 +6253,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     atualizarMenuCategoriasMS(gruposOrdenados);
+    atualizarFaixaCategoriasHomeMS(gruposOrdenados);
 
     gruposOrdenados.forEach(({info, produtos: itens}) => {
       const secao = document.createElement('section');

@@ -15097,3 +15097,60 @@ body.aviso-ms-aberto{overflow:hidden!important;}
     display: none !important;
   }
 }
+
+
+/* MS - FAIXA DE CATEGORIAS DINAMICA (PC E MOBILE) */
+#categoriasHome.categorias-home{
+  scrollbar-width:none;
+  -ms-overflow-style:none;
+  overscroll-behavior-x:contain;
+  scroll-snap-type:x proximity;
+}
+
+#categoriasHome .categoria-item{
+  flex:0 0 auto;
+  scroll-snap-align:start;
+  text-align:center;
+}
+
+#categoriasHome .categoria-item p{
+  max-width:130px;
+  overflow-wrap:anywhere;
+}
+
+@media (min-width:769px){
+  #categoriasHome.categorias-home{
+    justify-content:flex-start;
+    padding-left:max(24px, calc((100vw - 1380px) / 2));
+    padding-right:max(24px, calc((100vw - 1380px) / 2));
+  }
+}
+
+@media (max-width:768px){
+  #categoriasHome.categorias-home{
+    display:flex;
+    flex-wrap:nowrap;
+    justify-content:flex-start;
+    overflow-x:auto;
+    gap:16px;
+    padding:18px 14px;
+    -webkit-overflow-scrolling:touch;
+  }
+
+  #categoriasHome .categoria-item{
+    min-width:82px;
+  }
+
+  #categoriasHome .categoria-item span{
+    width:64px;
+    height:64px;
+    border-radius:20px;
+    font-size:27px;
+  }
+
+  #categoriasHome .categoria-item p{
+    max-width:92px;
+    font-size:11px;
+    line-height:1.25;
+  }
+}
