@@ -787,7 +787,137 @@ function itensParaCalculoFreteMS() {
 // FRETE
 // ===============================
 
+function adicionarDiasUteisMS(dataInicial, quantidade) {
+  const data = new Date(dataInicial);
+  let restantes = Math.max(0, Number(quantidade) || 0);
+
+  while (restantes > 0) {
+    data.setDate(data.getDate() + 1);
+    const dia = data.getDay();
+    if (dia !== 0 && dia !== 6) restantes--;
+  }
+
+  return data;
+}
+
+function formatarDataFreteMS(data) {
+  return new Intl.DateTimeFormat("pt-BR", {
+    day: "2-digit",
+    month: "2-digit"
+  }).format(data);
+}
+
+function dadosPrevisaoFreteMS(prazo) {
+  const dias = Math.max(1, Number(prazo) || 1);
+  const hoje = new Date();
+  hoje.setHours(12, 0, 0, 0);
+
+  // O prazo da transportadora começa após a postagem.
+  const inicio = adicionarDiasUteisMS(hoje, dias);
+  const fim = adicionarDiasUteisMS(hoje, dias + 1);
+
+  return {
+    inicio: formatarDataFreteMS(inicio),
+    fim: formatarDataFreteMS(fim),
+    dias
+  };
+}
+
+function prepararOpcoesFreteMS(fretes) {
+  const validos = (Array.isArray(fretes) ? fretes : []).filter(frete => {
+    if (!frete || frete.error) return false;
+
+    const empresa = String(frete.company?.name || "").toLowerCase();
+    const servico = String(frete.name || "").toLowerCase();
+    const preco = Number(frete.price);
+    const prazo = Number(frete.delivery_time);
+
+    if (!Number.isFinite(preco) || preco <= 0 || !Number.isFinite(prazo) || prazo <= 0) return false;
+
+    return (
+      servico.includes("pac") ||
+      servico.includes("sedex") ||
+      (empresa.includes("jadlog") && servico.includes("package") && !servico.includes("centralizado"))
+    );
+  });
+
+  const menorPreco = validos.length ? Math.min(...validos.map(f => Number(f.price))) : null;
+  const menorPrazo = validos.length ? Math.min(...validos.map(f => Number(f.delivery_time))) : null;
+
+  return validos
+    .map(frete => ({
+      ...frete,
+      _preco: Number(frete.price),
+      _prazo: Number(frete.delivery_time),
+      _maisBarato: Number(frete.price) === menorPreco,
+      _maisRapido: Number(frete.delivery_time) === menorPrazo
+    }))
+    .sort((a, b) => a._preco - b._preco || a._prazo - b._prazo);
+}
+
+function selosFreteMS(frete) {
+  const selos = [];
+  if (frete._maisBarato) selos.push('<span class="frete-selo-ms frete-selo-preco-ms">Melhor preço</span>');
+  if (frete._maisRapido) selos.push('<span class="frete-selo-ms frete-selo-rapido-ms">Mais rápido</span>');
+  return selos.join("");
+}
+
+function injetarEstiloFreteMS() {
+  if (document.getElementById("estiloFreteDatasMS")) return;
+
+  const style = document.createElement("style");
+  style.id = "estiloFreteDatasMS";
+  style.textContent = `
+    .frete-opcao-ms, .opcao-frete, .frete-opcao {
+      position: relative;
+      cursor: pointer;
+      transition: border-color .2s ease, transform .2s ease, background .2s ease;
+    }
+    .frete-opcao-ms:hover, .opcao-frete:hover, .frete-opcao:hover {
+      transform: translateY(-1px);
+    }
+    .frete-cabecalho-ms {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 7px;
+    }
+    .frete-nome-ms { font-weight: 800; line-height: 1.15; }
+    .frete-preco-ms { font-weight: 900; white-space: nowrap; }
+    .frete-selos-ms { display: flex; flex-wrap: wrap; gap: 5px; margin: 5px 0 8px; }
+    .frete-selo-ms {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .2px;
+      text-transform: uppercase;
+    }
+    .frete-selo-preco-ms { background: rgba(34,197,94,.16); color: #4ade80; border: 1px solid rgba(34,197,94,.35); }
+    .frete-selo-rapido-ms { background: rgba(59,130,246,.16); color: #60a5fa; border: 1px solid rgba(59,130,246,.35); }
+    .frete-data-ms { font-weight: 800; font-size: 13px; margin-top: 2px; }
+    .frete-prazo-ms { opacity: .72; font-size: 11px; margin-top: 3px; line-height: 1.35; }
+    .frete-opcao.selecionado, .opcao-frete.selecionado { border-color: #22c55e !important; box-shadow: 0 0 0 1px rgba(34,197,94,.3); }
+    @media (max-width: 600px) {
+      .frete-cabecalho-ms { gap: 7px; }
+      .frete-nome-ms { font-size: 14px; }
+      .frete-preco-ms { font-size: 14px; }
+      .frete-data-ms { font-size: 12px; }
+      .frete-selo-ms { font-size: 9px; padding: 3px 7px; }
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+function nomeCompletoFreteMS(frete) {
+  return `${frete.company?.name || "Transportadora"} - ${frete.name || "Entrega"}`;
+}
+
 async function calcularFrete() {
+  injetarEstiloFreteMS();
   const cep = document.getElementById("cepCliente")?.value.replace(/\D/g, "");
   const resultadoFrete = document.getElementById("resultadoFrete");
 
@@ -805,55 +935,44 @@ async function calcularFrete() {
       body: JSON.stringify({ cep, items: itensParaCalculoFreteMS() })
     });
 
-    const fretes = await resposta.json();
-    console.log("FRETES RECEBIDOS:", fretes);
-    const opcoesValidas = fretes.filter(frete => {
-
-  if (frete.error) return false;
-
-  const empresa = (frete.company?.name || "").toLowerCase();
-  const servico = (frete.name || "").toLowerCase();
-
-  return (
-    servico.includes("pac") ||
-    servico.includes("sedex") ||
-    (
-      empresa.includes("jadlog") &&
-      servico.includes("package") &&
-      !servico.includes("centralizado")
-    )
-  );
-
-});
-
+    if (!resposta.ok) throw new Error(`Erro HTTP ${resposta.status}`);
+    const fretes = prepararOpcoesFreteMS(await resposta.json());
     if (!resultadoFrete) return;
 
-    if (opcoesValidas.length === 0) {
+    if (fretes.length === 0) {
       resultadoFrete.innerHTML = "Nenhuma opção de frete encontrada.";
       return;
     }
 
-    resultadoFrete.innerHTML = opcoesValidas.map(frete => `
-      <div class="opcao-frete"
-        onclick="selecionarFrete('${frete.company.name} - ${frete.name}', ${Number(frete.price)}, ${Number(frete.delivery_time)})">
-        <strong>${frete.company.name} - ${frete.name}</strong><br>
-        ${dinheiro(frete.price)}<br>
-        <small>Prazo: ${frete.delivery_time} dias úteis</small>
-      </div>
-    `).join("");
-
+    resultadoFrete.innerHTML = "";
+    fretes.forEach(frete => {
+      const previsao = dadosPrevisaoFreteMS(frete._prazo);
+      const div = document.createElement("div");
+      div.className = "opcao-frete frete-opcao-ms";
+      div.innerHTML = `
+        <div class="frete-cabecalho-ms">
+          <span class="frete-nome-ms">🚚 ${nomeCompletoFreteMS(frete)}</span>
+          <span class="frete-preco-ms">${dinheiro(frete._preco)}</span>
+        </div>
+        <div class="frete-selos-ms">${selosFreteMS(frete)}</div>
+        <div class="frete-data-ms">Receba entre ${previsao.inicio} e ${previsao.fim}</div>
+        <div class="frete-prazo-ms">Até ${previsao.dias} dias úteis após a postagem.</div>
+      `;
+      div.onclick = () => selecionarFrete(nomeCompletoFreteMS(frete), frete._preco, frete._prazo);
+      resultadoFrete.appendChild(div);
+    });
   } catch (erro) {
-    console.log(erro);
+    console.error(erro);
     if (resultadoFrete) resultadoFrete.innerHTML = "Erro ao calcular o frete.";
   }
 }
 
 async function calcularFreteCheckout() {
+  injetarEstiloFreteMS();
   const cepInput = document.getElementById("cepCheckout");
   if (!cepInput) return;
 
   const cep = cepInput.value.replace(/\D/g, "");
-
   if (cep.length !== 8) {
     alert("Informe um CEP válido para calcular a entrega.");
     return;
@@ -868,7 +987,6 @@ async function calcularFreteCheckout() {
       const bairro = document.getElementById("bairroCliente");
       const cidade = document.getElementById("cidadeCliente");
       const estado = document.getElementById("estadoCliente");
-
       if (rua) rua.value = dadosCep.logradouro || "";
       if (bairro) bairro.value = dadosCep.bairro || "";
       if (cidade) cidade.value = dadosCep.localidade || "";
@@ -881,73 +999,68 @@ async function calcularFreteCheckout() {
       body: JSON.stringify({ cep, items: itensParaCalculoFreteMS() })
     });
 
-    const fretes = await resposta.json();
+    if (!resposta.ok) throw new Error(`Erro HTTP ${resposta.status}`);
+    const fretes = prepararOpcoesFreteMS(await resposta.json());
     const container = document.getElementById("opcoesFreteCheckout");
     if (!container) return;
 
     container.innerHTML = "";
-   const fretesFiltrados = fretes.filter(frete => {
-  const empresa = (frete.company?.name || "").toLowerCase();
-  const servico = (frete.name || "").toLowerCase();
+    if (!fretes.length) {
+      container.innerHTML = "Nenhuma opção de frete encontrada.";
+      return;
+    }
 
-  return (
-    servico.includes("pac") ||
-    servico.includes("sedex") ||
-    (empresa.includes("jadlog") && servico.includes("package") && !servico.includes("centralizado"))
-  );
-});
-    fretesFiltrados.forEach(frete => {
-      if (frete.error) return;
-
-      const preco = Number(frete.price);
+    fretes.forEach(frete => {
+      const previsao = dadosPrevisaoFreteMS(frete._prazo);
       const div = document.createElement("div");
-
-      div.className = "frete-opcao";
+      div.className = "frete-opcao frete-opcao-ms";
       div.innerHTML = `
-        <span>
-          ⊙ ${frete.company.name} - ${frete.name}
-          <br>
-          <small>Prazo: ${frete.delivery_time} dias úteis</small>
-        </span>
-        <strong>${dinheiro(preco)}</strong>
+        <div class="frete-cabecalho-ms">
+          <span class="frete-nome-ms">🚚 ${nomeCompletoFreteMS(frete)}</span>
+          <span class="frete-preco-ms">${dinheiro(frete._preco)}</span>
+        </div>
+        <div class="frete-selos-ms">${selosFreteMS(frete)}</div>
+        <div class="frete-data-ms">Receba entre ${previsao.inicio} e ${previsao.fim}</div>
+        <div class="frete-prazo-ms">Até ${previsao.dias} dias úteis após a postagem.</div>
       `;
 
       div.onclick = () => {
-        document.querySelectorAll(".frete-opcao").forEach(opcao => {
-         opcao.classList.remove("selecionado");
-        });
-
+        document.querySelectorAll(".frete-opcao").forEach(opcao => opcao.classList.remove("selecionado"));
         div.classList.add("selecionado");
-
-        selecionarFrete(`${frete.company.name} - ${frete.name}`, preco, frete.delivery_time);
+        selecionarFrete(nomeCompletoFreteMS(frete), frete._preco, frete._prazo);
       };
-
       container.appendChild(div);
     });
-
   } catch (erro) {
-    console.log(erro);
+    console.error(erro);
     alert("Não foi possível calcular a entrega agora. Tente novamente em instantes.");
   }
 }
 
 function selecionarFrete(nome, preco, prazo) {
   preco = Number(preco);
+  const previsao = dadosPrevisaoFreteMS(prazo);
 
-  freteSelecionado = { nome, preco, prazo };
+  freteSelecionado = {
+    nome,
+    preco,
+    prazo: Number(prazo),
+    previsaoInicio: previsao.inicio,
+    previsaoFim: previsao.fim
+  };
   valorFrete = preco;
 
   localStorage.setItem("valorFreteMS", String(valorFrete));
   localStorage.setItem("freteSelecionadoMS", JSON.stringify(freteSelecionado));
 
   const resultadoFrete = document.getElementById("resultadoFrete");
-
   if (resultadoFrete) {
     resultadoFrete.innerHTML = `
       <div class="frete-escolhido">
         Frete escolhido: <strong>${nome}</strong><br>
         Valor: ${dinheiro(preco)}<br>
-        Prazo: ${prazo} dias úteis
+        Receba entre <strong>${previsao.inicio}</strong> e <strong>${previsao.fim}</strong><br>
+        <small>Estimativa de até ${previsao.dias} dias úteis após a postagem.</small>
       </div>
     `;
   }
