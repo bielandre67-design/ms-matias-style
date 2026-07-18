@@ -773,6 +773,18 @@ document.addEventListener("DOMContentLoaded", () => {
   if (document.getElementById("tipoEntregaMS")) restaurarTipoEntregaMS();
 });
 
+// Retorna o carrinho atual para que o servidor cote peso, dimensões e quantidade reais.
+function itensParaCalculoFreteMS() {
+  try {
+    const lista = Array.isArray(window.carrinho) && window.carrinho.length
+      ? window.carrinho
+      : JSON.parse(localStorage.getItem("carrinho") || "[]");
+    return Array.isArray(lista) ? lista : [];
+  } catch (_) {
+    return [];
+  }
+}
+
 // ===============================
 // FRETE
 // ===============================
@@ -792,10 +804,13 @@ async function calcularFrete() {
     const resposta = await fetch(`${API_BASE}/calcular-frete`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ cep })
+      body: JSON.stringify({ cep, items: itensParaCalculoFreteMS() })
     });
 
     const fretes = await resposta.json();
+    if (!resposta.ok || !Array.isArray(fretes)) {
+      throw new Error(fretes?.mensagem || fretes?.erro || "Não foi possível calcular o frete.");
+    }
     console.log("FRETES RECEBIDOS:", fretes);
     const opcoesValidas = fretes.filter(frete => {
 
@@ -868,7 +883,7 @@ async function calcularFreteCheckout() {
     const resposta = await fetch(`${API_BASE}/calcular-frete`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ cep })
+      body: JSON.stringify({ cep, items: itensParaCalculoFreteMS() })
     });
 
     const fretes = await resposta.json();
@@ -926,6 +941,8 @@ function selecionarFrete(nome, preco, prazo) {
 
   freteSelecionado = { nome, preco, prazo };
   valorFrete = preco;
+  window.freteSelecionado = freteSelecionado;
+  window.valorFrete = preco;
 
   localStorage.setItem("valorFreteMS", String(valorFrete));
   localStorage.setItem("freteSelecionadoMS", JSON.stringify(freteSelecionado));
@@ -2530,7 +2547,7 @@ if (resumoMobile && Array.isArray(carrinho)) {
     });
   }
 
-  const frete = Number(window.valorFrete || window.freteSelecionadoValor || 14.59);
+  const frete = Number(window.valorFrete || localStorage.getItem("valorFreteMS") || window.freteSelecionadoValor || 0);
   const total = subtotal + frete;
 
   document.getElementById("valorProdutosPagamento").innerText =
@@ -6544,7 +6561,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const resposta = await fetch(`${API_BASE}/calcular-frete`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cep })
+        body: JSON.stringify({ cep, items: itensParaCalculoFreteMS() })
       });
 
       let dados;

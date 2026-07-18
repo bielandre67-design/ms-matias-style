@@ -181,9 +181,18 @@
     return true;
   }
 
+  function shippingItems(){
+    return cart.map(item=>({
+      id:item.id||item.codigo||item.nome,
+      nome:item.nome||item.name||'Produto',
+      preco:moneyNumber(item.preco??item.valor??item.price),
+      quantidade:Number(item.quantidade||item.qtd||1)
+    }));
+  }
+
   async function calculateShipping(){ if($('deliveryModePickup').checked){alert('A opção Retirada no local já está selecionada e não possui frete.');return} const zip=$('zip').value.replace(/\D/g,''); if(zip.length!==8){alert('Informe um CEP válido para calcular a entrega.');return} $('loadingShipping').classList.add('active'); $('shippingOptions').innerHTML=''; try{
     const cepRes=await fetch(`https://viacep.com.br/ws/${zip}/json/`); const address=await cepRes.json(); if(!address.erro){$('street').value=address.logradouro||'';$('district').value=address.bairro||'';$('city').value=address.localidade||'';$('state').value=address.uf||''}
-    const res=await fetch(`${API}/calcular-frete`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cep:zip})}); const data=await res.json(); if(!Array.isArray(data))throw new Error('Resposta de frete inválida');
+    const res=await fetch(`${API}/calcular-frete`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cep:zip,items:shippingItems()})}); const data=await res.json(); if(!res.ok||!Array.isArray(data))throw new Error(data?.mensagem||data?.erro||'Resposta de frete inválida');
     const valid=data.filter(f=>!f.error&&f.price).filter(f=>{const c=(f.company?.name||'').toLowerCase(),n=(f.name||'').toLowerCase();return n.includes('pac')||n.includes('sedex')||(c.includes('jadlog')&&n.includes('package')&&!n.includes('centralizado'))});
     if(!valid.length){$('shippingOptions').innerHTML='<div class="ms-empty">Nenhuma opção de entrega encontrada para este CEP.</div>';return}
     $('shippingOptions').innerHTML=valid.map((f,i)=>`<button type="button" class="ms-ship" data-ship="${i}"><span class="ms-ship-info"><strong class="ms-ship-name">${escapeHtml((f.company?.name||'')+' - '+(f.name||''))}</strong><small>Chega em até ${Number(f.delivery_time)||0} dias úteis</small></span><strong class="ms-ship-price">${brl(f.price)}</strong></button>`).join('');
