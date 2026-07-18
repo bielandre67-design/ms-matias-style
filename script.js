@@ -773,16 +773,14 @@ document.addEventListener("DOMContentLoaded", () => {
   if (document.getElementById("tipoEntregaMS")) restaurarTipoEntregaMS();
 });
 
-// Retorna o carrinho atual para que o servidor cote peso, dimensões e quantidade reais.
 function itensParaCalculoFreteMS() {
-  try {
-    const lista = Array.isArray(window.carrinho) && window.carrinho.length
-      ? window.carrinho
-      : JSON.parse(localStorage.getItem("carrinho") || "[]");
-    return Array.isArray(lista) ? lista : [];
-  } catch (_) {
-    return [];
-  }
+  const lista = Array.isArray(window.carrinho) ? window.carrinho : (Array.isArray(carrinho) ? carrinho : []);
+  return lista.map((item, indice) => ({
+    id: item.id || indice + 1,
+    nome: item.nome || item.name || "Produto MS",
+    preco: Number(item.preco || item.price || 0),
+    quantidade: Math.max(1, Number(item.quantidade || item.quantity || 1))
+  }));
 }
 
 // ===============================
@@ -808,9 +806,6 @@ async function calcularFrete() {
     });
 
     const fretes = await resposta.json();
-    if (!resposta.ok || !Array.isArray(fretes)) {
-      throw new Error(fretes?.mensagem || fretes?.erro || "Não foi possível calcular o frete.");
-    }
     console.log("FRETES RECEBIDOS:", fretes);
     const opcoesValidas = fretes.filter(frete => {
 
@@ -941,8 +936,6 @@ function selecionarFrete(nome, preco, prazo) {
 
   freteSelecionado = { nome, preco, prazo };
   valorFrete = preco;
-  window.freteSelecionado = freteSelecionado;
-  window.valorFrete = preco;
 
   localStorage.setItem("valorFreteMS", String(valorFrete));
   localStorage.setItem("freteSelecionadoMS", JSON.stringify(freteSelecionado));
@@ -2547,7 +2540,7 @@ if (resumoMobile && Array.isArray(carrinho)) {
     });
   }
 
-  const frete = Number(window.valorFrete || localStorage.getItem("valorFreteMS") || window.freteSelecionadoValor || 0);
+  const frete = Number(window.valorFrete || window.freteSelecionadoValor || localStorage.getItem("valorFreteMS") || 0);
   const total = subtotal + frete;
 
   document.getElementById("valorProdutosPagamento").innerText =
@@ -6596,19 +6589,54 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
+      function adicionarDiasUteis(dataInicial, quantidade) {
+        const data = new Date(dataInicial);
+        let adicionados = 0;
+        while (adicionados < Math.max(0, quantidade)) {
+          data.setDate(data.getDate() + 1);
+          const dia = data.getDay();
+          if (dia !== 0 && dia !== 6) adicionados++;
+        }
+        return data;
+      }
+
+      function dataEntregaFormatada(prazo) {
+        const data = adicionarDiasUteis(new Date(), Math.max(1, Number(prazo) || 1));
+        return new Intl.DateTimeFormat("pt-BR", {
+          day: "2-digit", month: "2-digit", weekday: "short"
+        }).format(data).replace(".", "");
+      }
+
+      const opcoesOrdenadas = opcoes
+        .map((frete) => ({
+          frete,
+          preco: Number(String(frete.price ?? frete.preco ?? 0).replace(",", ".")),
+          prazo: Number(frete.delivery_time ?? frete.prazo ?? 0)
+        }))
+        .filter((item) => Number.isFinite(item.preco) && item.preco > 0)
+        .sort((a, b) => a.preco - b.preco);
+
+      const menorPreco = Math.min(...opcoesOrdenadas.map((item) => item.preco));
+      const menorPrazo = Math.min(...opcoesOrdenadas.map((item) => item.prazo || 9999));
+
       container.innerHTML = "";
-      opcoes.forEach((frete) => {
+      opcoesOrdenadas.forEach(({ frete, preco, prazo }) => {
         const empresa = frete.company?.name || frete.empresa || "Transportadora";
         const servico = frete.name || frete.nome || "Entrega";
-        const preco = Number(String(frete.price ?? frete.preco ?? 0).replace(",", "."));
-        const prazo = Number(frete.delivery_time ?? frete.prazo ?? 0);
-        if (!Number.isFinite(preco) || preco <= 0) return;
+        const badges = [];
+        if (preco === menorPreco) badges.push('<em class="frete-badge-ms">Melhor preço</em>');
+        if (prazo === menorPrazo) badges.push('<em class="frete-badge-ms rapido">Mais rápido</em>');
 
         const opcao = document.createElement("button");
         opcao.type = "button";
-        opcao.className = "frete-opcao";
+        opcao.className = "frete-opcao frete-opcao-data-ms";
         opcao.innerHTML = `
-          <span><strong>${empresa} - ${servico}</strong><br><small>Prazo: ${prazo || "-"} dias úteis</small></span>
+          <span class="frete-dados-ms">
+            <span class="frete-badges-ms">${badges.join("")}</span>
+            <strong>${empresa} - ${servico}</strong>
+            <small>Previsão após postagem: <b>${dataEntregaFormatada(prazo)}</b></small>
+            <small>Prazo informado: ${prazo || "-"} dias úteis</small>
+          </span>
           <strong>${preco.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</strong>
         `;
 
@@ -7404,4 +7432,22 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     return false;
   };
+})();
+
+/* FRETE COM DATA ESTIMADA - PC E MOBILE */
+(function(){
+  if(document.getElementById("frete-data-style-ms")) return;
+  const style=document.createElement("style");
+  style.id="frete-data-style-ms";
+  style.textContent=`
+    .frete-opcao-data-ms{align-items:center!important;gap:12px!important;text-align:left!important}
+    .frete-dados-ms{display:flex;flex-direction:column;gap:3px;min-width:0}
+    .frete-dados-ms small{display:block;color:#c9c9c9;line-height:1.35}
+    .frete-dados-ms small b{color:#fff}
+    .frete-badges-ms{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:2px}
+    .frete-badge-ms{font-style:normal;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.3px;border-radius:999px;padding:4px 7px;background:#ead04b;color:#090909}
+    .frete-badge-ms.rapido{background:#fff;color:#090909}
+    @media(max-width:600px){.frete-opcao-data-ms{padding:13px!important}.frete-dados-ms strong{font-size:14px}.frete-dados-ms small{font-size:11px}}
+  `;
+  document.head.appendChild(style);
 })();

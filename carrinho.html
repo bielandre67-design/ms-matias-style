@@ -33,7 +33,9 @@
     .ms-shipping-fields[hidden]{display:none!important}.ms-pickup-note{display:none;border:1px solid var(--gold);border-radius:16px;padding:15px;background:linear-gradient(135deg,#1a1608,#101010);color:#fff;line-height:1.45}.ms-pickup-note.active{display:block}.ms-pickup-note strong{color:var(--gold)}
     .ms-review{display:grid;gap:10px}.ms-review-item{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid #282828}.ms-note{color:var(--muted);line-height:1.5}.ms-loading{display:none;text-align:center;color:var(--muted);padding:12px}.ms-loading.active{display:block}.ms-coupon{margin-top:18px;border:1px solid var(--line);border-radius:22px;padding:18px;background:var(--card)}.ms-coupon h2{margin:0 0 12px;font-size:18px}.ms-coupon-line{display:grid;grid-template-columns:1fr auto;gap:10px}.ms-coupon input{min-width:0;border:1px solid #4b3b0b;background:#111;color:#fff;border-radius:14px;padding:15px;outline:0;text-transform:uppercase}.ms-coupon button{border:0;border-radius:14px;padding:0 18px;background:var(--gold);color:#050505;font-weight:900}.ms-coupon-msg{min-height:20px;margin:10px 0 0;color:var(--muted);font-size:14px}.ms-coupon-msg.ok{color:#22c55e}.ms-coupon-msg.error{color:#ff6b7d}.ms-row.discount{color:#22c55e}.ms-row.discount strong{color:#22c55e}
     @media(max-width:390px){.ms-cart{padding-left:12px;padding-right:12px}.ms-item{grid-template-columns:78px 1fr}.ms-item img{width:78px;height:102px}.ms-head h1{font-size:24px}.ms-step{font-size:12px}.ms-delivery-mode{grid-template-columns:1fr}.ms-ship{padding:14px}.ms-ship-name{font-size:14px}.ms-ship-price{font-size:15px}}
-  </style>
+  
+    .ms-ship-info{display:flex;flex-direction:column;gap:3px;text-align:left}.ms-ship-info small{line-height:1.35}.ms-ship-info small b{color:#fff}.ms-ship-badges{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:2px}.ms-ship-badge{font-style:normal;font-size:9px;font-weight:900;text-transform:uppercase;border-radius:999px;padding:4px 7px;background:var(--gold);color:#050505}.ms-ship-badge.fast{background:#fff;color:#050505}
+</style>
 </head>
 <body>
 <main class="ms-cart">
@@ -181,21 +183,16 @@
     return true;
   }
 
-  function shippingItems(){
-    return cart.map(item=>({
-      id:item.id||item.codigo||item.nome,
-      nome:item.nome||item.name||'Produto',
-      preco:moneyNumber(item.preco??item.valor??item.price),
-      quantidade:Number(item.quantidade||item.qtd||1)
-    }));
-  }
-
   async function calculateShipping(){ if($('deliveryModePickup').checked){alert('A opção Retirada no local já está selecionada e não possui frete.');return} const zip=$('zip').value.replace(/\D/g,''); if(zip.length!==8){alert('Informe um CEP válido para calcular a entrega.');return} $('loadingShipping').classList.add('active'); $('shippingOptions').innerHTML=''; try{
     const cepRes=await fetch(`https://viacep.com.br/ws/${zip}/json/`); const address=await cepRes.json(); if(!address.erro){$('street').value=address.logradouro||'';$('district').value=address.bairro||'';$('city').value=address.localidade||'';$('state').value=address.uf||''}
-    const res=await fetch(`${API}/calcular-frete`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cep:zip,items:shippingItems()})}); const data=await res.json(); if(!res.ok||!Array.isArray(data))throw new Error(data?.mensagem||data?.erro||'Resposta de frete inválida');
-    const valid=data.filter(f=>!f.error&&f.price).filter(f=>{const c=(f.company?.name||'').toLowerCase(),n=(f.name||'').toLowerCase();return n.includes('pac')||n.includes('sedex')||(c.includes('jadlog')&&n.includes('package')&&!n.includes('centralizado'))});
+    const res=await fetch(`${API}/calcular-frete`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cep:zip})}); const data=await res.json(); if(!Array.isArray(data))throw new Error('Resposta de frete inválida');
+    const valid=data.filter(f=>!f.error&&f.price).filter(f=>{const c=(f.company?.name||'').toLowerCase(),n=(f.name||'').toLowerCase();return n.includes('pac')||n.includes('sedex')||(c.includes('jadlog')&&n.includes('package')&&!n.includes('centralizado'))}).sort((a,b)=>moneyNumber(a.price)-moneyNumber(b.price));
     if(!valid.length){$('shippingOptions').innerHTML='<div class="ms-empty">Nenhuma opção de entrega encontrada para este CEP.</div>';return}
-    $('shippingOptions').innerHTML=valid.map((f,i)=>`<button type="button" class="ms-ship" data-ship="${i}"><span class="ms-ship-info"><strong class="ms-ship-name">${escapeHtml((f.company?.name||'')+' - '+(f.name||''))}</strong><small>Chega em até ${Number(f.delivery_time)||0} dias úteis</small></span><strong class="ms-ship-price">${brl(f.price)}</strong></button>`).join('');
+    const addBusinessDays=(days)=>{const d=new Date();let n=0;while(n<Math.max(1,Number(days)||1)){d.setDate(d.getDate()+1);if(d.getDay()!==0&&d.getDay()!==6)n++}return d};
+    const deliveryDate=(days)=>new Intl.DateTimeFormat('pt-BR',{day:'2-digit',month:'2-digit',weekday:'short'}).format(addBusinessDays(days)).replace('.','');
+    const minPrice=Math.min(...valid.map(f=>moneyNumber(f.price)));
+    const minDays=Math.min(...valid.map(f=>Number(f.delivery_time)||9999));
+    $('shippingOptions').innerHTML=valid.map((f,i)=>{const price=moneyNumber(f.price),days=Number(f.delivery_time)||0;const badges=`${price===minPrice?'<em class="ms-ship-badge">Melhor preço</em>':''}${days===minDays?'<em class="ms-ship-badge fast">Mais rápido</em>':''}`;return `<button type="button" class="ms-ship" data-ship="${i}"><span class="ms-ship-info"><span class="ms-ship-badges">${badges}</span><strong class="ms-ship-name">${escapeHtml((f.company?.name||'')+' - '+(f.name||''))}</strong><small>Previsão após postagem: <b>${deliveryDate(days)}</b></small><small>Prazo informado: ${days} dias úteis</small></span><strong class="ms-ship-price">${brl(f.price)}</strong></button>`}).join('');
     document.querySelectorAll('[data-ship]').forEach(btn=>btn.onclick=()=>{document.querySelectorAll('.ms-ship').forEach(x=>x.classList.remove('selected'));btn.classList.add('selected');const f=valid[Number(btn.dataset.ship)];shipping={nome:`${f.company?.name||''} - ${f.name||''}`,preco:moneyNumber(f.price),prazo:Number(f.delivery_time)||0};shippingValue=shipping.preco;localStorage.setItem('freteSelecionadoMS',JSON.stringify(shipping));localStorage.setItem('valorFreteMS',String(shippingValue));updateTotals()})
   }catch(e){console.error(e);alert('Não foi possível calcular a entrega agora. Tente novamente em instantes.')}finally{$('loadingShipping').classList.remove('active')} }
 
