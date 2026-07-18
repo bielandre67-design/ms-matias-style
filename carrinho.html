@@ -95,7 +95,7 @@
       <div class="ms-coupon-line"><input id="couponCode" placeholder="Digite seu cupom" autocomplete="off"><button type="button" id="applyCoupon">Aplicar</button></div>
       <p id="couponMessage" class="ms-coupon-msg"></p>
     </div>
-    <div class="ms-summary"><h2 class="ms-title">Pagamento seguro</h2><p class="ms-note">Você será direcionado ao Mercado Pago para escolher a forma de pagamento e concluir o pedido.</p><button class="ms-btn" id="payButton">Finalizar compra</button><div id="paymentLoading" class="ms-loading">Abrindo o pagamento...</div><button class="ms-btn back" data-back="2">Voltar à entrega</button></div>
+    <div class="ms-summary"><h2 class="ms-title">Como você prefere pagar?</h2><p class="ms-note">Escolha uma opção. No PIX, o QR Code abre aqui mesmo e a confirmação acontece automaticamente.</p><button class="ms-btn" id="payPixButton">◆ Pagar com PIX</button><button class="ms-btn" id="payCardButton" style="margin-top:10px;background:#fff;color:#111;border:1px solid #ccc">💳 Cartão e outras opções</button><div id="paymentLoading" class="ms-loading">Abrindo o pagamento...</div><button class="ms-btn back" data-back="2">Voltar à entrega</button></div>
   </section>
 </main>
 <script>
@@ -223,8 +223,8 @@
   }
 
   async function payHosted(){
-    $('paymentLoading').classList.add('active'); $('payButton').disabled=true;
-    try{const res=await fetch(`${API}/criar-pagamento`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(paymentPayload())});const data=await res.json();if(!res.ok||!data.init_point)throw new Error(data.mensagem||data.erro||'Link de pagamento não recebido');location.href=data.init_point}catch(e){console.error(e);alert(e.message||'Não foi possível abrir o pagamento agora.')}finally{$('paymentLoading').classList.remove('active');$('payButton').disabled=false}
+    $('paymentLoading').classList.add('active'); if($('payCardButton')) $('payCardButton').disabled=true; if($('payPixButton')) $('payPixButton').disabled=true;
+    try{const res=await fetch(`${API}/criar-pagamento`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(paymentPayload())});const data=await res.json();if(!res.ok||!data.init_point)throw new Error(data.mensagem||data.erro||'Link de pagamento não recebido');location.href=data.init_point}catch(e){console.error(e);alert(e.message||'Não foi possível abrir o pagamento agora.')}finally{$('paymentLoading').classList.remove('active');if($('payCardButton')) $('payCardButton').disabled=false;if($('payPixButton')) $('payPixButton').disabled=false}
   }
 
   async function payPixInside(){
@@ -241,7 +241,8 @@
     const modal=document.createElement('div');modal.id='msPixInside';document.body.appendChild(modal);const approved=result==='aprovado';modal.innerHTML=`<div class="ms-pix-box"><div style="font-size:58px">${approved?'✅':result==='pendente'?'⏳':'❌'}</div><h2>${approved?'Pagamento aprovado!':result==='pendente'?'Pagamento em análise':'Pagamento não aprovado'}</h2><p>${order?`Pedido <strong>#${order}</strong>.`:''}</p><button type="button" class="ms-pix-copy" onclick="location.href='index.html'">Voltar para a loja</button></div>`;if(approved){cart=[];save()}
   }
 
-  async function pay(){if(!validateDelivery())return;ensurePaymentChoice()}
+  async function payPix(){if(!validateDelivery())return;payPixInside()}
+  async function payCard(){if(!validateDelivery())return;payHosted()}
 
   function escapeHtml(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))} function escapeAttr(v){return escapeHtml(v)}
   window.voltarLoja=()=>{if(history.length>1)history.back();else location.href='index.html'};
@@ -249,7 +250,7 @@
   $('clearCart').onclick=()=>{if(confirm('Deseja remover todos os produtos do carrinho?')){cart=[];save();clearCoupon();renderCart()}};
   $('toShipping').onclick=()=>{if(!cart.length){alert('Seu carrinho está vazio.');return}showStep(2)};
   $('toPayment').onclick=()=>{if(validateDelivery())showStep(3)};
-  $('calcShipping').onclick=calculateShipping; $('payButton').onclick=pay; $('applyCoupon').onclick=applyCoupon;
+  $('calcShipping').onclick=calculateShipping; $('payPixButton').onclick=payPix; $('payCardButton').onclick=payCard; $('applyCoupon').onclick=applyCoupon;
   $('deliveryModeShipping').addEventListener('change',()=>setDeliveryMode('shipping'));
   $('deliveryModePickup').addEventListener('change',()=>setDeliveryMode('pickup'));
   $('couponCode').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();applyCoupon()}});
