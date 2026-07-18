@@ -1,13 +1,9 @@
-CORREÇÃO CHECKOUT PC + MOBILE
+CORREÇÃO PC PIX DENTRO DA LOJA
 
-Substitua no projeto:
+Substitua na pasta do site:
 - index.html
 - script.js
 
-O carrinho mobile permanece com PIX e cartão.
-O carrinho PC agora também mostra os dois botões diretamente na etapa 3.
-
-Depois rode:
-git add .
-git commit -m "Atualiza checkout Pix e cartão no PC e mobile"
-git push
+A correção impede os listeners antigos de capturarem o clique do PIX no computador.
+O botão PIX chama diretamente /criar-pagamento-pix e abre o QR Code dentro da loja.
+O botão cartão continua abrindo o Checkout Mercado Pago.

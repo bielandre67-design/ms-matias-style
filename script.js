@@ -4844,6 +4844,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if(!ehPagamento) return;
 
+    // Botões diretos de PIX e cartão têm funções próprias.
+    // Não podem ser capturados pelo listener antigo de checkout.
+    if (alvo.matches("[data-ms-pagamento-direto], .btn-pix-pc-ms, .btn-cartao-pc-ms") || alvo.closest("#msEscolhaPagamento")) return;
+
     var dentroCheckout = alvo.closest("#carrinho, #carrinhoMobileMS, #checkoutMobile, .checkout-mobile, .carrinho, .carrinho-lateral, .modal-carrinho");
     if(!dentroCheckout && !texto.includes("mercado pago")) return;
 
@@ -6770,11 +6774,24 @@ document.addEventListener("DOMContentLoaded", () => {
     modal.style.display="flex"; return false;
   }
 
-  window.pagarPixDentroDaLojaMS = pagarPixDentroDaLoja;
-  window.pagarCartaoOutrosMSGlobal = pagarCartaoOutrosMS;
+  window.pagarPixDentroDaLojaMS = function(event){
+    if(event){ event.preventDefault(); event.stopPropagation(); event.stopImmediatePropagation?.(); }
+    return pagarPixDentroDaLoja(event);
+  };
+  window.pagarCartaoOutrosMSGlobal = function(event){
+    if(event){ event.preventDefault(); event.stopPropagation(); event.stopImmediatePropagation?.(); }
+    return pagarCartaoOutrosMS(event);
+  };
   window.abrirEscolhaPagamentoMS = abrirEscolhaPagamentoMS;
   window.finalizarCompra=abrirEscolhaPagamentoMS; window.finalizarCompraFinal=abrirEscolhaPagamentoMS; window.finalizarPagamento=abrirEscolhaPagamentoMS; window.pagarMercadoPago=abrirEscolhaPagamentoMS; window.msFinalizarPagamento=abrirEscolhaPagamentoMS;
-  document.addEventListener("click",function(e){ const b=e.target.closest("button,a,input[type=button],input[type=submit]"); if(!b)return; const t=String(b.innerText||b.value||b.id||b.className||"").toLowerCase(); if((t.includes("pagar")||t.includes("finalizar pedido")||t.includes("mercado pago")||t.includes("finalizar compra")) && b.closest("#carrinhoModal,#carrinhoMobile,.carrinho,.checkout,form")){ abrirEscolhaPagamentoMS(e); } },true);
+  document.addEventListener("click",function(e){
+    const b=e.target.closest("button,a,input[type=button],input[type=submit]");
+    if(!b) return;
+    // PIX e cartão diretos não passam pelo capturador genérico.
+    if(b.matches("[data-ms-pagamento-direto], .btn-pix-pc-ms, .btn-cartao-pc-ms") || b.closest("#msEscolhaPagamento")) return;
+    const t=String(b.innerText||b.value||b.id||b.className||"").toLowerCase();
+    if((t.includes("pagar")||t.includes("finalizar pedido")||t.includes("mercado pago")||t.includes("finalizar compra")) && b.closest("#carrinhoModal,#carrinhoMobile,.carrinho,.checkout,form")){ abrirEscolhaPagamentoMS(e); }
+  },true);
 })();
 
 

@@ -2529,11 +2529,11 @@ data-img="conjunto-bege.jpeg">
         <h3>Como você prefere pagar?</h3>
         <p>Escolha uma opção. No PIX, o QR Code abre aqui mesmo e a confirmação acontece automaticamente.</p>
 
-        <button type="button" class="btn-pagamento-pc-ms btn-pix-pc-ms" onclick="pagarPixDentroDaLojaMS(event)">
+        <button type="button" class="btn-pagamento-pc-ms btn-pix-pc-ms" data-ms-pagamento-direto="pix" onclick="return window.pagarPixDentroDaLojaMS(event)">
           ◆ Pagar com PIX
         </button>
 
-        <button type="button" class="btn-pagamento-pc-ms btn-cartao-pc-ms" onclick="pagarCartaoOutrosMSGlobal(event)">
+        <button type="button" class="btn-pagamento-pc-ms btn-cartao-pc-ms" data-ms-pagamento-direto="cartao" onclick="return window.pagarCartaoOutrosMSGlobal(event)">
           💳 Cartão e outras opções
         </button>
       </div>
