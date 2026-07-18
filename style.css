@@ -15200,3 +15200,76 @@ body.aparencia-ms-ativa header,body.aparencia-ms-ativa nav.menu,body.aparencia-m
 body.aparencia-ms-ativa footer,body.aparencia-ms-ativa .rodape,body.aparencia-ms-ativa .footer{background-color:var(--ms-cor-rodape)}
 body.aparencia-ms-ativa .btn-comprar,body.aparencia-ms-ativa .btn-adicionar,body.aparencia-ms-ativa button.finalizar,body.aparencia-ms-ativa .botao-comprar,body.aparencia-ms-ativa .btn-primary{background:var(--ms-cor-botao);color:var(--ms-cor-texto-botao)}
 body.aparencia-ms-ativa .preco,body.aparencia-ms-ativa .produto-preco,body.aparencia-ms-ativa .destaque-home-card-ms strong,body.aparencia-ms-ativa h2:after{color:var(--ms-cor-principal);border-color:var(--ms-cor-principal)}
+
+
+/* ===== RODAPÉ PREMIUM COM LOGOS REAIS DE PAGAMENTO ===== */
+.rodape-premium-ms{
+  width:100% !important;
+  max-width:100% !important;
+  margin:54px 0 0 !important;
+  padding:0 !important;
+  display:block !important;
+  background:linear-gradient(145deg,#050505 0%,#0b0b0c 100%) !important;
+  border-top:2px solid var(--ms-cor-principal,#d4af37) !important;
+  box-shadow:0 -18px 50px rgba(0,0,0,.22) !important;
+}
+.rodape-premium-grid{
+  width:min(1400px,calc(100% - 64px));
+  margin:0 auto;
+  padding:46px 0 34px;
+  display:grid;
+  grid-template-columns:1.25fr .85fr .85fr 1.3fr;
+  gap:42px;
+  align-items:start;
+}
+.rodape-premium-ms strong{
+  display:block;
+  margin:0 0 15px;
+  color:#fff !important;
+  font-size:13px !important;
+  font-weight:900;
+  letter-spacing:1.35px !important;
+  text-transform:uppercase;
+}
+.rodape-premium-ms p,.rodape-premium-ms a,.rodape-premium-ms span{
+  font-size:13px;
+  line-height:1.65;
+}
+.rodape-premium-ms p{margin:0 0 9px;color:rgba(255,255,255,.68) !important}
+.rodape-premium-ms a{display:block;margin:0 0 9px;color:rgba(255,255,255,.76) !important;text-decoration:none}
+.rodape-premium-ms a:hover{color:var(--ms-cor-principal,#d4af37) !important;padding-left:4px !important}
+.rodape-logo-linha-ms{display:flex;align-items:center;gap:14px;margin-bottom:15px}
+.rodape-logo-ms{width:58px;height:58px;object-fit:cover;border-radius:50%;border:1px solid rgba(212,175,55,.55);box-shadow:0 0 22px rgba(212,175,55,.12)}
+.rodape-logo-linha-ms strong{margin:0 0 2px;font-size:15px !important}
+.rodape-logo-linha-ms span{display:block;color:var(--ms-cor-principal,#d4af37);font-size:12px;font-weight:700}
+.rodape-marca-ms>p{max-width:330px}
+.rodape-redes-ms{display:flex;gap:9px;flex-wrap:wrap;margin-top:16px}
+.rodape-redes-ms a{margin:0;padding:8px 12px;border:1px solid rgba(212,175,55,.28);border-radius:10px;background:rgba(255,255,255,.035);font-size:12px;font-weight:800}
+.rodape-redes-ms a:hover{padding-left:12px !important;transform:translateY(-2px)}
+.rodape-pagamentos-coluna-ms>p{margin-bottom:14px}
+.pagamentos-logos-ms{display:flex;flex-wrap:wrap;gap:9px}
+.pagamento-logo-ms{
+  width:76px;height:45px;padding:7px 9px;border-radius:10px;background:#fff;
+  border:1px solid rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;
+  box-shadow:0 7px 18px rgba(0,0,0,.2);transition:transform .22s ease,box-shadow .22s ease;
+}
+.pagamento-logo-ms:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(212,175,55,.16)}
+.pagamento-logo-ms img{display:block;max-width:58px;max-height:27px;width:auto;height:auto}
+.pagamento-logo-ms b{display:none;color:#111;font-size:11px}
+.pagamento-logo-ms img:not([src]),.pagamento-logo-ms img[src=""]{display:none}
+.pagamento-pix-ms img{filter:invert(56%) sepia(83%) saturate(382%) hue-rotate(127deg) brightness(91%) contrast(89%)}
+.rodape-seguranca-ms{display:flex;align-items:center;gap:10px;margin-top:16px;padding:12px 14px;border:1px solid rgba(212,175,55,.22);border-radius:12px;background:rgba(212,175,55,.055)}
+.rodape-seguranca-ms>span{font-size:20px}
+.rodape-seguranca-ms b,.rodape-seguranca-ms small{display:block}
+.rodape-seguranca-ms b{font-size:12px;color:#fff}.rodape-seguranca-ms small{font-size:11px;color:rgba(255,255,255,.58)}
+.rodape-base-ms{border-top:1px solid rgba(255,255,255,.09);padding:18px max(32px,calc((100% - 1400px)/2));display:flex;justify-content:space-between;align-items:center;gap:18px;color:rgba(255,255,255,.52)}
+.rodape-base-ms span{font-size:12px}
+.rodape-mercado-pago-ms{color:rgba(255,255,255,.68) !important;font-weight:700}
+@media(max-width:1050px){.rodape-premium-grid{grid-template-columns:1fr 1fr}.rodape-pagamentos-coluna-ms{grid-column:span 2}}
+@media(max-width:650px){
+  .rodape-premium-grid{width:calc(100% - 36px);padding:34px 0 24px;grid-template-columns:1fr;gap:28px}
+  .rodape-pagamentos-coluna-ms{grid-column:auto}
+  .rodape-base-ms{padding:18px;display:block;text-align:center}
+  .rodape-base-ms span{display:block;margin:4px 0}
+  .pagamento-logo-ms{width:72px;height:43px}
+}

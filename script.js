@@ -7947,3 +7947,14 @@ let configFreteLojaMS=null;
 async function carregarConfigFreteLojaMS(){try{const r=await fetch(`${API_BASE}/frete-config?t=${Date.now()}`,{cache:'no-store'});if(r.ok)configFreteLojaMS=await r.json();atualizarIncentivoFreteGratisMS();}catch(e){console.warn('Configuração de frete indisponível.',e);}}
 function atualizarIncentivoFreteGratisMS(){if(!configFreteLojaMS?.gratisAtivo)return;let box=document.getElementById('incentivoFreteGratisMS');const alvo=document.getElementById('resultadoFrete')||document.getElementById('opcoesFreteCheckout');if(!alvo)return;if(!box){box=document.createElement('div');box.id='incentivoFreteGratisMS';box.style.cssText='margin:10px 0;padding:12px 14px;border-radius:13px;background:rgba(227,185,63,.12);border:1px solid rgba(227,185,63,.35);font-weight:800;font-size:13px';alvo.parentNode.insertBefore(box,alvo);}const itens=JSON.parse(localStorage.getItem('carrinho')||'[]');const subtotal=itens.reduce((t,i)=>t+pegarPrecoNumero(i.preco)*Number(i.quantidade||1),0);const falta=Math.max(0,Number(configFreteLojaMS.gratisAcima)-subtotal);box.innerHTML=falta<=0?'🎉 Você ganhou <strong>frete grátis!</strong>':`🚚 Faltam <strong>${dinheiro(falta)}</strong> para ganhar frete grátis.`;}
 document.addEventListener('DOMContentLoaded',()=>setTimeout(carregarConfigFreteLojaMS,800));
+
+
+// Ano automático do rodapé MS
+(function atualizarAnoRodapeMS(){
+  function aplicar(){
+    var alvo=document.getElementById('anoRodapeMS');
+    if(alvo) alvo.textContent=String(new Date().getFullYear());
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',aplicar,{once:true});
+  else aplicar();
+})();
