@@ -6190,35 +6190,35 @@ document.addEventListener("DOMContentLoaded", () => {
     return limpo.replace(/\b\w/g, letra => letra.toUpperCase());
   }
 
-  function criarNavegacaoCategoriasMS(gruposOrdenados){
-    const navegacao = document.createElement('nav');
-    navegacao.id = 'categoriasDinamicasMS';
-    navegacao.setAttribute('aria-label', 'Categorias de produtos');
-    navegacao.innerHTML = gruposOrdenados.map(({ info }) =>
-      `<a href="#${esc(info.id)}">${esc(tituloCategoriaDinamicaMS(info.titulo.replace(/\s+MS$/i, '')))}</a>`
-    ).join('');
-    return navegacao;
+  function iconeCategoriaMS(info){
+    const id = String(info?.id || '').toLowerCase();
+    const titulo = normalizar(info?.titulo || '');
+
+    if (id.includes('bone') || titulo.includes('bone')) return '◒';
+    if (id.includes('tenis') || titulo.includes('tenis')) return '◇';
+    if (id.includes('bermuda') || titulo.includes('bermuda')) return '▥';
+    if (id.includes('mochila') || titulo.includes('mochila')) return '▣';
+    return '◆';
   }
 
-  function atualizarMenusCategoriasMS(gruposOrdenados){
-    const destinos = [
-      document.querySelector('nav.menu'),
-      document.getElementById('menuLateralMobile')
-    ].filter(Boolean);
+  function atualizarCategoriasHomeMS(gruposOrdenados){
+    const faixa = document.getElementById('categoriasHome');
+    if (!faixa) return;
 
-    destinos.forEach(destino => {
-      destino.querySelectorAll('[data-categoria-dinamica-ms="true"]').forEach(item => item.remove());
-      gruposOrdenados.forEach(({ info }) => {
-        if (destino.querySelector(`a[href="#${CSS.escape(info.id)}"]`)) return;
-        const link = document.createElement('a');
-        link.href = `#${info.id}`;
-        link.textContent = tituloCategoriaDinamicaMS(info.titulo.replace(/\s+MS$/i, ''));
-        link.dataset.categoriaDinamicaMs = 'true';
-        link.addEventListener('click', () => {
-          if (typeof window.fecharMenuMobile === 'function') window.fecharMenuMobile();
-        });
-        destino.appendChild(link);
-      });
+    // Remove apenas atalhos criados automaticamente em carregamentos anteriores.
+    faixa.querySelectorAll('[data-categoria-dinamica-ms="true"]').forEach(item => item.remove());
+
+    gruposOrdenados.forEach(({ info }) => {
+      if (faixa.querySelector(`a[href="#${CSS.escape(info.id)}"]`)) return;
+
+      const link = document.createElement('a');
+      link.href = `#${info.id}`;
+      link.className = 'categoria-item';
+      link.dataset.categoriaDinamicaMs = 'true';
+      link.innerHTML = `
+        <span aria-hidden="true">${iconeCategoriaMS(info)}</span>
+        <p>${esc(tituloCategoriaDinamicaMS(info.titulo.replace(/\s+MS$/i, '')))}</p>`;
+      faixa.appendChild(link);
     });
   }
 
@@ -6242,8 +6242,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return ordemA - ordemB;
     });
 
-    catalogo.appendChild(criarNavegacaoCategoriasMS(gruposOrdenados));
-    atualizarMenusCategoriasMS(gruposOrdenados);
+    atualizarCategoriasHomeMS(gruposOrdenados);
 
     gruposOrdenados.forEach(({info, produtos: itens}) => {
       const secao = document.createElement('section');
@@ -6287,16 +6286,6 @@ document.addEventListener("DOMContentLoaded", () => {
       console.warn('Banco indisponível. Mantendo o catálogo local como reserva.', erro.message);
     }
   }
-
-  const estiloCategoriasMS = document.createElement('style');
-  estiloCategoriasMS.textContent = `
-    #categoriasDinamicasMS{display:flex;gap:10px;overflow-x:auto;padding:14px 4px 24px;scrollbar-width:thin;position:relative;z-index:2}
-    #categoriasDinamicasMS a{flex:0 0 auto;text-decoration:none;border:1px solid rgba(194,151,38,.45);border-radius:999px;padding:10px 17px;font-weight:800;color:inherit;background:rgba(194,151,38,.08);transition:.2s ease}
-    #categoriasDinamicasMS a:hover{transform:translateY(-2px);background:rgba(194,151,38,.18)}
-    .categoria-banco-ms{scroll-margin-top:110px}
-    @media(max-width:700px){#categoriasDinamicasMS{padding:10px 12px 18px}#categoriasDinamicasMS a{padding:9px 14px;font-size:13px}}
-  `;
-  document.head.appendChild(estiloCategoriasMS);
 
   document.addEventListener('DOMContentLoaded', carregarCatalogoBanco);
 })();
