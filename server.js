@@ -117,6 +117,10 @@ async function iniciarPostgresMS() {
       imagem TEXT,
       imagens JSONB NOT NULL DEFAULT '[]'::jsonb,
       descricao TEXT,
+      tabela_medidas TEXT,
+      detalhes_produto TEXT,
+      composicao TEXT,
+      cuidados TEXT,
       cores JSONB NOT NULL DEFAULT '[]'::jsonb,
       tamanhos JSONB NOT NULL DEFAULT '["P","M","G","GG"]'::jsonb,
       ativo BOOLEAN NOT NULL DEFAULT TRUE,
@@ -131,38 +135,16 @@ async function iniciarPostgresMS() {
     )
   `);
 
+  await pool.query(`ALTER TABLE produtos ADD COLUMN IF NOT EXISTS tabela_medidas TEXT`);
+  await pool.query(`ALTER TABLE produtos ADD COLUMN IF NOT EXISTS detalhes_produto TEXT`);
+  await pool.query(`ALTER TABLE produtos ADD COLUMN IF NOT EXISTS composicao TEXT`);
+  await pool.query(`ALTER TABLE produtos ADD COLUMN IF NOT EXISTS cuidados TEXT`);
   await pool.query(`ALTER TABLE produtos ADD COLUMN IF NOT EXISTS cores JSONB NOT NULL DEFAULT '[]'::jsonb`);
   await pool.query(`ALTER TABLE produtos ADD COLUMN IF NOT EXISTS tamanhos JSONB NOT NULL DEFAULT '["P","M","G","GG"]'::jsonb`);
   await pool.query(`ALTER TABLE produtos ADD COLUMN IF NOT EXISTS peso_kg NUMERIC(10,3) NOT NULL DEFAULT 0`);
   await pool.query(`ALTER TABLE produtos ADD COLUMN IF NOT EXISTS altura_cm NUMERIC(10,2) NOT NULL DEFAULT 0`);
   await pool.query(`ALTER TABLE produtos ADD COLUMN IF NOT EXISTS largura_cm NUMERIC(10,2) NOT NULL DEFAULT 0`);
   await pool.query(`ALTER TABLE produtos ADD COLUMN IF NOT EXISTS comprimento_cm NUMERIC(10,2) NOT NULL DEFAULT 0`);
-
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS categorias (
-      id BIGSERIAL PRIMARY KEY,
-      nome VARCHAR(80) UNIQUE NOT NULL,
-      ativo BOOLEAN NOT NULL DEFAULT TRUE,
-      ordem INTEGER NOT NULL DEFAULT 0,
-      criado_em TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-      atualizado_em TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    )
-  `);
-
-  await pool.query(`
-    INSERT INTO categorias (nome, ordem) VALUES
-      ('Roupas', 10), ('Camisetas', 20), ('Moletom', 30), ('Jaqueta', 40),
-      ('Calça', 50), ('Conjunto', 60), ('Camiseta Oversized', 70),
-      ('Camiseta Básica', 80), ('Acessórios', 90)
-    ON CONFLICT (nome) DO NOTHING
-  `);
-
-  await pool.query(`
-    INSERT INTO categorias (nome)
-    SELECT DISTINCT TRIM(categoria) FROM produtos
-    WHERE categoria IS NOT NULL AND TRIM(categoria) <> ''
-    ON CONFLICT (nome) DO NOTHING
-  `);
 
   await pool.query(`
     CREATE TABLE IF NOT EXISTS cupons (
@@ -1986,7 +1968,8 @@ function produtoRespostaMS(row) {
     categoria: row.categoria, preco: Number(row.preco || 0),
     precoAntigo: row.preco_antigo == null ? null : Number(row.preco_antigo),
     imagem: row.imagem || "", imagens: Array.isArray(row.imagens) ? row.imagens : [],
-    descricao: row.descricao || "", cores: Array.isArray(row.cores) ? row.cores : [],
+    descricao: row.descricao || "", tabelaMedidas: row.tabela_medidas || "",
+    detalhesProduto: row.detalhes_produto || "", composicao: row.composicao || "", cuidados: row.cuidados || "", cores: Array.isArray(row.cores) ? row.cores : [],
     tamanhos: Array.isArray(row.tamanhos) ? row.tamanhos : ['P','M','G','GG'], ativo: Boolean(row.ativo),
     destaque: Boolean(row.destaque), promocao: Boolean(row.promocao),
     pesoKg: Number(row.peso_kg || 0), alturaCm: Number(row.altura_cm || 0),
@@ -1995,27 +1978,6 @@ function produtoRespostaMS(row) {
     criadoEm: row.criado_em, atualizadoEm: row.atualizado_em
   };
 }
-
-function categoriaRespostaMS(row) {
-  return { id:Number(row.id), nome:String(row.nome||""), ativo:Boolean(row.ativo), ordem:Number(row.ordem||0) };
-}
-
-app.get("/categorias", async (req,res,next)=>{
-  if(!pool) return res.json([]);
-  try{const r=await pool.query("SELECT * FROM categorias WHERE ativo=TRUE ORDER BY ordem ASC,nome ASC");res.json(r.rows.map(categoriaRespostaMS));}catch(e){next(e);}
-});
-app.post("/categorias", async (req,res,next)=>{
-  if(!pool) return res.status(503).json({erro:true,mensagem:"PostgreSQL não configurado."});
-  try{const nome=String(req.body?.nome||"").trim().replace(/\s+/g," ").slice(0,80);if(!nome)return res.status(400).json({erro:true,mensagem:"Informe o nome da categoria."});const ordem=Number(req.body?.ordem)||0;const r=await pool.query(`INSERT INTO categorias(nome,ordem,ativo) VALUES($1,$2,TRUE) ON CONFLICT(nome) DO UPDATE SET ativo=TRUE,atualizado_em=NOW() RETURNING *`,[nome,ordem]);res.json({ok:true,categoria:categoriaRespostaMS(r.rows[0])});}catch(e){next(e);}
-});
-app.put("/categorias/:id", async (req,res,next)=>{
-  if(!pool) return res.status(503).json({erro:true,mensagem:"PostgreSQL não configurado."});
-  try{const atual=await pool.query("SELECT * FROM categorias WHERE id=$1",[req.params.id]);if(!atual.rowCount)return res.status(404).json({erro:true,mensagem:"Categoria não encontrada."});const antigo=atual.rows[0].nome;const nome=String(req.body?.nome||antigo).trim().replace(/\s+/g," ").slice(0,80);await pool.query("BEGIN");try{const r=await pool.query("UPDATE categorias SET nome=$2,atualizado_em=NOW() WHERE id=$1 RETURNING *",[req.params.id,nome]);if(nome!==antigo)await pool.query("UPDATE produtos SET categoria=$2,atualizado_em=NOW() WHERE categoria=$1",[antigo,nome]);await pool.query("COMMIT");res.json({ok:true,categoria:categoriaRespostaMS(r.rows[0])});}catch(e){await pool.query("ROLLBACK");throw e;}}catch(e){next(e);}
-});
-app.delete("/categorias/:id", async (req,res,next)=>{
-  if(!pool) return res.status(503).json({erro:true,mensagem:"PostgreSQL não configurado."});
-  try{const atual=await pool.query("SELECT * FROM categorias WHERE id=$1",[req.params.id]);if(!atual.rowCount)return res.status(404).json({erro:true,mensagem:"Categoria não encontrada."});const nome=atual.rows[0].nome;const usados=await pool.query("SELECT COUNT(*)::int total FROM produtos WHERE categoria=$1",[nome]);if(Number(usados.rows[0].total)>0)return res.status(409).json({erro:true,mensagem:`Existem ${usados.rows[0].total} produto(s) nessa categoria. Renomeie ou mova os produtos antes de excluir.`});await pool.query("DELETE FROM categorias WHERE id=$1",[req.params.id]);res.json({ok:true});}catch(e){next(e);}
-});
 
 app.get("/produtos", async (req, res, next) => {
   if (!pool) return res.json([]);
@@ -2061,17 +2023,18 @@ app.post("/produtos", async (req, res, next) => {
     if (!nome) return res.status(400).json({ erro: true, mensagem: "Informe o nome do produto." });
     const chave = chaveProdutoMS(p.chave || nome);
     const resultado = await pool.query(
-      `INSERT INTO produtos (chave,nome,categoria,preco,preco_antigo,imagem,imagens,descricao,cores,tamanhos,ativo,destaque,promocao,peso_kg,altura_cm,largura_cm,comprimento_cm)
-       VALUES ($1,$2,$3,$4,$5,$6,$7::jsonb,$8,$9::jsonb,$10::jsonb,$11,$12,$13,$14,$15,$16,$17)
+      `INSERT INTO produtos (chave,nome,categoria,preco,preco_antigo,imagem,imagens,descricao,tabela_medidas,detalhes_produto,composicao,cuidados,cores,tamanhos,ativo,destaque,promocao,peso_kg,altura_cm,largura_cm,comprimento_cm)
+       VALUES ($1,$2,$3,$4,$5,$6,$7::jsonb,$8,$9,$10,$11,$12,$13::jsonb,$14::jsonb,$15,$16,$17,$18,$19,$20,$21)
        ON CONFLICT (chave) DO UPDATE SET nome=EXCLUDED.nome,categoria=EXCLUDED.categoria,
        preco=EXCLUDED.preco,preco_antigo=EXCLUDED.preco_antigo,imagem=EXCLUDED.imagem,
-       imagens=EXCLUDED.imagens,descricao=EXCLUDED.descricao,cores=EXCLUDED.cores,tamanhos=EXCLUDED.tamanhos,ativo=EXCLUDED.ativo,
+       imagens=EXCLUDED.imagens,descricao=EXCLUDED.descricao,tabela_medidas=EXCLUDED.tabela_medidas,detalhes_produto=EXCLUDED.detalhes_produto,composicao=EXCLUDED.composicao,cuidados=EXCLUDED.cuidados,cores=EXCLUDED.cores,tamanhos=EXCLUDED.tamanhos,ativo=EXCLUDED.ativo,
        destaque=EXCLUDED.destaque,promocao=EXCLUDED.promocao,peso_kg=EXCLUDED.peso_kg,altura_cm=EXCLUDED.altura_cm,
        largura_cm=EXCLUDED.largura_cm,comprimento_cm=EXCLUDED.comprimento_cm,atualizado_em=NOW()
        RETURNING *`,
       [chave,nome,String(p.categoria||"Roupas").slice(0,80),Number(p.preco)||0,
        p.precoAntigo==null||p.precoAntigo===""?null:Number(p.precoAntigo),String(p.imagem||""),
        JSON.stringify(Array.isArray(p.imagens)?p.imagens:[]),String(p.descricao||""),
+       String(p.tabelaMedidas||""),String(p.detalhesProduto||""),String(p.composicao||""),String(p.cuidados||""),
        JSON.stringify(Array.isArray(p.cores)?p.cores:[]),JSON.stringify(Array.isArray(p.tamanhos)?p.tamanhos:['P','M','G','GG']),p.ativo!==false,
        Boolean(p.destaque),Boolean(p.promocao),
        numeroMedidaProdutoMS(p.pesoKg, 'Peso'), numeroMedidaProdutoMS(p.alturaCm, 'Altura'),
@@ -2088,13 +2051,14 @@ app.put("/produtos/:id", async (req, res, next) => {
     const resultado=await pool.query(
       `UPDATE produtos SET nome=COALESCE($2,nome),categoria=COALESCE($3,categoria),
        preco=COALESCE($4,preco),preco_antigo=$5,imagem=COALESCE($6,imagem),
-       descricao=COALESCE($7,descricao),ativo=COALESCE($8,ativo),destaque=COALESCE($9,destaque),
-       promocao=COALESCE($10,promocao),imagens=COALESCE($11::jsonb,imagens),cores=COALESCE($12::jsonb,cores),tamanhos=COALESCE($13::jsonb,tamanhos),
-       peso_kg=COALESCE($14,peso_kg),altura_cm=COALESCE($15,altura_cm),largura_cm=COALESCE($16,largura_cm),comprimento_cm=COALESCE($17,comprimento_cm),
+       descricao=COALESCE($7,descricao),tabela_medidas=COALESCE($8,tabela_medidas),detalhes_produto=COALESCE($9,detalhes_produto),composicao=COALESCE($10,composicao),cuidados=COALESCE($11,cuidados),ativo=COALESCE($12,ativo),destaque=COALESCE($13,destaque),
+       promocao=COALESCE($14,promocao),imagens=COALESCE($15::jsonb,imagens),cores=COALESCE($16::jsonb,cores),tamanhos=COALESCE($17::jsonb,tamanhos),
+       peso_kg=COALESCE($18,peso_kg),altura_cm=COALESCE($19,altura_cm),largura_cm=COALESCE($20,largura_cm),comprimento_cm=COALESCE($21,comprimento_cm),
        atualizado_em=NOW() WHERE id=$1 RETURNING *`,
       [req.params.id,p.nome==null?null:String(p.nome).trim(),p.categoria==null?null:String(p.categoria),
        p.preco==null?null:Number(p.preco),p.precoAntigo==null||p.precoAntigo===""?null:Number(p.precoAntigo),
        p.imagem==null?null:String(p.imagem),p.descricao==null?null:String(p.descricao),
+       p.tabelaMedidas==null?null:String(p.tabelaMedidas),p.detalhesProduto==null?null:String(p.detalhesProduto),p.composicao==null?null:String(p.composicao),p.cuidados==null?null:String(p.cuidados),
        p.ativo==null?null:Boolean(p.ativo),p.destaque==null?null:Boolean(p.destaque),p.promocao==null?null:Boolean(p.promocao),
        p.imagens==null?null:JSON.stringify(Array.isArray(p.imagens)?p.imagens:[]),
        p.cores==null?null:JSON.stringify(Array.isArray(p.cores)?p.cores:[]),

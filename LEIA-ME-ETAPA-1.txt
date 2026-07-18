@@ -1,0 +1,17 @@
+ETAPA 1 — INFORMAÇÕES DO PRODUTO PELO PAINEL
+
+Arquivos alterados:
+- server.js
+- admin.js
+- script.js
+
+O servidor cria automaticamente no PostgreSQL os campos:
+- tabela_medidas
+- detalhes_produto
+- composicao
+- cuidados
+
+Depois do deploy do servidor, abra o painel, edite um produto e preencha os quatro novos campos.
+Na loja, as informações aparecerão nos blocos expansíveis da página do produto.
+
+Os demais arquivos foram incluídos para manter o pacote completo da versão recebida.

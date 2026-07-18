@@ -6139,7 +6139,10 @@ document.addEventListener("DOMContentLoaded", () => {
       data-precoantigo="${antigo == null ? '' : antigo.toFixed(2)}"
       data-img="${esc(fotoPrincipal)}"
       data-fotos="${esc(fotos.join(','))}"
-      data-descricao="${esc(produto.descricao || '')}"
+      data-descricao="${esc(produto.tabelaMedidas || produto.descricao || '')}"
+      data-detalhes="${esc(produto.detalhesProduto || '')}"
+      data-composicao="${esc(produto.composicao || '')}"
+      data-cuidados="${esc(produto.cuidados || '')}"
       data-cores="${esc(cores.join(','))}"
       data-tamanhos="${esc(tamanhos.join(','))}">
 
