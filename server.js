@@ -465,6 +465,22 @@ async function produtoFreteMS(item, indice) {
   };
 }
 
+
+
+const FRETE_PADRAO_MS = {
+  gratisAtivo: false, gratisAcima: 199.90, fixoAtivo: false, fixoValor: 15,
+  regioes: {
+    sul:{ativo:true,min:3,max:7}, sudeste:{ativo:true,min:4,max:8},
+    centroOeste:{ativo:true,min:5,max:10}, nordeste:{ativo:true,min:7,max:14}, norte:{ativo:true,min:9,max:18}
+  }
+};
+const UFS_REGIAO_MS={RS:'sul',SC:'sul',PR:'sul',SP:'sudeste',RJ:'sudeste',MG:'sudeste',ES:'sudeste',GO:'centroOeste',MT:'centroOeste',MS:'centroOeste',DF:'centroOeste',BA:'nordeste',SE:'nordeste',AL:'nordeste',PE:'nordeste',PB:'nordeste',RN:'nordeste',CE:'nordeste',PI:'nordeste',MA:'nordeste',AM:'norte',PA:'norte',AC:'norte',RO:'norte',RR:'norte',AP:'norte',TO:'norte'};
+function limparFreteConfigMS(b={}){const regioes={};for(const k of Object.keys(FRETE_PADRAO_MS.regioes)){const r=b.regioes?.[k]||{};const min=Math.max(1,Math.min(60,Number(r.min||FRETE_PADRAO_MS.regioes[k].min)));const max=Math.max(min,Math.min(60,Number(r.max||FRETE_PADRAO_MS.regioes[k].max)));regioes[k]={ativo:r.ativo!==false,min,max};}return {gratisAtivo:b.gratisAtivo===true,gratisAcima:Math.max(0,Number(b.gratisAcima||FRETE_PADRAO_MS.gratisAcima)),fixoAtivo:b.fixoAtivo===true,fixoValor:Math.max(0,Number(b.fixoValor||FRETE_PADRAO_MS.fixoValor)),regioes};}
+async function obterFreteConfigMS(){if(!pool)return FRETE_PADRAO_MS;const r=await pool.query('SELECT dados FROM app_state WHERE chave=$1',['frete_config']);return limparFreteConfigMS(r.rows[0]?.dados||FRETE_PADRAO_MS);}
+async function descobrirRegiaoCepMS(cep){const r=await fetch(`https://viacep.com.br/ws/${cep}/json/`);const d=await r.json();if(!r.ok||d.erro||!UFS_REGIAO_MS[d.uf]){const e=new Error('Não foi possível identificar a região desse CEP.');e.statusCode=400;throw e;}return {uf:d.uf,regiao:UFS_REGIAO_MS[d.uf]};}
+app.get('/frete-config',async(req,res,next)=>{try{res.json(await obterFreteConfigMS());}catch(e){next(e);}});
+app.put('/frete-config',async(req,res,next)=>{if(!pool)return res.status(503).json({mensagem:'PostgreSQL não configurado.'});try{const config=limparFreteConfigMS(req.body||{});if(!Object.values(config.regioes).some(r=>r.ativo))return res.status(400).json({mensagem:'Ative pelo menos uma região atendida.'});await pool.query(`INSERT INTO app_state(chave,dados,atualizado_em) VALUES($1,$2::jsonb,NOW()) ON CONFLICT(chave) DO UPDATE SET dados=EXCLUDED.dados, atualizado_em=NOW()`,['frete_config',JSON.stringify(config)]);res.json({ok:true,config});}catch(e){next(e);}});
+
 app.post("/calcular-frete", async (req, res) => {
   try {
     const cep = apenasNumerosMS(req.body?.cep);
@@ -483,6 +499,21 @@ app.post("/calcular-frete", async (req, res) => {
 
     if (!itensRecebidos.length) {
       return res.status(400).json({ erro: true, mensagem: "O carrinho está vazio." });
+    }
+
+    const configFrete = await obterFreteConfigMS();
+    const destino = await descobrirRegiaoCepMS(cep);
+    const regraRegiao = configFrete.regioes[destino.regiao];
+    if (!regraRegiao?.ativo) {
+      return res.status(400).json({ erro:true, codigo:"REGIAO_NAO_ATENDIDA", mensagem:`No momento, não realizamos entregas para ${destino.uf}.` });
+    }
+    const subtotalFrete = itensRecebidos.reduce((t,item)=>t + Math.max(0,Number(item?.preco||item?.price||0))*Math.max(1,Number(item?.quantidade||item?.quantity||1)),0);
+    const prazoPersonalizado = Math.max(regraRegiao.min, regraRegiao.max);
+    if (configFrete.gratisAtivo && subtotalFrete >= configFrete.gratisAcima) {
+      return res.json([{id:"ms-gratis",name:"Frete grátis",price:"0.00",delivery_time:prazoPersonalizado,company:{name:"MS Matias Style"},custom:true,free:true}]);
+    }
+    if (configFrete.fixoAtivo) {
+      return res.json([{id:"ms-fixo",name:"Frete fixo",price:Number(configFrete.fixoValor).toFixed(2),delivery_time:prazoPersonalizado,company:{name:"MS Matias Style"},custom:true}]);
     }
 
     const products = await Promise.all(itensRecebidos.map(produtoFreteMS));
@@ -513,8 +544,9 @@ app.post("/calcular-frete", async (req, res) => {
       });
     }
 
+    const dataComPrazo = Array.isArray(data) ? data.map(opcao => opcao && !opcao.error ? {...opcao, delivery_time:prazoPersonalizado} : opcao) : data;
     res.set("Cache-Control", "no-store");
-    return res.json(data);
+    return res.json(dataComPrazo);
   } catch (error) {
     console.error("ERRO FRETE:", error);
     return res.status(error.statusCode || 500).json({
