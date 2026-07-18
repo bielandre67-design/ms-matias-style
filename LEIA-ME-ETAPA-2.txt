@@ -1,0 +1,30 @@
+ETAPA 2 - GALERIA PROFISSIONAL DE FOTOS
+
+O que foi adicionado:
+- até 12 fotos por produto;
+- upload múltiplo para o Cloudinary;
+- escolha da foto principal;
+- ordenação arrastando as fotos no computador;
+- botões de mover para esquerda/direita, inclusive no celular;
+- exclusão individual antes de salvar;
+- contador de fotos;
+- miniaturas na página do produto usando a ordem salva no painel.
+
+INSTALAÇÃO
+1. Extraia este ZIP.
+2. Copie os arquivos para a pasta do projeto.
+3. Substitua os arquivos existentes.
+4. No terminal, rode:
+
+   git add .
+   git commit -m "etapa 2 galeria profissional de fotos"
+   git push
+
+5. Espere o Render concluir o deploy e atualize o painel com Ctrl + F5.
+
+TESTE
+- Edite um produto.
+- Escolha várias fotos.
+- Arraste ou use as setas para ordenar.
+- A primeira foto é a principal.
+- Salve e abra o produto na loja.
