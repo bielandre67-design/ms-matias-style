@@ -6947,14 +6947,36 @@ document.addEventListener("DOMContentLoaded", () => {
       document.body.appendChild(modal);
       const css=document.createElement("style"); css.textContent=`#msEscolhaPagamento{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:2147483647;display:flex;align-items:center;justify-content:center;padding:18px;font-family:Arial,sans-serif}.ms-escolha-caixa{width:min(440px,100%);background:#fff;color:#151515;border-radius:22px;padding:26px;position:relative;text-align:center}.ms-escolha-fechar{position:absolute;right:14px;top:10px;border:0;background:none;font-size:30px;cursor:pointer}.ms-opcao-pagamento{width:100%;border:1px solid #ddd;background:#fff;border-radius:14px;padding:16px;margin-top:12px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:5px}.ms-opcao-pagamento:hover{border-color:#111;background:#f7f7f7}.ms-opcao-pagamento strong{font-size:16px}.ms-opcao-pagamento span{font-size:13px;color:#666}`; document.head.appendChild(css);
       modal.querySelector(".ms-escolha-fechar").onclick=()=>modal.style.display="none";
-      modal.querySelector(".ms-opcao-pix").onclick=()=>{modal.style.display="none";pagarPixDentroDaLoja();};
-      modal.querySelector(".ms-opcao-cartao").onclick=()=>{modal.style.display="none";pagarCartaoOutrosMS();};
+      modal.querySelector(".ms-opcao-pix").onclick=(ev)=>{ev.preventDefault();ev.stopPropagation();modal.style.display="none";pagarPixDentroDaLoja(ev);};
+      modal.querySelector(".ms-opcao-cartao").onclick=(ev)=>{ev.preventDefault();ev.stopPropagation();modal.style.display="none";pagarCartaoOutrosMS();};
     }
     modal.style.display="flex"; return false;
   }
 
+  // Deixa as ações acessíveis e garante o toque no mobile, mesmo quando outro
+  // listener global tenta capturar o clique do botão de pagamento.
+  window.msPagarCartaoOutros = pagarCartaoOutrosMS;
+  window.msPagarPixDentroDaLoja = pagarPixDentroDaLoja;
+  document.addEventListener("click",function(e){
+    const cartao=e.target.closest("#msEscolhaPagamento .ms-opcao-cartao");
+    if(cartao){
+      e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation?.();
+      const modal=document.getElementById("msEscolhaPagamento");
+      if(modal) modal.style.display="none";
+      pagarCartaoOutrosMS();
+      return;
+    }
+    const pix=e.target.closest("#msEscolhaPagamento .ms-opcao-pix");
+    if(pix){
+      e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation?.();
+      const modal=document.getElementById("msEscolhaPagamento");
+      if(modal) modal.style.display="none";
+      pagarPixDentroDaLoja(e);
+    }
+  },true);
+
   window.finalizarCompra=abrirEscolhaPagamentoMS; window.finalizarCompraFinal=abrirEscolhaPagamentoMS; window.finalizarPagamento=abrirEscolhaPagamentoMS; window.pagarMercadoPago=abrirEscolhaPagamentoMS; window.msFinalizarPagamento=abrirEscolhaPagamentoMS;
-  document.addEventListener("click",function(e){ const b=e.target.closest("button,a,input[type=button],input[type=submit]"); if(!b)return; const t=String(b.innerText||b.value||b.id||b.className||"").toLowerCase(); if((t.includes("pagar")||t.includes("finalizar pedido")||t.includes("mercado pago")||t.includes("finalizar compra")) && b.closest("#carrinhoModal,#carrinhoMobile,.carrinho,.checkout,form")){ abrirEscolhaPagamentoMS(e); } },true);
+  document.addEventListener("click",function(e){ const b=e.target.closest("button,a,input[type=button],input[type=submit]"); if(!b)return; if(b.closest("#msEscolhaPagamento")) return; const t=String(b.innerText||b.value||b.id||b.className||"").toLowerCase(); if((t.includes("pagar")||t.includes("finalizar pedido")||t.includes("mercado pago")||t.includes("finalizar compra")) && b.closest("#carrinhoModal,#carrinhoMobile,.carrinho,.checkout,form")){ abrirEscolhaPagamentoMS(e); } },true);
 })();
 
 
