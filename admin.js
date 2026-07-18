@@ -915,38 +915,65 @@ M: busto 55 cm | comprimento 70 cm"></textarea></label><label>Detalhes do produt
 
 
 // DESTAQUES VISUAIS DA PÁGINA INICIAL ---------------------------------------
+const API_DESTAQUES_ADMIN_MS =
+  (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+    ? 'http://localhost:3000'
+    : 'https://ms-matias-style.onrender.com';
 let produtosDestaquesHomeMS=[];
+const escDestaqueAdminMS=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const moedaDestaqueAdminMS=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 async function carregarDestaquesHomeMS(){
   const grade=document.getElementById('gradeDestaquesHomeMS');
   if(grade) grade.innerHTML='<div class="destaque-vazio-ms">Carregando produtos...</div>';
   try{
-    const [rp,rc]=await Promise.all([fetch(`${API_ADMIN_MS}/produtos?t=${Date.now()}`),fetch(`${API_ADMIN_MS}/home-config?t=${Date.now()}`)]);
-    if(!rp.ok) throw new Error();
-    produtosDestaquesHomeMS=await rp.json();
-    if(rc.ok){const c=await rc.json();const t=document.getElementById('tituloDestaquesHomeMS');const m=document.getElementById('mostrarDestaquesHomeMS');if(t)t.value=c.tituloDestaques||'DESTAQUES DA MS';if(m)m.checked=c.mostrarDestaques!==false;}
+    const [rp,rc]=await Promise.all([
+      fetch(`${API_DESTAQUES_ADMIN_MS}/produtos?t=${Date.now()}`,{cache:'no-store'}),
+      fetch(`${API_DESTAQUES_ADMIN_MS}/home-config?t=${Date.now()}`,{cache:'no-store'})
+    ]);
+    if(!rp.ok) throw new Error(`Produtos: ${rp.status}`);
+    const dados=await rp.json();
+    produtosDestaquesHomeMS=Array.isArray(dados)?dados:(Array.isArray(dados?.produtos)?dados.produtos:[]);
+    if(rc.ok){
+      const c=await rc.json();
+      const t=document.getElementById('tituloDestaquesHomeMS');
+      const m=document.getElementById('mostrarDestaquesHomeMS');
+      if(t)t.value=c.tituloDestaques||'DESTAQUES DA MS';
+      if(m)m.checked=c.mostrarDestaques!==false;
+    }
     renderDestaquesHomeMS();
-  }catch(e){if(grade)grade.innerHTML='<div class="destaque-vazio-ms">Não consegui carregar os produtos.</div>';}
+  }catch(e){
+    console.error('Erro ao carregar destaques:',e);
+    if(grade)grade.innerHTML='<div class="destaque-vazio-ms"><strong>Não consegui carregar os produtos.</strong><br><small>Clique em Atualizar para tentar novamente.</small></div>';
+  }
 }
 function renderDestaquesHomeMS(){
   const grade=document.getElementById('gradeDestaquesHomeMS');if(!grade)return;
   const lista=[...produtosDestaquesHomeMS].sort((a,b)=>Number(Boolean(b.destaque))-Number(Boolean(a.destaque))||(Number(a.destaqueOrdem||9999)-Number(b.destaqueOrdem||9999))||Number(a.id)-Number(b.id));
   if(!lista.length){grade.innerHTML='<div class="destaque-vazio-ms">Nenhum produto cadastrado.</div>';return;}
-  grade.innerHTML=lista.map(p=>`<article class="card-destaque-admin-ms"><img src="${escaparAdminMS(p.imagem||'logo.png')}" onerror="this.src='logo.png'"><div class="card-destaque-info-ms"><h3>${escaparAdminMS(p.nome)}</h3><p>${escaparAdminMS(p.categoria||'')} · ${moedaAdminMS(p.preco)}</p><div class="card-destaque-actions-ms"><button class="${p.destaque?'ativo':''}" onclick="alternarDestaqueHomeMS(${p.id})">${p.destaque?'★ Em destaque':'☆ Destacar'}</button><button onclick="moverDestaqueHomeMS(${p.id},-1)" title="Mover para esquerda">←</button><button onclick="moverDestaqueHomeMS(${p.id},1)" title="Mover para direita">→</button></div></div></article>`).join('');
+  grade.innerHTML=lista.map(p=>`<article class="card-destaque-admin-ms ${p.destaque?'selecionado':''}"><div class="card-destaque-img-ms"><img src="${escDestaqueAdminMS(p.imagem||'logo.png')}" onerror="this.src='logo.png'"><span>${p.destaque?'★ Em destaque':'Produto'}</span></div><div class="card-destaque-info-ms"><h3>${escDestaqueAdminMS(p.nome)}</h3><p>${escDestaqueAdminMS(p.categoria||'')} · ${moedaDestaqueAdminMS(p.preco)}</p><div class="card-destaque-actions-ms"><button class="${p.destaque?'ativo':''}" onclick="alternarDestaqueHomeMS(${p.id})">${p.destaque?'★ Remover':'☆ Destacar'}</button><button onclick="moverDestaqueHomeMS(${p.id},-1)" title="Mover para esquerda" ${p.destaque?'':'disabled'}>←</button><button onclick="moverDestaqueHomeMS(${p.id},1)" title="Mover para direita" ${p.destaque?'':'disabled'}>→</button></div></div></article>`).join('');
 }
 async function alternarDestaqueHomeMS(id){
   const p=produtosDestaquesHomeMS.find(x=>Number(x.id)===Number(id));if(!p)return;
   const ativos=produtosDestaquesHomeMS.filter(x=>x.destaque);
   const body={destaque:!p.destaque,destaqueOrdem:!p.destaque?(Math.max(0,...ativos.map(x=>Number(x.destaqueOrdem||0)))+1):0};
-  const r=await fetch(`${API_ADMIN_MS}/produtos/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});if(!r.ok)return alert('Não consegui atualizar o destaque.');const d=await r.json();Object.assign(p,d.produto);renderDestaquesHomeMS();
+  const r=await fetch(`${API_DESTAQUES_ADMIN_MS}/produtos/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(!r.ok)return alert('Não consegui atualizar o destaque.');
+  const d=await r.json();Object.assign(p,d.produto||body);renderDestaquesHomeMS();
 }
 async function moverDestaqueHomeMS(id,direcao){
   const ativos=produtosDestaquesHomeMS.filter(x=>x.destaque).sort((a,b)=>Number(a.destaqueOrdem||9999)-Number(b.destaqueOrdem||9999)||Number(a.id)-Number(b.id));
   const i=ativos.findIndex(x=>Number(x.id)===Number(id));const j=i+direcao;if(i<0||j<0||j>=ativos.length)return;
   const a=ativos[i],b=ativos[j],oa=Number(a.destaqueOrdem||i+1),ob=Number(b.destaqueOrdem||j+1);
-  const rs=await Promise.all([fetch(`${API_ADMIN_MS}/produtos/${a.id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({destaqueOrdem:ob})}),fetch(`${API_ADMIN_MS}/produtos/${b.id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({destaqueOrdem:oa})})]);
-  if(rs.some(r=>!r.ok))return alert('Não consegui mudar a ordem.');a.destaqueOrdem=ob;b.destaqueOrdem=oa;renderDestaquesHomeMS();
+  const rs=await Promise.all([
+    fetch(`${API_DESTAQUES_ADMIN_MS}/produtos/${a.id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({destaqueOrdem:ob})}),
+    fetch(`${API_DESTAQUES_ADMIN_MS}/produtos/${b.id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({destaqueOrdem:oa})})
+  ]);
+  if(rs.some(r=>!r.ok))return alert('Não consegui mudar a ordem.');
+  a.destaqueOrdem=ob;b.destaqueOrdem=oa;renderDestaquesHomeMS();
 }
 async function salvarConfigDestaquesHomeMS(){
   const body={tituloDestaques:document.getElementById('tituloDestaquesHomeMS')?.value.trim()||'DESTAQUES DA MS',mostrarDestaques:document.getElementById('mostrarDestaquesHomeMS')?.checked!==false};
-  const r=await fetch(`${API_ADMIN_MS}/home-config`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});if(!r.ok)return alert('Não consegui salvar.');alert('Destaques da página inicial salvos.');
+  const r=await fetch(`${API_DESTAQUES_ADMIN_MS}/home-config`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(!r.ok)return alert('Não consegui salvar.');alert('Destaques da página inicial salvos.');
 }
+document.addEventListener('DOMContentLoaded',()=>setTimeout(carregarDestaquesHomeMS,700));
