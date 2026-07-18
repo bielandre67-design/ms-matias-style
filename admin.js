@@ -848,7 +848,7 @@ Equipe MS Matias Style 🤍`;
         </div>
         <div class="ms-upload-box">
           <div class="ms-upload-top"><div><div class="ms-upload-title">🖼️ Outras imagens</div><div class="ms-upload-help">Selecione até 12 fotos adicionais. Use as setas para mudar a ordem ou escolha uma delas como capa.</div></div><label class="ms-file-btn">Escolher várias<input id="produtoImagensArquivosMS" type="file" accept="image/jpeg,image/png,image/webp" multiple></label></div>
-          <div id="previewOutrasImagensMS" class="ms-preview-grid"></div>
+          <div id="previewOutrasImagensMS" class="ms-preview-grid"></div><div id="contadorFotosMS" class="ms-preview-count">0/12 fotos adicionais</div>
         </div>
         <label class="ms-prod-full">Descrição<textarea id="produtoDescricaoMS"></textarea></label>
         <label>Cores, separadas por vírgula<input id="produtoCoresMS" placeholder="Preto, Bege, Rosa"></label><label>Tamanhos, separados por vírgula<input id="produtoTamanhosMS" value="P, M, G, GG"></label>
@@ -925,9 +925,8 @@ Equipe MS Matias Style 🤍`;
       outras.innerHTML=outrasImagensSelecionadasMS.length
         ? outrasImagensSelecionadasMS.map((src,i)=>`<div class="ms-preview-item"><img src="${escaparAttrImagemMS(src)}" alt="Prévia adicional ${i+1}"><button class="ms-preview-remove" type="button" onclick="removerOutraImagemMS(${i})" title="Remover">×</button><button class="ms-preview-capa" type="button" onclick="definirComoCapaMS(${i})">Usar como capa</button><div class="ms-preview-order"><button type="button" onclick="moverImagemMS(${i},-1)" ${i===0?'disabled':''}>←</button><button type="button" onclick="moverImagemMS(${i},1)" ${i===outrasImagensSelecionadasMS.length-1?'disabled':''}>→</button></div></div>`).join('')
         : '<div class="ms-preview-vazio">Nenhuma imagem adicional selecionada.</div>';
-      outras.insertAdjacentHTML('afterend', `<div id="contadorFotosMS" class="ms-preview-count">${outrasImagensSelecionadasMS.length}/12 fotos adicionais</div>`);
-      const antigos=document.querySelectorAll('#contadorFotosMS');
-      antigos.forEach((el,i)=>{ if(i<antigos.length-1) el.remove(); });
+      const contador=document.getElementById('contadorFotosMS');
+      if(contador) contador.textContent=`${outrasImagensSelecionadasMS.length}/12 fotos adicionais`;
     }
     const principalHidden=document.getElementById('produtoImagemMS');
     const outrasHidden=document.getElementById('produtoImagensMS');
@@ -996,7 +995,7 @@ Equipe MS Matias Style 🤍`;
   ['produtoPesoKgMS','produtoAlturaCmMS','produtoLarguraCmMS','produtoComprimentoCmMS'].forEach(id=>document.addEventListener('input',e=>{if(e.target?.id===id)atualizarStatusMedidasMS()}));
   async function carregarProdutosMS(){
     const box=document.getElementById('listaProdutosMS'); box.innerHTML='Carregando...';
-    try{const r=await fetch(`${API}/produtos?t=${Date.now()}`); if(!r.ok) throw new Error(); produtos=await r.json(); render();}
+    try{const r=await fetch(`${API}/produtos-admin?t=${Date.now()}`); if(!r.ok) throw new Error(); produtos=await r.json(); render();}
     catch(e){box.innerHTML='Não consegui carregar os produtos. Confira se o servidor está ligado.';}
   }
   function render(){
@@ -1006,7 +1005,7 @@ Equipe MS Matias Style 🤍`;
   }
   window.editarProdutoMS=function(id){
     const p=produtos.find(x=>x.id===id); if(!p)return; novoProdutoMS();
-    produtoIdMS.value=p.id; produtoNomeMS.value=p.nome||''; produtoCategoriaMS.value=p.categoria||''; produtoPrecoMS.value=p.preco||0; produtoPrecoAntigoMS.value=p.precoAntigo??''; imagemPrincipalSelecionadaMS=p.imagem||''; outrasImagensSelecionadasMS=Array.isArray(p.imagens)?[...p.imagens]:[]; renderPreviewsImagensMS(); produtoDescricaoMS.value=p.descricao||''; produtoCoresMS.value=(p.cores||[]).join(', '); produtoTamanhosMS.value=(p.tamanhos||['P','M','G','GG']).join(', '); produtoPesoKgMS.value=p.pesoKg||''; produtoAlturaCmMS.value=p.alturaCm||''; produtoLarguraCmMS.value=p.larguraCm||''; produtoComprimentoCmMS.value=p.comprimentoCm||''; atualizarStatusMedidasMS(); produtoQuantidadeMS.value=0; produtoAtivoMS.checked=!!p.ativo; produtoDestaqueMS.checked=!!p.destaque; produtoPromocaoMS.checked=!!p.promocao;
+    produtoIdMS.value=p.id; produtoNomeMS.value=p.nome||''; produtoCategoriaMS.value=p.categoria||''; produtoPrecoMS.value=p.preco||0; produtoPrecoAntigoMS.value=p.precoAntigo??''; imagemPrincipalSelecionadaMS=p.imagem||''; outrasImagensSelecionadasMS=(Array.isArray(p.imagens)?[...p.imagens]:[]).filter(src=>src && src!==imagemPrincipalSelecionadaMS).slice(0,12); renderPreviewsImagensMS(); produtoDescricaoMS.value=p.descricao||''; produtoCoresMS.value=(p.cores||[]).join(', '); produtoTamanhosMS.value=(p.tamanhos||['P','M','G','GG']).join(', '); produtoPesoKgMS.value=p.pesoKg||''; produtoAlturaCmMS.value=p.alturaCm||''; produtoLarguraCmMS.value=p.larguraCm||''; produtoComprimentoCmMS.value=p.comprimentoCm||''; atualizarStatusMedidasMS(); produtoQuantidadeMS.value=0; produtoAtivoMS.checked=!!p.ativo; produtoDestaqueMS.checked=!!p.destaque; produtoPromocaoMS.checked=!!p.promocao;
   };
   async function salvarProdutoMS(ev){
     ev.preventDefault(); const id=produtoIdMS.value;

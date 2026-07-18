@@ -1912,6 +1912,47 @@ function numeroMedidaProdutoMS(valor, campo) {
   return numero;
 }
 
+
+function urlBasePublicaMS(req) {
+  const configurada = String(process.env.PUBLIC_BASE_URL || process.env.RENDER_EXTERNAL_URL || "").replace(/\/$/, "");
+  if (configurada) return configurada;
+  const protocolo = String(req.headers["x-forwarded-proto"] || req.protocol || "https").split(",")[0].trim();
+  return `${protocolo}://${req.get("host")}`;
+}
+
+function imagemPublicaProdutoMS(req, id, indice) {
+  return `${urlBasePublicaMS(req)}/produtos/${id}/imagem/${indice}`;
+}
+
+function produtoRespostaPublicaMS(row, req) {
+  const resposta = produtoRespostaMS(row);
+  const adicionais = Array.isArray(row.imagens) ? row.imagens : [];
+  resposta.imagem = row.imagem ? imagemPublicaProdutoMS(req, row.id, 0) : "";
+  resposta.imagens = adicionais.map((_, indice) => imagemPublicaProdutoMS(req, row.id, indice + 1));
+  return resposta;
+}
+
+function enviarImagemProdutoMS(res, valor) {
+  const imagem = String(valor || "").trim();
+  if (!imagem) return res.status(404).send("Imagem não encontrada.");
+
+  const dataUrl = imagem.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,([\s\S]+)$/);
+  if (dataUrl) {
+    try {
+      const buffer = Buffer.from(dataUrl[2], "base64");
+      res.setHeader("Content-Type", dataUrl[1]);
+      res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+      return res.send(buffer);
+    } catch {
+      return res.status(422).send("Imagem inválida.");
+    }
+  }
+
+  if (/^https?:\/\//i.test(imagem)) return res.redirect(302, imagem);
+  if (imagem.startsWith("/")) return res.redirect(302, imagem);
+  return res.status(422).send("Formato de imagem inválido.");
+}
+
 function produtoRespostaMS(row) {
   return {
     id: Number(row.id), chave: row.chave, nome: row.nome,
@@ -1928,13 +1969,36 @@ function produtoRespostaMS(row) {
   };
 }
 
+
+app.get("/produtos/:id/imagem/:indice", async (req, res, next) => {
+  if (!pool) return res.status(503).send("PostgreSQL não configurado.");
+  try {
+    const resultado = await pool.query("SELECT imagem, imagens FROM produtos WHERE id=$1", [req.params.id]);
+    if (!resultado.rowCount) return res.status(404).send("Produto não encontrado.");
+    const indice = Number(req.params.indice);
+    if (!Number.isInteger(indice) || indice < 0) return res.status(400).send("Índice inválido.");
+    const row = resultado.rows[0];
+    const adicionais = Array.isArray(row.imagens) ? row.imagens : [];
+    const valor = indice === 0 ? row.imagem : adicionais[indice - 1];
+    return enviarImagemProdutoMS(res, valor);
+  } catch (erro) { next(erro); }
+});
+
+app.get("/produtos-admin", async (req, res, next) => {
+  if (!pool) return res.status(503).json({ erro: true, mensagem: "PostgreSQL não configurado." });
+  try {
+    const resultado = await pool.query("SELECT * FROM produtos ORDER BY id");
+    res.json(resultado.rows.map(produtoRespostaMS));
+  } catch (erro) { next(erro); }
+});
+
 app.get("/produtos", async (req, res, next) => {
   if (!pool) return res.json([]);
   try {
     const apenasAtivos = String(req.query.ativos || "").toLowerCase() === "true";
     const sql = `SELECT * FROM produtos ${apenasAtivos ? "WHERE ativo = TRUE" : ""} ORDER BY id`;
     const resultado = await pool.query(sql);
-    res.json(resultado.rows.map(produtoRespostaMS));
+    res.json(resultado.rows.map(row => produtoRespostaPublicaMS(row, req)));
   } catch (erro) { next(erro); }
 });
 

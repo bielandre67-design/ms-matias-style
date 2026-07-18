@@ -1259,15 +1259,20 @@ function abrirProdutoDetalheCard(card) {
   img: img
 };
 
-  const fotosSalvasMS = card.dataset.fotos || produtoDetalheAtual.img || "";
-  try {
-    const fotosJSONMS = JSON.parse(fotosSalvasMS);
-    fotosDetalhe = Array.isArray(fotosJSONMS) ? fotosJSONMS.filter(Boolean) : [];
-  } catch {
-    fotosDetalhe = String(fotosSalvasMS)
-      .split(",")
-      .map(foto => foto.trim())
-      .filter(Boolean);
+  const idBancoMS = Number(card.dataset.idBanco || 0);
+  const produtoBancoMS = Array.isArray(window.produtosBancoMS)
+    ? window.produtosBancoMS.find(p => Number(p.id) === idBancoMS)
+    : null;
+  if (produtoBancoMS) {
+    fotosDetalhe = [...new Set([produtoBancoMS.imagem, ...(Array.isArray(produtoBancoMS.imagens) ? produtoBancoMS.imagens : [])].filter(Boolean))];
+  } else {
+    const fotosSalvasMS = card.dataset.fotos || produtoDetalheAtual.img || "";
+    try {
+      const fotosJSONMS = JSON.parse(fotosSalvasMS);
+      fotosDetalhe = Array.isArray(fotosJSONMS) ? fotosJSONMS.filter(Boolean) : [];
+    } catch {
+      fotosDetalhe = String(fotosSalvasMS).split(",").map(foto => foto.trim()).filter(Boolean);
+    }
   }
   if (!fotosDetalhe.length && produtoDetalheAtual.img) fotosDetalhe = [produtoDetalheAtual.img];
 
