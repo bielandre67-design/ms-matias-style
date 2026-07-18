@@ -7939,3 +7939,32 @@ document.addEventListener("DOMContentLoaded", () => {
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',carregar);else carregar();
   window.carregarAparenciaLojaMS=carregar;
 })();
+
+
+// ETAPA 6 - ORDEM E VISIBILIDADE DA PÁGINA INICIAL ---------------------------
+(function(){
+  const API_HOME_LAYOUT_MS=(location.hostname==='localhost'||location.hostname==='127.0.0.1')?'http://localhost:3000':'https://ms-matias-style.onrender.com';
+  const padrao=['banner','categorias','destaques','catalogo','recomendados','contato'];
+  let configAtualMS=null;
+  function elementosGrupo(id){
+    if(id==='banner')return [...document.querySelectorAll('.hero-ms,.banner-mobile')];
+    if(id==='categorias')return [document.getElementById('categoriasHome')].filter(Boolean);
+    if(id==='destaques')return [document.getElementById('destaquesHomeMS')].filter(Boolean);
+    if(id==='catalogo')return [...document.querySelectorAll('section.produtos')];
+    if(id==='recomendados')return [...document.querySelectorAll('section.recomendados-ms')];
+    if(id==='contato')return [document.getElementById('contato')].filter(Boolean);
+    return [];
+  }
+  function aplicar(cfg){
+    configAtualMS=cfg;const recebidas=Array.isArray(cfg?.secoes)?cfg.secoes:padrao.map(id=>({id,visivel:true}));const mapa=new Map(recebidas.map(x=>[x.id,x]));const ordem=[...recebidas.map(x=>x.id),...padrao.filter(id=>!mapa.has(id))];
+    const todos=ordem.flatMap(elementosGrupo).filter((el,i,a)=>el&&a.indexOf(el)===i);if(!todos.length)return;
+    todos.forEach(el=>{const grupo=ordem.find(id=>elementosGrupo(id).includes(el));el.style.display=mapa.get(grupo)?.visivel===false?'none':'';});
+    const pai=todos[0]?.parentElement;if(!pai)return;
+    ordem.forEach(id=>elementosGrupo(id).forEach(el=>{if(el&&el.parentElement===pai)pai.appendChild(el);}));
+  }
+  async function carregar(){try{const r=await fetch(`${API_HOME_LAYOUT_MS}/home-config?t=${Date.now()}`,{cache:'no-store'});aplicar(r.ok?await r.json():{});}catch(e){console.warn('Configuração da página inicial indisponível.',e);}}
+  const observar=new MutationObserver(()=>{if(configAtualMS&&document.getElementById('destaquesHomeMS')){observar.disconnect();aplicar(configAtualMS);setTimeout(()=>observar.observe(document.body,{childList:true,subtree:true}),50);}});
+  function iniciar(){carregar();observar.observe(document.body,{childList:true,subtree:true});setTimeout(()=>configAtualMS&&aplicar(configAtualMS),1600);}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',iniciar);else iniciar();
+  window.carregarLayoutHomeMS=carregar;
+})();

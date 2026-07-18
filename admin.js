@@ -977,3 +977,40 @@ async function salvarConfigDestaquesHomeMS(){
   if(!r.ok)return alert('Não consegui salvar.');alert('Destaques da página inicial salvos.');
 }
 document.addEventListener('DOMContentLoaded',()=>setTimeout(carregarDestaquesHomeMS,700));
+
+
+// ETAPA 6 - EDITOR DA PÁGINA INICIAL -----------------------------------------
+const API_PAGINA_INICIAL_MS=(location.hostname==='localhost'||location.hostname==='127.0.0.1')?'http://localhost:3000':'https://ms-matias-style.onrender.com';
+const SECOES_HOME_PADRAO_ADMIN_MS=[
+  {id:'banner',nome:'Banner principal',icone:'▧',descricao:'Slider e banner do topo',visivel:true},
+  {id:'categorias',nome:'Categorias',icone:'▦',descricao:'Atalhos para as coleções',visivel:true},
+  {id:'destaques',nome:'Destaques',icone:'★',descricao:'Produtos escolhidos no painel',visivel:true},
+  {id:'catalogo',nome:'Catálogo de produtos',icone:'🛍',descricao:'Moletons, jaquetas, camisetas e demais produtos',visivel:true},
+  {id:'recomendados',nome:'Recomendados',icone:'♡',descricao:'Sugestões exibidas perto do final',visivel:true},
+  {id:'contato',nome:'Contato e rodapé',icone:'☏',descricao:'Informações finais da loja',visivel:true}
+];
+let secoesPaginaInicialMS=SECOES_HOME_PADRAO_ADMIN_MS.map(x=>({...x}));
+function normalizarSecoesPaginaInicialMS(lista){
+  const mapa=new Map(SECOES_HOME_PADRAO_ADMIN_MS.map(x=>[x.id,x]));const usadas=new Set(),saida=[];
+  (Array.isArray(lista)?lista:[]).forEach(item=>{const base=mapa.get(String(item?.id||''));if(!base||usadas.has(base.id))return;usadas.add(base.id);saida.push({...base,visivel:item.visivel!==false});});
+  SECOES_HOME_PADRAO_ADMIN_MS.forEach(base=>{if(!usadas.has(base.id))saida.push({...base});});return saida;
+}
+async function carregarPaginaInicialMS(){
+  const lista=document.getElementById('listaSecoesHomeMS');if(lista)lista.innerHTML='<p>Carregando página inicial...</p>';
+  try{const r=await fetch(`${API_PAGINA_INICIAL_MS}/home-config?t=${Date.now()}`,{cache:'no-store'});if(!r.ok)throw new Error('Falha ao carregar');const cfg=await r.json();secoesPaginaInicialMS=normalizarSecoesPaginaInicialMS(cfg.secoes);renderPaginaInicialMS();}
+  catch(e){console.error(e);secoesPaginaInicialMS=SECOES_HOME_PADRAO_ADMIN_MS.map(x=>({...x}));renderPaginaInicialMS();const st=document.getElementById('statusPaginaInicialMS');if(st)st.textContent='Não foi possível buscar o servidor. Mostrando o padrão.';}
+}
+function renderPaginaInicialMS(){
+  const lista=document.getElementById('listaSecoesHomeMS');const preview=document.getElementById('previewSecoesHomeMS');
+  if(lista)lista.innerHTML=secoesPaginaInicialMS.map((s,i)=>`<article class="secao-home-item-ms ${s.visivel?'':'oculta'}"><div class="secao-home-icone-ms">${s.icone}</div><div class="secao-home-texto-ms"><strong>${s.nome}</strong><small>${s.descricao}</small></div><button class="visibilidade-home-ms ${s.visivel?'ativa':''}" onclick="alternarSecaoPaginaInicialMS('${s.id}')">${s.visivel?'👁 Mostrar':'⊘ Oculta'}</button><div class="ordem-home-ms"><button onclick="moverSecaoPaginaInicialMS('${s.id}',-1)" ${i===0?'disabled':''}>↑</button><button onclick="moverSecaoPaginaInicialMS('${s.id}',1)" ${i===secoesPaginaInicialMS.length-1?'disabled':''}>↓</button></div></article>`).join('');
+  if(preview)preview.innerHTML=secoesPaginaInicialMS.map(s=>`<div class="preview-secao-item-ms ${s.visivel?'':'oculta'}" data-tipo="${s.id}"><span>${s.icone}</span><strong>${s.nome}</strong><small>${s.visivel?'Visível':'Oculta'}</small></div>`).join('');
+}
+function alternarSecaoPaginaInicialMS(id){const s=secoesPaginaInicialMS.find(x=>x.id===id);if(!s)return;s.visivel=!s.visivel;renderPaginaInicialMS();}
+function moverSecaoPaginaInicialMS(id,d){const i=secoesPaginaInicialMS.findIndex(x=>x.id===id),j=i+d;if(i<0||j<0||j>=secoesPaginaInicialMS.length)return;[secoesPaginaInicialMS[i],secoesPaginaInicialMS[j]]=[secoesPaginaInicialMS[j],secoesPaginaInicialMS[i]];renderPaginaInicialMS();}
+async function salvarPaginaInicialMS(){
+  const st=document.getElementById('statusPaginaInicialMS');if(st)st.textContent='Publicando...';
+  try{const r=await fetch(`${API_PAGINA_INICIAL_MS}/home-config`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({secoes:secoesPaginaInicialMS.map(({id,visivel})=>({id,visivel}))})});if(!r.ok)throw new Error('Falha ao salvar');if(st)st.textContent='✓ Página inicial publicada';setTimeout(()=>{if(st)st.textContent='';},3500);}
+  catch(e){console.error(e);if(st)st.textContent='Não foi possível publicar.';}
+}
+function restaurarPaginaInicialMS(){if(!confirm('Restaurar a ordem e a visibilidade padrão da página inicial?'))return;secoesPaginaInicialMS=SECOES_HOME_PADRAO_ADMIN_MS.map(x=>({...x}));renderPaginaInicialMS();}
+window.carregarPaginaInicialMS=carregarPaginaInicialMS;window.alternarSecaoPaginaInicialMS=alternarSecaoPaginaInicialMS;window.moverSecaoPaginaInicialMS=moverSecaoPaginaInicialMS;window.salvarPaginaInicialMS=salvarPaginaInicialMS;window.restaurarPaginaInicialMS=restaurarPaginaInicialMS;

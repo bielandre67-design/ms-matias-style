@@ -45,6 +45,7 @@
       <button class="ms-tab" onclick="abrirAbaMS('vitrineAba', this)"><span>▧</span> Vitrine do site</button>
       <button class="ms-tab" onclick="abrirAbaMS('destaquesAba', this)"><span>★</span> Destaques da home</button>
       <button class="ms-tab" onclick="abrirAbaMS('aparenciaAba', this)"><span>🎨</span> Personalizar loja</button>
+      <button class="ms-tab" onclick="abrirAbaMS('paginaInicialAba', this)"><span>🏠</span> Página inicial</button>
       <button class="ms-tab" onclick="abrirAbaMS('estoqueAba', this)"><span>◇</span> Estoque</button>
       <button class="ms-tab" onclick="abrirAbaMS('pedidosAba', this)"><span>◌</span> Pedidos</button>
       <button class="ms-tab" onclick="abrirAbaMS('cuponsAba', this)"><span>%</span> Cupons</button>
@@ -175,6 +176,33 @@
       </section>
     </section>
 
+
+
+    <section id="paginaInicialAba" class="ms-painel">
+      <div class="page-title-ms">
+        <div><h2>Organizar página inicial</h2><p>Mostre, esconda e reorganize as áreas da loja sem alterar código.</p></div>
+        <button class="btn-dark-ms" onclick="carregarPaginaInicialMS()">Atualizar</button>
+      </div>
+      <section class="home-editor-intro-ms">
+        <div><strong>🏠 Sua Home, do seu jeito</strong><p>Use as setas para mudar a ordem e o botão de visibilidade para esconder uma seção. A prévia acompanha as mudanças.</p></div>
+      </section>
+      <div class="home-editor-grid-ms">
+        <section class="painel-card-ms home-editor-card-ms">
+          <div class="card-header-ms"><div><h3>Seções da loja</h3><p>A ordem de cima para baixo será usada no site.</p></div></div>
+          <div id="listaSecoesHomeMS" class="lista-secoes-home-ms"><p>Carregando página inicial...</p></div>
+          <div class="home-editor-actions-ms">
+            <button class="btn-publicar-home-ms" onclick="salvarPaginaInicialMS()">💾 Publicar página inicial</button>
+            <button class="btn-dark-ms" onclick="restaurarPaginaInicialMS()">Restaurar padrão</button>
+            <span id="statusPaginaInicialMS"></span>
+          </div>
+        </section>
+        <aside class="preview-home-editor-ms">
+          <div class="preview-home-bar-ms"><span></span><strong>PRÉVIA DA HOME</strong><span>•••</span></div>
+          <div id="previewSecoesHomeMS" class="preview-secoes-home-ms"></div>
+          <small>A prévia representa a ordem e a visibilidade. O visual real da loja permanece intacto.</small>
+        </aside>
+      </div>
+    </section>
 
     <section id="aparenciaAba" class="ms-painel">
       <div class="card-header-ms"><div><h2>Personalizar loja</h2><p>Troque a identidade visual sem abrir o VS Code. A prévia muda na hora.</p></div></div>
@@ -338,11 +366,12 @@ function abrirAbaMS(id, btn){
   document.getElementById(id)?.classList.add('ativa');
   document.querySelectorAll('.ms-tab').forEach(b => b.classList.remove('ativa'));
   btn?.classList.add('ativa');
-  const titulos = {visao:'Dashboard', vitrineAba:'Vitrine do site', destaquesAba:'Destaques da home', aparenciaAba:'Personalizar loja', produtosAba:'Produtos', estoqueAba:'Estoque', pedidosAba:'Pedidos', cuponsAba:'Cupons', relatoriosAba:'Relatórios'};
+  const titulos = {visao:'Dashboard', vitrineAba:'Vitrine do site', destaquesAba:'Destaques da home', aparenciaAba:'Personalizar loja', paginaInicialAba:'Página inicial', produtosAba:'Produtos', estoqueAba:'Estoque', pedidosAba:'Pedidos', cuponsAba:'Cupons', relatoriosAba:'Relatórios'};
   const titulo = document.getElementById('tituloPaginaMS');
   if(titulo) titulo.innerText = titulos[id] || 'Painel ADM';
   if(id === 'vitrineAba') carregarBannersMS();
   if(id === 'aparenciaAba') carregarAparenciaMS();
+  if(id === 'paginaInicialAba') carregarPaginaInicialMS();
   if(id === 'estoqueAba') carregarEstoqueMS();
   if(id === 'produtosAba') carregarProdutosAdminMS();
   if(id === 'cuponsAba') carregarCuponsMS();
