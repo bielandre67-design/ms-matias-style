@@ -15154,3 +15154,22 @@ body.aviso-ms-aberto{overflow:hidden!important;}
     line-height:1.25;
   }
 }
+
+
+/* Recomendacoes sincronizadas com o painel administrativo */
+.recomendados-carregando-ms,
+.recomendados-vazio-ms{
+  width:100%;
+  min-height:180px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:32px;
+  color:#6b6b6b;
+  font-weight:700;
+  text-align:center;
+}
+.recomendado-banco-ms img{
+  background:#f4f4f4;
+  object-fit:cover;
+}

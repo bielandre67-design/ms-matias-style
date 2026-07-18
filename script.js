@@ -7701,3 +7701,167 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.addEventListener("pointerdown", acionarCartaoMobileMS, true);
 })();
+
+
+/* ========================================================================
+   RECOMENDACOES 100% VINDAS DO PAINEL / POSTGRESQL
+   Substitui os cards fixos do HTML por produtos atuais da API.
+   ======================================================================== */
+(function(){
+  const MAX_RECOMENDADOS_MS = 8;
+
+  const escaparHTMLMS = valor => String(valor ?? '').replace(/[&<>"']/g, caractere => ({
+    '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+  }[caractere]));
+
+  const numeroPrecoMS = valor => {
+    if (typeof valor === 'number') return Number.isFinite(valor) ? valor : 0;
+    return Number(String(valor ?? '0')
+      .replace('R$', '')
+      .replace(/\./g, '')
+      .replace(',', '.')
+      .replace(/[^0-9.-]/g, '')) || 0;
+  };
+
+  const dinheiroRecomendadoMS = valor => numeroPrecoMS(valor).toLocaleString('pt-BR', {
+    style: 'currency', currency: 'BRL'
+  });
+
+  const normalizarTextoMS = valor => String(valor || '')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase().trim();
+
+  function fotosRecomendadoMS(produto){
+    const imagens = Array.isArray(produto?.imagens) ? produto.imagens : [];
+    return [...new Set([produto?.imagem, ...imagens]
+      .map(item => String(item || '').trim())
+      .filter(Boolean))];
+  }
+
+  function categoriaAtualMS(){
+    const atual = window.produtoDetalheAtual || {};
+    return normalizarTextoMS(atual.categoria || atual.category || '');
+  }
+
+  function nomeAtualMS(){
+    const atual = window.produtoDetalheAtual || {};
+    const nomeTela = document.getElementById('detalheNome')?.textContent;
+    return normalizarTextoMS(atual.nome || nomeTela || '');
+  }
+
+  function embaralharEstavelMS(lista){
+    // Alterna os produtos sem criar uma ordem caotica a cada renderizacao.
+    return [...lista].sort((a,b) => {
+      const da = Number(Boolean(b.destaque)) - Number(Boolean(a.destaque));
+      if (da) return da;
+      const pa = Number(Boolean(b.promocao)) - Number(Boolean(a.promocao));
+      if (pa) return pa;
+      return Number(b.id || 0) - Number(a.id || 0);
+    });
+  }
+
+  function selecionarRecomendadosMS(produtos){
+    const nomeAtual = nomeAtualMS();
+    const categoriaAtual = categoriaAtualMS();
+    const elegiveis = produtos.filter(produto => {
+      if (!produto || produto.ativo === false) return false;
+      if (nomeAtual && normalizarTextoMS(produto.nome) === nomeAtual) return false;
+      return numeroPrecoMS(produto.preco) > 0 && fotosRecomendadoMS(produto).length > 0;
+    });
+
+    const mesmaCategoria = elegiveis.filter(produto =>
+      categoriaAtual && normalizarTextoMS(produto.categoria) === categoriaAtual
+    );
+    const outras = elegiveis.filter(produto => !mesmaCategoria.includes(produto));
+    return [...embaralharEstavelMS(mesmaCategoria), ...embaralharEstavelMS(outras)]
+      .slice(0, MAX_RECOMENDADOS_MS);
+  }
+
+  function cardRecomendadoBancoMS(produto){
+    const fotos = fotosRecomendadoMS(produto);
+    const principal = fotos[0] || 'logo.png';
+    const preco = numeroPrecoMS(produto.preco);
+    const cores = Array.isArray(produto.cores) ? produto.cores : [];
+    const cor = cores[0] || 'unica';
+    const parcelas = preco >= 120 ? 3 : 5;
+
+    return `<article class="recomendado-card-ms recomendado-banco-ms"
+      data-id-banco="${escaparHTMLMS(produto.id || '')}"
+      data-nome="${escaparHTMLMS(produto.nome || 'Produto MS')}"
+      data-preco="${preco.toFixed(2)}"
+      data-img="${escaparHTMLMS(principal)}"
+      data-fotos="${escaparHTMLMS(fotos.join(','))}"
+      data-cor="${escaparHTMLMS(cor)}"
+      data-categoria="${escaparHTMLMS(produto.categoria || '')}">
+      <button type="button" class="rec-fav-ms" aria-label="Favoritar ${escaparHTMLMS(produto.nome || 'produto')}">♡</button>
+      <img src="${escaparHTMLMS(principal)}" alt="${escaparHTMLMS(produto.nome || 'Produto MS')}" loading="lazy" onerror="this.src='logo.png'">
+      <div>
+        <h4>${escaparHTMLMS(produto.nome || 'Produto MS')}</h4>
+        <strong>${dinheiroRecomendadoMS(preco)}</strong>
+        <p>Até ${parcelas}x sem juros</p>
+      </div>
+    </article>`;
+  }
+
+  function renderizarRecomendadosBancoMS(produtos){
+    const lista = document.querySelector('.recomendados-lista-ms');
+    if (!lista || !Array.isArray(produtos)) return;
+
+    const recomendados = selecionarRecomendadosMS(produtos);
+    if (!recomendados.length){
+      lista.innerHTML = '<p class="recomendados-vazio-ms">Novidades chegando em breve.</p>';
+      return;
+    }
+    lista.innerHTML = recomendados.map(cardRecomendadoBancoMS).join('');
+  }
+
+  async function obterProdutosRecomendadosMS(){
+    if (Array.isArray(window.produtosBancoMS) && window.produtosBancoMS.length){
+      return window.produtosBancoMS;
+    }
+    const api = window.API_BASE || (typeof API_BASE !== 'undefined' ? API_BASE : 'https://ms-matias-style.onrender.com');
+    const resposta = await fetch(`${api}/produtos?ativos=true&t=${Date.now()}`, {
+      headers: {'Accept':'application/json'}, cache:'no-store'
+    });
+    if (!resposta.ok) throw new Error(`API respondeu ${resposta.status}`);
+    const dados = await resposta.json();
+    if (!Array.isArray(dados)) throw new Error('Lista de produtos invalida');
+    window.produtosBancoMS = dados;
+    return dados;
+  }
+
+  async function atualizarRecomendadosMS(){
+    try{
+      const produtos = await obterProdutosRecomendadosMS();
+      renderizarRecomendadosBancoMS(produtos);
+    }catch(erro){
+      console.warn('Nao foi possivel atualizar recomendacoes pelo painel:', erro);
+      const lista = document.querySelector('.recomendados-lista-ms');
+      if (lista) lista.innerHTML = '<p class="recomendados-vazio-ms">Não foi possível carregar as recomendações agora.</p>';
+    }
+  }
+
+  document.addEventListener('catalogoMSCarregado', evento => {
+    renderizarRecomendadosBancoMS(Array.isArray(evento.detail) ? evento.detail : []);
+  });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    atualizarRecomendadosMS();
+    document.getElementById('verMaisRecomendadosMS')?.addEventListener('click', () => {
+      const destino = document.getElementById('catalogoBancoMS') || document.querySelector('section.produtos');
+      destino?.scrollIntoView({behavior:'smooth', block:'start'});
+      if (typeof window.fecharProdutoDetalhe === 'function') window.fecharProdutoDetalhe();
+    });
+  });
+
+  // Sempre que outro produto abrir no detalhe, recalcula para não recomendar ele mesmo.
+  document.addEventListener('click', evento => {
+    if (evento.target instanceof Element && evento.target.closest('.card-produto, .recomendado-card-ms')){
+      setTimeout(() => {
+        if (Array.isArray(window.produtosBancoMS)) renderizarRecomendadosBancoMS(window.produtosBancoMS);
+      }, 120);
+    }
+  });
+
+  window.atualizarRecomendadosMS = atualizarRecomendadosMS;
+})();
