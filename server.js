@@ -2072,44 +2072,20 @@ app.put("/aparencia-config", async (req, res, next) => {
   } catch (erro) { next(erro); }
 });
 
-const SECOES_HOME_PADRAO_MS = [
-  { id:"banner", nome:"Banner principal", visivel:true },
-  { id:"categorias", nome:"Categorias", visivel:true },
-  { id:"destaques", nome:"Destaques", visivel:true },
-  { id:"catalogo", nome:"Catálogo de produtos", visivel:true },
-  { id:"recomendados", nome:"Recomendados", visivel:true },
-  { id:"contato", nome:"Contato e rodapé", visivel:true }
-];
-function limparConfigHomeMS(body = {}, anterior = {}) {
-  const permitidas = new Map(SECOES_HOME_PADRAO_MS.map(x => [x.id, x]));
-  const recebidas = Array.isArray(body.secoes) ? body.secoes : (Array.isArray(anterior.secoes) ? anterior.secoes : SECOES_HOME_PADRAO_MS);
-  const usadas = new Set();
-  const secoes = [];
-  for (const item of recebidas) {
-    const id = String(item?.id || "");
-    if (!permitidas.has(id) || usadas.has(id)) continue;
-    usadas.add(id);
-    secoes.push({ id, nome: permitidas.get(id).nome, visivel: item?.visivel !== false });
-  }
-  for (const padrao of SECOES_HOME_PADRAO_MS) if (!usadas.has(padrao.id)) secoes.push({...padrao});
-  return {
-    tituloDestaques: String(body.tituloDestaques ?? anterior.tituloDestaques ?? "DESTAQUES DA MS").trim().slice(0,80) || "DESTAQUES DA MS",
-    mostrarDestaques: body.mostrarDestaques ?? anterior.mostrarDestaques ?? true,
-    secoes
-  };
-}
 app.get("/home-config", async (req, res, next) => {
-  if (!pool) return res.json(limparConfigHomeMS({}));
+  if (!pool) return res.json({ tituloDestaques:"DESTAQUES DA MS", mostrarDestaques:true });
   try {
     const r=await pool.query("SELECT dados FROM app_state WHERE chave=$1", ["home_config"]);
-    res.json(limparConfigHomeMS({}, r.rows[0]?.dados || {}));
+    res.json(r.rows[0]?.dados || { tituloDestaques:"DESTAQUES DA MS", mostrarDestaques:true });
   } catch(e){ next(e); }
 });
 app.put("/home-config", async (req, res, next) => {
   if (!pool) return res.status(503).json({mensagem:"Banco não configurado."});
   try {
-    const atual=await pool.query("SELECT dados FROM app_state WHERE chave=$1", ["home_config"]);
-    const dados=limparConfigHomeMS(req.body || {}, atual.rows[0]?.dados || {});
+    const dados={
+      tituloDestaques:String(req.body?.tituloDestaques || "DESTAQUES DA MS").trim().slice(0,80),
+      mostrarDestaques:req.body?.mostrarDestaques !== false
+    };
     await pool.query(`INSERT INTO app_state(chave,dados,atualizado_em) VALUES($1,$2::jsonb,NOW())
       ON CONFLICT(chave) DO UPDATE SET dados=EXCLUDED.dados, atualizado_em=NOW()`, ["home_config",JSON.stringify(dados)]);
     res.json({ok:true,config:dados});
