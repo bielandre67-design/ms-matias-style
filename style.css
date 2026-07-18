@@ -14926,3 +14926,29 @@ body.aviso-ms-aberto{overflow:hidden!important;}
   .ms-sucesso-aviso { align-items: flex-start; }
   .ms-sucesso-botao { min-height: 52px; }
 }
+
+/* =====================================================
+   AJUSTE SEGURO DO MENU SUPERIOR - 18/07/2026
+   Altera somente o espacamento entre os links do topo.
+===================================================== */
+@media (min-width: 769px) {
+  html body header.header .icones-header > nav.menu,
+  html body header.topo .topo-acoes > nav.menu,
+  html body .header .icones-header nav.menu {
+    display: flex !important;
+    align-items: center !important;
+    flex-wrap: nowrap !important;
+    column-gap: 34px !important;
+    row-gap: 0 !important;
+    white-space: nowrap !important;
+  }
+
+  html body header.header .icones-header > nav.menu > a,
+  html body header.topo .topo-acoes > nav.menu > a,
+  html body .header .icones-header nav.menu > a {
+    display: inline-flex !important;
+    align-items: center !important;
+    margin: 0 !important;
+    flex: 0 0 auto !important;
+  }
+}
