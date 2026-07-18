@@ -93,6 +93,46 @@ html, body { min-height: 100%; }
 }
 </style>
 
+
+<style>
+/* Estoque 2.0: mais limpo, compacto e com numeração */
+#estoqueAba .page-title-ms{align-items:center;margin-bottom:18px}
+#estoqueAba .page-title-ms h2{font-size:30px;margin:0 0 5px}
+#estoqueAba .page-title-ms p{max-width:720px}
+.estoque-cards-ms{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}
+.estoque-cards-ms .card{min-height:112px;padding:18px;border:1px solid rgba(255,255,255,.09);background:linear-gradient(145deg,#17191f,#111318)}
+.estoque-cards-ms .card strong{font-size:30px;color:#f4c542}
+.estoque-layout-ms{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:16px;align-items:start}
+.estoque-principal-ms{overflow:hidden;padding:0!important}
+.estoque-toolbar-ms{padding:18px;border-bottom:1px solid rgba(255,255,255,.08);background:linear-gradient(180deg,rgba(244,197,66,.055),transparent)}
+.filtros-estoque-ms{display:grid!important;grid-template-columns:1fr 1.15fr 1.35fr;gap:12px;margin:0!important}
+.filtros-estoque-ms label{font-size:12px;font-weight:800;color:#aeb4c1;text-transform:uppercase;letter-spacing:.05em}
+.filtros-estoque-ms select,.filtros-estoque-ms input{height:46px;margin-top:7px;border-radius:12px;background:#202228;border:1px solid #343741;color:#fff;padding:0 14px}
+.variacoes-rapidas-ms{margin-top:14px;padding:15px;border:1px solid rgba(244,197,66,.2);border-radius:15px;background:#111318;display:grid;gap:11px}
+.variacoes-rapidas-ms strong{display:block;font-size:15px;color:#fff}
+.variacoes-rapidas-ms small{display:block;color:#969dab;margin-top:3px}
+.variacoes-botoes-ms{display:flex;flex-wrap:wrap;gap:8px}
+.variacoes-botoes-ms button{border:1px solid #3a3d47;background:#23262d;color:#fff;border-radius:10px;padding:9px 13px;font-weight:800;cursor:pointer;transition:.18s}
+.variacoes-botoes-ms button:hover:not(:disabled){border-color:#f4c542;color:#f4c542;transform:translateY(-1px)}
+.variacoes-botoes-ms button:disabled{opacity:.35;cursor:not-allowed}
+.variacoes-botoes-ms .variacao-personalizada-ms{background:rgba(244,197,66,.12);border-color:rgba(244,197,66,.45);color:#f4c542}
+.aviso-variacoes-ms{font-size:12px;color:#8f96a4}
+.aviso-variacoes-ms.ativo{color:#d4d7de}.aviso-variacoes-ms.sucesso{color:#55d98b}.aviso-variacoes-ms.erro{color:#ff667d}
+.tabela-wrap-ms{max-height:58vh;overflow:auto}
+.grade-estoque-ms{border-collapse:separate;border-spacing:0;width:100%}
+.grade-estoque-ms thead th{position:sticky;top:0;z-index:2;background:#1b1d23;padding:14px 16px;font-size:11px;letter-spacing:.05em;color:#aeb4c1;border-bottom:1px solid #343741}
+.grade-estoque-ms tbody td{padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.065);background:#202228}
+.grade-estoque-ms tbody tr:hover td{background:#262930}
+.grade-estoque-ms td:first-child strong{display:block;font-size:14px}.grade-estoque-ms td:first-child small{display:block;margin-top:3px;color:#8e95a3;font-size:11px}
+.qtd-input-ms{width:74px!important;height:38px!important;border-radius:11px!important;text-align:center;font-size:15px!important;font-weight:900!important}
+.alertas-ms{position:sticky;top:112px;max-height:calc(100vh - 132px);overflow:hidden;padding:0!important}
+.alertas-ms .card-header-ms{padding:18px;border-bottom:1px solid rgba(255,255,255,.08)}
+.alerta-lista-ms{max-height:calc(100vh - 230px);overflow:auto;padding:12px}
+.alerta-lista-ms>div{border-radius:13px!important;margin-bottom:9px!important;padding:13px!important}
+.legenda-ms{padding:13px 18px;background:#17191e;border-top:1px solid rgba(255,255,255,.06)}
+@media(max-width:1100px){.estoque-layout-ms{grid-template-columns:1fr}.alertas-ms{position:static;max-height:none}.alerta-lista-ms{max-height:360px}.estoque-cards-ms{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:700px){.filtros-estoque-ms{grid-template-columns:1fr}.estoque-cards-ms{grid-template-columns:1fr 1fr}.estoque-cards-ms .card{min-height:96px;padding:14px}.estoque-cards-ms .card strong{font-size:24px}.tabela-wrap-ms{max-height:none}.grade-estoque-ms{min-width:760px}.variacoes-botoes-ms button{flex:1 1 calc(50% - 8px)}}
+</style>
 </head>
 <body>
 <script>
@@ -326,20 +366,36 @@ html, body { min-height: 100%; }
 
       <section class="estoque-layout-ms">
         <div class="painel-card-ms estoque-principal-ms">
-          <div class="filtros-estoque-ms">
-            <label>Categoria
-              <select id="filtroCategoriaMS" onchange="renderGradeEstoqueMS()">
-                <option value="todas">Todas</option>
-              </select>
-            </label>
-            <label>Produto
-              <select id="filtroProdutoMS" onchange="renderGradeEstoqueMS()">
-                <option value="todos">Todos</option>
-              </select>
-            </label>
-            <label>Pesquisar
-              <input id="pesquisaEstoqueMS" placeholder="Moletom, bege, azul..." oninput="renderGradeEstoqueMS()">
-            </label>
+          <div class="estoque-toolbar-ms">
+            <div class="filtros-estoque-ms">
+              <label>Categoria
+                <select id="filtroCategoriaMS" onchange="renderGradeEstoqueMS()">
+                  <option value="todas">Todas</option>
+                </select>
+              </label>
+              <label>Produto
+                <select id="filtroProdutoMS" onchange="renderGradeEstoqueMS(); atualizarSeletorVariacoesMS()">
+                  <option value="todos">Todos</option>
+                </select>
+              </label>
+              <label>Pesquisar
+                <input id="pesquisaEstoqueMS" placeholder="Produto, cor, tamanho ou número..." oninput="renderGradeEstoqueMS()">
+              </label>
+            </div>
+
+            <div class="variacoes-rapidas-ms">
+              <div>
+                <strong>Tamanhos e numerações</strong>
+                <small>Escolha um produto acima e adicione as opções que ele usa.</small>
+              </div>
+              <div class="variacoes-botoes-ms">
+                <button type="button" onclick="aplicarVariacoesPresetMS('roupa')">P · M · G · GG</button>
+                <button type="button" onclick="aplicarVariacoesPresetMS('calcado')">34 ao 44</button>
+                <button type="button" onclick="aplicarVariacoesPresetMS('unico')">Único</button>
+                <button type="button" class="variacao-personalizada-ms" onclick="abrirVariacoesPersonalizadasMS()">+ Personalizar</button>
+              </div>
+              <span id="avisoVariacoesMS" class="aviso-variacoes-ms">Selecione um produto para liberar as opções.</span>
+            </div>
           </div>
 
           <div class="tabela-wrap-ms">
@@ -427,6 +483,7 @@ const API_ADMIN_MS =
     ? "http://localhost:3000"
     : "https://ms-matias-style.onrender.com";
 let CATALOGO_MS = [];
+let PRODUTOS_COMPLETOS_MS = [];
 let estoqueServidorMS = [];
 let alteracoesEstoqueMS = new Map();
 
@@ -500,16 +557,86 @@ async function carregarEstoqueMS(){
     ]);
     if(!respProdutos.ok || !respEstoque.ok) throw new Error('Falha ao carregar');
     const produtos = await respProdutos.json();
+    PRODUTOS_COMPLETOS_MS = Array.isArray(produtos) ? produtos : [];
     estoqueServidorMS = await respEstoque.json();
-    CATALOGO_MS = catalogoDosProdutosMS(produtos);
+    CATALOGO_MS = catalogoDosProdutosMS(PRODUTOS_COMPLETOS_MS);
     popularFiltrosEstoqueMS();
+    atualizarSeletorVariacoesMS();
   }catch(e){
     estoqueServidorMS = [];
     CATALOGO_MS = [];
+    PRODUTOS_COMPLETOS_MS = [];
     if (corpo) corpo.innerHTML = '<tr><td colspan="5">Não consegui carregar o estoque. Atualize a página e tente novamente.</td></tr>';
     return;
   }
   renderGradeEstoqueMS();
+}
+
+
+function produtoSelecionadoEstoqueMS(){
+  const nome = document.getElementById('filtroProdutoMS')?.value || 'todos';
+  if(nome === 'todos') return null;
+  return PRODUTOS_COMPLETOS_MS.find(p => String(p.nome || '') === nome) || null;
+}
+
+function atualizarSeletorVariacoesMS(){
+  const aviso = document.getElementById('avisoVariacoesMS');
+  const produto = produtoSelecionadoEstoqueMS();
+  const botoes = document.querySelectorAll('.variacoes-botoes-ms button');
+  botoes.forEach(b => b.disabled = !produto);
+  if(!aviso) return;
+  if(!produto){
+    aviso.textContent = 'Selecione um produto para liberar as opções.';
+    aviso.className = 'aviso-variacoes-ms';
+    return;
+  }
+  const opcoes = Array.isArray(produto.tamanhos) ? produto.tamanhos : [];
+  aviso.textContent = `${produto.nome}: ${opcoes.length ? opcoes.join(' · ') : 'nenhuma opção cadastrada'}`;
+  aviso.className = 'aviso-variacoes-ms ativo';
+}
+
+async function salvarVariacoesProdutoMS(lista){
+  const produto = produtoSelecionadoEstoqueMS();
+  if(!produto){
+    alert('Primeiro selecione um produto no filtro Produto.');
+    return;
+  }
+  const tamanhos = [...new Set(lista.map(v => String(v).trim().toUpperCase()).filter(Boolean))];
+  if(!tamanhos.length) return;
+  const aviso = document.getElementById('avisoVariacoesMS');
+  try{
+    if(aviso) aviso.textContent = 'Salvando tamanhos e numerações...';
+    const resposta = await fetch(`${API_ADMIN_MS}/produtos/${encodeURIComponent(produto.id)}`, {
+      method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ tamanhos })
+    });
+    const dados = await resposta.json().catch(()=>({}));
+    if(!resposta.ok) throw new Error(dados.mensagem || 'Não foi possível salvar.');
+    if(aviso){ aviso.textContent = 'Opções salvas com sucesso ✓'; aviso.className='aviso-variacoes-ms sucesso'; }
+    alteracoesEstoqueMS.clear();
+    await carregarEstoqueMS();
+    const seletor = document.getElementById('filtroProdutoMS');
+    if(seletor){ seletor.value = produto.nome; renderGradeEstoqueMS(); atualizarSeletorVariacoesMS(); }
+  }catch(erro){
+    if(aviso){ aviso.textContent = erro.message; aviso.className='aviso-variacoes-ms erro'; }
+  }
+}
+
+function aplicarVariacoesPresetMS(tipo){
+  const presets = {
+    roupa:['P','M','G','GG'],
+    calcado:['34','35','36','37','38','39','40','41','42','43','44'],
+    unico:['ÚNICO']
+  };
+  salvarVariacoesProdutoMS(presets[tipo] || []);
+}
+
+function abrirVariacoesPersonalizadasMS(){
+  const produto = produtoSelecionadoEstoqueMS();
+  if(!produto){ alert('Primeiro selecione um produto.'); return; }
+  const atuais = Array.isArray(produto.tamanhos) ? produto.tamanhos.join(', ') : '';
+  const valor = prompt('Digite tamanhos ou números separados por vírgula.\nExemplo: 36, 38, 40, 42 ou P, M, G, GG', atuais);
+  if(valor === null) return;
+  salvarVariacoesProdutoMS(valor.split(','));
 }
 
 function statusLinha(total){
