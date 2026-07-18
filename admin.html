@@ -120,7 +120,7 @@
 
       <section class="cards-resumo estoque-cards-ms">
         <div class="card"><span>Produtos cadastrados</span><strong id="cardProdutosEstoque">0</strong><small>Modelos da loja</small></div>
-        <div class="card"><span>Itens em estoque</span><strong id="cardItensEstoque">0</strong><small>Somando P, M, G e GG</small></div>
+        <div class="card"><span>Itens em estoque</span><strong id="cardItensEstoque">0</strong><small>Somando todos os tamanhos</small></div>
         <div class="card"><span>Estoque baixo</span><strong id="cardBaixoEstoque">0</strong><small>3 unidades ou menos</small></div>
         <div class="card"><span>Esgotados</span><strong id="cardSemEstoque">0</strong><small>Zerados</small></div>
       </section>
@@ -149,15 +149,12 @@
                 <tr>
                   <th>Produto</th>
                   <th>Cor</th>
-                  <th>P</th>
-                  <th>M</th>
-                  <th>G</th>
-                  <th>GG</th>
-                  <th>Total</th>
+                  <th>Tamanho / Número</th>
+                  <th>Quantidade</th>
                   <th>Status</th>
                 </tr>
               </thead>
-              <tbody id="listaEstoqueMS"><tr><td colspan="8">Carregando estoque...</td></tr></tbody>
+              <tbody id="listaEstoqueMS"><tr><td colspan="5">Carregando estoque...</td></tr></tbody>
             </table>
           </div>
           <div class="legenda-ms"><span class="dot ok"></span> Normal <span class="dot baixo"></span> Baixo <span class="dot zero"></span> Sem estoque</div>
@@ -230,16 +227,7 @@ const API_ADMIN_MS =
   location.hostname === "127.0.0.1" || location.hostname === "localhost"
     ? "http://localhost:3000"
     : "https://ms-matias-style.onrender.com";
-const TAMANHOS_MS = ["P", "M", "G", "GG"];
-const CATALOGO_MS = [
-  { categoria:"Roupas", produto:"Moletom", tipo:"MOL", cores:["Preto","Branco","Bege","Azul","Rosa","Vinho"] },
-  { categoria:"Roupas", produto:"Jaqueta", tipo:"JAQ", cores:["Preto","Branco","Azul"] },
-  { categoria:"Camisetas", produto:"Camiseta Oversized", tipo:"OVR", cores:["Preto","Marrom","Off White","Bege"] },
-  { categoria:"Camisetas", produto:"Camiseta Básica", tipo:"CBA", cores:["Preto","Branco","Bege","Vermelho","Rosa"] },
-  { categoria:"Roupas", produto:"Conjunto", tipo:"CON", cores:["Branco","Preto","Rosa","Bege"] },
-  { categoria:"Roupas", produto:"Calça", tipo:"CAL", cores:["Preto","Bege","Cinza","Rosa","Branco"] }
-];
-const COD_COR_MS = {"Preto":"PT","Branco":"BR","Bege":"BG","Azul":"AZ","Rosa":"RS","Vinho":"VN","Marrom":"MR","Off White":"OW","Vermelho":"VM","Cinza":"CZ"};
+let CATALOGO_MS = [];
 let estoqueServidorMS = [];
 let alteracoesEstoqueMS = new Map();
 
@@ -256,51 +244,68 @@ function abrirAbaMS(id, btn){
   if(id === 'cuponsAba') carregarCuponsMS();
 }
 
-function skuMS(produto, cor, tamanho){
-  const item = CATALOGO_MS.find(p => p.produto === produto);
-  const tipo = item?.tipo || 'PROD';
-  const corCod = COD_COR_MS[cor] || String(cor).slice(0,3).toUpperCase();
-  return `MS-${tipo}-${corCod}-${tamanho}`;
-}
-
 function normalizarMS(v){
   return String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
 }
 
+function chaveVarianteMS(produto, cor, tamanho){
+  return [normalizarMS(produto), normalizarMS(cor), normalizarMS(tamanho)].join('|');
+}
+
 function itemEstoque(produto, cor, tamanho){
-  const sku = skuMS(produto, cor, tamanho);
-  const encontrado = estoqueServidorMS.find(i => String(i.sku || '').toUpperCase() === sku);
-  return encontrado || { sku, nome: produto, cor, tamanho, quantidade: 0, reservado: 0, disponivel: 0 };
+  const chave = chaveVarianteMS(produto, cor, tamanho);
+  const encontrado = estoqueServidorMS.find(i => chaveVarianteMS(i.nome, i.cor, i.tamanho) === chave);
+  return encontrado || { nome: produto, cor, tamanho, quantidade: 0, reservado: 0, disponivel: 0 };
 }
 
 function quantidadeMS(produto, cor, tamanho){
-  const sku = skuMS(produto, cor, tamanho);
-  if(alteracoesEstoqueMS.has(sku)) return Number(alteracoesEstoqueMS.get(sku).quantidade || 0);
+  const chave = chaveVarianteMS(produto, cor, tamanho);
+  if(alteracoesEstoqueMS.has(chave)) return Number(alteracoesEstoqueMS.get(chave).quantidade || 0);
   return Number(itemEstoque(produto, cor, tamanho).quantidade || 0);
+}
+
+function catalogoDosProdutosMS(produtos){
+  return (Array.isArray(produtos) ? produtos : []).map(p => ({
+    id: p.id,
+    categoria: String(p.categoria || 'Sem categoria'),
+    produto: String(p.nome || 'Produto'),
+    cores: Array.isArray(p.cores) && p.cores.length ? p.cores : ['Única'],
+    tamanhos: Array.isArray(p.tamanhos) && p.tamanhos.length ? p.tamanhos.map(t => String(t).toUpperCase()) : ['ÚNICO']
+  }));
 }
 
 function popularFiltrosEstoqueMS(){
   const cat = document.getElementById('filtroCategoriaMS');
   const prod = document.getElementById('filtroProdutoMS');
-  if(cat && cat.options.length <= 1){
-    [...new Set(CATALOGO_MS.map(i => i.categoria))].forEach(c => cat.insertAdjacentHTML('beforeend', `<option value="${c}">${c}</option>`));
+  if(cat){
+    const atual = cat.value || 'todas';
+    cat.innerHTML = '<option value="todas">Todas</option>' + [...new Set(CATALOGO_MS.map(i => i.categoria))].sort().map(c => `<option value="${escaparAdminMS(c)}">${escaparAdminMS(c)}</option>`).join('');
+    if([...cat.options].some(o => o.value === atual)) cat.value = atual;
   }
-  if(prod && prod.options.length <= 1){
-    CATALOGO_MS.forEach(i => prod.insertAdjacentHTML('beforeend', `<option value="${i.produto}">${i.produto}</option>`));
+  if(prod){
+    const atual = prod.value || 'todos';
+    prod.innerHTML = '<option value="todos">Todos</option>' + CATALOGO_MS.map(i => `<option value="${escaparAdminMS(i.produto)}">${escaparAdminMS(i.produto)}</option>`).join('');
+    if([...prod.options].some(o => o.value === atual)) prod.value = atual;
   }
 }
 
 async function carregarEstoqueMS(){
-  popularFiltrosEstoqueMS();
+  const corpo = document.getElementById('listaEstoqueMS');
+  if(corpo) corpo.innerHTML = '<tr><td colspan="5">Carregando produtos e estoque...</td></tr>';
   try{
-    const resp = await fetch(`${API_ADMIN_MS}/estoque?t=${Date.now()}`);
-    estoqueServidorMS = await resp.json();
+    const [respProdutos, respEstoque] = await Promise.all([
+      fetch(`${API_ADMIN_MS}/produtos?t=${Date.now()}`),
+      fetch(`${API_ADMIN_MS}/estoque?t=${Date.now()}`)
+    ]);
+    if(!respProdutos.ok || !respEstoque.ok) throw new Error('Falha ao carregar');
+    const produtos = await respProdutos.json();
+    estoqueServidorMS = await respEstoque.json();
+    CATALOGO_MS = catalogoDosProdutosMS(produtos);
+    popularFiltrosEstoqueMS();
   }catch(e){
     estoqueServidorMS = [];
-    const corpo = document.getElementById('listaEstoqueMS');
-    if (corpo) {
-      corpo.innerHTML = '<tr><td colspan="8">Não consegui carregar o estoque. Atualize a página e tente novamente.</td></tr>';
-    }
+    CATALOGO_MS = [];
+    if (corpo) corpo.innerHTML = '<tr><td colspan="5">Não consegui carregar o estoque. Atualize a página e tente novamente.</td></tr>';
     return;
   }
   renderGradeEstoqueMS();
@@ -319,36 +324,36 @@ function classeQtd(qtd){
   return 'qtd-ok';
 }
 
+function todasVariantesCatalogoMS(){
+  const itens = [];
+  CATALOGO_MS.forEach(p => p.cores.forEach(cor => p.tamanhos.forEach(tamanho => {
+    itens.push({ nome:p.produto, categoria:p.categoria, cor, tamanho, quantidade:quantidadeMS(p.produto, cor, tamanho) });
+  })));
+  return itens;
+}
+
 function renderGradeEstoqueMS(){
   const corpo = document.getElementById('listaEstoqueMS');
   if(!corpo) return;
   const filtroCat = document.getElementById('filtroCategoriaMS')?.value || 'todas';
   const filtroProduto = document.getElementById('filtroProdutoMS')?.value || 'todos';
   const busca = normalizarMS(document.getElementById('pesquisaEstoqueMS')?.value || '');
-  let linhas = [];
-  CATALOGO_MS.forEach(prod => {
-    if(filtroCat !== 'todas' && prod.categoria !== filtroCat) return;
-    if(filtroProduto !== 'todos' && prod.produto !== filtroProduto) return;
-    prod.cores.forEach(cor => {
-      const textoBusca = normalizarMS(`${prod.produto} ${cor} ${prod.categoria}`);
-      if(busca && !textoBusca.includes(busca)) return;
-      const total = TAMANHOS_MS.reduce((s,t) => s + quantidadeMS(prod.produto, cor, t), 0);
-      linhas.push(`
-        <tr>
-          <td><strong>${prod.produto}</strong><small>${prod.categoria}</small></td>
-          <td><span class="bolinha-cor ${normalizarMS(cor).replace(/\s/g,'-')}"></span>${cor}</td>
-          ${TAMANHOS_MS.map(t => {
-            const qtd = quantidadeMS(prod.produto, cor, t);
-            const sku = skuMS(prod.produto, cor, t);
-            return `<td><input class="qtd-input-ms ${classeQtd(qtd)}" type="number" min="0" value="${qtd}" data-sku="${sku}" data-produto="${prod.produto}" data-cor="${cor}" data-tamanho="${t}" onchange="alterarQtdEstoqueMS(this)" oninput="alterarQtdEstoqueMS(this)"></td>`;
-          }).join('')}
-          <td><strong class="total-linha-ms">${total}</strong></td>
-          <td>${statusLinha(total)}</td>
-        </tr>
-      `);
-    });
+  const variantes = todasVariantesCatalogoMS().filter(i => {
+    if(filtroCat !== 'todas' && i.categoria !== filtroCat) return false;
+    if(filtroProduto !== 'todos' && i.nome !== filtroProduto) return false;
+    return !busca || normalizarMS(`${i.nome} ${i.cor} ${i.tamanho} ${i.categoria}`).includes(busca);
   });
-  corpo.innerHTML = linhas.join('') || '<tr><td colspan="8">Nenhum item encontrado.</td></tr>';
+  corpo.innerHTML = variantes.map(i => {
+    const qtd = Number(i.quantidade || 0);
+    const chave = chaveVarianteMS(i.nome, i.cor, i.tamanho);
+    return `<tr>
+      <td><strong>${escaparAdminMS(i.nome)}</strong><small>${escaparAdminMS(i.categoria)}</small></td>
+      <td>${escaparAdminMS(i.cor)}</td>
+      <td><strong>${escaparAdminMS(i.tamanho)}</strong></td>
+      <td><input class="qtd-input-ms ${classeQtd(qtd)}" type="number" min="0" value="${qtd}" data-chave="${escaparAdminMS(chave)}" data-produto="${escaparAdminMS(i.nome)}" data-cor="${escaparAdminMS(i.cor)}" data-tamanho="${escaparAdminMS(i.tamanho)}" onchange="alterarQtdEstoqueMS(this)" oninput="alterarQtdEstoqueMS(this)"></td>
+      <td>${statusLinha(qtd)}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="5">Nenhum item encontrado.</td></tr>';
   atualizarCardsEstoqueMS();
   renderAlertasEstoqueMS();
 }
@@ -358,33 +363,16 @@ function alterarQtdEstoqueMS(input){
   input.value = quantidade;
   input.classList.remove('qtd-ok','qtd-baixo','qtd-zero');
   input.classList.add(classeQtd(quantidade));
-  alteracoesEstoqueMS.set(input.dataset.sku, {
-    sku: input.dataset.sku,
-    nome: input.dataset.produto,
-    cor: input.dataset.cor,
-    tamanho: input.dataset.tamanho,
-    quantidade
-  });
+  const item = { nome:input.dataset.produto, cor:input.dataset.cor, tamanho:input.dataset.tamanho, quantidade };
+  alteracoesEstoqueMS.set(input.dataset.chave || chaveVarianteMS(item.nome,item.cor,item.tamanho), item);
   const tr = input.closest('tr');
-  if(tr){
-    const total = [...tr.querySelectorAll('.qtd-input-ms')].reduce((s, el) => s + Number(el.value || 0), 0);
-    tr.querySelector('.total-linha-ms').innerText = total;
-    tr.lastElementChild.innerHTML = statusLinha(total);
-  }
+  if(tr) tr.lastElementChild.innerHTML = statusLinha(quantidade);
   atualizarCardsEstoqueMS();
   renderAlertasEstoqueMS();
 }
 
-function todosItensCatalogoMS(){
-  const itens = [];
-  CATALOGO_MS.forEach(p => p.cores.forEach(cor => TAMANHOS_MS.forEach(tamanho => {
-    itens.push({ sku: skuMS(p.produto, cor, tamanho), nome: p.produto, cor, tamanho, quantidade: quantidadeMS(p.produto, cor, tamanho) });
-  })));
-  return itens;
-}
-
 function atualizarCardsEstoqueMS(){
-  const itens = todosItensCatalogoMS();
+  const itens = todasVariantesCatalogoMS();
   const total = itens.reduce((s,i) => s + Number(i.quantidade || 0), 0);
   const baixo = itens.filter(i => i.quantidade > 0 && i.quantidade <= 3).length;
   const zero = itens.filter(i => i.quantidade <= 0).length;
@@ -399,36 +387,26 @@ function atualizarCardsEstoqueMS(){
 function renderAlertasEstoqueMS(){
   const box = document.getElementById('alertasEstoqueMS');
   if(!box) return;
-  const alertas = todosItensCatalogoMS()
-    .filter(i => Number(i.quantidade || 0) <= 3)
-    .sort((a,b) => Number(a.quantidade||0) - Number(b.quantidade||0))
-    .slice(0, 12);
+  const alertas = todasVariantesCatalogoMS().filter(i => Number(i.quantidade || 0) <= 3).sort((a,b) => Number(a.quantidade||0) - Number(b.quantidade||0)).slice(0, 12);
   if(!alertas.length){ box.innerHTML = '<p class="sem-alerta-ms">Tudo tranquilo no estoque.</p>'; return; }
-  box.innerHTML = alertas.map(i => `
-    <div class="alerta-item-ms">
-      <div><strong>${i.nome} ${i.cor} - ${i.tamanho}</strong><span>${i.quantidade <= 0 ? 'Sem estoque' : 'Apenas ' + i.quantidade + ' unidade(s)'}</span></div>
-      <em class="${i.quantidade <= 0 ? 'zero' : 'baixo'}">${i.quantidade <= 0 ? 'Esgotado' : 'Baixo'}</em>
-    </div>
-  `).join('');
+  box.innerHTML = alertas.map(i => `<div class="alerta-item-ms"><div><strong>${escaparAdminMS(i.nome)} ${escaparAdminMS(i.cor)} - ${escaparAdminMS(i.tamanho)}</strong><span>${i.quantidade <= 0 ? 'Sem estoque' : 'Apenas ' + i.quantidade + ' unidade(s)'}</span></div><em class="${i.quantidade <= 0 ? 'zero' : 'baixo'}">${i.quantidade <= 0 ? 'Esgotado' : 'Baixo'}</em></div>`).join('');
 }
 
 async function salvarGradeEstoqueMS(){
   if(!alteracoesEstoqueMS.size){ alert('Nenhuma alteração para salvar.'); return; }
-  const botao = event?.target;
+  const botao = (typeof event !== 'undefined' && event?.target) ? event.target : null;
   const textoOriginal = botao?.innerText;
   if(botao) botao.innerText = 'Salvando...';
   try{
     for(const item of alteracoesEstoqueMS.values()){
-      const resp = await fetch(`${API_ADMIN_MS}/estoque`, {
-        method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(item)
-      });
-      if(!resp.ok) throw new Error('Erro ao salvar ' + item.sku);
+      const resp = await fetch(`${API_ADMIN_MS}/estoque`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(item) });
+      if(!resp.ok) throw new Error('Erro ao salvar estoque');
     }
     alteracoesEstoqueMS.clear();
     await carregarEstoqueMS();
     alert('Estoque salvo com sucesso.');
   }catch(e){
-    alert('Não consegui salvar. Veja se o servidor Node está ligado.');
+    alert('Não consegui salvar o estoque.');
   }finally{
     if(botao) botao.innerText = textoOriginal || 'Salvar alterações';
   }

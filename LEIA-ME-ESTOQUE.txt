@@ -1,0 +1,13 @@
+CORREÇÃO DO ESTOQUE
+
+- O estoque agora lê os produtos diretamente do cadastro do painel.
+- Produtos novos aparecem automaticamente no estoque, mesmo com quantidade zero.
+- Tamanhos deixam de ficar presos a P, M, G e GG.
+- Aceita numeração de calças e calçados, por exemplo: 36, 38, 40, 42 ou 37, 38, 39, 40.
+- No cadastro do produto, informe os tamanhos/números separados por vírgula.
+- A grade mostra cada combinação de produto, cor e tamanho/número.
+
+Após substituir os arquivos:
+git add .
+git commit -m "corrige estoque dinamico e numeracoes"
+git push
