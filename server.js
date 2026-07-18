@@ -303,24 +303,39 @@ async function criarPreferenciaMP({ carrinhoItems, valorFrete, freteSelecionado,
   };
 }
 
-function produtoParaCotacaoMS(item, indice) {
-  const nome = String(item?.nome || item?.name || item?.title || "Produto").toLowerCase();
-  const quantidade = Math.max(1, Math.min(100, Number(item?.quantidade || item?.qtd || item?.quantity || 1)));
-  const preco = Math.max(1, Number(item?.preco || item?.valor || item?.price || 1));
+function produtoFreteMS(item, indice) {
+  const nome = String(item?.nome || item?.name || "Produto").toLowerCase();
+  const quantidade = Math.max(1, Number(item?.quantidade || item?.quantity || 1));
+  const preco = Math.max(1, Number(item?.preco || item?.price || 0));
 
-  // Medidas unitárias aproximadas da peça já dobrada/embalada.
-  // O Melhor Envio usa estes dados reais de cada item e faz o empacotamento da cotação.
-  let medidas = { width: 25, height: 5, length: 30, weight: 0.35 };
-  if (/moletom|jaqueta|casaco/.test(nome)) medidas = { width: 30, height: 8, length: 35, weight: 0.65 };
-  else if (/conjunto/.test(nome)) medidas = { width: 32, height: 10, length: 38, weight: 1.05 };
-  else if (/calça|calca/.test(nome)) medidas = { width: 28, height: 6, length: 34, weight: 0.50 };
-  else if (/camiseta|oversized|básica|basica/.test(nome)) medidas = { width: 25, height: 4, length: 30, weight: 0.25 };
-  else if (/touca|meia|acessório|acessorio/.test(nome)) medidas = { width: 16, height: 4, length: 20, weight: 0.15 };
+  let width = 20;
+  let height = 5;
+  let length = 25;
+  let weight = 0.45;
+
+  if (nome.includes("conjunto")) {
+    width = 28; height = 12; length = 36; weight = 1.15;
+  } else if (nome.includes("jaqueta") || nome.includes("corta vento")) {
+    width = 27; height = 10; length = 35; weight = 0.85;
+  } else if (nome.includes("moletom")) {
+    width = 27; height = 10; length = 35; weight = 0.80;
+  } else if (nome.includes("calça") || nome.includes("calca")) {
+    width = 25; height = 8; length = 33; weight = 0.65;
+  } else if (nome.includes("camiseta")) {
+    width = 22; height = 4; length = 30; weight = 0.30;
+  } else if (nome.includes("touca")) {
+    width = 16; height = 5; length = 20; weight = 0.15;
+  } else if (nome.includes("meia")) {
+    width = 12; height = 3; length = 18; weight = 0.10;
+  }
 
   return {
-    id: String(item?.id || item?.codigo || `produto-${indice + 1}`),
-    ...medidas,
-    insurance_value: Number(preco.toFixed(2)),
+    id: String(item?.id || indice + 1),
+    width,
+    height,
+    length,
+    weight,
+    insurance_value: preco,
     quantity: quantidade
   };
 }
@@ -328,25 +343,21 @@ function produtoParaCotacaoMS(item, indice) {
 app.post("/calcular-frete", async (req, res) => {
   try {
     const cep = apenasNumerosMS(req.body?.cep);
+    const cepOrigem = apenasNumerosMS(process.env.CEP_ORIGEM || "90640130");
+    const itensRecebidos = Array.isArray(req.body?.items) ? req.body.items : [];
+
     if (cep.length !== 8) {
       return res.status(400).json({ erro: true, mensagem: "Informe um CEP válido com 8 números." });
+    }
+    if (cepOrigem.length !== 8) {
+      return res.status(500).json({ erro: true, mensagem: "CEP_ORIGEM não está configurado corretamente." });
     }
     if (!process.env.MELHOR_ENVIO_TOKEN) {
       return res.status(500).json({ erro: true, mensagem: "MELHOR_ENVIO_TOKEN não está configurado." });
     }
 
-    const itensRecebidos = Array.isArray(req.body?.items)
-      ? req.body.items
-      : Array.isArray(req.body?.produtos)
-        ? req.body.produtos
-        : [];
-
-    if (!itensRecebidos.length) {
-      return res.status(400).json({ erro: true, mensagem: "O carrinho está vazio. Adicione produtos antes de calcular o frete." });
-    }
-
-    const products = itensRecebidos.map(produtoParaCotacaoMS);
-    const cepOrigem = apenasNumerosMS(process.env.CEP_ORIGEM || "90640130");
+    const products = (itensRecebidos.length ? itensRecebidos : [{ nome: "Produto MS", preco: 89.9, quantidade: 1 }])
+      .map(produtoFreteMS);
 
     const response = await fetch("https://www.melhorenvio.com.br/api/v2/me/shipment/calculate", {
       method: "POST",
@@ -359,41 +370,32 @@ app.post("/calcular-frete", async (req, res) => {
       body: JSON.stringify({
         from: { postal_code: cepOrigem },
         to: { postal_code: cep },
-        products,
-        options: { receipt: false, own_hand: false },
-        services: "1,2,3,4,17,18"
+        products
       })
     });
 
     const data = await response.json();
-    console.log("STATUS MELHOR ENVIO:", response.status, "DESTINO:", cep, "ITENS:", products.length);
+    console.log("COTAÇÃO MELHOR ENVIO:", { cepOrigem, cepDestino: cep, products, status: response.status });
+
     if (!response.ok) {
       return res.status(response.status).json({
         erro: true,
-        mensagem: data?.message || data?.mensagem || "O Melhor Envio recusou o cálculo do frete.",
+        mensagem: data?.message || "O Melhor Envio recusou o cálculo do frete.",
         detalhes: data
       });
     }
 
-    const cotacoes = Array.isArray(data) ? data.map((frete) => ({
-      ...frete,
-      // custom_price/custom_delivery_time incluem eventuais regras configuradas no painel.
-      price: frete.custom_price ?? frete.price,
-      delivery_time: frete.custom_delivery_time ?? frete.delivery_time
-    })) : data;
-
     res.set("Cache-Control", "no-store");
-    res.json(cotacoes);
+    return res.json(data);
   } catch (error) {
     console.error("ERRO FRETE:", error);
-    res.status(500).json({
+    return res.status(500).json({
       erro: true,
-      mensagem: "Erro ao calcular o frete.",
+      mensagem: "Erro ao calcular frete.",
       detalhes: error.message
     });
   }
 });
-
 
 
 // ===============================
