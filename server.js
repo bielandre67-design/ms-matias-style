@@ -5,6 +5,45 @@ const { MercadoPagoConfig, Preference } = require("mercadopago");
 const fs = require("fs");
 const path = require("path");
 const { Pool } = require("pg");
+const multer = require("multer");
+const { v2: cloudinary } = require("cloudinary");
+
+
+const uploadImagensMS = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 8 * 1024 * 1024, files: 12 },
+  fileFilter: (req, file, cb) => {
+    const permitidos = new Set(["image/jpeg", "image/png", "image/webp"]);
+    if (!permitidos.has(file.mimetype)) {
+      return cb(new Error("Formato inválido. Use JPG, PNG ou WEBP."));
+    }
+    cb(null, true);
+  }
+});
+
+function cloudinaryConfiguradoMS() {
+  return Boolean(process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET);
+}
+
+function configurarCloudinaryMS() {
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+    secure: true
+  });
+}
+
+function enviarBufferCloudinaryMS(arquivo) {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream({
+      folder: "ms-matias-style/produtos",
+      resource_type: "image",
+      transformation: [{ quality: "auto", fetch_format: "auto" }]
+    }, (erro, resultado) => erro ? reject(erro) : resolve(resultado.secure_url));
+    stream.end(arquivo.buffer);
+  });
+}
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -1897,6 +1936,23 @@ function numeroMedidaProdutoMS(valor, campo) {
   }
   return numero;
 }
+
+
+app.post("/upload-imagens", uploadImagensMS.array("imagens", 12), async (req, res, next) => {
+  try {
+    if (!cloudinaryConfiguradoMS()) {
+      return res.status(503).json({
+        erro: true,
+        mensagem: "Upload de fotos ainda não configurado. Adicione CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY e CLOUDINARY_API_SECRET no Render."
+      });
+    }
+    const arquivos = Array.isArray(req.files) ? req.files : [];
+    if (!arquivos.length) return res.status(400).json({ erro: true, mensagem: "Escolha pelo menos uma foto." });
+    configurarCloudinaryMS();
+    const urls = await Promise.all(arquivos.map(enviarBufferCloudinaryMS));
+    res.json({ ok: true, urls });
+  } catch (erro) { next(erro); }
+});
 
 function produtoRespostaMS(row) {
   return {

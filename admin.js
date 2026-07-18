@@ -811,6 +811,7 @@ Equipe MS Matias Style 🤍`;
     ? 'http://localhost:3000'
     : 'https://ms-matias-style.onrender.com';
   let produtos = [];
+  let imagensSelecionadasMS = [];
   const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const num = v => Number(String(v ?? 0).replace(',','.')) || 0;
   const moeda = v => num(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
@@ -818,91 +819,83 @@ Equipe MS Matias Style 🤍`;
   function criarInterface(){
     if(document.getElementById('abaProdutosMS')) return;
     const nav = document.querySelector('.menu-ms, nav');
-    if(nav){
-      const b=document.createElement('button');
-      b.type='button'; b.className='ms-tab'; b.innerHTML='📦 Produtos';
-      b.onclick=()=>abrirProdutosMS(); nav.appendChild(b);
-    }
+    if(nav){ const b=document.createElement('button'); b.type='button'; b.className='ms-tab'; b.innerHTML='📦 Produtos'; b.onclick=()=>abrirProdutosMS(); nav.appendChild(b); }
     const main=document.querySelector('main, .conteudo-admin, .admin-main, .main-content') || document.body;
-    const sec=document.createElement('section');
-    sec.id='abaProdutosMS'; sec.style.display='none';
+    const sec=document.createElement('section'); sec.id='abaProdutosMS'; sec.style.display='none';
     sec.innerHTML=`
       <style>
-      #abaProdutosMS{padding:24px;color:#f4f4f4}.ms-prod-head{display:flex;justify-content:space-between;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:20px}
-      .ms-prod-head h2{margin:0;font-size:28px}.ms-prod-btn{border:0;border-radius:14px;padding:12px 18px;font-weight:900;cursor:pointer;background:#d8ad43;color:#111}
-      .ms-prod-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}.ms-prod-card{background:#14171d;border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:16px;display:grid;grid-template-columns:76px 1fr;gap:14px}
-      .ms-prod-card img{width:76px;height:96px;object-fit:cover;border-radius:12px;background:#222}.ms-prod-card h3{margin:0 0 7px}.ms-prod-meta{font-size:13px;color:#aaa}.ms-prod-acoes{grid-column:1/-1;display:flex;gap:8px}.ms-prod-acoes button{flex:1;border:1px solid rgba(255,255,255,.13);background:#20242d;color:white;border-radius:12px;padding:10px;cursor:pointer}
-      .ms-prod-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;background:#14171d;border:1px solid rgba(255,255,255,.1);padding:18px;border-radius:20px;margin-bottom:18px}.ms-prod-form label{display:grid;gap:6px;font-size:13px;font-weight:800}.ms-prod-form input,.ms-prod-form textarea{background:#0f1116;color:white;border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:11px}.ms-prod-form textarea{min-height:85px;resize:vertical}.ms-prod-full{grid-column:1/-1}.ms-medidas-box{grid-column:1/-1;padding:14px;border:1px solid rgba(216,173,67,.28);border-radius:16px;background:rgba(216,173,67,.055)}.ms-medidas-title{font-weight:950;margin-bottom:4px}.ms-medidas-ajuda{font-size:12px;color:#aaa;margin-bottom:12px}.ms-medidas-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.ms-medidas-grid label{min-width:0}.ms-medidas-grid input{width:100%;box-sizing:border-box}.ms-medidas-status{margin-top:7px;font-size:12px;font-weight:850}.ms-medidas-ok{color:#66db7b}.ms-medidas-pendente{color:#ffd36a}.ms-checks{display:flex;gap:16px;align-items:center;flex-wrap:wrap}.ms-checks label{display:flex;grid-auto-flow:column;align-items:center}.ms-form-actions{display:flex;gap:10px}.ms-msg{padding:11px 13px;border-radius:12px;background:#20242d;margin-bottom:14px;display:none}@media(max-width:700px){.ms-prod-form{grid-template-columns:1fr}.ms-prod-full,.ms-medidas-box{grid-column:auto}.ms-medidas-grid{grid-template-columns:1fr 1fr}}@media(max-width:430px){.ms-medidas-grid{grid-template-columns:1fr}}
+      #abaProdutosMS{padding:24px;color:#f4f4f4}.ms-prod-head{display:flex;justify-content:space-between;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:20px}.ms-prod-head h2{margin:0;font-size:28px}.ms-prod-btn{border:0;border-radius:14px;padding:12px 18px;font-weight:900;cursor:pointer;background:#d8ad43;color:#111}.ms-prod-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}.ms-prod-card{background:#14171d;border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:16px;display:grid;grid-template-columns:76px 1fr;gap:14px}.ms-prod-card img{width:76px;height:96px;object-fit:cover;border-radius:12px;background:#222}.ms-prod-card h3{margin:0 0 7px}.ms-prod-meta{font-size:13px;color:#aaa}.ms-prod-acoes{grid-column:1/-1;display:flex;gap:8px}.ms-prod-acoes button{flex:1;border:1px solid rgba(255,255,255,.13);background:#20242d;color:white;border-radius:12px;padding:10px;cursor:pointer}.ms-prod-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;background:#14171d;border:1px solid rgba(255,255,255,.1);padding:18px;border-radius:20px;margin-bottom:18px}.ms-prod-form label{display:grid;gap:6px;font-size:13px;font-weight:800}.ms-prod-form input,.ms-prod-form textarea,.ms-prod-form select{background:#0f1116;color:white;border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:11px}.ms-prod-form textarea{min-height:85px;resize:vertical}.ms-prod-full{grid-column:1/-1}.ms-upload-box{grid-column:1/-1;border:1px dashed rgba(216,173,67,.6);border-radius:18px;padding:16px;background:rgba(216,173,67,.05)}.ms-upload-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.ms-upload-btn{display:inline-flex;align-items:center;gap:8px;background:#d8ad43;color:#111;padding:11px 15px;border-radius:12px;font-weight:950;cursor:pointer}.ms-upload-btn input{display:none}.ms-upload-help{font-size:12px;color:#aaa;margin-top:6px}.ms-preview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:10px;margin-top:14px}.ms-preview{position:relative;border:1px solid rgba(255,255,255,.12);border-radius:14px;overflow:hidden;background:#0f1116}.ms-preview img{width:100%;height:130px;object-fit:cover;display:block}.ms-preview-main{position:absolute;left:7px;top:7px;background:#d8ad43;color:#111;font-size:10px;font-weight:950;padding:5px 7px;border-radius:999px}.ms-preview-actions{display:grid;grid-template-columns:1fr 38px;gap:6px;padding:7px}.ms-preview-actions button{border:0;border-radius:9px;padding:8px;background:#252a34;color:#fff;cursor:pointer;font-size:11px}.ms-preview-actions .danger{background:#4a1820}.ms-medidas-box{grid-column:1/-1;padding:14px;border:1px solid rgba(216,173,67,.28);border-radius:16px;background:rgba(216,173,67,.055)}.ms-medidas-title{font-weight:950;margin-bottom:4px}.ms-medidas-ajuda{font-size:12px;color:#aaa;margin-bottom:12px}.ms-medidas-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.ms-medidas-status{margin-top:7px;font-size:12px;font-weight:850}.ms-medidas-ok{color:#66db7b}.ms-medidas-pendente{color:#ffd36a}.ms-checks{display:flex;gap:16px;align-items:center;flex-wrap:wrap}.ms-checks label{display:flex;grid-auto-flow:column;align-items:center}.ms-form-actions{display:flex;gap:10px}.ms-msg{padding:11px 13px;border-radius:12px;background:#20242d;margin-bottom:14px;display:none}.ms-saving{opacity:.65;pointer-events:none}@media(max-width:700px){.ms-prod-form{grid-template-columns:1fr}.ms-prod-full,.ms-medidas-box,.ms-upload-box{grid-column:auto}.ms-medidas-grid{grid-template-columns:1fr 1fr}}@media(max-width:430px){.ms-medidas-grid{grid-template-columns:1fr}.ms-preview-grid{grid-template-columns:1fr 1fr}}
       </style>
-      <div class="ms-prod-head"><div><h2>Produtos</h2><div class="ms-prod-meta">Cadastre e edite sem mexer no HTML.</div></div><button class="ms-prod-btn" onclick="novoProdutoMS()">+ Novo produto</button></div>
+      <div class="ms-prod-head"><div><h2>Produtos</h2><div class="ms-prod-meta">Cadastre fotos, preço, variações e estoque sem abrir o VS Code.</div></div><button class="ms-prod-btn" onclick="novoProdutoMS()">+ Novo produto</button></div>
       <div id="msgProdutoMS" class="ms-msg"></div>
       <form id="formProdutoMS" class="ms-prod-form" style="display:none">
         <input type="hidden" id="produtoIdMS">
-        <label>Nome<input id="produtoNomeMS" required></label><label>Categoria<input id="produtoCategoriaMS" value="Roupas"></label>
+        <label>Nome<input id="produtoNomeMS" required></label>
+        <label>Categoria<select id="produtoCategoriaMS"><option>Moletom</option><option>Jaqueta</option><option>Calça</option><option>Conjunto</option><option>Camiseta Oversized</option><option>Camiseta Básica</option><option>Acessórios</option><option>Roupas</option></select></label>
         <label>Preço<input id="produtoPrecoMS" type="number" step="0.01" min="0" required></label><label>Preço antigo<input id="produtoPrecoAntigoMS" type="number" step="0.01" min="0"></label>
-        <label class="ms-prod-full">Imagem principal<input id="produtoImagemMS" placeholder="ex.: moletom-preto.jpeg ou URL"></label>
-        <label class="ms-prod-full">Outras imagens, separadas por vírgula<input id="produtoImagensMS"></label>
-        <label class="ms-prod-full">Descrição<textarea id="produtoDescricaoMS"></textarea></label>
-        <label>Cores, separadas por vírgula<input id="produtoCoresMS" placeholder="Preto, Bege, Rosa"></label><label>Tamanhos, separados por vírgula<input id="produtoTamanhosMS" value="P, M, G, GG"></label>
-        <div class="ms-medidas-box">
-          <div class="ms-medidas-title">⚖️ Peso e dimensões da embalagem</div>
-          <div class="ms-medidas-ajuda">Pese e meça o produto já embalado. Esses dados serão usados no cálculo real do frete.</div>
-          <div class="ms-medidas-grid">
-            <label>Peso (kg)<input id="produtoPesoKgMS" type="number" step="0.001" min="0" placeholder="Ex.: 0,850"></label>
-            <label>Altura (cm)<input id="produtoAlturaCmMS" type="number" step="0.1" min="0" placeholder="Ex.: 10"></label>
-            <label>Largura (cm)<input id="produtoLarguraCmMS" type="number" step="0.1" min="0" placeholder="Ex.: 30"></label>
-            <label>Comprimento (cm)<input id="produtoComprimentoCmMS" type="number" step="0.1" min="0" placeholder="Ex.: 35"></label>
-          </div>
-          <div id="produtoMedidasStatusMS" class="ms-medidas-status ms-medidas-pendente">Medidas ainda não cadastradas.</div>
+        <div class="ms-upload-box">
+          <div class="ms-upload-top"><div><strong>📷 Fotos do produto</strong><div class="ms-upload-help">A primeira foto será a principal. Aceita JPG, PNG e WEBP, até 8 MB cada.</div></div><label class="ms-upload-btn">+ Escolher fotos<input id="produtoArquivosMS" type="file" accept="image/jpeg,image/png,image/webp" multiple></label></div>
+          <div id="produtoPreviewMS" class="ms-preview-grid"></div>
         </div>
+        <label class="ms-prod-full">Descrição<textarea id="produtoDescricaoMS" placeholder="Descreva tecido, modelagem, detalhes e cuidados..."></textarea></label>
+        <label>Cores, separadas por vírgula<input id="produtoCoresMS" placeholder="Preto, Bege, Rosa"></label><label>Tamanhos, separados por vírgula<input id="produtoTamanhosMS" value="P, M, G, GG"></label>
+        <div class="ms-medidas-box"><div class="ms-medidas-title">⚖️ Peso e dimensões da embalagem</div><div class="ms-medidas-ajuda">Pese e meça o produto já embalado. Esses dados serão usados no cálculo real do frete.</div><div class="ms-medidas-grid"><label>Peso (kg)<input id="produtoPesoKgMS" type="number" step="0.001" min="0" placeholder="Ex.: 0,850"></label><label>Altura (cm)<input id="produtoAlturaCmMS" type="number" step="0.1" min="0" placeholder="Ex.: 10"></label><label>Largura (cm)<input id="produtoLarguraCmMS" type="number" step="0.1" min="0" placeholder="Ex.: 30"></label><label>Comprimento (cm)<input id="produtoComprimentoCmMS" type="number" step="0.1" min="0" placeholder="Ex.: 35"></label></div><div id="produtoMedidasStatusMS" class="ms-medidas-status ms-medidas-pendente">Medidas ainda não cadastradas.</div></div>
         <label class="ms-prod-full">Quantidade inicial por variação<input id="produtoQuantidadeMS" type="number" min="0" value="0"><small class="ms-prod-meta">Ex.: 3 cria 3 unidades para cada combinação de cor e tamanho.</small></label>
         <div class="ms-checks ms-prod-full"><label><input id="produtoAtivoMS" type="checkbox" checked> Ativo</label><label><input id="produtoDestaqueMS" type="checkbox"> Destaque</label><label><input id="produtoPromocaoMS" type="checkbox"> Promoção</label></div>
-        <div class="ms-form-actions ms-prod-full"><button class="ms-prod-btn" type="submit">Salvar produto</button><button type="button" onclick="cancelarProdutoMS()">Cancelar</button></div>
-      </form>
-      <div id="listaProdutosMS" class="ms-prod-grid"></div>`;
+        <div class="ms-form-actions ms-prod-full"><button id="salvarProdutoBtnMS" class="ms-prod-btn" type="submit">Salvar produto</button><button type="button" onclick="cancelarProdutoMS()">Cancelar</button></div>
+      </form><div id="listaProdutosMS" class="ms-prod-grid"></div>`;
     main.appendChild(sec);
     document.getElementById('formProdutoMS').addEventListener('submit', salvarProdutoMS);
+    document.getElementById('produtoArquivosMS').addEventListener('change', selecionarImagensMS);
   }
 
-  function esconderOutrasAbas(){
-    document.querySelectorAll('main > section, .conteudo-admin > section, .admin-main > section').forEach(s=>{if(s.id!=='abaProdutosMS') s.style.display='none';});
-  }
+  function esconderOutrasAbas(){ document.querySelectorAll('main > section, .conteudo-admin > section, .admin-main > section').forEach(s=>{if(s.id!=='abaProdutosMS') s.style.display='none';}); }
   window.abrirProdutosMS=async function(){ criarInterface(); esconderOutrasAbas(); document.getElementById('abaProdutosMS').style.display='block'; await carregarProdutosMS(); };
-  window.novoProdutoMS=function(){
-    document.getElementById('formProdutoMS').reset(); document.getElementById('produtoIdMS').value=''; document.getElementById('produtoCategoriaMS').value='Roupas'; document.getElementById('produtoPesoKgMS').value=''; document.getElementById('produtoAlturaCmMS').value=''; document.getElementById('produtoLarguraCmMS').value=''; document.getElementById('produtoComprimentoCmMS').value=''; atualizarStatusMedidasMS(); document.getElementById('produtoAtivoMS').checked=true; document.getElementById('formProdutoMS').style.display='grid'; scrollTo({top:0,behavior:'smooth'});
-  };
-  window.cancelarProdutoMS=function(){ document.getElementById('formProdutoMS').style.display='none'; };
-  function msg(t,erro=false){const e=document.getElementById('msgProdutoMS');e.textContent=t;e.style.display='block';e.style.background=erro?'#4a1820':'#1d3b2a';setTimeout(()=>e.style.display='none',3500)}
-  function atualizarStatusMedidasMS(){
-    const status=document.getElementById('produtoMedidasStatusMS'); if(!status)return;
-    const completos=[produtoPesoKgMS,produtoAlturaCmMS,produtoLarguraCmMS,produtoComprimentoCmMS].every(c=>num(c.value)>0);
-    status.textContent=completos?'Medidas completas. Produto pronto para o frete real.':'Medidas ainda não cadastradas. O produto ficará sinalizado como pendente.';
-    status.className='ms-medidas-status '+(completos?'ms-medidas-ok':'ms-medidas-pendente');
-  }
+  window.novoProdutoMS=function(){ document.getElementById('formProdutoMS').reset(); produtoIdMS.value=''; produtoCategoriaMS.value='Roupas'; imagensSelecionadasMS=[]; renderPreviewMS(); atualizarStatusMedidasMS(); produtoAtivoMS.checked=true; formProdutoMS.style.display='grid'; scrollTo({top:0,behavior:'smooth'}); };
+  window.cancelarProdutoMS=function(){ formProdutoMS.style.display='none'; imagensSelecionadasMS=[]; renderPreviewMS(); };
+  function msg(t,erro=false){const e=msgProdutoMS;e.textContent=t;e.style.display='block';e.style.background=erro?'#4a1820':'#1d3b2a';setTimeout(()=>e.style.display='none',4500)}
+  function atualizarStatusMedidasMS(){ const campos=[produtoPesoKgMS,produtoAlturaCmMS,produtoLarguraCmMS,produtoComprimentoCmMS]; const completos=campos.every(c=>num(c.value)>0); produtoMedidasStatusMS.textContent=completos?'Medidas completas. Produto pronto para o frete real.':'Medidas ainda não cadastradas. O produto ficará sinalizado como pendente.'; produtoMedidasStatusMS.className='ms-medidas-status '+(completos?'ms-medidas-ok':'ms-medidas-pendente'); }
   ['produtoPesoKgMS','produtoAlturaCmMS','produtoLarguraCmMS','produtoComprimentoCmMS'].forEach(id=>document.addEventListener('input',e=>{if(e.target?.id===id)atualizarStatusMedidasMS()}));
-  async function carregarProdutosMS(){
-    const box=document.getElementById('listaProdutosMS'); box.innerHTML='Carregando...';
-    try{const r=await fetch(`${API}/produtos?t=${Date.now()}`); if(!r.ok) throw new Error(); produtos=await r.json(); render();}
-    catch(e){box.innerHTML='Não consegui carregar os produtos. Confira se o servidor está ligado.';}
+
+  function selecionarImagensMS(e){
+    const arquivos=[...e.target.files];
+    for(const arquivo of arquivos){
+      if(imagensSelecionadasMS.length>=12){msg('Você pode usar no máximo 12 fotos.',true);break;}
+      if(arquivo.size>8*1024*1024){msg(`${arquivo.name} passa de 8 MB.`,true);continue;}
+      imagensSelecionadasMS.push({tipo:'arquivo',arquivo,url:URL.createObjectURL(arquivo)});
+    }
+    e.target.value=''; renderPreviewMS();
   }
-  function render(){
-    const box=document.getElementById('listaProdutosMS');
-    if(!produtos.length){box.innerHTML='<p>Nenhum produto cadastrado ainda.</p>';return;}
-    box.innerHTML=produtos.map(p=>`<article class="ms-prod-card"><img src="${esc(p.imagem||'logo.png')}" onerror="this.src='logo.png'"><div><h3>${esc(p.nome)}</h3><div class="ms-prod-meta">${esc(p.categoria)} · ${moeda(p.preco)}</div><div class="ms-prod-meta">${p.ativo?'Ativo':'Oculto'}${p.destaque?' · Destaque':''}${p.promocao?' · Promoção':''}</div><div class="ms-medidas-status ${p.medidasCompletas?'ms-medidas-ok':'ms-medidas-pendente'}">${p.medidasCompletas?`⚖️ ${num(p.pesoKg).toFixed(3)} kg · ${num(p.comprimentoCm)}×${num(p.larguraCm)}×${num(p.alturaCm)} cm`:'⚠️ Medidas de frete pendentes'}</div></div><div class="ms-prod-acoes"><button onclick="editarProdutoMS(${p.id})">Editar</button><button onclick="excluirProdutoMS(${p.id})">Excluir</button></div></article>`).join('');
+  function renderPreviewMS(){
+    const box=document.getElementById('produtoPreviewMS'); if(!box)return;
+    if(!imagensSelecionadasMS.length){box.innerHTML='<div class="ms-upload-help">Nenhuma foto selecionada.</div>';return;}
+    box.innerHTML=imagensSelecionadasMS.map((item,i)=>`<div class="ms-preview"><img src="${esc(item.url)}"><span class="ms-preview-main">${i===0?'PRINCIPAL':`FOTO ${i+1}`}</span><div class="ms-preview-actions"><button type="button" onclick="principalImagemMS(${i})">Tornar principal</button><button class="danger" type="button" onclick="removerImagemMS(${i})">×</button></div></div>`).join('');
   }
-  window.editarProdutoMS=function(id){
-    const p=produtos.find(x=>x.id===id); if(!p)return; novoProdutoMS();
-    produtoIdMS.value=p.id; produtoNomeMS.value=p.nome||''; produtoCategoriaMS.value=p.categoria||''; produtoPrecoMS.value=p.preco||0; produtoPrecoAntigoMS.value=p.precoAntigo??''; produtoImagemMS.value=p.imagem||''; produtoImagensMS.value=(p.imagens||[]).join(', '); produtoDescricaoMS.value=p.descricao||''; produtoCoresMS.value=(p.cores||[]).join(', '); produtoTamanhosMS.value=(p.tamanhos||['P','M','G','GG']).join(', '); produtoPesoKgMS.value=p.pesoKg||''; produtoAlturaCmMS.value=p.alturaCm||''; produtoLarguraCmMS.value=p.larguraCm||''; produtoComprimentoCmMS.value=p.comprimentoCm||''; atualizarStatusMedidasMS(); produtoQuantidadeMS.value=0; produtoAtivoMS.checked=!!p.ativo; produtoDestaqueMS.checked=!!p.destaque; produtoPromocaoMS.checked=!!p.promocao;
-  };
+  window.principalImagemMS=function(i){const [x]=imagensSelecionadasMS.splice(i,1);imagensSelecionadasMS.unshift(x);renderPreviewMS();};
+  window.removerImagemMS=function(i){const [x]=imagensSelecionadasMS.splice(i,1);if(x?.tipo==='arquivo')URL.revokeObjectURL(x.url);renderPreviewMS();};
+  async function enviarNovasImagensMS(){
+    const novos=imagensSelecionadasMS.filter(x=>x.tipo==='arquivo'); if(!novos.length)return;
+    const fd=new FormData(); novos.forEach(x=>fd.append('imagens',x.arquivo));
+    const r=await fetch(`${API}/upload-imagens`,{method:'POST',body:fd}); const d=await r.json();
+    if(!r.ok)throw new Error(d.mensagem||'Não foi possível enviar as fotos.');
+    let pos=0; imagensSelecionadasMS=imagensSelecionadasMS.map(x=>x.tipo==='arquivo'?{tipo:'url',url:d.urls[pos++]}:x);
+    renderPreviewMS();
+  }
+  async function carregarProdutosMS(){const box=listaProdutosMS;box.innerHTML='Carregando...';try{const r=await fetch(`${API}/produtos?t=${Date.now()}`);if(!r.ok)throw new Error();produtos=await r.json();render();}catch(e){box.innerHTML='Não consegui carregar os produtos. Confira se o servidor está ligado.';}}
+  function render(){const box=listaProdutosMS;if(!produtos.length){box.innerHTML='<p>Nenhum produto cadastrado ainda.</p>';return;}box.innerHTML=produtos.map(p=>`<article class="ms-prod-card"><img src="${esc(p.imagem||'logo.png')}" onerror="this.src='logo.png'"><div><h3>${esc(p.nome)}</h3><div class="ms-prod-meta">${esc(p.categoria)} · ${moeda(p.preco)}</div><div class="ms-prod-meta">${p.ativo?'Ativo':'Oculto'}${p.destaque?' · Destaque':''}${p.promocao?' · Promoção':''}</div><div class="ms-medidas-status ${p.medidasCompletas?'ms-medidas-ok':'ms-medidas-pendente'}">${p.medidasCompletas?`⚖️ ${num(p.pesoKg).toFixed(3)} kg · ${num(p.comprimentoCm)}×${num(p.larguraCm)}×${num(p.alturaCm)} cm`:'⚠️ Medidas de frete pendentes'}</div></div><div class="ms-prod-acoes"><button onclick="editarProdutoMS(${p.id})">Editar</button><button onclick="excluirProdutoMS(${p.id})">Excluir</button></div></article>`).join('');}
+  window.editarProdutoMS=function(id){const p=produtos.find(x=>x.id===id);if(!p)return;novoProdutoMS();produtoIdMS.value=p.id;produtoNomeMS.value=p.nome||'';produtoCategoriaMS.value=[...produtoCategoriaMS.options].some(o=>o.value===p.categoria)?p.categoria:'Roupas';produtoPrecoMS.value=p.preco||0;produtoPrecoAntigoMS.value=p.precoAntigo??'';imagensSelecionadasMS=[p.imagem,...(p.imagens||[])].filter((v,i,a)=>v&&a.indexOf(v)===i).map(url=>({tipo:'url',url}));renderPreviewMS();produtoDescricaoMS.value=p.descricao||'';produtoCoresMS.value=(p.cores||[]).join(', ');produtoTamanhosMS.value=(p.tamanhos||['P','M','G','GG']).join(', ');produtoPesoKgMS.value=p.pesoKg||'';produtoAlturaCmMS.value=p.alturaCm||'';produtoLarguraCmMS.value=p.larguraCm||'';produtoComprimentoCmMS.value=p.comprimentoCm||'';atualizarStatusMedidasMS();produtoQuantidadeMS.value=0;produtoAtivoMS.checked=!!p.ativo;produtoDestaqueMS.checked=!!p.destaque;produtoPromocaoMS.checked=!!p.promocao;};
   async function salvarProdutoMS(ev){
-    ev.preventDefault(); const id=produtoIdMS.value;
-    const body={nome:produtoNomeMS.value.trim(),categoria:produtoCategoriaMS.value.trim()||'Roupas',preco:num(produtoPrecoMS.value),precoAntigo:produtoPrecoAntigoMS.value===''?null:num(produtoPrecoAntigoMS.value),imagem:produtoImagemMS.value.trim(),imagens:produtoImagensMS.value.split(',').map(x=>x.trim()).filter(Boolean),descricao:produtoDescricaoMS.value.trim(),cores:produtoCoresMS.value.split(',').map(x=>x.trim()).filter(Boolean),tamanhos:produtoTamanhosMS.value.split(',').map(x=>x.trim().toUpperCase()).filter(Boolean),ativo:produtoAtivoMS.checked,destaque:produtoDestaqueMS.checked,promocao:produtoPromocaoMS.checked,pesoKg:num(produtoPesoKgMS.value),alturaCm:num(produtoAlturaCmMS.value),larguraCm:num(produtoLarguraCmMS.value),comprimentoCm:num(produtoComprimentoCmMS.value)};
-    if([body.pesoKg,body.alturaCm,body.larguraCm,body.comprimentoCm].some(v=>v<0)){msg('Peso e dimensões não podem ser negativos.',true);return;}
-    try{const r=await fetch(id?`${API}/produtos/${id}`:`${API}/produtos`,{method:id?'PUT':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const d=await r.json();if(!r.ok)throw new Error(d.mensagem||'Erro ao salvar'); const qtd=Math.max(0,num(produtoQuantidadeMS.value)); if(qtd>0){const cores=body.cores.length?body.cores:['Única'];const tamanhos=body.tamanhos.length?body.tamanhos:['ÚNICO'];for(const cor of cores){for(const tamanho of tamanhos){await fetch(`${API}/estoque`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome:body.nome,cor,tamanho,quantidade:qtd})});}}}cancelarProdutoMS();msg(qtd>0?'Produto e estoque salvos.':'Produto salvo.');await carregarProdutosMS();}catch(e){msg(e.message,true)}
+    ev.preventDefault(); const id=produtoIdMS.value; const btn=salvarProdutoBtnMS; formProdutoMS.classList.add('ms-saving'); btn.textContent='Salvando...';
+    try{
+      await enviarNovasImagensMS(); const urls=imagensSelecionadasMS.map(x=>x.url).filter(Boolean);
+      if(!urls.length)throw new Error('Escolha pelo menos uma foto do produto.');
+      const body={nome:produtoNomeMS.value.trim(),categoria:produtoCategoriaMS.value.trim()||'Roupas',preco:num(produtoPrecoMS.value),precoAntigo:produtoPrecoAntigoMS.value===''?null:num(produtoPrecoAntigoMS.value),imagem:urls[0],imagens:urls.slice(1),descricao:produtoDescricaoMS.value.trim(),cores:produtoCoresMS.value.split(',').map(x=>x.trim()).filter(Boolean),tamanhos:produtoTamanhosMS.value.split(',').map(x=>x.trim().toUpperCase()).filter(Boolean),ativo:produtoAtivoMS.checked,destaque:produtoDestaqueMS.checked,promocao:produtoPromocaoMS.checked,pesoKg:num(produtoPesoKgMS.value),alturaCm:num(produtoAlturaCmMS.value),larguraCm:num(produtoLarguraCmMS.value),comprimentoCm:num(produtoComprimentoCmMS.value)};
+      if([body.pesoKg,body.alturaCm,body.larguraCm,body.comprimentoCm].some(v=>v<0))throw new Error('Peso e dimensões não podem ser negativos.');
+      const r=await fetch(id?`${API}/produtos/${id}`:`${API}/produtos`,{method:id?'PUT':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const d=await r.json();if(!r.ok)throw new Error(d.mensagem||'Erro ao salvar');
+      const qtd=Math.max(0,num(produtoQuantidadeMS.value));if(qtd>0){const cores=body.cores.length?body.cores:['Única'];const tamanhos=body.tamanhos.length?body.tamanhos:['ÚNICO'];for(const cor of cores){for(const tamanho of tamanhos){await fetch(`${API}/estoque`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome:body.nome,cor,tamanho,quantidade:qtd})});}}}
+      cancelarProdutoMS();msg(qtd>0?'Produto, fotos e estoque salvos.':'Produto e fotos salvos.');await carregarProdutosMS();
+    }catch(e){msg(e.message,true)}finally{formProdutoMS.classList.remove('ms-saving');btn.textContent='Salvar produto';}
   }
-  window.excluirProdutoMS=async function(id){
-    if(!confirm('Excluir este produto?'))return;
-    try{const r=await fetch(`${API}/produtos/${id}`,{method:'DELETE'});if(!r.ok)throw new Error();msg('Produto excluído.');await carregarProdutosMS();}catch(e){msg('Não consegui excluir.',true)}
-  };
+  window.excluirProdutoMS=async function(id){if(!confirm('Excluir este produto?'))return;try{const r=await fetch(`${API}/produtos/${id}`,{method:'DELETE'});if(!r.ok)throw new Error();msg('Produto excluído.');await carregarProdutosMS();}catch(e){msg('Não consegui excluir.',true)}};
   document.addEventListener('DOMContentLoaded',criarInterface);
 })();
