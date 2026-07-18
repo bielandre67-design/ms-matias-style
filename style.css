@@ -14708,3 +14708,221 @@ body.aviso-ms-aberto{overflow:hidden!important;}
 /* Cupom visível no resumo mobile */
 #linhaDescontoCupomMSMobile{align-items:center;justify-content:space-between;gap:16px;}
 #linhaDescontoCupomMSMobile strong{white-space:nowrap;}
+
+
+/* =========================================================
+   MS MATIAS STYLE - CONFIRMAÇÃO DE PAGAMENTO (PC + MOBILE)
+   ========================================================= */
+.ms-confirmacao-premium {
+  width: min(560px, calc(100vw - 32px)) !important;
+  padding: 34px !important;
+  border-radius: 28px !important;
+  overflow: hidden !important;
+  color: #fff !important;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(28, 210, 88, .18), transparent 36%),
+    linear-gradient(160deg, #101a15 0%, #07100c 58%, #050806 100%) !important;
+  border: 1px solid rgba(42, 224, 103, .72) !important;
+  box-shadow: 0 30px 90px rgba(0,0,0,.72), 0 0 42px rgba(31, 222, 99, .13) !important;
+  text-align: center !important;
+  font-family: Arial, Helvetica, sans-serif !important;
+}
+.ms-confirmacao-premium::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(120deg, rgba(255,255,255,.045), transparent 35%);
+}
+.ms-sucesso-brilho {
+  position: absolute;
+  width: 220px;
+  height: 220px;
+  left: 50%;
+  top: -120px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: rgba(27, 220, 92, .18);
+  filter: blur(42px);
+  pointer-events: none;
+}
+.ms-sucesso-icone {
+  position: relative;
+  width: 92px;
+  height: 92px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(145deg, #29ef72, #08a83f);
+  border: 7px solid rgba(29, 225, 95, .18);
+  box-shadow: 0 0 0 10px rgba(25, 211, 84, .08), 0 14px 34px rgba(12, 196, 70, .35);
+  animation: msSucessoEntrada .55s cubic-bezier(.2,.8,.2,1) both;
+}
+.ms-sucesso-icone span {
+  color: white;
+  font-size: 54px;
+  line-height: 1;
+  font-weight: 900;
+  transform: translateY(-2px);
+}
+.ms-confirmacao-premium h2 {
+  position: relative;
+  margin: 0 0 8px !important;
+  color: #fff !important;
+  font-size: clamp(28px, 4vw, 38px) !important;
+  line-height: 1.08 !important;
+  font-weight: 900 !important;
+  letter-spacing: -.8px;
+}
+.ms-sucesso-subtitulo {
+  position: relative;
+  margin: 0 0 24px !important;
+  color: rgba(255,255,255,.72) !important;
+  font-size: 16px !important;
+}
+.ms-sucesso-dados {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1px 1.25fr;
+  align-items: stretch;
+  gap: 18px;
+  margin: 0 0 16px;
+  padding: 18px;
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 18px;
+  background: rgba(255,255,255,.045);
+  text-align: left;
+}
+.ms-sucesso-dado {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.ms-sucesso-mini-icone {
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 13px;
+  color: #33e875;
+  background: rgba(33, 221, 100, .12);
+  font-size: 22px;
+  font-weight: 900;
+}
+.ms-sucesso-dado div { min-width: 0; }
+.ms-sucesso-dado small {
+  display: block;
+  color: rgba(255,255,255,.56);
+  font-size: 12px;
+  margin-bottom: 3px;
+}
+.ms-sucesso-dado strong {
+  display: block;
+  color: #fff;
+  font-size: 16px;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+.ms-sucesso-dado:first-child strong {
+  color: #35eb79;
+  font-size: 22px;
+}
+.ms-sucesso-divisor { background: rgba(255,255,255,.10); }
+.ms-sucesso-aviso {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 20px;
+  padding: 15px 16px;
+  border-radius: 16px;
+  background: rgba(28, 220, 93, .08);
+  border: 1px solid rgba(32, 218, 94, .12);
+  text-align: left;
+}
+.ms-sucesso-aviso > span {
+  flex: 0 0 34px;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #07110b;
+  background: #31e875;
+  font-weight: 900;
+}
+.ms-sucesso-aviso p {
+  margin: 0 !important;
+  color: rgba(255,255,255,.76) !important;
+  font-size: 14px !important;
+  line-height: 1.45 !important;
+}
+.ms-sucesso-botao {
+  position: relative;
+  width: 100%;
+  min-height: 56px;
+  border: 0;
+  border-radius: 16px;
+  padding: 15px 20px;
+  color: #06130a;
+  background: linear-gradient(135deg, #39f07d, #16bf51);
+  box-shadow: 0 14px 28px rgba(16, 191, 81, .24);
+  font-size: 16px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: transform .2s ease, filter .2s ease, box-shadow .2s ease;
+}
+.ms-sucesso-botao:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.04);
+  box-shadow: 0 18px 34px rgba(16, 191, 81, .34);
+}
+.ms-sucesso-botao:active { transform: translateY(0); }
+.ms-sucesso-seguranca {
+  position: relative;
+  margin: 14px 0 0 !important;
+  color: rgba(255,255,255,.44) !important;
+  font-size: 12px !important;
+}
+@keyframes msSucessoEntrada {
+  from { opacity: 0; transform: scale(.72) rotate(-8deg); }
+  to { opacity: 1; transform: scale(1) rotate(0); }
+}
+@media (max-width: 600px) {
+  .ms-confirmacao-premium {
+    width: calc(100vw - 24px) !important;
+    max-height: calc(100vh - 24px) !important;
+    padding: 26px 18px 22px !important;
+    border-radius: 23px !important;
+  }
+  .ms-sucesso-icone {
+    width: 76px;
+    height: 76px;
+    margin-bottom: 17px;
+  }
+  .ms-sucesso-icone span { font-size: 44px; }
+  .ms-confirmacao-premium h2 {
+    font-size: 27px !important;
+    letter-spacing: -.5px;
+  }
+  .ms-sucesso-subtitulo {
+    font-size: 14px !important;
+    margin-bottom: 18px !important;
+  }
+  .ms-sucesso-dados {
+    grid-template-columns: 1fr;
+    gap: 13px;
+    padding: 15px;
+  }
+  .ms-sucesso-divisor {
+    width: 100%;
+    height: 1px;
+  }
+  .ms-sucesso-dado strong { font-size: 14px; }
+  .ms-sucesso-dado:first-child strong { font-size: 20px; }
+  .ms-sucesso-aviso { align-items: flex-start; }
+  .ms-sucesso-botao { min-height: 52px; }
+}

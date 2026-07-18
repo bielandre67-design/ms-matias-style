@@ -6699,8 +6699,33 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function sucessoMS(pedido){
-    clearInterval(msPixTimer); const caixa=document.querySelector("#msPixModal .ms-pix-caixa");
-    caixa.innerHTML=`<div class="ms-pix-ok">✅</div><h2>Pagamento confirmado!</h2><p>Recebemos o pagamento do pedido <strong>#${pedido}</strong>.</p><p>Seu pedido já entrou na fila de separação da MS Matias Style.</p><button class="ms-pix-copiar" type="button" onclick="localStorage.removeItem('carrinho');location.href='index.html'">Voltar para a loja</button>`;
+    clearInterval(msPixTimer);
+    const caixa=document.querySelector("#msPixModal .ms-pix-caixa");
+    const agora=new Date();
+    const dataHora=agora.toLocaleDateString("pt-BR")+" às "+agora.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+    caixa.classList.add("ms-confirmacao-premium");
+    caixa.innerHTML=`
+      <div class="ms-sucesso-brilho" aria-hidden="true"></div>
+      <div class="ms-sucesso-icone" aria-hidden="true"><span>✓</span></div>
+      <h2>Pagamento confirmado!</h2>
+      <p class="ms-sucesso-subtitulo">Seu pedido foi recebido com sucesso.</p>
+      <div class="ms-sucesso-dados">
+        <div class="ms-sucesso-dado">
+          <span class="ms-sucesso-mini-icone">▣</span>
+          <div><small>Pedido</small><strong>#${pedido}</strong></div>
+        </div>
+        <div class="ms-sucesso-divisor"></div>
+        <div class="ms-sucesso-dado">
+          <span class="ms-sucesso-mini-icone">◷</span>
+          <div><small>Data</small><strong>${dataHora}</strong></div>
+        </div>
+      </div>
+      <div class="ms-sucesso-aviso">
+        <span>✓</span>
+        <p>Seu pagamento foi aprovado. Agora vamos separar seu pedido e avisar você sobre as próximas etapas.</p>
+      </div>
+      <button class="ms-sucesso-botao" type="button" onclick="localStorage.removeItem('carrinho');localStorage.removeItem('carrinhoMS');location.href='index.html'">Voltar para a loja</button>
+      <p class="ms-sucesso-seguranca">Compra processada com segurança</p>`;
     try{ localStorage.removeItem("carrinho"); localStorage.removeItem("carrinhoMS"); }catch(e){}
   }
   async function consultarMS(pedido){
@@ -7265,8 +7290,34 @@ document.addEventListener("DOMContentLoaded", () => {
       const status = String(dados.status || dados.pagamento?.status || "").toLowerCase();
       if (status === "pago" || status === "approved") {
         clearInterval(timerPixPCMS);
-        document.querySelector("#modalPixPCMSFinal .caixa-pix-pc-ms-final").innerHTML = `<div style="font-size:62px">✅</div><h2>Pagamento confirmado!</h2><p>Pedido <strong>#${pedido}</strong> recebido com sucesso.</p><button type="button" id="voltarLojaPixPCMS" style="width:100%;padding:14px;border:0;border-radius:12px;background:#111;color:#fff;font-weight:800;cursor:pointer">Voltar para a loja</button>`;
+        const caixaSucesso = document.querySelector("#modalPixPCMSFinal .caixa-pix-pc-ms-final");
+        const agora = new Date();
+        const dataHora = agora.toLocaleDateString("pt-BR") + " às " + agora.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+        caixaSucesso.classList.add("ms-confirmacao-premium");
+        caixaSucesso.innerHTML = `
+          <div class="ms-sucesso-brilho" aria-hidden="true"></div>
+          <div class="ms-sucesso-icone" aria-hidden="true"><span>✓</span></div>
+          <h2>Pagamento confirmado!</h2>
+          <p class="ms-sucesso-subtitulo">Seu pedido foi recebido com sucesso.</p>
+          <div class="ms-sucesso-dados">
+            <div class="ms-sucesso-dado">
+              <span class="ms-sucesso-mini-icone">▣</span>
+              <div><small>Pedido</small><strong>#${pedido}</strong></div>
+            </div>
+            <div class="ms-sucesso-divisor"></div>
+            <div class="ms-sucesso-dado">
+              <span class="ms-sucesso-mini-icone">◷</span>
+              <div><small>Data</small><strong>${dataHora}</strong></div>
+            </div>
+          </div>
+          <div class="ms-sucesso-aviso">
+            <span>✓</span>
+            <p>Seu pagamento foi aprovado. Agora vamos separar seu pedido e avisar você sobre as próximas etapas.</p>
+          </div>
+          <button type="button" id="voltarLojaPixPCMS" class="ms-sucesso-botao">Voltar para a loja</button>
+          <p class="ms-sucesso-seguranca">Compra processada com segurança</p>`;
         localStorage.removeItem("carrinho");
+        localStorage.removeItem("carrinhoMS");
         document.getElementById("voltarLojaPixPCMS").onclick = () => location.href = "index.html";
       }
     } catch (_) {}
