@@ -7586,3 +7586,47 @@ document.addEventListener("DOMContentLoaded", () => {
   `;
   document.head.appendChild(style);
 })();
+
+/* =========================================================
+   CORRECAO DEFINITIVA DO TOQUE NO CARTAO MOBILE
+   Usa pointerdown no window para executar antes de listeners
+   antigos que possam bloquear o clique do modal.
+   ========================================================= */
+(function(){
+  let abrindoCartaoMS = false;
+
+  async function acionarCartaoMobileMS(event){
+    const alvo = event.target instanceof Element
+      ? event.target.closest("#msEscolhaPagamento .ms-opcao-cartao")
+      : null;
+    if(!alvo) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    if(typeof event.stopImmediatePropagation === "function") event.stopImmediatePropagation();
+    if(abrindoCartaoMS) return;
+    abrindoCartaoMS = true;
+
+    const modal = document.getElementById("msEscolhaPagamento");
+    const textoOriginal = alvo.innerHTML;
+    alvo.disabled = true;
+    alvo.innerHTML = "<strong>💳 Abrindo Mercado Pago...</strong><span>Aguarde alguns segundos</span>";
+
+    try{
+      if(typeof window.msPagarCartaoOutros !== "function"){
+        throw new Error("A função do cartão não foi carregada. Atualize a página.");
+      }
+      await window.msPagarCartaoOutros();
+    }catch(erro){
+      console.error("ERRO CARTAO MOBILE MS:", erro);
+      alert(erro?.message || "Não foi possível abrir o Mercado Pago.");
+    }finally{
+      abrindoCartaoMS = false;
+      alvo.disabled = false;
+      alvo.innerHTML = textoOriginal;
+      if(modal) modal.style.display = "flex";
+    }
+  }
+
+  window.addEventListener("pointerdown", acionarCartaoMobileMS, true);
+})();
