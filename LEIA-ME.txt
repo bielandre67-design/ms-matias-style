@@ -1,14 +1,18 @@
-CORREÇÃO DE FRETE REAL - MS MATIAS STYLE
+CORREÇÃO DO ESTOQUE - MS MATIAS STYLE
 
-Substitua os quatro arquivos no projeto:
-- server.js
-- script.js
-- index.html
-- carrinho.html
+Substitua somente o arquivo admin.html do projeto.
 
-O cálculo agora envia ao Melhor Envio os produtos reais do carrinho, incluindo quantidade, peso e dimensões por tipo de peça. O valor fixo de R$ 14,59 foi removido.
+O que foi corrigido:
+- volta ao visual compacto: uma linha por produto e cor;
+- tamanhos e numerações aparecem juntos na mesma linha;
+- aceita P, M, G, GG, 36, 38, 40, 42, 37, 39 etc.;
+- produtos novos cadastrados no painel entram automaticamente na tela de estoque;
+- não cria uma linha gigante para cada variação;
+- mantém as rotas atuais do servidor e o desconto automático após pagamento aprovado.
 
-Opcional no Render:
-CEP_ORIGEM=90640130
+Depois rode:
+git add .
+git commit -m "corrige visual do estoque e numeracoes"
+git push
 
-Se o CEP de postagem da loja for outro, altere essa variável.
+Após o deploy, use Ctrl + F5 no painel.

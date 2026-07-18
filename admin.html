@@ -7,6 +7,14 @@
   <link rel="stylesheet" href="admin.css">
   <script>document.documentElement.setAttribute("data-theme", localStorage.getItem("temaAdminMS") || "escuro");</script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+.variantes-grade-ms{display:flex;flex-wrap:wrap;gap:10px;min-width:280px}
+.variante-estoque-ms{display:grid;grid-template-columns:auto 64px;align-items:center;gap:7px;padding:6px 8px;border:1px solid rgba(255,255,255,.09);border-radius:10px;background:rgba(255,255,255,.025)}
+.variante-estoque-ms>span{font-size:12px;font-weight:800;min-width:28px;text-align:center;color:#f3f4f6}
+.variante-estoque-ms .qtd-input-ms{width:64px;min-width:64px;height:38px;padding:4px 6px;text-align:center}
+@media(max-width:760px){.variantes-grade-ms{min-width:220px}.variante-estoque-ms{grid-template-columns:auto 58px}.variante-estoque-ms .qtd-input-ms{width:58px;min-width:58px}}
+</style>
 </head>
 <body>
 <script>
@@ -149,8 +157,8 @@
                 <tr>
                   <th>Produto</th>
                   <th>Cor</th>
-                  <th>Tamanho / Número</th>
-                  <th>Quantidade</th>
+                  <th>Tamanhos / números</th>
+                  <th>Total</th>
                   <th>Status</th>
                 </tr>
               </thead>
@@ -324,12 +332,30 @@ function classeQtd(qtd){
   return 'qtd-ok';
 }
 
-function todasVariantesCatalogoMS(){
+function variantesDoCatalogoMS(){
   const itens = [];
   CATALOGO_MS.forEach(p => p.cores.forEach(cor => p.tamanhos.forEach(tamanho => {
     itens.push({ nome:p.produto, categoria:p.categoria, cor, tamanho, quantidade:quantidadeMS(p.produto, cor, tamanho) });
   })));
   return itens;
+}
+
+function gruposEstoqueMS(){
+  const grupos = [];
+  CATALOGO_MS.forEach(produto => {
+    produto.cores.forEach(cor => {
+      grupos.push({
+        nome: produto.produto,
+        categoria: produto.categoria,
+        cor,
+        tamanhos: produto.tamanhos.map(tamanho => ({
+          tamanho,
+          quantidade: quantidadeMS(produto.produto, cor, tamanho)
+        }))
+      });
+    });
+  });
+  return grupos;
 }
 
 function renderGradeEstoqueMS(){
@@ -338,22 +364,37 @@ function renderGradeEstoqueMS(){
   const filtroCat = document.getElementById('filtroCategoriaMS')?.value || 'todas';
   const filtroProduto = document.getElementById('filtroProdutoMS')?.value || 'todos';
   const busca = normalizarMS(document.getElementById('pesquisaEstoqueMS')?.value || '');
-  const variantes = todasVariantesCatalogoMS().filter(i => {
+
+  const grupos = gruposEstoqueMS().filter(i => {
     if(filtroCat !== 'todas' && i.categoria !== filtroCat) return false;
     if(filtroProduto !== 'todos' && i.nome !== filtroProduto) return false;
-    return !busca || normalizarMS(`${i.nome} ${i.cor} ${i.tamanho} ${i.categoria}`).includes(busca);
+    const tamanhos = i.tamanhos.map(t => t.tamanho).join(' ');
+    return !busca || normalizarMS(`${i.nome} ${i.cor} ${tamanhos} ${i.categoria}`).includes(busca);
   });
-  corpo.innerHTML = variantes.map(i => {
-    const qtd = Number(i.quantidade || 0);
-    const chave = chaveVarianteMS(i.nome, i.cor, i.tamanho);
+
+  corpo.innerHTML = grupos.map(i => {
+    const total = i.tamanhos.reduce((s,t) => s + Number(t.quantidade || 0), 0);
+    const inputs = i.tamanhos.map(t => {
+      const qtd = Number(t.quantidade || 0);
+      const chave = chaveVarianteMS(i.nome, i.cor, t.tamanho);
+      return `<label class="variante-estoque-ms" title="${escaparAdminMS(i.nome)} / ${escaparAdminMS(i.cor)} / ${escaparAdminMS(t.tamanho)}">
+        <span>${escaparAdminMS(t.tamanho)}</span>
+        <input class="qtd-input-ms ${classeQtd(qtd)}" type="number" min="0" value="${qtd}"
+          data-chave="${escaparAdminMS(chave)}" data-produto="${escaparAdminMS(i.nome)}"
+          data-cor="${escaparAdminMS(i.cor)}" data-tamanho="${escaparAdminMS(t.tamanho)}"
+          onchange="alterarQtdEstoqueMS(this)" oninput="alterarQtdEstoqueMS(this)">
+      </label>`;
+    }).join('');
+
     return `<tr>
       <td><strong>${escaparAdminMS(i.nome)}</strong><small>${escaparAdminMS(i.categoria)}</small></td>
       <td>${escaparAdminMS(i.cor)}</td>
-      <td><strong>${escaparAdminMS(i.tamanho)}</strong></td>
-      <td><input class="qtd-input-ms ${classeQtd(qtd)}" type="number" min="0" value="${qtd}" data-chave="${escaparAdminMS(chave)}" data-produto="${escaparAdminMS(i.nome)}" data-cor="${escaparAdminMS(i.cor)}" data-tamanho="${escaparAdminMS(i.tamanho)}" onchange="alterarQtdEstoqueMS(this)" oninput="alterarQtdEstoqueMS(this)"></td>
-      <td>${statusLinha(qtd)}</td>
+      <td><div class="variantes-grade-ms">${inputs}</div></td>
+      <td><strong class="total-linha-ms">${total}</strong></td>
+      <td>${statusLinha(total)}</td>
     </tr>`;
   }).join('') || '<tr><td colspan="5">Nenhum item encontrado.</td></tr>';
+
   atualizarCardsEstoqueMS();
   renderAlertasEstoqueMS();
 }
@@ -365,17 +406,27 @@ function alterarQtdEstoqueMS(input){
   input.classList.add(classeQtd(quantidade));
   const item = { nome:input.dataset.produto, cor:input.dataset.cor, tamanho:input.dataset.tamanho, quantidade };
   alteracoesEstoqueMS.set(input.dataset.chave || chaveVarianteMS(item.nome,item.cor,item.tamanho), item);
+
   const tr = input.closest('tr');
-  if(tr) tr.lastElementChild.innerHTML = statusLinha(quantidade);
+  if(tr){
+    const total = [...tr.querySelectorAll('.qtd-input-ms')].reduce((s, el) => s + Number(el.value || 0), 0);
+    const totalEl = tr.querySelector('.total-linha-ms');
+    if(totalEl) totalEl.innerText = total;
+    if(tr.lastElementChild) tr.lastElementChild.innerHTML = statusLinha(total);
+  }
   atualizarCardsEstoqueMS();
   renderAlertasEstoqueMS();
 }
 
 function atualizarCardsEstoqueMS(){
-  const itens = todasVariantesCatalogoMS();
+  const itens = variantesDoCatalogoMS();
   const total = itens.reduce((s,i) => s + Number(i.quantidade || 0), 0);
-  const baixo = itens.filter(i => i.quantidade > 0 && i.quantidade <= 3).length;
-  const zero = itens.filter(i => i.quantidade <= 0).length;
+  const grupos = gruposEstoqueMS();
+  const baixo = grupos.filter(g => {
+    const qtd = g.tamanhos.reduce((s,t) => s + Number(t.quantidade || 0), 0);
+    return qtd > 0 && qtd <= 3;
+  }).length;
+  const zero = grupos.filter(g => g.tamanhos.reduce((s,t) => s + Number(t.quantidade || 0), 0) <= 0).length;
   const produtos = CATALOGO_MS.length;
   const ids = {
     cardProdutosEstoque: produtos, cardItensEstoque: total, cardBaixoEstoque: baixo, cardSemEstoque: zero,
@@ -387,9 +438,12 @@ function atualizarCardsEstoqueMS(){
 function renderAlertasEstoqueMS(){
   const box = document.getElementById('alertasEstoqueMS');
   if(!box) return;
-  const alertas = todasVariantesCatalogoMS().filter(i => Number(i.quantidade || 0) <= 3).sort((a,b) => Number(a.quantidade||0) - Number(b.quantidade||0)).slice(0, 12);
-  if(!alertas.length){ box.innerHTML = '<p class="sem-alerta-ms">Tudo tranquilo no estoque.</p>'; return; }
-  box.innerHTML = alertas.map(i => `<div class="alerta-item-ms"><div><strong>${escaparAdminMS(i.nome)} ${escaparAdminMS(i.cor)} - ${escaparAdminMS(i.tamanho)}</strong><span>${i.quantidade <= 0 ? 'Sem estoque' : 'Apenas ' + i.quantidade + ' unidade(s)'}</span></div><em class="${i.quantidade <= 0 ? 'zero' : 'baixo'}">${i.quantidade <= 0 ? 'Esgotado' : 'Baixo'}</em></div>`).join('');
+  const alertas = variantesDoCatalogoMS()
+    .filter(i => Number(i.quantidade || 0) > 0 && Number(i.quantidade || 0) <= 3)
+    .sort((a,b) => Number(a.quantidade||0) - Number(b.quantidade||0))
+    .slice(0, 12);
+  if(!alertas.length){ box.innerHTML = '<p class="sem-alerta-ms">Nenhum item com estoque baixo.</p>'; return; }
+  box.innerHTML = alertas.map(i => `<div class="alerta-item-ms"><div><strong>${escaparAdminMS(i.nome)} ${escaparAdminMS(i.cor)} - ${escaparAdminMS(i.tamanho)}</strong><span>Apenas ${i.quantidade} unidade(s)</span></div><em class="baixo">Baixo</em></div>`).join('');
 }
 
 async function salvarGradeEstoqueMS(){
