@@ -145,10 +145,22 @@
      PRODUTOS⌄
   </a>
 
-  <a href="#categoriasHome"
-     onclick="fecharProdutoDetalhe();">
-     CATEGORIAS⌄
-  </a>
+  <div class="menu-categorias-ms">
+    <a href="#categoriasHome"
+       class="menu-categorias-gatilho"
+       onclick="fecharProdutoDetalhe();">
+       CATEGORIAS⌄
+    </a>
+
+    <div class="submenu-categorias-ms" aria-label="Categorias de produtos">
+      <a href="#moletons" onclick="fecharProdutoDetalhe();">Moletons</a>
+      <a href="#jaquetas" onclick="fecharProdutoDetalhe();">Jaquetas</a>
+      <a href="#camisetas" onclick="fecharProdutoDetalhe();">Camisetas</a>
+      <a href="#camisetas-basicas" onclick="fecharProdutoDetalhe();">Camisetas básicas</a>
+      <a href="#calcas" onclick="fecharProdutoDetalhe();">Calças</a>
+      <a href="#conjuntos" onclick="fecharProdutoDetalhe();">Conjuntos</a>
+    </div>
+  </div>
 
   <a href="javascript:void(0)"
      onclick="fecharProdutoDetalhe(); abrirFavoritos(); return false;">

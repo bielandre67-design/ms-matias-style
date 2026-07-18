@@ -14952,3 +14952,82 @@ body.aviso-ms-aberto{overflow:hidden!important;}
     flex: 0 0 auto !important;
   }
 }
+
+
+/* =====================================================
+   MENU DE CATEGORIAS SEGURO - 18/07/2026
+   Altera somente o menu suspenso de categorias no desktop.
+===================================================== */
+@media (min-width: 769px) {
+  html body .header .icones-header nav.menu > .menu-categorias-ms {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    flex: 0 0 auto;
+  }
+
+  html body .header .icones-header nav.menu .menu-categorias-gatilho {
+    display: inline-flex;
+    align-items: center;
+    margin: 0;
+    white-space: nowrap;
+  }
+
+  html body .header .icones-header nav.menu .submenu-categorias-ms {
+    position: absolute;
+    top: calc(100% + 14px);
+    left: 50%;
+    z-index: 9999;
+    width: 230px;
+    padding: 10px;
+    border: 1px solid rgba(212, 175, 55, .38);
+    border-radius: 16px;
+    background: rgba(12, 12, 12, .98);
+    box-shadow: 0 18px 45px rgba(0, 0, 0, .42);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translate(-50%, 8px);
+    transition: opacity .18s ease, transform .18s ease, visibility .18s ease;
+  }
+
+  html body .header .icones-header nav.menu .submenu-categorias-ms::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -16px;
+    height: 16px;
+  }
+
+  html body .header .icones-header nav.menu .menu-categorias-ms:hover .submenu-categorias-ms,
+  html body .header .icones-header nav.menu .menu-categorias-ms:focus-within .submenu-categorias-ms {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translate(-50%, 0);
+  }
+
+  html body .header .icones-header nav.menu .submenu-categorias-ms > a {
+    display: flex;
+    align-items: center;
+    min-height: 43px;
+    padding: 0 13px;
+    margin: 0;
+    border-radius: 10px;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: .2px;
+    text-decoration: none;
+    transition: background .16s ease, color .16s ease, padding-left .16s ease;
+  }
+
+  html body .header .icones-header nav.menu .submenu-categorias-ms > a:hover,
+  html body .header .icones-header nav.menu .submenu-categorias-ms > a:focus {
+    padding-left: 17px;
+    background: rgba(212, 175, 55, .14);
+    color: #f0c94a;
+    outline: none;
+  }
+}
