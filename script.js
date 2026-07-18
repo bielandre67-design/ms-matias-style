@@ -6138,7 +6138,7 @@ document.addEventListener("DOMContentLoaded", () => {
       data-preco="${preco.toFixed(2)}"
       data-precoantigo="${antigo == null ? '' : antigo.toFixed(2)}"
       data-img="${esc(fotoPrincipal)}"
-      data-fotos="${esc(fotos.join(','))}"
+      data-fotos-json="${esc(encodeURIComponent(JSON.stringify(fotos)))}"
       data-descricao="${esc(produto.descricao || '')}"
       data-cores="${esc(cores.join(','))}"
       data-tamanhos="${esc(tamanhos.join(','))}">
@@ -7643,4 +7643,117 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   window.addEventListener("pointerdown", acionarCartaoMobileMS, true);
+})();
+
+
+/* =========================================================
+   FIX MS - FOTOS DO PAINEL E PREÇO NO DETALHE
+   Data URLs possuem uma vírgula interna. Por isso, as fotos do
+   banco são lidas de um JSON codificado, sem dividir por vírgula.
+   ========================================================= */
+(function corrigirDetalheProdutosBancoMS(){
+  function numeroPrecoMS(valor){
+    if(typeof valor === 'number') return Number.isFinite(valor) ? valor : 0;
+    let texto = String(valor ?? '').replace(/R\$/gi, '').replace(/\s/g, '').trim();
+    if(!texto) return 0;
+    if(texto.includes(',')) texto = texto.replace(/\./g, '').replace(',', '.');
+    texto = texto.replace(/[^0-9.-]/g, '');
+    const numero = Number(texto);
+    return Number.isFinite(numero) ? numero : 0;
+  }
+
+  function fotosCardMS(card){
+    const codificado = card?.dataset?.fotosJson || '';
+    if(codificado){
+      try{
+        const lista = JSON.parse(decodeURIComponent(codificado));
+        if(Array.isArray(lista)) return [...new Set(lista.map(v => String(v || '').trim()).filter(Boolean))];
+      }catch(erro){ console.warn('Não foi possível ler as fotos do produto.', erro); }
+    }
+
+    // Reserva para os produtos antigos que ainda usam nomes de arquivo.
+    const legado = String(card?.dataset?.fotos || '').trim();
+    if(legado && !legado.startsWith('data:image/')){
+      return [...new Set(legado.split(',').map(v => v.trim()).filter(Boolean))];
+    }
+    return [String(card?.dataset?.img || '').trim()].filter(Boolean);
+  }
+
+  function miniaturasMS(fotos, imagemPrincipal){
+    const box = document.getElementById('miniaturasDetalhe');
+    if(!box) return;
+    box.innerHTML = '';
+    fotos.forEach((foto, indice) => {
+      const mini = document.createElement('img');
+      mini.src = foto;
+      mini.alt = `Foto ${indice + 1} do produto`;
+      if(indice === 0) mini.classList.add('ativa');
+      mini.addEventListener('click', () => {
+        imagemPrincipal.src = foto;
+        window.msImagemSelecionada = foto;
+        box.querySelectorAll('img').forEach(img => img.classList.remove('ativa'));
+        mini.classList.add('ativa');
+      });
+      box.appendChild(mini);
+    });
+  }
+
+  window.abrirProdutoDetalheCard = function(card){
+    if(!card || card.classList.contains('produto-em-breve')) return false;
+
+    const nome = String(card.dataset.nome || card.querySelector('h3')?.innerText || 'Produto').trim();
+    const preco = numeroPrecoMS(card.dataset.preco);
+    const precoAntigo = numeroPrecoMS(card.dataset.precoantigo);
+    const fotos = fotosCardMS(card);
+    const imagem = fotos[0] || card.dataset.img || 'logo.png';
+
+    window.fotosDetalhe = fotos;
+    window.fotoAtualDetalhe = 0;
+    window.msImagemSelecionada = imagem;
+    window.msProdutoCardAtual = card;
+    window.produtoDetalheAtual = {
+      id: Number(card.dataset.idBanco || 0) || undefined,
+      nome,
+      preco,
+      precoAntigo: precoAntigo > preco ? precoAntigo : null,
+      imagem,
+      img: imagem,
+      fotos,
+      descricao: card.dataset.descricao || '',
+      cor: card.dataset.cor || ''
+    };
+    try{ produtoDetalheAtual = window.produtoDetalheAtual; }catch(e){}
+
+    const detalhe = document.getElementById('produtoDetalhe');
+    const detalheImg = document.getElementById('detalheImg');
+    const detalheNome = document.getElementById('detalheNome');
+    const detalhePreco = document.getElementById('detalhePreco');
+    const antigoEl = document.querySelector('#produtoDetalhe .preco-antigo') || document.getElementById('detalhePrecoAntigo');
+    const descricao = document.getElementById('descricaoProduto');
+
+    if(detalheImg){
+      detalheImg.src = imagem;
+      detalheImg.onerror = function(){ this.onerror = null; this.src = 'logo.png'; };
+      miniaturasMS(fotos.length ? fotos : [imagem], detalheImg);
+    }
+    if(detalheNome) detalheNome.innerText = nome;
+    if(detalhePreco) detalhePreco.innerText = preco.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+    if(antigoEl) antigoEl.innerText = precoAntigo > preco
+      ? precoAntigo.toLocaleString('pt-BR', {style:'currency', currency:'BRL'}) : '';
+    if(descricao) descricao.innerText = card.dataset.descricao || '';
+
+    if(detalhe){
+      detalhe.dataset.tamanho = '';
+      detalhe.dataset.cor = '';
+      detalhe.classList.add('ativo');
+      detalhe.style.display = 'block';
+      detalhe.scrollTo({top:0, behavior:'smooth'});
+    }
+    document.body.classList.add('modal-aberto');
+
+    if(typeof window.montarCoresProduto === 'function'){
+      setTimeout(() => window.montarCoresProduto(card), 30);
+    }
+    return false;
+  };
 })();
