@@ -183,6 +183,20 @@ async function iniciarPostgresMS() {
   `);
 
   await pool.query(`
+    CREATE TABLE IF NOT EXISTS banners_site (
+      id BIGSERIAL PRIMARY KEY,
+      titulo VARCHAR(180) NOT NULL DEFAULT 'Banner MS',
+      imagem TEXT NOT NULL,
+      link TEXT,
+      texto_botao VARCHAR(80),
+      ordem INTEGER NOT NULL DEFAULT 0,
+      ativo BOOLEAN NOT NULL DEFAULT TRUE,
+      criado_em TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      atualizado_em TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+
+  await pool.query(`
     CREATE TABLE IF NOT EXISTS estoque_variantes (
       sku VARCHAR(100) PRIMARY KEY,
       nome VARCHAR(180) NOT NULL,
@@ -1944,6 +1958,74 @@ app.post("/cupons/validar", async (req,res,next)=>{ try{const resultado=await va
 app.post("/cupons", async (req,res,next)=>{ if(!pool)return res.status(503).json({mensagem:"Banco não configurado."});try{const b=req.body||{};const codigo=String(b.codigo||'').trim().toUpperCase();if(!codigo)return res.status(400).json({mensagem:"Informe o código."});const r=await pool.query(`INSERT INTO cupons(codigo,percentual,ativo,valor_minimo,limite_usos,validade) VALUES($1,$2,$3,$4,$5,$6) RETURNING *`,[codigo,Number(b.percentual)||0,b.ativo!==false,Number(b.valorMinimo)||0,Math.max(0,Number(b.limiteUsos)||0),b.validade||null]);res.json({ok:true,cupom:cupomRespostaMS(r.rows[0])});}catch(e){if(e.code==='23505')return res.status(400).json({mensagem:"Esse código já existe."});next(e);} });
 app.put("/cupons/:id", async (req,res,next)=>{if(!pool)return res.status(503).json({mensagem:"Banco não configurado."});try{const b=req.body||{};const r=await pool.query(`UPDATE cupons SET codigo=UPPER($2),percentual=$3,ativo=$4,valor_minimo=$5,limite_usos=$6,validade=$7,atualizado_em=NOW() WHERE id=$1 RETURNING *`,[req.params.id,String(b.codigo||'').trim(),Number(b.percentual)||0,b.ativo!==false,Number(b.valorMinimo)||0,Math.max(0,Number(b.limiteUsos)||0),b.validade||null]);if(!r.rowCount)return res.status(404).json({mensagem:"Cupom não encontrado."});res.json({ok:true,cupom:cupomRespostaMS(r.rows[0])});}catch(e){next(e);} });
 app.delete("/cupons/:id", async(req,res,next)=>{if(!pool)return res.status(503).json({mensagem:"Banco não configurado."});try{await pool.query("DELETE FROM cupons WHERE id=$1",[req.params.id]);res.json({ok:true});}catch(e){next(e);} });
+
+
+// VITRINE / BANNERS DO SITE --------------------------------------------------
+function bannerRespostaMS(row) {
+  return {
+    id: Number(row.id),
+    titulo: row.titulo || "Banner MS",
+    imagem: row.imagem || "",
+    link: row.link || "",
+    textoBotao: row.texto_botao || "",
+    ordem: Number(row.ordem || 0),
+    ativo: Boolean(row.ativo),
+    criadoEm: row.criado_em,
+    atualizadoEm: row.atualizado_em
+  };
+}
+
+app.get("/banners", async (req, res, next) => {
+  res.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+  if (!pool) return res.json([]);
+  try {
+    const somenteAtivos = String(req.query.todos || "") !== "1";
+    const where = somenteAtivos ? "WHERE ativo=TRUE" : "";
+    const r = await pool.query(`SELECT * FROM banners_site ${where} ORDER BY ordem ASC, id ASC`);
+    res.json(r.rows.map(bannerRespostaMS));
+  } catch (erro) { next(erro); }
+});
+
+app.post("/banners", async (req, res, next) => {
+  if (!pool) return res.status(503).json({ mensagem: "Banco não configurado." });
+  try {
+    const b = req.body || {};
+    const imagem = String(b.imagem || "").trim();
+    if (!imagem) return res.status(400).json({ mensagem: "Escolha uma imagem para o banner." });
+    const r = await pool.query(
+      `INSERT INTO banners_site(titulo,imagem,link,texto_botao,ordem,ativo)
+       VALUES($1,$2,$3,$4,$5,$6) RETURNING *`,
+      [String(b.titulo || "Banner MS").trim(), imagem, String(b.link || "").trim() || null,
+       String(b.textoBotao || "").trim() || null, Number(b.ordem || 0), b.ativo !== false]
+    );
+    res.json({ ok:true, banner:bannerRespostaMS(r.rows[0]) });
+  } catch (erro) { next(erro); }
+});
+
+app.put("/banners/:id", async (req, res, next) => {
+  if (!pool) return res.status(503).json({ mensagem: "Banco não configurado." });
+  try {
+    const b = req.body || {};
+    const imagem = String(b.imagem || "").trim();
+    if (!imagem) return res.status(400).json({ mensagem: "A imagem do banner é obrigatória." });
+    const r = await pool.query(
+      `UPDATE banners_site SET titulo=$2,imagem=$3,link=$4,texto_botao=$5,ordem=$6,ativo=$7,atualizado_em=NOW()
+       WHERE id=$1 RETURNING *`,
+      [req.params.id, String(b.titulo || "Banner MS").trim(), imagem, String(b.link || "").trim() || null,
+       String(b.textoBotao || "").trim() || null, Number(b.ordem || 0), b.ativo !== false]
+    );
+    if (!r.rowCount) return res.status(404).json({ mensagem:"Banner não encontrado." });
+    res.json({ ok:true, banner:bannerRespostaMS(r.rows[0]) });
+  } catch (erro) { next(erro); }
+});
+
+app.delete("/banners/:id", async (req, res, next) => {
+  if (!pool) return res.status(503).json({ mensagem: "Banco não configurado." });
+  try {
+    await pool.query("DELETE FROM banners_site WHERE id=$1", [req.params.id]);
+    res.json({ ok:true });
+  } catch (erro) { next(erro); }
+});
 
 // PRODUTOS NO POSTGRESQL ------------------------------------------------------
 // Esta API é compatível com o catálogo HTML atual. O front sincroniza os cards

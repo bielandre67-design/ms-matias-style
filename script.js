@@ -7868,3 +7868,31 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.atualizarRecomendadosMS = atualizarRecomendadosMS;
 })();
+
+
+// VITRINE INICIAL CONTROLADA PELO PAINEL ADM --------------------------------
+(function(){
+  const API_VITRINE_MS=(location.hostname==='localhost'||location.hostname==='127.0.0.1')?'http://localhost:3000':'https://ms-matias-style.onrender.com';
+  const escVitrineMS=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  let timerMobileVitrineMS=null;
+  async function carregarVitrinePainelMS(){
+    try{
+      const r=await fetch(`${API_VITRINE_MS}/banners?t=${Date.now()}`,{cache:'no-store'});if(!r.ok)return;
+      const banners=await r.json();if(!Array.isArray(banners)||!banners.length)return;
+      const hero=document.querySelector('.hero-slider-ms');const slides=hero?.querySelector('.slides-hero-ms');const dots=hero?.querySelector('.bolinhas-hero-ms');
+      if(hero&&slides){
+        slides.innerHTML=banners.map((b,i)=>`<img src="${escVitrineMS(b.imagem)}" class="slide-ms ${i===0?'ativo':''}" alt="${escVitrineMS(b.titulo||'Banner MS')}" data-link="${escVitrineMS(b.link||'')}" style="${b.link?'cursor:pointer':''}">`).join('');
+        slides.querySelectorAll('.slide-ms[data-link]').forEach(img=>img.addEventListener('click',()=>{const link=img.dataset.link;if(link)location.href=link;}));
+        if(dots)dots.innerHTML=banners.map((_,i)=>`<button class="bolinha-hero-ms ${i===0?'ativa':''}" type="button" onclick="irSlideHeroMS(${i})" aria-label="Banner ${i+1}"></button>`).join('');
+      }
+      const mobile=document.querySelector('.banner-mobile .banner-slider');
+      if(mobile){
+        mobile.innerHTML=banners.map((b,i)=>`<img src="${escVitrineMS(b.imagem)}" class="slide ${i===0?'ativo':''}" alt="${escVitrineMS(b.titulo||'Banner MS')}">`).join('');
+        if(timerMobileVitrineMS)clearInterval(timerMobileVitrineMS);
+        let atual=0;timerMobileVitrineMS=setInterval(()=>{const lista=mobile.querySelectorAll('.slide');if(lista.length<2)return;lista[atual]?.classList.remove('ativo','ativa');atual=(atual+1)%lista.length;lista[atual]?.classList.add('ativo');},4500);
+      }
+      slideHeroAtualMS=0;atualizarHeroSliderMS();reiniciarTimerHeroMS();
+    }catch(e){console.warn('Vitrine do painel indisponível; mantendo banners atuais.',e);}
+  }
+  document.addEventListener('DOMContentLoaded',carregarVitrinePainelMS);
+})();
