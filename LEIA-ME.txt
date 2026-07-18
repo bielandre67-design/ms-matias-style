@@ -1,9 +1,13 @@
-PACOTE CONFERIDO - MS MATIAS STYLE
+CORREÇÃO CHECKOUT PC + MOBILE
 
-Arquivos dentro deste pacote:
-- script.js (CORRIGIDO)
-- server.js
-- carrinho.html
+Substitua no projeto:
+- index.html
+- script.js
 
-Substitua os 3 arquivos antigos pelos arquivos deste pacote.
-O script.js corrigido tem 236838 bytes.
+O carrinho mobile permanece com PIX e cartão.
+O carrinho PC agora também mostra os dois botões diretamente na etapa 3.
+
+Depois rode:
+git add .
+git commit -m "Atualiza checkout Pix e cartão no PC e mobile"
+git push

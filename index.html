@@ -111,6 +111,17 @@
 }
 </style>
 
+
+<style id="formas-pagamento-pc-ms-css">
+.formas-pagamento-pc-ms{margin-top:20px;padding:20px;border:1px solid #c99d00;border-radius:18px;background:#0c0c0c}
+.formas-pagamento-pc-ms h3{margin:0 0 10px;color:#fff;font-size:21px}
+.formas-pagamento-pc-ms p{margin:0 0 18px;color:#d0d0d0;line-height:1.45}
+.btn-pagamento-pc-ms{width:100%;padding:17px 18px;border-radius:14px;font-size:17px;font-weight:800;cursor:pointer;margin-top:10px}
+.btn-pix-pc-ms{background:#f0c52d;color:#050505;border:0}
+.btn-cartao-pc-ms{background:#fff;color:#050505;border:1px solid #d8d8d8}
+.btn-pagamento-pc-ms:hover{transform:translateY(-1px);filter:brightness(.97)}
+@media(max-width:768px){.formas-pagamento-pc-ms{display:none}}
+</style>
 </head>
 
 <body>
@@ -2514,9 +2525,19 @@ data-img="conjunto-bege.jpeg">
         <p id="cupomMensagem"></p>
       </div>
 
-    <button type="button" class="btn-finalizar" onclick="finalizarCompra(event)">
-  Finalizar compra
-</button>
+      <div class="formas-pagamento-pc-ms">
+        <h3>Como você prefere pagar?</h3>
+        <p>Escolha uma opção. No PIX, o QR Code abre aqui mesmo e a confirmação acontece automaticamente.</p>
+
+        <button type="button" class="btn-pagamento-pc-ms btn-pix-pc-ms" onclick="pagarPixDentroDaLojaMS(event)">
+          ◆ Pagar com PIX
+        </button>
+
+        <button type="button" class="btn-pagamento-pc-ms btn-cartao-pc-ms" onclick="pagarCartaoOutrosMSGlobal(event)">
+          💳 Cartão e outras opções
+        </button>
+      </div>
+
       <button class="btn-limpar-pc" onclick="limparCarrinhoPC()">Limpar carrinho</button>
     </div>
 

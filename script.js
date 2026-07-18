@@ -6770,6 +6770,9 @@ document.addEventListener("DOMContentLoaded", () => {
     modal.style.display="flex"; return false;
   }
 
+  window.pagarPixDentroDaLojaMS = pagarPixDentroDaLoja;
+  window.pagarCartaoOutrosMSGlobal = pagarCartaoOutrosMS;
+  window.abrirEscolhaPagamentoMS = abrirEscolhaPagamentoMS;
   window.finalizarCompra=abrirEscolhaPagamentoMS; window.finalizarCompraFinal=abrirEscolhaPagamentoMS; window.finalizarPagamento=abrirEscolhaPagamentoMS; window.pagarMercadoPago=abrirEscolhaPagamentoMS; window.msFinalizarPagamento=abrirEscolhaPagamentoMS;
   document.addEventListener("click",function(e){ const b=e.target.closest("button,a,input[type=button],input[type=submit]"); if(!b)return; const t=String(b.innerText||b.value||b.id||b.className||"").toLowerCase(); if((t.includes("pagar")||t.includes("finalizar pedido")||t.includes("mercado pago")||t.includes("finalizar compra")) && b.closest("#carrinhoModal,#carrinhoMobile,.carrinho,.checkout,form")){ abrirEscolhaPagamentoMS(e); } },true);
 })();
