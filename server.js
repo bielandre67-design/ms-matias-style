@@ -145,6 +145,7 @@ async function iniciarPostgresMS() {
   await pool.query(`ALTER TABLE produtos ADD COLUMN IF NOT EXISTS altura_cm NUMERIC(10,2) NOT NULL DEFAULT 0`);
   await pool.query(`ALTER TABLE produtos ADD COLUMN IF NOT EXISTS largura_cm NUMERIC(10,2) NOT NULL DEFAULT 0`);
   await pool.query(`ALTER TABLE produtos ADD COLUMN IF NOT EXISTS comprimento_cm NUMERIC(10,2) NOT NULL DEFAULT 0`);
+  await pool.query(`ALTER TABLE produtos ADD COLUMN IF NOT EXISTS destaque_ordem INTEGER NOT NULL DEFAULT 0`);
 
   await pool.query(`
     CREATE TABLE IF NOT EXISTS categorias (
@@ -2027,6 +2028,28 @@ app.delete("/banners/:id", async (req, res, next) => {
   } catch (erro) { next(erro); }
 });
 
+
+// CONFIGURAÇÃO DA HOME / PRODUTOS EM DESTAQUE -------------------------------
+app.get("/home-config", async (req, res, next) => {
+  if (!pool) return res.json({ tituloDestaques:"DESTAQUES DA MS", mostrarDestaques:true });
+  try {
+    const r=await pool.query("SELECT dados FROM app_state WHERE chave=$1", ["home_config"]);
+    res.json(r.rows[0]?.dados || { tituloDestaques:"DESTAQUES DA MS", mostrarDestaques:true });
+  } catch(e){ next(e); }
+});
+app.put("/home-config", async (req, res, next) => {
+  if (!pool) return res.status(503).json({mensagem:"Banco não configurado."});
+  try {
+    const dados={
+      tituloDestaques:String(req.body?.tituloDestaques || "DESTAQUES DA MS").trim().slice(0,80),
+      mostrarDestaques:req.body?.mostrarDestaques !== false
+    };
+    await pool.query(`INSERT INTO app_state(chave,dados,atualizado_em) VALUES($1,$2::jsonb,NOW())
+      ON CONFLICT(chave) DO UPDATE SET dados=EXCLUDED.dados, atualizado_em=NOW()`, ["home_config",JSON.stringify(dados)]);
+    res.json({ok:true,config:dados});
+  } catch(e){ next(e); }
+});
+
 // PRODUTOS NO POSTGRESQL ------------------------------------------------------
 // Esta API é compatível com o catálogo HTML atual. O front sincroniza os cards
 // existentes uma única vez e, depois, preços/visibilidade são controlados aqui.
@@ -2074,7 +2097,7 @@ function produtoRespostaMS(row) {
     descricao: row.descricao || "", tabelaMedidas: row.tabela_medidas || "",
     detalhesProduto: row.detalhes_produto || "", composicao: row.composicao || "", cuidados: row.cuidados || "", cores: Array.isArray(row.cores) ? row.cores : [],
     tamanhos: Array.isArray(row.tamanhos) ? row.tamanhos : ['P','M','G','GG'], ativo: Boolean(row.ativo),
-    destaque: Boolean(row.destaque), promocao: Boolean(row.promocao),
+    destaque: Boolean(row.destaque), destaqueOrdem: Number(row.destaque_ordem || 0), promocao: Boolean(row.promocao),
     pesoKg: Number(row.peso_kg || 0), alturaCm: Number(row.altura_cm || 0),
     larguraCm: Number(row.largura_cm || 0), comprimentoCm: Number(row.comprimento_cm || 0),
     medidasCompletas: Number(row.peso_kg || 0) > 0 && Number(row.altura_cm || 0) > 0 && Number(row.largura_cm || 0) > 0 && Number(row.comprimento_cm || 0) > 0,
@@ -2228,7 +2251,7 @@ app.put("/produtos/:id", async (req, res, next) => {
        descricao=COALESCE($7,descricao),tabela_medidas=COALESCE($8,tabela_medidas),detalhes_produto=COALESCE($9,detalhes_produto),composicao=COALESCE($10,composicao),cuidados=COALESCE($11,cuidados),ativo=COALESCE($12,ativo),destaque=COALESCE($13,destaque),
        promocao=COALESCE($14,promocao),imagens=COALESCE($15::jsonb,imagens),cores=COALESCE($16::jsonb,cores),tamanhos=COALESCE($17::jsonb,tamanhos),
        peso_kg=COALESCE($18,peso_kg),altura_cm=COALESCE($19,altura_cm),largura_cm=COALESCE($20,largura_cm),comprimento_cm=COALESCE($21,comprimento_cm),
-       atualizado_em=NOW() WHERE id=$1 RETURNING *`,
+       destaque_ordem=COALESCE($22,destaque_ordem), atualizado_em=NOW() WHERE id=$1 RETURNING *`,
       [req.params.id,p.nome==null?null:String(p.nome).trim(),p.categoria==null?null:String(p.categoria),
        p.preco==null?null:Number(p.preco),p.precoAntigo==null||p.precoAntigo===""?null:Number(p.precoAntigo),
        p.imagem==null?null:String(p.imagem),p.descricao==null?null:String(p.descricao),
@@ -2240,7 +2263,8 @@ app.put("/produtos/:id", async (req, res, next) => {
        p.pesoKg==null?null:numeroMedidaProdutoMS(p.pesoKg, 'Peso'),
        p.alturaCm==null?null:numeroMedidaProdutoMS(p.alturaCm, 'Altura'),
        p.larguraCm==null?null:numeroMedidaProdutoMS(p.larguraCm, 'Largura'),
-       p.comprimentoCm==null?null:numeroMedidaProdutoMS(p.comprimentoCm, 'Comprimento')]
+       p.comprimentoCm==null?null:numeroMedidaProdutoMS(p.comprimentoCm, 'Comprimento'),
+       p.destaqueOrdem==null?null:Math.max(0,Number(p.destaqueOrdem)||0)]
     );
     if(!resultado.rowCount) return res.status(404).json({erro:true,mensagem:"Produto não encontrado."});
     res.json({ok:true,produto:produtoRespostaMS(resultado.rows[0])});

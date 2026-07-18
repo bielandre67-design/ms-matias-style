@@ -13,6 +13,10 @@
 @media(max-width:980px){.lista-banners-ms{grid-template-columns:1fr}}
 @media(max-width:680px){.vitrine-intro-ms{align-items:flex-start;flex-direction:column}.btn-add-banner-ms{width:100%}.vitrine-grid-ms{grid-template-columns:1fr}.vitrine-full-ms{grid-column:auto}.banner-sec-actions-ms{grid-template-columns:1fr 1fr}.banner-principal-actions-ms{grid-template-columns:1fr}.lista-banners-ms{grid-template-columns:1fr}}
 </style>
+
+<style>
+.destaques-intro-ms{display:flex;justify-content:space-between;align-items:center;gap:18px;padding:20px;border:1px solid var(--line);border-radius:20px;background:var(--panel2);margin-bottom:18px}.destaques-config-ms{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:end}.destaques-config-ms label{display:grid;gap:7px;font-weight:850}.destaques-config-ms input[type=text]{min-height:46px;border:1px solid var(--line);border-radius:13px;background:var(--panel);color:var(--text);padding:0 13px}.grade-destaques-ms{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.card-destaque-admin-ms{border:1px solid var(--line);border-radius:20px;overflow:hidden;background:var(--panel2)}.card-destaque-admin-ms img{width:100%;aspect-ratio:1/1;object-fit:cover;display:block;background:#111}.card-destaque-info-ms{padding:14px}.card-destaque-info-ms h3{margin:0 0 5px}.card-destaque-info-ms p{margin:0;color:var(--muted)}.card-destaque-actions-ms{display:grid;grid-template-columns:1fr 44px 44px;gap:8px;margin-top:12px}.card-destaque-actions-ms button{min-height:42px;border-radius:11px;border:1px solid var(--line);background:var(--panel);color:var(--text);font-weight:900;cursor:pointer}.card-destaque-actions-ms .ativo{background:#e3b93f;color:#111;border-color:#e3b93f}.destaque-vazio-ms{grid-column:1/-1;padding:34px;border:1px dashed var(--line);border-radius:18px;text-align:center;color:var(--muted)}@media(max-width:900px){.grade-destaques-ms{grid-template-columns:repeat(2,minmax(0,1fr))}.destaques-config-ms{grid-template-columns:1fr}}@media(max-width:580px){.grade-destaques-ms{grid-template-columns:1fr}.destaques-intro-ms{align-items:flex-start;flex-direction:column}}
+</style>
 </head>
 <body>
 <script>
@@ -35,6 +39,7 @@
       <button class="ms-tab ativa" onclick="abrirAbaMS('visao', this)"><span>⌂</span> Dashboard</button>
       <button class="ms-tab" onclick="abrirAbaMS('produtosAba', this)"><span>▦</span> Produtos</button>
       <button class="ms-tab" onclick="abrirAbaMS('vitrineAba', this)"><span>▧</span> Vitrine do site</button>
+      <button class="ms-tab" onclick="abrirAbaMS('destaquesAba', this)"><span>★</span> Destaques da home</button>
       <button class="ms-tab" onclick="abrirAbaMS('estoqueAba', this)"><span>◇</span> Estoque</button>
       <button class="ms-tab" onclick="abrirAbaMS('pedidosAba', this)"><span>◌</span> Pedidos</button>
       <button class="ms-tab" onclick="abrirAbaMS('cuponsAba', this)"><span>%</span> Cupons</button>
@@ -118,6 +123,22 @@
           </section>
         </section>
       </div>
+    </section>
+
+
+    <section id="destaquesAba" class="ms-painel">
+      <div class="page-title-ms"><div><h2>Destaques da página inicial</h2><p>Escolha os produtos que aparecem primeiro na loja.</p></div><button class="btn-dark-ms" onclick="carregarDestaquesHomeMS()">Atualizar</button></div>
+      <section class="destaques-intro-ms">
+        <div><h3 style="margin:0 0 6px">Monte sua vitrine de produtos</h3><p style="margin:0;color:var(--muted)">Clique em <strong>Destacar</strong> e use as setas para definir a ordem.</p></div>
+      </section>
+      <section class="painel-card-ms" style="margin-bottom:18px">
+        <div class="destaques-config-ms">
+          <label>Título da seção no site<input id="tituloDestaquesHomeMS" type="text" maxlength="80" value="DESTAQUES DA MS"></label>
+          <label style="display:flex;align-items:center;gap:8px;min-height:46px"><input id="mostrarDestaquesHomeMS" type="checkbox" checked> Mostrar no site</label>
+          <button class="btn-dark-ms" onclick="salvarConfigDestaquesHomeMS()">Salvar título</button>
+        </div>
+      </section>
+      <div id="gradeDestaquesHomeMS" class="grade-destaques-ms"><div class="destaque-vazio-ms">Carregando produtos...</div></div>
     </section>
 
     <section id="produtosAba" class="ms-painel">

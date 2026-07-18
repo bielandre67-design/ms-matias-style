@@ -7757,6 +7757,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return [...lista].sort((a,b) => {
       const da = Number(Boolean(b.destaque)) - Number(Boolean(a.destaque));
       if (da) return da;
+      if (a.destaque && b.destaque) { const ordem = Number(a.destaqueOrdem || 9999) - Number(b.destaqueOrdem || 9999); if (ordem) return ordem; }
       const pa = Number(Boolean(b.promocao)) - Number(Boolean(a.promocao));
       if (pa) return pa;
       return Number(b.id || 0) - Number(a.id || 0);
@@ -7895,4 +7896,15 @@ document.addEventListener("DOMContentLoaded", () => {
     }catch(e){console.warn('Vitrine do painel indisponível; mantendo banners atuais.',e);}
   }
   document.addEventListener('DOMContentLoaded',carregarVitrinePainelMS);
+})();
+
+
+// SEÇÃO DE DESTAQUES DA HOME CONTROLADA PELO PAINEL -------------------------
+(function(){
+  const API_HOME_MS=(location.hostname==='localhost'||location.hostname==='127.0.0.1')?'http://localhost:3000':'https://ms-matias-style.onrender.com';
+  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  function cssHome(){if(document.getElementById('cssDestaquesHomeMS'))return;const s=document.createElement('style');s.id='cssDestaquesHomeMS';s.textContent='.destaques-home-ms{padding:34px 4%;background:#fff}.destaques-home-topo-ms{display:flex;align-items:end;justify-content:space-between;gap:15px;margin-bottom:18px}.destaques-home-topo-ms h2{margin:0;font-size:clamp(1.45rem,3vw,2.35rem)}.destaques-home-grade-ms{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}.destaque-home-card-ms{cursor:pointer;background:#fff}.destaque-home-card-ms img{width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:16px;display:block;background:#eee}.destaque-home-card-ms h3{font-size:1rem;margin:11px 0 5px}.destaque-home-card-ms strong{font-size:1.05rem}.destaque-home-card-ms p{margin:4px 0 0;color:#666;font-size:.88rem}@media(max-width:850px){.destaques-home-grade-ms{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.destaques-home-ms{padding:26px 14px}}';document.head.appendChild(s);}
+  function card(p){const imgs=[p.imagem,...(Array.isArray(p.imagens)?p.imagens:[])].filter(Boolean);const preco=Number(p.preco||0);return `<article class="destaque-home-card-ms recomendado-card-ms recomendado-banco-ms" data-id-banco="${esc(p.id)}" data-nome="${esc(p.nome)}" data-preco="${preco.toFixed(2)}" data-img="${esc(imgs[0]||'logo.png')}" data-fotos="${esc(imgs.join(','))}" data-cor="${esc((p.cores||[])[0]||'unica')}" data-categoria="${esc(p.categoria||'')}"><img src="${esc(imgs[0]||'logo.png')}" alt="${esc(p.nome)}" loading="lazy" onerror="this.src='logo.png'"><h3>${esc(p.nome)}</h3><strong>${preco.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</strong><p>Ver produto</p></article>`;}
+  async function carregar(){try{cssHome();const [rp,rc]=await Promise.all([fetch(`${API_HOME_MS}/produtos?ativos=true&t=${Date.now()}`,{cache:'no-store'}),fetch(`${API_HOME_MS}/home-config?t=${Date.now()}`,{cache:'no-store'})]);if(!rp.ok)return;const produtos=await rp.json();const cfg=rc.ok?await rc.json():{};const destaques=produtos.filter(p=>p.destaque).sort((a,b)=>Number(a.destaqueOrdem||9999)-Number(b.destaqueOrdem||9999)||Number(a.id)-Number(b.id));document.getElementById('destaquesHomeMS')?.remove();if(cfg.mostrarDestaques===false||!destaques.length)return;const sec=document.createElement('section');sec.id='destaquesHomeMS';sec.className='destaques-home-ms';sec.innerHTML=`<div class="destaques-home-topo-ms"><h2>${esc(cfg.tituloDestaques||'DESTAQUES DA MS')}</h2></div><div class="destaques-home-grade-ms">${destaques.map(card).join('')}</div>`;const cats=document.getElementById('categoriasHome');cats?.insertAdjacentElement('afterend',sec);}catch(e){console.warn('Destaques da home indisponíveis.',e);}}
+  document.addEventListener('DOMContentLoaded',carregar);window.carregarDestaquesLojaMS=carregar;
 })();
