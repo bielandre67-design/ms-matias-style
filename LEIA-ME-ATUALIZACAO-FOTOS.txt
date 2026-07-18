@@ -1,0 +1,20 @@
+ATUALIZAÇÃO DO PAINEL - FOTOS DOS PRODUTOS
+
+O que mudou:
+- Botão para escolher a imagem principal no computador ou celular.
+- Seleção de até 8 imagens adicionais de uma vez.
+- Pré-visualização antes de salvar.
+- Botão X para remover imagens.
+- Compressão automática para reduzir o peso das fotos.
+- As fotos são salvas junto ao produto no PostgreSQL existente, sem depender da pasta temporária do Render.
+
+Arquivos do pacote:
+- admin.html
+- admin.js (alterado)
+- server.js
+- package.json
+
+Depois de substituir os arquivos, execute:
+git add .
+git commit -m "Adiciona upload de fotos no painel"
+git push origin main

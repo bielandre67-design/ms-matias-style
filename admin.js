@@ -832,7 +832,7 @@ Equipe MS Matias Style 🤍`;
       .ms-prod-head h2{margin:0;font-size:28px}.ms-prod-btn{border:0;border-radius:14px;padding:12px 18px;font-weight:900;cursor:pointer;background:#d8ad43;color:#111}
       .ms-prod-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}.ms-prod-card{background:#14171d;border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:16px;display:grid;grid-template-columns:76px 1fr;gap:14px}
       .ms-prod-card img{width:76px;height:96px;object-fit:cover;border-radius:12px;background:#222}.ms-prod-card h3{margin:0 0 7px}.ms-prod-meta{font-size:13px;color:#aaa}.ms-prod-acoes{grid-column:1/-1;display:flex;gap:8px}.ms-prod-acoes button{flex:1;border:1px solid rgba(255,255,255,.13);background:#20242d;color:white;border-radius:12px;padding:10px;cursor:pointer}
-      .ms-prod-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;background:#14171d;border:1px solid rgba(255,255,255,.1);padding:18px;border-radius:20px;margin-bottom:18px}.ms-prod-form label{display:grid;gap:6px;font-size:13px;font-weight:800}.ms-prod-form input,.ms-prod-form textarea{background:#0f1116;color:white;border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:11px}.ms-prod-form textarea{min-height:85px;resize:vertical}.ms-prod-full{grid-column:1/-1}.ms-medidas-box{grid-column:1/-1;padding:14px;border:1px solid rgba(216,173,67,.28);border-radius:16px;background:rgba(216,173,67,.055)}.ms-medidas-title{font-weight:950;margin-bottom:4px}.ms-medidas-ajuda{font-size:12px;color:#aaa;margin-bottom:12px}.ms-medidas-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.ms-medidas-grid label{min-width:0}.ms-medidas-grid input{width:100%;box-sizing:border-box}.ms-medidas-status{margin-top:7px;font-size:12px;font-weight:850}.ms-medidas-ok{color:#66db7b}.ms-medidas-pendente{color:#ffd36a}.ms-checks{display:flex;gap:16px;align-items:center;flex-wrap:wrap}.ms-checks label{display:flex;grid-auto-flow:column;align-items:center}.ms-form-actions{display:flex;gap:10px}.ms-msg{padding:11px 13px;border-radius:12px;background:#20242d;margin-bottom:14px;display:none}@media(max-width:700px){.ms-prod-form{grid-template-columns:1fr}.ms-prod-full,.ms-medidas-box{grid-column:auto}.ms-medidas-grid{grid-template-columns:1fr 1fr}}@media(max-width:430px){.ms-medidas-grid{grid-template-columns:1fr}}
+      .ms-prod-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;background:#14171d;border:1px solid rgba(255,255,255,.1);padding:18px;border-radius:20px;margin-bottom:18px}.ms-prod-form label{display:grid;gap:6px;font-size:13px;font-weight:800}.ms-prod-form input,.ms-prod-form textarea{background:#0f1116;color:white;border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:11px}.ms-prod-form textarea{min-height:85px;resize:vertical}.ms-prod-full{grid-column:1/-1}.ms-upload-box{grid-column:1/-1;border:1px dashed rgba(216,173,67,.45);background:rgba(216,173,67,.045);border-radius:16px;padding:14px}.ms-upload-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.ms-upload-title{font-weight:950}.ms-upload-help{font-size:12px;color:#aaa;margin-top:4px}.ms-file-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:12px;padding:11px 15px;background:#d8ad43;color:#111;font-weight:950;cursor:pointer}.ms-file-btn input{display:none}.ms-preview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(105px,1fr));gap:10px;margin-top:12px}.ms-preview-item{position:relative;border:1px solid rgba(255,255,255,.12);border-radius:14px;overflow:hidden;background:#0f1116;min-height:125px}.ms-preview-item img{width:100%;height:125px;object-fit:cover;display:block}.ms-preview-item button{position:absolute;right:6px;top:6px;width:30px;height:30px;border:0;border-radius:50%;background:rgba(0,0,0,.78);color:white;font-size:18px;cursor:pointer}.ms-preview-vazio{margin-top:10px;color:#888;font-size:12px}.ms-medidas-box{grid-column:1/-1;padding:14px;border:1px solid rgba(216,173,67,.28);border-radius:16px;background:rgba(216,173,67,.055)}.ms-medidas-title{font-weight:950;margin-bottom:4px}.ms-medidas-ajuda{font-size:12px;color:#aaa;margin-bottom:12px}.ms-medidas-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.ms-medidas-grid label{min-width:0}.ms-medidas-grid input{width:100%;box-sizing:border-box}.ms-medidas-status{margin-top:7px;font-size:12px;font-weight:850}.ms-medidas-ok{color:#66db7b}.ms-medidas-pendente{color:#ffd36a}.ms-checks{display:flex;gap:16px;align-items:center;flex-wrap:wrap}.ms-checks label{display:flex;grid-auto-flow:column;align-items:center}.ms-form-actions{display:flex;gap:10px}.ms-msg{padding:11px 13px;border-radius:12px;background:#20242d;margin-bottom:14px;display:none}@media(max-width:700px){.ms-prod-form{grid-template-columns:1fr}.ms-prod-full,.ms-medidas-box{grid-column:auto}.ms-medidas-grid{grid-template-columns:1fr 1fr}}@media(max-width:430px){.ms-medidas-grid{grid-template-columns:1fr}}
       </style>
       <div class="ms-prod-head"><div><h2>Produtos</h2><div class="ms-prod-meta">Cadastre e edite sem mexer no HTML.</div></div><button class="ms-prod-btn" onclick="novoProdutoMS()">+ Novo produto</button></div>
       <div id="msgProdutoMS" class="ms-msg"></div>
@@ -840,8 +840,16 @@ Equipe MS Matias Style 🤍`;
         <input type="hidden" id="produtoIdMS">
         <label>Nome<input id="produtoNomeMS" required></label><label>Categoria<input id="produtoCategoriaMS" value="Roupas"></label>
         <label>Preço<input id="produtoPrecoMS" type="number" step="0.01" min="0" required></label><label>Preço antigo<input id="produtoPrecoAntigoMS" type="number" step="0.01" min="0"></label>
-        <label class="ms-prod-full">Imagem principal<input id="produtoImagemMS" placeholder="ex.: moletom-preto.jpeg ou URL"></label>
-        <label class="ms-prod-full">Outras imagens, separadas por vírgula<input id="produtoImagensMS"></label>
+        <input id="produtoImagemMS" type="hidden">
+        <input id="produtoImagensMS" type="hidden">
+        <div class="ms-upload-box">
+          <div class="ms-upload-top"><div><div class="ms-upload-title">📷 Imagem principal</div><div class="ms-upload-help">Escolha uma foto do computador ou celular. Ela será a capa do produto.</div></div><label class="ms-file-btn">Escolher foto<input id="produtoImagemArquivoMS" type="file" accept="image/jpeg,image/png,image/webp"></label></div>
+          <div id="previewImagemPrincipalMS" class="ms-preview-grid"></div>
+        </div>
+        <div class="ms-upload-box">
+          <div class="ms-upload-top"><div><div class="ms-upload-title">🖼️ Outras imagens</div><div class="ms-upload-help">Você pode selecionar até 8 fotos de uma vez.</div></div><label class="ms-file-btn">Escolher várias<input id="produtoImagensArquivosMS" type="file" accept="image/jpeg,image/png,image/webp" multiple></label></div>
+          <div id="previewOutrasImagensMS" class="ms-preview-grid"></div>
+        </div>
         <label class="ms-prod-full">Descrição<textarea id="produtoDescricaoMS"></textarea></label>
         <label>Cores, separadas por vírgula<input id="produtoCoresMS" placeholder="Preto, Bege, Rosa"></label><label>Tamanhos, separados por vírgula<input id="produtoTamanhosMS" value="P, M, G, GG"></label>
         <div class="ms-medidas-box">
@@ -862,6 +870,79 @@ Equipe MS Matias Style 🤍`;
       <div id="listaProdutosMS" class="ms-prod-grid"></div>`;
     main.appendChild(sec);
     document.getElementById('formProdutoMS').addEventListener('submit', salvarProdutoMS);
+    ativarUploadImagensMS();
+  }
+
+
+  let imagemPrincipalSelecionadaMS = '';
+  let outrasImagensSelecionadasMS = [];
+
+  function comprimirImagemMS(arquivo, maxDimensao=1400, qualidade=0.82){
+    return new Promise((resolve,reject)=>{
+      if(!arquivo || !arquivo.type?.startsWith('image/')) return reject(new Error('Selecione apenas arquivos de imagem.'));
+      if(arquivo.size > 12 * 1024 * 1024) return reject(new Error(`A imagem ${arquivo.name} ultrapassa 12 MB.`));
+      const leitor=new FileReader();
+      leitor.onerror=()=>reject(new Error(`Não consegui ler ${arquivo.name}.`));
+      leitor.onload=()=>{
+        const img=new Image();
+        img.onerror=()=>reject(new Error(`A imagem ${arquivo.name} parece estar inválida.`));
+        img.onload=()=>{
+          let largura=img.naturalWidth, altura=img.naturalHeight;
+          const escala=Math.min(1,maxDimensao/Math.max(largura,altura));
+          largura=Math.max(1,Math.round(largura*escala)); altura=Math.max(1,Math.round(altura*escala));
+          const canvas=document.createElement('canvas'); canvas.width=largura; canvas.height=altura;
+          const ctx=canvas.getContext('2d'); ctx.drawImage(img,0,0,largura,altura);
+          let data=canvas.toDataURL('image/webp',qualidade);
+          if(!data.startsWith('data:image/webp')) data=canvas.toDataURL('image/jpeg',qualidade);
+          resolve(data);
+        };
+        img.src=leitor.result;
+      };
+      leitor.readAsDataURL(arquivo);
+    });
+  }
+
+  function renderPreviewsImagensMS(){
+    const principal=document.getElementById('previewImagemPrincipalMS');
+    const outras=document.getElementById('previewOutrasImagensMS');
+    if(principal) principal.innerHTML=imagemPrincipalSelecionadaMS
+      ? `<div class="ms-preview-item"><img src="${imagemPrincipalSelecionadaMS}" alt="Prévia da imagem principal"><button type="button" onclick="removerImagemPrincipalMS()" title="Remover">×</button></div>`
+      : '<div class="ms-preview-vazio">Nenhuma imagem principal selecionada.</div>';
+    if(outras) outras.innerHTML=outrasImagensSelecionadasMS.length
+      ? outrasImagensSelecionadasMS.map((src,i)=>`<div class="ms-preview-item"><img src="${src}" alt="Prévia adicional ${i+1}"><button type="button" onclick="removerOutraImagemMS(${i})" title="Remover">×</button></div>`).join('')
+      : '<div class="ms-preview-vazio">Nenhuma imagem adicional selecionada.</div>';
+    const principalHidden=document.getElementById('produtoImagemMS');
+    const outrasHidden=document.getElementById('produtoImagensMS');
+    if(principalHidden) principalHidden.value=imagemPrincipalSelecionadaMS;
+    if(outrasHidden) outrasHidden.value=JSON.stringify(outrasImagensSelecionadasMS);
+  }
+
+  window.removerImagemPrincipalMS=function(){ imagemPrincipalSelecionadaMS=''; renderPreviewsImagensMS(); };
+  window.removerOutraImagemMS=function(indice){ outrasImagensSelecionadasMS.splice(indice,1); renderPreviewsImagensMS(); };
+
+  function ativarUploadImagensMS(){
+    const principal=document.getElementById('produtoImagemArquivoMS');
+    const outras=document.getElementById('produtoImagensArquivosMS');
+    principal?.addEventListener('change',async e=>{
+      const arquivo=e.target.files?.[0]; if(!arquivo)return;
+      try{ msg('Preparando imagem...'); imagemPrincipalSelecionadaMS=await comprimirImagemMS(arquivo); renderPreviewsImagensMS(); msg('Imagem principal pronta.'); }
+      catch(erro){ msg(erro.message,true); }
+      e.target.value='';
+    });
+    outras?.addEventListener('change',async e=>{
+      const arquivos=[...(e.target.files||[])]; if(!arquivos.length)return;
+      const vagas=Math.max(0,8-outrasImagensSelecionadasMS.length);
+      if(!vagas){msg('O limite é de 8 imagens adicionais.',true);e.target.value='';return;}
+      try{
+        msg('Preparando imagens...');
+        const novas=[];
+        for(const arquivo of arquivos.slice(0,vagas)) novas.push(await comprimirImagemMS(arquivo));
+        outrasImagensSelecionadasMS.push(...novas); renderPreviewsImagensMS();
+        msg(`${novas.length} imagem(ns) adicionada(s).`);
+      }catch(erro){msg(erro.message,true)}
+      e.target.value='';
+    });
+    renderPreviewsImagensMS();
   }
 
   function esconderOutrasAbas(){
@@ -869,7 +950,7 @@ Equipe MS Matias Style 🤍`;
   }
   window.abrirProdutosMS=async function(){ criarInterface(); esconderOutrasAbas(); document.getElementById('abaProdutosMS').style.display='block'; await carregarProdutosMS(); };
   window.novoProdutoMS=function(){
-    document.getElementById('formProdutoMS').reset(); document.getElementById('produtoIdMS').value=''; document.getElementById('produtoCategoriaMS').value='Roupas'; document.getElementById('produtoPesoKgMS').value=''; document.getElementById('produtoAlturaCmMS').value=''; document.getElementById('produtoLarguraCmMS').value=''; document.getElementById('produtoComprimentoCmMS').value=''; atualizarStatusMedidasMS(); document.getElementById('produtoAtivoMS').checked=true; document.getElementById('formProdutoMS').style.display='grid'; scrollTo({top:0,behavior:'smooth'});
+    document.getElementById('formProdutoMS').reset(); imagemPrincipalSelecionadaMS=''; outrasImagensSelecionadasMS=[]; renderPreviewsImagensMS(); document.getElementById('produtoIdMS').value=''; document.getElementById('produtoCategoriaMS').value='Roupas'; document.getElementById('produtoPesoKgMS').value=''; document.getElementById('produtoAlturaCmMS').value=''; document.getElementById('produtoLarguraCmMS').value=''; document.getElementById('produtoComprimentoCmMS').value=''; atualizarStatusMedidasMS(); document.getElementById('produtoAtivoMS').checked=true; document.getElementById('formProdutoMS').style.display='grid'; scrollTo({top:0,behavior:'smooth'});
   };
   window.cancelarProdutoMS=function(){ document.getElementById('formProdutoMS').style.display='none'; };
   function msg(t,erro=false){const e=document.getElementById('msgProdutoMS');e.textContent=t;e.style.display='block';e.style.background=erro?'#4a1820':'#1d3b2a';setTimeout(()=>e.style.display='none',3500)}
@@ -892,11 +973,11 @@ Equipe MS Matias Style 🤍`;
   }
   window.editarProdutoMS=function(id){
     const p=produtos.find(x=>x.id===id); if(!p)return; novoProdutoMS();
-    produtoIdMS.value=p.id; produtoNomeMS.value=p.nome||''; produtoCategoriaMS.value=p.categoria||''; produtoPrecoMS.value=p.preco||0; produtoPrecoAntigoMS.value=p.precoAntigo??''; produtoImagemMS.value=p.imagem||''; produtoImagensMS.value=(p.imagens||[]).join(', '); produtoDescricaoMS.value=p.descricao||''; produtoCoresMS.value=(p.cores||[]).join(', '); produtoTamanhosMS.value=(p.tamanhos||['P','M','G','GG']).join(', '); produtoPesoKgMS.value=p.pesoKg||''; produtoAlturaCmMS.value=p.alturaCm||''; produtoLarguraCmMS.value=p.larguraCm||''; produtoComprimentoCmMS.value=p.comprimentoCm||''; atualizarStatusMedidasMS(); produtoQuantidadeMS.value=0; produtoAtivoMS.checked=!!p.ativo; produtoDestaqueMS.checked=!!p.destaque; produtoPromocaoMS.checked=!!p.promocao;
+    produtoIdMS.value=p.id; produtoNomeMS.value=p.nome||''; produtoCategoriaMS.value=p.categoria||''; produtoPrecoMS.value=p.preco||0; produtoPrecoAntigoMS.value=p.precoAntigo??''; imagemPrincipalSelecionadaMS=p.imagem||''; outrasImagensSelecionadasMS=Array.isArray(p.imagens)?[...p.imagens]:[]; renderPreviewsImagensMS(); produtoDescricaoMS.value=p.descricao||''; produtoCoresMS.value=(p.cores||[]).join(', '); produtoTamanhosMS.value=(p.tamanhos||['P','M','G','GG']).join(', '); produtoPesoKgMS.value=p.pesoKg||''; produtoAlturaCmMS.value=p.alturaCm||''; produtoLarguraCmMS.value=p.larguraCm||''; produtoComprimentoCmMS.value=p.comprimentoCm||''; atualizarStatusMedidasMS(); produtoQuantidadeMS.value=0; produtoAtivoMS.checked=!!p.ativo; produtoDestaqueMS.checked=!!p.destaque; produtoPromocaoMS.checked=!!p.promocao;
   };
   async function salvarProdutoMS(ev){
     ev.preventDefault(); const id=produtoIdMS.value;
-    const body={nome:produtoNomeMS.value.trim(),categoria:produtoCategoriaMS.value.trim()||'Roupas',preco:num(produtoPrecoMS.value),precoAntigo:produtoPrecoAntigoMS.value===''?null:num(produtoPrecoAntigoMS.value),imagem:produtoImagemMS.value.trim(),imagens:produtoImagensMS.value.split(',').map(x=>x.trim()).filter(Boolean),descricao:produtoDescricaoMS.value.trim(),cores:produtoCoresMS.value.split(',').map(x=>x.trim()).filter(Boolean),tamanhos:produtoTamanhosMS.value.split(',').map(x=>x.trim().toUpperCase()).filter(Boolean),ativo:produtoAtivoMS.checked,destaque:produtoDestaqueMS.checked,promocao:produtoPromocaoMS.checked,pesoKg:num(produtoPesoKgMS.value),alturaCm:num(produtoAlturaCmMS.value),larguraCm:num(produtoLarguraCmMS.value),comprimentoCm:num(produtoComprimentoCmMS.value)};
+    const body={nome:produtoNomeMS.value.trim(),categoria:produtoCategoriaMS.value.trim()||'Roupas',preco:num(produtoPrecoMS.value),precoAntigo:produtoPrecoAntigoMS.value===''?null:num(produtoPrecoAntigoMS.value),imagem:imagemPrincipalSelecionadaMS,imagens:outrasImagensSelecionadasMS,descricao:produtoDescricaoMS.value.trim(),cores:produtoCoresMS.value.split(',').map(x=>x.trim()).filter(Boolean),tamanhos:produtoTamanhosMS.value.split(',').map(x=>x.trim().toUpperCase()).filter(Boolean),ativo:produtoAtivoMS.checked,destaque:produtoDestaqueMS.checked,promocao:produtoPromocaoMS.checked,pesoKg:num(produtoPesoKgMS.value),alturaCm:num(produtoAlturaCmMS.value),larguraCm:num(produtoLarguraCmMS.value),comprimentoCm:num(produtoComprimentoCmMS.value)};
     if([body.pesoKg,body.alturaCm,body.larguraCm,body.comprimentoCm].some(v=>v<0)){msg('Peso e dimensões não podem ser negativos.',true);return;}
     try{const r=await fetch(id?`${API}/produtos/${id}`:`${API}/produtos`,{method:id?'PUT':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const d=await r.json();if(!r.ok)throw new Error(d.mensagem||'Erro ao salvar'); const qtd=Math.max(0,num(produtoQuantidadeMS.value)); if(qtd>0){const cores=body.cores.length?body.cores:['Única'];const tamanhos=body.tamanhos.length?body.tamanhos:['ÚNICO'];for(const cor of cores){for(const tamanho of tamanhos){await fetch(`${API}/estoque`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome:body.nome,cor,tamanho,quantidade:qtd})});}}}cancelarProdutoMS();msg(qtd>0?'Produto e estoque salvos.':'Produto salvo.');await carregarProdutosMS();}catch(e){msg(e.message,true)}
   }
