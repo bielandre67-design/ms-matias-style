@@ -6178,6 +6178,30 @@ document.addEventListener("DOMContentLoaded", () => {
     </div>`;
   }
 
+  function rotuloMenuCategoriaMS(info){
+    return String(info?.titulo || 'Categoria')
+      .replace(/\s+MS$/i, '')
+      .trim();
+  }
+
+  function atualizarMenuCategoriasMS(gruposOrdenados){
+    const submenu = document.getElementById('submenuCategoriasMS');
+    if (!submenu || !Array.isArray(gruposOrdenados) || !gruposOrdenados.length) return;
+
+    submenu.innerHTML = gruposOrdenados.map(({ info }) => `
+      <a href="#${esc(info.id)}" data-categoria-ms="${esc(info.id)}">
+        ${esc(rotuloMenuCategoriaMS(info))}
+      </a>`).join('');
+
+    submenu.querySelectorAll('a[data-categoria-ms]').forEach(link => {
+      link.addEventListener('click', () => {
+        if (typeof window.fecharProdutoDetalhe === 'function') {
+          window.fecharProdutoDetalhe();
+        }
+      });
+    });
+  }
+
   function montarCatalogo(produtos){
     const grupos = new Map();
 
@@ -6197,6 +6221,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const ordemB = posicaoB === -1 ? ORDEM_CATEGORIAS_MS.length : posicaoB;
       return ordemA - ordemB;
     });
+
+    atualizarMenuCategoriasMS(gruposOrdenados);
 
     gruposOrdenados.forEach(({info, produtos: itens}) => {
       const secao = document.createElement('section');
