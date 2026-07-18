@@ -147,6 +147,27 @@ async function iniciarPostgresMS() {
   await pool.query(`ALTER TABLE produtos ADD COLUMN IF NOT EXISTS comprimento_cm NUMERIC(10,2) NOT NULL DEFAULT 0`);
 
   await pool.query(`
+    CREATE TABLE IF NOT EXISTS categorias (
+      id BIGSERIAL PRIMARY KEY,
+      nome VARCHAR(80) UNIQUE NOT NULL,
+      criado_em TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+
+  await pool.query(`
+    INSERT INTO categorias (nome)
+    SELECT DISTINCT TRIM(categoria)
+    FROM produtos
+    WHERE categoria IS NOT NULL AND TRIM(categoria) <> ''
+    ON CONFLICT (nome) DO NOTHING
+  `);
+
+  await pool.query(`
+    INSERT INTO categorias (nome) VALUES ('Roupas')
+    ON CONFLICT (nome) DO NOTHING
+  `);
+
+  await pool.query(`
     CREATE TABLE IF NOT EXISTS cupons (
       id BIGSERIAL PRIMARY KEY,
       codigo VARCHAR(40) UNIQUE NOT NULL,
@@ -1978,6 +1999,77 @@ function produtoRespostaMS(row) {
     criadoEm: row.criado_em, atualizadoEm: row.atualizado_em
   };
 }
+
+app.get("/categorias", async (req, res, next) => {
+  if (!pool) return res.json([{ id: 1, nome: "Roupas" }]);
+  try {
+    await pool.query(`
+      INSERT INTO categorias (nome)
+      SELECT DISTINCT TRIM(categoria)
+      FROM produtos
+      WHERE categoria IS NOT NULL AND TRIM(categoria) <> ''
+      ON CONFLICT (nome) DO NOTHING
+    `);
+    const resultado = await pool.query("SELECT id, nome FROM categorias ORDER BY LOWER(nome), id");
+    res.json(resultado.rows.map((row) => ({ id: Number(row.id), nome: row.nome })));
+  } catch (erro) { next(erro); }
+});
+
+app.post("/categorias", async (req, res, next) => {
+  if (!pool) return res.status(503).json({ erro: true, mensagem: "PostgreSQL não configurado." });
+  try {
+    const nome = String(req.body?.nome || "").trim().replace(/\s+/g, " ").slice(0, 80);
+    if (!nome) return res.status(400).json({ erro: true, mensagem: "Informe o nome da categoria." });
+    const resultado = await pool.query(
+      `INSERT INTO categorias (nome) VALUES ($1)
+       ON CONFLICT (nome) DO UPDATE SET nome = EXCLUDED.nome
+       RETURNING id, nome`,
+      [nome]
+    );
+    res.json({ ok: true, categoria: { id: Number(resultado.rows[0].id), nome: resultado.rows[0].nome } });
+  } catch (erro) { next(erro); }
+});
+
+app.put("/categorias/:id", async (req, res, next) => {
+  if (!pool) return res.status(503).json({ erro: true, mensagem: "PostgreSQL não configurado." });
+  const cliente = await pool.connect();
+  try {
+    const nome = String(req.body?.nome || "").trim().replace(/\s+/g, " ").slice(0, 80);
+    if (!nome) return res.status(400).json({ erro: true, mensagem: "Informe o nome da categoria." });
+    await cliente.query("BEGIN");
+    const atual = await cliente.query("SELECT nome FROM categorias WHERE id = $1", [req.params.id]);
+    if (!atual.rowCount) {
+      await cliente.query("ROLLBACK");
+      return res.status(404).json({ erro: true, mensagem: "Categoria não encontrada." });
+    }
+    const antigoNome = atual.rows[0].nome;
+    const atualizado = await cliente.query(
+      "UPDATE categorias SET nome = $2 WHERE id = $1 RETURNING id, nome",
+      [req.params.id, nome]
+    );
+    await cliente.query("UPDATE produtos SET categoria = $2, atualizado_em = NOW() WHERE categoria = $1", [antigoNome, nome]);
+    await cliente.query("COMMIT");
+    res.json({ ok: true, categoria: { id: Number(atualizado.rows[0].id), nome: atualizado.rows[0].nome } });
+  } catch (erro) {
+    try { await cliente.query("ROLLBACK"); } catch (_) {}
+    if (erro.code === "23505") return res.status(409).json({ erro: true, mensagem: "Já existe uma categoria com esse nome." });
+    next(erro);
+  } finally { cliente.release(); }
+});
+
+app.delete("/categorias/:id", async (req, res, next) => {
+  if (!pool) return res.status(503).json({ erro: true, mensagem: "PostgreSQL não configurado." });
+  try {
+    const categoria = await pool.query("SELECT nome FROM categorias WHERE id = $1", [req.params.id]);
+    if (!categoria.rowCount) return res.status(404).json({ erro: true, mensagem: "Categoria não encontrada." });
+    const uso = await pool.query("SELECT COUNT(*)::int AS total FROM produtos WHERE categoria = $1", [categoria.rows[0].nome]);
+    if (Number(uso.rows[0].total) > 0) {
+      return res.status(409).json({ erro: true, mensagem: "Essa categoria está sendo usada por produtos. Renomeie-a ou mova os produtos antes de excluir." });
+    }
+    await pool.query("DELETE FROM categorias WHERE id = $1", [req.params.id]);
+    res.json({ ok: true });
+  } catch (erro) { next(erro); }
+});
 
 app.get("/produtos", async (req, res, next) => {
   if (!pool) return res.json([]);
