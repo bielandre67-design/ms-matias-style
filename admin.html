@@ -9,9 +9,9 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-.vitrine-form-ms{margin-bottom:18px}.vitrine-grid-ms{display:grid;grid-template-columns:2fr 1fr;gap:14px}.vitrine-grid-ms label{display:grid;gap:7px;font-weight:850}.vitrine-grid-ms input{min-height:46px;border-radius:13px;border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:0 13px}.vitrine-full-ms{grid-column:1/-1}.vitrine-check-ms{display:flex!important;grid-auto-flow:column;justify-content:start;align-items:center}.vitrine-check-ms input{min-height:auto;width:18px;height:18px}.vitrine-upload-ms{border:1px dashed rgba(216,173,67,.55);padding:18px;border-radius:16px;cursor:pointer;background:rgba(216,173,67,.06)}.vitrine-upload-ms input{display:none}.vitrine-preview-ms{min-height:120px;border-radius:18px;border:1px solid var(--line);background:var(--panel2);display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;color:var(--muted)}.vitrine-preview-ms img{width:100%;max-height:340px;object-fit:cover;display:block}.vitrine-preview-ms button{position:absolute;top:10px;right:10px;border:0;border-radius:10px;padding:9px 12px;background:#fff1f2;color:#e11d48;font-weight:900}.vitrine-acoes-ms{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:15px}.lista-banners-ms{display:grid;gap:14px}.banner-card-admin-ms{display:grid;grid-template-columns:190px minmax(0,1fr) auto;gap:16px;align-items:center;border:1px solid var(--line);background:var(--panel2);border-radius:20px;padding:12px}.banner-card-admin-ms.desativado{opacity:.55}.banner-card-admin-ms>img{width:190px;height:105px;object-fit:cover;border-radius:14px;background:#111}.banner-info-admin-ms{display:grid;gap:8px;min-width:0}.banner-info-admin-ms strong,.banner-info-admin-ms span{display:block}.banner-info-admin-ms span,.banner-info-admin-ms small{color:var(--muted);overflow:hidden;text-overflow:ellipsis}.banner-actions-admin-ms{display:grid;grid-template-columns:42px 42px repeat(3,auto);gap:7px}.banner-actions-admin-ms button{min-height:40px;border:1px solid var(--line);border-radius:11px;background:var(--panel);color:var(--text);font-weight:850;padding:0 10px}.banner-actions-admin-ms .danger{background:#fff1f2;color:#e11d48;border-color:#fecdd3}.banner-actions-admin-ms button:disabled{opacity:.35}.banner-vazio-ms{padding:24px;border:1px dashed var(--line);border-radius:18px;color:var(--muted)}
-@media(max-width:980px){.banner-card-admin-ms{grid-template-columns:150px 1fr}.banner-card-admin-ms>img{width:150px}.banner-actions-admin-ms{grid-column:1/-1;grid-template-columns:repeat(5,1fr)}}
-@media(max-width:680px){.vitrine-grid-ms{grid-template-columns:1fr}.vitrine-full-ms{grid-column:auto}.banner-card-admin-ms{grid-template-columns:1fr}.banner-card-admin-ms>img{width:100%;height:170px}.banner-actions-admin-ms{grid-column:auto;grid-template-columns:1fr 1fr}.banner-actions-admin-ms .danger{grid-column:1/-1}}
+.vitrine-intro-ms{display:flex;justify-content:space-between;gap:18px;align-items:center;padding:22px;border:1px solid var(--line);border-radius:22px;background:linear-gradient(135deg,rgba(216,173,67,.12),transparent)}.vitrine-intro-ms h3{margin:0 0 6px}.vitrine-intro-ms p{margin:0;color:var(--muted)}.btn-add-banner-ms{min-height:48px;border:0;border-radius:14px;padding:0 20px;background:#e3b93f;color:#111;font-weight:950;cursor:pointer}.lista-banners-ms{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:18px}.banner-card-admin-ms{overflow:hidden;border:1px solid var(--line);background:var(--panel2);border-radius:22px;box-shadow:0 12px 34px rgba(0,0,0,.12)}.banner-card-admin-ms.desativado{opacity:.58}.banner-img-wrap-ms{position:relative;aspect-ratio:16/7;background:#111;overflow:hidden}.banner-img-wrap-ms img{width:100%;height:100%;object-fit:cover;display:block}.banner-numero-ms{position:absolute;top:12px;left:12px;border-radius:999px;padding:7px 11px;background:rgba(0,0,0,.7);color:#fff;font-weight:900}.banner-status-ms{position:absolute;top:12px;right:12px;border-radius:999px;padding:7px 11px;background:#dcfce7;color:#166534;font-weight:900}.desativado .banner-status-ms{background:#fee2e2;color:#991b1b}.banner-card-body-ms{padding:16px}.banner-card-body-ms h3{margin:0 0 5px}.banner-card-body-ms p{margin:0;color:var(--muted);font-size:.92rem}.banner-principal-actions-ms{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:15px}.banner-principal-actions-ms button,.banner-sec-actions-ms button{min-height:43px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--text);font-weight:900;cursor:pointer}.banner-principal-actions-ms .trocar-ms{background:#e3b93f;color:#111;border-color:#e3b93f}.banner-sec-actions-ms{display:grid;grid-template-columns:45px 45px 1fr 1fr;gap:8px;margin-top:9px}.banner-sec-actions-ms .danger{color:#ef476f}.banner-sec-actions-ms button:disabled{opacity:.35}.vitrine-avancado-ms{margin-top:18px;border:1px solid var(--line);border-radius:18px;background:var(--panel2);overflow:hidden}.vitrine-avancado-ms summary{padding:16px 18px;font-weight:900;cursor:pointer}.vitrine-form-ms{padding:0 18px 18px}.vitrine-grid-ms{display:grid;grid-template-columns:2fr 1fr;gap:14px}.vitrine-grid-ms label{display:grid;gap:7px;font-weight:850}.vitrine-grid-ms input{min-height:46px;border-radius:13px;border:1px solid var(--line);background:var(--panel);color:var(--text);padding:0 13px}.vitrine-full-ms{grid-column:1/-1}.vitrine-check-ms{display:flex!important;grid-auto-flow:column;justify-content:start;align-items:center}.vitrine-check-ms input{min-height:auto;width:18px;height:18px}.vitrine-preview-ms{min-height:110px;border-radius:16px;border:1px dashed var(--line);display:flex;align-items:center;justify-content:center;overflow:hidden;color:var(--muted)}.vitrine-preview-ms img{width:100%;max-height:260px;object-fit:cover}.vitrine-preview-ms button{display:none}.vitrine-acoes-ms{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:15px}.banner-vazio-ms{grid-column:1/-1;padding:38px;border:1px dashed var(--line);border-radius:18px;text-align:center;color:var(--muted)}
+@media(max-width:980px){.lista-banners-ms{grid-template-columns:1fr}}
+@media(max-width:680px){.vitrine-intro-ms{align-items:flex-start;flex-direction:column}.btn-add-banner-ms{width:100%}.vitrine-grid-ms{grid-template-columns:1fr}.vitrine-full-ms{grid-column:auto}.banner-sec-actions-ms{grid-template-columns:1fr 1fr}.banner-principal-actions-ms{grid-template-columns:1fr}.lista-banners-ms{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -93,30 +93,30 @@
         <button class="btn-dark-ms" onclick="carregarBannersMS()">Atualizar banners</button>
       </div>
 
-      <section class="painel-card-ms vitrine-form-ms">
-        <input type="hidden" id="bannerIdMS">
-        <div class="vitrine-grid-ms">
-          <label>Título interno<input id="bannerTituloMS" placeholder="Ex.: Promoção de inverno"></label>
-          <label>Ordem<input id="bannerOrdemMS" type="number" min="0" value="0"></label>
-          <label class="vitrine-full-ms">Link ao clicar (opcional)<input id="bannerLinkMS" placeholder="#moletons ou https://..."></label>
-          <label>Texto do botão (opcional)<input id="bannerTextoBotaoMS" placeholder="Comprar agora"></label>
-          <label class="vitrine-check-ms"><input id="bannerAtivoMS" type="checkbox" checked> Mostrar no site</label>
-          <label class="vitrine-upload-ms vitrine-full-ms">📷 Escolher foto do banner
-            <input id="bannerArquivoMS" type="file" accept="image/jpeg,image/png,image/webp">
-          </label>
-          <input type="hidden" id="bannerImagemMS">
-          <div id="bannerPreviewMS" class="vitrine-preview-ms vitrine-full-ms"><span>Nenhuma imagem selecionada.</span></div>
-        </div>
-        <div class="vitrine-acoes-ms">
-          <button class="btn-dark-ms" onclick="salvarBannerMS()">Salvar banner</button>
-          <button class="btn-dark-ms" onclick="limparBannerFormMS()">Novo</button>
-          <span id="bannerMsgMS"></span>
-        </div>
+      <section class="vitrine-intro-ms">
+        <div><h3>Fotos que aparecem no início da loja</h3><p>Cada cartão abaixo é uma foto do slider. Clique em <strong>Trocar foto</strong> para mudar apenas aquela imagem.</p></div>
+        <button class="btn-add-banner-ms" onclick="adicionarBannerVisualMS()">＋ Adicionar nova foto</button>
       </section>
 
-      <section class="painel-card-ms">
-        <div id="listaBannersMS" class="lista-banners-ms"><p>Carregando banners...</p></div>
-      </section>
+      <div id="listaBannersMS" class="lista-banners-ms"><p>Carregando banners...</p></div>
+      <input id="bannerTrocaRapidaMS" type="file" accept="image/jpeg,image/png,image/webp" hidden>
+
+      <details class="vitrine-avancado-ms" id="configAvancadaBannerMS">
+        <summary>⚙️ Configurações avançadas do banner</summary>
+        <section class="vitrine-form-ms">
+          <input type="hidden" id="bannerIdMS"><input type="hidden" id="bannerImagemMS">
+          <input id="bannerArquivoMS" type="file" accept="image/jpeg,image/png,image/webp" hidden>
+          <div class="vitrine-grid-ms">
+            <label>Nome para organização<input id="bannerTituloMS" placeholder="Ex.: Promoção de inverno"></label>
+            <label>Posição<input id="bannerOrdemMS" type="number" min="0" value="0"></label>
+            <label class="vitrine-full-ms">Link ao clicar (opcional)<input id="bannerLinkMS" placeholder="#moletons ou https://..."></label>
+            <label>Texto do botão (opcional)<input id="bannerTextoBotaoMS" placeholder="Comprar agora"></label>
+            <label class="vitrine-check-ms"><input id="bannerAtivoMS" type="checkbox" checked> Mostrar no site</label>
+            <div id="bannerPreviewMS" class="vitrine-preview-ms vitrine-full-ms"><span>Selecione um banner acima para editar.</span></div>
+          </div>
+          <div class="vitrine-acoes-ms"><button class="btn-dark-ms" onclick="salvarBannerMS()">Salvar alterações</button><button class="btn-dark-ms" onclick="limparBannerFormMS()">Cancelar</button><span id="bannerMsgMS"></span></div>
+        </section>
+      </details>
     </section>
 
     <section id="produtosAba" class="ms-painel">
@@ -584,59 +584,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // VITRINE DO SITE ------------------------------------------------------------
 let bannersAdminMS = [];
+let bannerTrocaIdMS = null;
 function escBannerMS(v){ return String(v ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function msgBannerMS(texto, erro=false){ const el=document.getElementById('bannerMsgMS'); if(el){el.textContent=texto||'';el.style.color=erro?'#ff7d8f':'#75df8e';} }
-function previewBannerMS(url){
-  const box=document.getElementById('bannerPreviewMS'); if(!box)return;
-  box.innerHTML=url?`<img src="${escBannerMS(url)}" alt="Prévia do banner"><button type="button" onclick="removerImagemBannerMS()">Remover</button>`:'<span>Nenhuma imagem selecionada.</span>';
-}
-function removerImagemBannerMS(){ document.getElementById('bannerImagemMS').value=''; document.getElementById('bannerArquivoMS').value=''; previewBannerMS(''); }
-async function carregarBannersMS(){
-  const box=document.getElementById('listaBannersMS'); if(box)box.innerHTML='<p>Carregando banners...</p>';
-  try{ const r=await fetch(`${API_ADMIN_MS}/banners?todos=1&t=${Date.now()}`); if(!r.ok)throw new Error('Falha ao carregar'); bannersAdminMS=await r.json(); renderBannersMS(); }
-  catch(e){ if(box)box.innerHTML='<p>Não consegui carregar os banners.</p>'; }
-}
-function renderBannersMS(){
-  const box=document.getElementById('listaBannersMS'); if(!box)return;
-  if(!bannersAdminMS.length){box.innerHTML='<div class="banner-vazio-ms">Nenhum banner cadastrado. Escolha uma foto acima para criar o primeiro.</div>';return;}
-  box.innerHTML=bannersAdminMS.map((b,i)=>`<article class="banner-card-admin-ms ${b.ativo?'':'desativado'}">
-    <img src="${escBannerMS(b.imagem)}" alt="${escBannerMS(b.titulo)}">
-    <div class="banner-info-admin-ms"><div><strong>${escBannerMS(b.titulo||'Banner MS')}</strong><span>Ordem ${Number(b.ordem||0)} · ${b.ativo?'Visível':'Oculto'}</span></div>
-    <small>${escBannerMS(b.link||'Sem link')}</small></div>
-    <div class="banner-actions-admin-ms">
-      <button onclick="moverBannerMS(${b.id},-1)" ${i===0?'disabled':''}>↑</button>
-      <button onclick="moverBannerMS(${b.id},1)" ${i===bannersAdminMS.length-1?'disabled':''}>↓</button>
-      <button onclick="editarBannerMS(${b.id})">Editar</button>
-      <button onclick="alternarBannerMS(${b.id})">${b.ativo?'Ocultar':'Mostrar'}</button>
-      <button class="danger" onclick="excluirBannerMS(${b.id})">Excluir</button>
-    </div></article>`).join('');
-}
-function limparBannerFormMS(){
-  ['bannerIdMS','bannerImagemMS','bannerLinkMS','bannerTextoBotaoMS'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('bannerTituloMS').value='';document.getElementById('bannerOrdemMS').value=bannersAdminMS.length;
-  document.getElementById('bannerAtivoMS').checked=true;document.getElementById('bannerArquivoMS').value='';previewBannerMS('');msgBannerMS('');
-}
-function editarBannerMS(id){ const b=bannersAdminMS.find(x=>Number(x.id)===Number(id));if(!b)return;
-  document.getElementById('bannerIdMS').value=b.id;document.getElementById('bannerTituloMS').value=b.titulo||'';document.getElementById('bannerOrdemMS').value=b.ordem||0;
-  document.getElementById('bannerLinkMS').value=b.link||'';document.getElementById('bannerTextoBotaoMS').value=b.textoBotao||'';document.getElementById('bannerAtivoMS').checked=!!b.ativo;
-  document.getElementById('bannerImagemMS').value=b.imagem||'';previewBannerMS(b.imagem||'');document.getElementById('vitrineAba').scrollIntoView({behavior:'smooth'});
-}
-async function uploadBannerMS(){ const arq=document.getElementById('bannerArquivoMS').files[0]; if(!arq)return document.getElementById('bannerImagemMS').value;
-  const fd=new FormData();fd.append('imagens',arq);const r=await fetch(`${API_ADMIN_MS}/upload-imagens`,{method:'POST',body:fd});const d=await r.json();if(!r.ok)throw new Error(d.mensagem||'Erro no upload');return d.urls?.[0]||''; }
-async function salvarBannerMS(){
-  msgBannerMS('Salvando...');
-  try{ const imagem=await uploadBannerMS();if(!imagem)throw new Error('Escolha uma foto para o banner.');
-    const id=document.getElementById('bannerIdMS').value;const corpo={titulo:document.getElementById('bannerTituloMS').value||'Banner MS',ordem:Number(document.getElementById('bannerOrdemMS').value||0),link:document.getElementById('bannerLinkMS').value,textoBotao:document.getElementById('bannerTextoBotaoMS').value,ativo:document.getElementById('bannerAtivoMS').checked,imagem};
-    const r=await fetch(`${API_ADMIN_MS}/banners${id?'/'+id:''}`,{method:id?'PUT':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(corpo)});const d=await r.json();if(!r.ok)throw new Error(d.mensagem||'Erro ao salvar');
-    msgBannerMS('Banner salvo e publicado no site.');await carregarBannersMS();limparBannerFormMS();
-  }catch(e){msgBannerMS(e.message||'Não consegui salvar.',true);}finally{}
-}
-async function atualizarBannerRapidoMS(b){ const r=await fetch(`${API_ADMIN_MS}/banners/${b.id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});if(!r.ok){const d=await r.json().catch(()=>({}));throw new Error(d.mensagem||'Erro ao atualizar');} }
+function previewBannerMS(url){const box=document.getElementById('bannerPreviewMS');if(box)box.innerHTML=url?`<img src="${escBannerMS(url)}" alt="Prévia">`:'<span>Selecione um banner acima para editar.</span>';}
+async function carregarBannersMS(){const box=document.getElementById('listaBannersMS');if(box)box.innerHTML='<p>Carregando fotos da vitrine...</p>';try{const r=await fetch(`${API_ADMIN_MS}/banners?todos=1&t=${Date.now()}`);if(!r.ok)throw new Error();bannersAdminMS=await r.json();renderBannersMS();}catch(e){if(box)box.innerHTML='<div class="banner-vazio-ms">Não consegui carregar as fotos. Clique em Atualizar banners.</div>';}}
+function renderBannersMS(){const box=document.getElementById('listaBannersMS');if(!box)return;if(!bannersAdminMS.length){box.innerHTML='<div class="banner-vazio-ms"><strong>Nenhuma foto cadastrada.</strong><br>Clique em “Adicionar nova foto” para criar o primeiro slide.</div>';return;}box.innerHTML=bannersAdminMS.map((b,i)=>`<article class="banner-card-admin-ms ${b.ativo?'':'desativado'}"><div class="banner-img-wrap-ms"><img src="${escBannerMS(b.imagem)}" alt="Banner ${i+1}"><span class="banner-numero-ms">Foto ${i+1}</span><span class="banner-status-ms">${b.ativo?'Aparece no site':'Oculta'}</span></div><div class="banner-card-body-ms"><h3>${escBannerMS(b.titulo||`Banner ${i+1}`)}</h3><p>${b.ativo?'Esta foto aparece no slider inicial da loja.':'Esta foto está guardada, mas não aparece para os clientes.'}</p><div class="banner-principal-actions-ms"><button class="trocar-ms" onclick="trocarFotoBannerMS(${b.id})">📷 Trocar foto</button><button onclick="alternarBannerMS(${b.id})">${b.ativo?'🙈 Ocultar do site':'👁 Mostrar no site'}</button></div><div class="banner-sec-actions-ms"><button title="Mover para esquerda" onclick="moverBannerMS(${b.id},-1)" ${i===0?'disabled':''}>←</button><button title="Mover para direita" onclick="moverBannerMS(${b.id},1)" ${i===bannersAdminMS.length-1?'disabled':''}>→</button><button onclick="editarBannerMS(${b.id})">⚙️ Avançado</button><button class="danger" onclick="excluirBannerMS(${b.id})">Excluir</button></div></div></article>`).join('');}
+function adicionarBannerVisualMS(){bannerTrocaIdMS='novo';document.getElementById('bannerTrocaRapidaMS').click();}
+function trocarFotoBannerMS(id){bannerTrocaIdMS=id;document.getElementById('bannerTrocaRapidaMS').click();}
+async function uploadArquivoBannerMS(arq){const fd=new FormData();fd.append('imagens',arq);const r=await fetch(`${API_ADMIN_MS}/upload-imagens`,{method:'POST',body:fd});const d=await r.json();if(!r.ok)throw new Error(d.mensagem||'Erro ao enviar imagem');return d.urls?.[0]||'';}
+async function processarTrocaRapidaMS(arq){if(!arq)return;const box=document.getElementById('listaBannersMS');try{if(box)box.style.opacity='.55';const imagem=await uploadArquivoBannerMS(arq);if(!imagem)throw new Error('Imagem não enviada.');if(bannerTrocaIdMS==='novo'){const corpo={titulo:`Banner ${bannersAdminMS.length+1}`,ordem:bannersAdminMS.length,link:'',textoBotao:'',ativo:true,imagem};const r=await fetch(`${API_ADMIN_MS}/banners`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(corpo)});if(!r.ok)throw new Error('Não consegui criar o banner.');}else{const atual=bannersAdminMS.find(x=>Number(x.id)===Number(bannerTrocaIdMS));if(!atual)throw new Error('Banner não encontrado.');await atualizarBannerRapidoMS({...atual,imagem});}await carregarBannersMS();alert('Foto atualizada no site com sucesso.');}catch(e){alert(e.message||'Não consegui trocar a foto.');}finally{if(box)box.style.opacity='1';const inp=document.getElementById('bannerTrocaRapidaMS');if(inp)inp.value='';bannerTrocaIdMS=null;}}
+function limparBannerFormMS(){['bannerIdMS','bannerImagemMS','bannerLinkMS','bannerTextoBotaoMS','bannerTituloMS'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});document.getElementById('bannerOrdemMS').value=bannersAdminMS.length;document.getElementById('bannerAtivoMS').checked=true;previewBannerMS('');msgBannerMS('');document.getElementById('configAvancadaBannerMS').open=false;}
+function editarBannerMS(id){const b=bannersAdminMS.find(x=>Number(x.id)===Number(id));if(!b)return;bannerIdMS.value=b.id;bannerTituloMS.value=b.titulo||'';bannerOrdemMS.value=b.ordem||0;bannerLinkMS.value=b.link||'';bannerTextoBotaoMS.value=b.textoBotao||'';bannerAtivoMS.checked=!!b.ativo;bannerImagemMS.value=b.imagem||'';previewBannerMS(b.imagem||'');const det=document.getElementById('configAvancadaBannerMS');det.open=true;det.scrollIntoView({behavior:'smooth',block:'start'});}
+async function salvarBannerMS(){msgBannerMS('Salvando...');try{const id=bannerIdMS.value;if(!id)throw new Error('Escolha um banner acima para editar.');const corpo={titulo:bannerTituloMS.value||'Banner MS',ordem:Number(bannerOrdemMS.value||0),link:bannerLinkMS.value,textoBotao:bannerTextoBotaoMS.value,ativo:bannerAtivoMS.checked,imagem:bannerImagemMS.value};const r=await fetch(`${API_ADMIN_MS}/banners/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(corpo)});const d=await r.json();if(!r.ok)throw new Error(d.mensagem||'Erro ao salvar');msgBannerMS('Alterações salvas no site.');await carregarBannersMS();setTimeout(limparBannerFormMS,900);}catch(e){msgBannerMS(e.message||'Não consegui salvar.',true);}}
+async function atualizarBannerRapidoMS(b){const r=await fetch(`${API_ADMIN_MS}/banners/${b.id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});if(!r.ok){const d=await r.json().catch(()=>({}));throw new Error(d.mensagem||'Erro ao atualizar');}}
 async function alternarBannerMS(id){const b=bannersAdminMS.find(x=>Number(x.id)===Number(id));if(!b)return;try{await atualizarBannerRapidoMS({...b,ativo:!b.ativo});await carregarBannersMS();}catch(e){alert(e.message);}}
 async function moverBannerMS(id,direcao){const i=bannersAdminMS.findIndex(x=>Number(x.id)===Number(id));const j=i+direcao;if(i<0||j<0||j>=bannersAdminMS.length)return;const a={...bannersAdminMS[i],ordem:j};const b={...bannersAdminMS[j],ordem:i};try{await Promise.all([atualizarBannerRapidoMS(a),atualizarBannerRapidoMS(b)]);await carregarBannersMS();}catch(e){alert(e.message);}}
-async function excluirBannerMS(id){if(!confirm('Excluir este banner da vitrine?'))return;const r=await fetch(`${API_ADMIN_MS}/banners/${id}`,{method:'DELETE'});if(!r.ok)return alert('Não consegui excluir.');await carregarBannersMS();}
-document.addEventListener('change',e=>{if(e.target?.id==='bannerArquivoMS'){const f=e.target.files?.[0];if(f)previewBannerMS(URL.createObjectURL(f));}});
-
+async function excluirBannerMS(id){if(!confirm('Excluir esta foto do slider?'))return;const r=await fetch(`${API_ADMIN_MS}/banners/${id}`,{method:'DELETE'});if(!r.ok)return alert('Não consegui excluir.');await carregarBannersMS();}
+document.addEventListener('change',e=>{if(e.target?.id==='bannerTrocaRapidaMS')processarTrocaRapidaMS(e.target.files?.[0]);});
 </script>
 </body>
 </html>
