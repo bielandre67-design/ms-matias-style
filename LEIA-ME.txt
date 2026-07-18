@@ -1,9 +1,13 @@
-CORREÇÃO PC PIX DENTRO DA LOJA
+CORREÇÃO DO CHECKOUT PC
 
-Substitua na pasta do site:
+Substitua estes arquivos no projeto:
 - index.html
 - script.js
+- server.js
 
-A correção impede os listeners antigos de capturarem o clique do PIX no computador.
-O botão PIX chama diretamente /criar-pagamento-pix e abre o QR Code dentro da loja.
-O botão cartão continua abrindo o Checkout Mercado Pago.
+O erro era que o index.html não carregava o script.js. Por isso os botões PIX e Cartão apareciam, mas não executavam nenhuma função.
+
+Depois execute:
+git add .
+git commit -m "Carrega script do checkout no PC"
+git push
