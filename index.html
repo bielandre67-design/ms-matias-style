@@ -141,16 +141,20 @@
   </a>
 
   <div class="menu-dropdown-ms" id="dropdownProdutosMS">
-    <button type="button" class="menu-dropdown-toggle-ms" aria-expanded="false">PRODUTOS <span>⌄</span></button>
+    <button type="button" class="menu-dropdown-toggle-ms" aria-expanded="false">
+      PRODUTOS <span>⌄</span>
+    </button>
     <div class="menu-dropdown-painel-ms menu-produtos-painel-ms">
-      <a href="#catalogoBancoMS" data-menu-scroll-ms="catalogoBancoMS">Todos os produtos</a>
-      <a href="#moletons" data-menu-scroll-ms="moletons">Moletons</a>
-      <a href="#conjuntos" data-menu-scroll-ms="conjuntos">Conjuntos</a>
+      <a href="#catalogoBancoMS" onclick="fecharProdutoDetalhe();">Todos os produtos</a>
+      <a href="#catalogoBancoMS" data-filtro-produto-ms="destaque">Lançamentos e destaques</a>
+      <a href="#catalogoBancoMS" data-filtro-produto-ms="promocao">Promoções</a>
     </div>
   </div>
 
-  <div class="menu-dropdown-ms" id="dropdownCategoriasMS">
-    <button type="button" class="menu-dropdown-toggle-ms" aria-expanded="false">CATEGORIAS <span>⌄</span></button>
+  <div class="menu-dropdown-ms menu-categorias-ms" id="dropdownCategoriasMS">
+    <button type="button" class="menu-dropdown-toggle-ms" aria-expanded="false">
+      CATEGORIAS <span>⌄</span>
+    </button>
     <div class="menu-dropdown-painel-ms menu-categorias-painel-ms" id="menuCategoriasDinamicasMS">
       <div class="menu-dropdown-carregando-ms">Carregando categorias...</div>
     </div>
