@@ -6143,9 +6143,11 @@ document.addEventListener("DOMContentLoaded", () => {
       data-cores="${esc(cores.join(','))}"
       data-tamanhos="${esc(tamanhos.join(','))}">
 
-      ${produto.promocao
-        ? '<span class="selo-produto">PROMOÇÃO</span>'
-        : produto.destaque ? '<span class="selo-produto">DESTAQUE</span>' : ''}
+      ${(produto.promocao || produto.destaque) ? `
+        <div class="selos-produto-ms" aria-label="Informações do produto">
+          ${produto.promocao ? '<span class="selo-produto selo-promocao-ms">PROMOÇÃO</span>' : ''}
+          ${produto.destaque ? '<span class="selo-produto selo-destaque-ms">DESTAQUE</span>' : ''}
+        </div>` : ''}
 
       <button class="btn-favorito" onclick="favoritarProduto(this,event)" aria-label="Favoritar produto">♡</button>
 
