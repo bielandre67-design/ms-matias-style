@@ -139,6 +139,32 @@ async function iniciarPostgresMS() {
   await pool.query(`ALTER TABLE produtos ADD COLUMN IF NOT EXISTS comprimento_cm NUMERIC(10,2) NOT NULL DEFAULT 0`);
 
   await pool.query(`
+    CREATE TABLE IF NOT EXISTS categorias (
+      id BIGSERIAL PRIMARY KEY,
+      nome VARCHAR(80) UNIQUE NOT NULL,
+      ativo BOOLEAN NOT NULL DEFAULT TRUE,
+      ordem INTEGER NOT NULL DEFAULT 0,
+      criado_em TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      atualizado_em TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+
+  await pool.query(`
+    INSERT INTO categorias (nome, ordem) VALUES
+      ('Roupas', 10), ('Camisetas', 20), ('Moletom', 30), ('Jaqueta', 40),
+      ('Calça', 50), ('Conjunto', 60), ('Camiseta Oversized', 70),
+      ('Camiseta Básica', 80), ('Acessórios', 90)
+    ON CONFLICT (nome) DO NOTHING
+  `);
+
+  await pool.query(`
+    INSERT INTO categorias (nome)
+    SELECT DISTINCT TRIM(categoria) FROM produtos
+    WHERE categoria IS NOT NULL AND TRIM(categoria) <> ''
+    ON CONFLICT (nome) DO NOTHING
+  `);
+
+  await pool.query(`
     CREATE TABLE IF NOT EXISTS cupons (
       id BIGSERIAL PRIMARY KEY,
       codigo VARCHAR(40) UNIQUE NOT NULL,
@@ -1969,6 +1995,27 @@ function produtoRespostaMS(row) {
     criadoEm: row.criado_em, atualizadoEm: row.atualizado_em
   };
 }
+
+function categoriaRespostaMS(row) {
+  return { id:Number(row.id), nome:String(row.nome||""), ativo:Boolean(row.ativo), ordem:Number(row.ordem||0) };
+}
+
+app.get("/categorias", async (req,res,next)=>{
+  if(!pool) return res.json([]);
+  try{const r=await pool.query("SELECT * FROM categorias WHERE ativo=TRUE ORDER BY ordem ASC,nome ASC");res.json(r.rows.map(categoriaRespostaMS));}catch(e){next(e);}
+});
+app.post("/categorias", async (req,res,next)=>{
+  if(!pool) return res.status(503).json({erro:true,mensagem:"PostgreSQL não configurado."});
+  try{const nome=String(req.body?.nome||"").trim().replace(/\s+/g," ").slice(0,80);if(!nome)return res.status(400).json({erro:true,mensagem:"Informe o nome da categoria."});const ordem=Number(req.body?.ordem)||0;const r=await pool.query(`INSERT INTO categorias(nome,ordem,ativo) VALUES($1,$2,TRUE) ON CONFLICT(nome) DO UPDATE SET ativo=TRUE,atualizado_em=NOW() RETURNING *`,[nome,ordem]);res.json({ok:true,categoria:categoriaRespostaMS(r.rows[0])});}catch(e){next(e);}
+});
+app.put("/categorias/:id", async (req,res,next)=>{
+  if(!pool) return res.status(503).json({erro:true,mensagem:"PostgreSQL não configurado."});
+  try{const atual=await pool.query("SELECT * FROM categorias WHERE id=$1",[req.params.id]);if(!atual.rowCount)return res.status(404).json({erro:true,mensagem:"Categoria não encontrada."});const antigo=atual.rows[0].nome;const nome=String(req.body?.nome||antigo).trim().replace(/\s+/g," ").slice(0,80);await pool.query("BEGIN");try{const r=await pool.query("UPDATE categorias SET nome=$2,atualizado_em=NOW() WHERE id=$1 RETURNING *",[req.params.id,nome]);if(nome!==antigo)await pool.query("UPDATE produtos SET categoria=$2,atualizado_em=NOW() WHERE categoria=$1",[antigo,nome]);await pool.query("COMMIT");res.json({ok:true,categoria:categoriaRespostaMS(r.rows[0])});}catch(e){await pool.query("ROLLBACK");throw e;}}catch(e){next(e);}
+});
+app.delete("/categorias/:id", async (req,res,next)=>{
+  if(!pool) return res.status(503).json({erro:true,mensagem:"PostgreSQL não configurado."});
+  try{const atual=await pool.query("SELECT * FROM categorias WHERE id=$1",[req.params.id]);if(!atual.rowCount)return res.status(404).json({erro:true,mensagem:"Categoria não encontrada."});const nome=atual.rows[0].nome;const usados=await pool.query("SELECT COUNT(*)::int total FROM produtos WHERE categoria=$1",[nome]);if(Number(usados.rows[0].total)>0)return res.status(409).json({erro:true,mensagem:`Existem ${usados.rows[0].total} produto(s) nessa categoria. Renomeie ou mova os produtos antes de excluir.`});await pool.query("DELETE FROM categorias WHERE id=$1",[req.params.id]);res.json({ok:true});}catch(e){next(e);}
+});
 
 app.get("/produtos", async (req, res, next) => {
   if (!pool) return res.json([]);
