@@ -15003,3 +15003,97 @@ body.aviso-ms-aberto{overflow:hidden!important;}
     border-radius:16px !important;
   }
 }
+
+/* =========================================================
+   MS - CORRECAO SEGURA DO DROPDOWN DE CATEGORIAS
+   Mantem as categorias dinamicas sem ocupar espaco no topo.
+   ========================================================= */
+@media (min-width: 769px) {
+  html body header.header .menu-categorias-ms {
+    position: relative !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    flex: 0 0 auto !important;
+    margin: 0 !important;
+  }
+
+  html body header.header .menu-categorias-gatilho {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    margin: 0 !important;
+    white-space: nowrap !important;
+  }
+
+  html body header.header .submenu-categorias-ms {
+    position: absolute !important;
+    top: calc(100% + 14px) !important;
+    left: 50% !important;
+    transform: translate(-50%, 8px) !important;
+    z-index: 99999 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 4px !important;
+    width: max-content !important;
+    min-width: 220px !important;
+    max-width: min(320px, calc(100vw - 32px)) !important;
+    padding: 10px !important;
+    margin: 0 !important;
+    border: 1px solid rgba(212, 175, 55, .34) !important;
+    border-radius: 14px !important;
+    background: rgba(8, 8, 8, .98) !important;
+    box-shadow: 0 18px 45px rgba(0, 0, 0, .55) !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    transition: opacity .18s ease, transform .18s ease, visibility .18s ease !important;
+  }
+
+  html body header.header .menu-categorias-ms:hover .submenu-categorias-ms,
+  html body header.header .menu-categorias-ms:focus-within .submenu-categorias-ms {
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    transform: translate(-50%, 0) !important;
+  }
+
+  html body header.header .submenu-categorias-ms > a {
+    display: flex !important;
+    align-items: center !important;
+    width: 100% !important;
+    min-height: 40px !important;
+    padding: 9px 12px !important;
+    margin: 0 !important;
+    border-radius: 9px !important;
+    color: #fff !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    letter-spacing: .35px !important;
+    line-height: 1.2 !important;
+    white-space: nowrap !important;
+    text-decoration: none !important;
+  }
+
+  html body header.header .submenu-categorias-ms > a:hover,
+  html body header.header .submenu-categorias-ms > a:focus-visible {
+    color: #d8b33f !important;
+    background: rgba(212, 175, 55, .10) !important;
+  }
+
+  /* Ponte invisivel para o mouse nao fechar o menu ao descer. */
+  html body header.header .submenu-categorias-ms::before {
+    content: "" !important;
+    position: absolute !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: -15px !important;
+    height: 15px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  html body header.header .submenu-categorias-ms {
+    display: none !important;
+  }
+}
