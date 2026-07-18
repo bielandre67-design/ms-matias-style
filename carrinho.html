@@ -31,7 +31,7 @@
     .ms-delivery-choice:hover{border-color:#967616}.ms-delivery-choice:has(input:checked){border-color:var(--gold);background:linear-gradient(135deg,#1a1608,#101010);box-shadow:0 0 0 1px var(--gold),0 8px 24px rgba(225,185,47,.12)}
     .ms-delivery-choice input{width:20px;height:20px;margin:0;accent-color:var(--gold);flex:0 0 auto}.ms-delivery-choice strong{display:block;font-size:14px;line-height:1.25}.ms-delivery-choice small{display:block;margin-top:4px;color:var(--muted);font-size:12px;line-height:1.3}.ms-delivery-badge{position:absolute;right:10px;top:10px;border-radius:999px;background:var(--gold);color:#050505;font-size:10px;font-weight:900;padding:4px 7px}
     .ms-shipping-fields[hidden]{display:none!important}.ms-pickup-note{display:none;border:1px solid var(--gold);border-radius:16px;padding:15px;background:linear-gradient(135deg,#1a1608,#101010);color:#fff;line-height:1.45}.ms-pickup-note.active{display:block}.ms-pickup-note strong{color:var(--gold)}
-    .ms-review{display:grid;gap:10px}.ms-review-item{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid #282828}.ms-note{color:var(--muted);line-height:1.5}.ms-loading{display:none;text-align:center;color:var(--muted);padding:12px}.ms-loading.active{display:block}.ms-coupon{margin-top:18px;border:1px solid var(--line);border-radius:22px;padding:18px;background:var(--card)}.ms-coupon h2{margin:0 0 12px;font-size:18px}.ms-coupon-line{display:grid;grid-template-columns:1fr auto;gap:10px}.ms-coupon input{min-width:0;border:1px solid #4b3b0b;background:#111;color:#fff;border-radius:14px;padding:15px;outline:0;text-transform:uppercase}.ms-coupon button{border:0;border-radius:14px;padding:0 18px;background:var(--gold);color:#050505;font-weight:900}.ms-coupon-msg{min-height:20px;margin:10px 0 0;color:var(--muted);font-size:14px}.ms-coupon-msg.ok{color:#22c55e}.ms-coupon-msg.error{color:#ff6b7d}.ms-row.discount{color:#22c55e}.ms-row.discount strong{color:#22c55e}.ms-payment-wrap{margin-top:14px;background:#fff;border-radius:16px;padding:12px;overflow:hidden}.ms-payment-status{display:none;margin-top:14px;border-radius:16px;padding:18px;text-align:center;line-height:1.5}.ms-payment-status.active{display:block}.ms-payment-status.success{background:#082b19;border:1px solid #22c55e;color:#eafff2}.ms-payment-status.pending{background:#2d2508;border:1px solid var(--gold);color:#fff8d6}.ms-payment-status.error{background:#310b13;border:1px solid #ff6b7d;color:#ffe9ed}.ms-payment-status h3{margin:0 0 8px;font-size:22px}.ms-payment-status img{display:block;width:min(240px,100%);margin:16px auto;background:#fff;border-radius:12px;padding:8px}.ms-copy-pix{width:100%;min-height:48px;border:1px solid #777;border-radius:12px;padding:10px;background:#fff;color:#111;resize:none}.ms-payment-actions{display:grid;gap:10px;margin-top:12px}
+    .ms-review{display:grid;gap:10px}.ms-review-item{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid #282828}.ms-note{color:var(--muted);line-height:1.5}.ms-loading{display:none;text-align:center;color:var(--muted);padding:12px}.ms-loading.active{display:block}.ms-coupon{margin-top:18px;border:1px solid var(--line);border-radius:22px;padding:18px;background:var(--card)}.ms-coupon h2{margin:0 0 12px;font-size:18px}.ms-coupon-line{display:grid;grid-template-columns:1fr auto;gap:10px}.ms-coupon input{min-width:0;border:1px solid #4b3b0b;background:#111;color:#fff;border-radius:14px;padding:15px;outline:0;text-transform:uppercase}.ms-coupon button{border:0;border-radius:14px;padding:0 18px;background:var(--gold);color:#050505;font-weight:900}.ms-coupon-msg{min-height:20px;margin:10px 0 0;color:var(--muted);font-size:14px}.ms-coupon-msg.ok{color:#22c55e}.ms-coupon-msg.error{color:#ff6b7d}.ms-row.discount{color:#22c55e}.ms-row.discount strong{color:#22c55e}
     @media(max-width:390px){.ms-cart{padding-left:12px;padding-right:12px}.ms-item{grid-template-columns:78px 1fr}.ms-item img{width:78px;height:102px}.ms-head h1{font-size:24px}.ms-step{font-size:12px}.ms-delivery-mode{grid-template-columns:1fr}.ms-ship{padding:14px}.ms-ship-name{font-size:14px}.ms-ship-price{font-size:15px}}
   </style>
 </head>
@@ -95,10 +95,9 @@
       <div class="ms-coupon-line"><input id="couponCode" placeholder="Digite seu cupom" autocomplete="off"><button type="button" id="applyCoupon">Aplicar</button></div>
       <p id="couponMessage" class="ms-coupon-msg"></p>
     </div>
-    <div class="ms-summary"><h2 class="ms-title">Pagamento seguro</h2><p class="ms-note">Escolha Pix, cartão de crédito, cartão de débito ou outra opção disponível. O pagamento acontece aqui, sem sair da loja.</p><button class="ms-btn" id="payButton">Escolher forma de pagamento</button><div id="paymentLoading" class="ms-loading">Carregando formas de pagamento...</div><div id="paymentBrickWrap" class="ms-payment-wrap" hidden><div id="paymentBrick_container"></div></div><div id="paymentStatus" class="ms-payment-status"></div><button class="ms-btn back" data-back="2">Voltar à entrega</button></div>
+    <div class="ms-summary"><h2 class="ms-title">Pagamento seguro</h2><p class="ms-note">Você será direcionado ao Mercado Pago para escolher a forma de pagamento e concluir o pedido.</p><button class="ms-btn" id="payButton">Finalizar compra</button><div id="paymentLoading" class="ms-loading">Abrindo o pagamento...</div><button class="ms-btn back" data-back="2">Voltar à entrega</button></div>
   </section>
 </main>
-<script src="https://sdk.mercadopago.com/js/v2"></script>
 <script>
 (() => {
   'use strict';
@@ -109,9 +108,6 @@
   let shipping = readJSON('freteSelecionadoMS', null);
   let shippingValue = moneyNumber(localStorage.getItem('valorFreteMS') || localStorage.getItem('valorFrete') || shipping?.preco || 0);
   let coupon = null;
-  let mp = null;
-  let paymentBrickController = null;
-  let paymentPollTimer = null;
 
   function readJSON(key, fallback){ try{return JSON.parse(localStorage.getItem(key)) ?? fallback}catch{return fallback} }
   function readCart(){ for(const key of CART_KEYS){ const value=readJSON(key,null); if(Array.isArray(value)&&value.length) return value } return [] }
@@ -208,117 +204,44 @@
     finally{$('applyCoupon').disabled=false}
   }
 
-  function orderPayload(){
-    return {
-      items:cart,
-      valorFrete:shippingValue,
-      freteSelecionado:shipping,
-      codigoCupom:coupon?.codigo||'',
-      cliente:{
-        nome:$('customerName').value.trim(),
-        telefone:$('customerPhone').value.trim(),
-        whatsapp:$('customerPhone').value.trim(),
-        email:$('customerEmail').value.trim(),
-        cep:$('zip').value.trim(),
-        rua:$('street').value.trim(),
-        endereco:$('street').value.trim(),
-        numero:$('number').value.trim(),
-        bairro:$('district').value.trim(),
-        complemento:$('complement').value.trim(),
-        cidade:$('city').value.trim(),
-        estado:$('state').value.trim()
-      },
-      tipoEntrega:$('deliveryModePickup').checked?'retirada':'entrega',
-      retiradaLocal:$('deliveryModePickup').checked
-    };
+  function paymentPayload(){
+    const pickup=$('deliveryModePickup').checked;
+    return {items:cart,valorFrete:pickup?0:shippingValue,freteSelecionado:shipping,codigoCupom:coupon?.codigo||'',desconto:Number(coupon?.percentual||0),totalComFrete:finalTotal(),tipoEntrega:pickup?'retirada':'entrega',retiradaLocal:pickup,cliente:{nome:$('customerName').value.trim(),telefone:$('customerPhone').value.trim(),whatsapp:$('customerPhone').value.trim(),email:$('customerEmail').value.trim(),cep:$('zip').value.trim(),rua:$('street').value.trim(),endereco:$('street').value.trim(),numero:$('number').value.trim(),bairro:$('district').value.trim(),complemento:$('complement').value.trim(),cidade:$('city').value.trim(),estado:$('state').value.trim()}};
   }
 
-  function showPaymentStatus(type, html){
-    const box=$('paymentStatus');
-    box.className=`ms-payment-status active ${type}`;
-    box.innerHTML=html;
-    box.scrollIntoView({behavior:'smooth',block:'center'});
+  function ensurePaymentChoice(){
+    let modal=$('msPaymentChoice');
+    if(modal)return modal;
+    modal=document.createElement('div'); modal.id='msPaymentChoice';
+    modal.innerHTML=`<div class="ms-pay-box"><button type="button" class="ms-pay-close">×</button><div class="ms-pay-logo">MS</div><h2>Escolha como pagar</h2><p>O PIX será confirmado aqui mesmo. Cartão abre o ambiente seguro do Mercado Pago.</p><button type="button" class="ms-pay-option" id="msPayPix"><strong>◆ PIX</strong><span>QR Code na loja e confirmação automática</span></button><button type="button" class="ms-pay-option" id="msPayCard"><strong>💳 Cartão e outras opções</strong><span>Crédito, débito e opções disponíveis</span></button></div>`;
+    document.body.appendChild(modal);
+    const st=document.createElement('style'); st.textContent=`#msPaymentChoice,#msPixInside{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:999999;display:flex;align-items:center;justify-content:center;padding:18px}.ms-pay-box,.ms-pix-box{width:min(440px,100%);background:#fff;color:#151515;border-radius:22px;padding:26px;text-align:center;position:relative;max-height:94vh;overflow:auto}.ms-pay-close,.ms-pix-close{position:absolute;right:14px;top:9px;border:0;background:none;font-size:30px;cursor:pointer}.ms-pay-logo{width:58px;height:58px;border-radius:50%;background:#111;color:#fff;display:grid;place-items:center;margin:0 auto 12px;font-weight:800}.ms-pay-option{width:100%;border:1px solid #ddd;background:#fff;border-radius:14px;padding:16px;margin-top:12px;text-align:left;display:flex;flex-direction:column;gap:5px;cursor:pointer}.ms-pay-option span{font-size:13px;color:#666}.ms-pix-qr{width:230px;max-width:80%;margin:12px auto;display:block}.ms-pix-code{width:100%;height:74px;resize:none;border:1px solid #ddd;border-radius:10px;padding:10px}.ms-pix-copy{width:100%;border:0;border-radius:12px;padding:14px;background:#111;color:#fff;font-weight:700;margin-top:10px;cursor:pointer}.ms-pix-status{margin-top:14px;padding:12px;background:#f3f3f3;border-radius:10px;font-weight:700}`; document.head.appendChild(st);
+    modal.querySelector('.ms-pay-close').onclick=()=>modal.remove();
+    $('msPayPix').onclick=()=>{modal.remove();payPixInside()};
+    $('msPayCard').onclick=()=>{modal.remove();payHosted()};
+    return modal;
   }
 
-  async function pollPayment(orderId){
-    clearInterval(paymentPollTimer);
-    paymentPollTimer=setInterval(async()=>{
-      try{
-        const res=await fetch(`${API}/pagamento/status/${encodeURIComponent(orderId)}?t=${Date.now()}`,{cache:'no-store'});
-        const data=await res.json();
-        const status=String(data.pagamento?.status||data.status||'').toLowerCase();
-        if(status==='approved'||String(data.status).toLowerCase()==='pago'){
-          clearInterval(paymentPollTimer);
-          CART_KEYS.forEach(key=>localStorage.removeItem(key));
-          showPaymentStatus('success',`<h3>✅ Pagamento confirmado!</h3><p>Pedido <strong>#${escapeHtml(orderId)}</strong> recebido com sucesso.</p><p>A MS Matias Style já pode preparar seu pedido.</p>`);
-          if(paymentBrickController){try{await paymentBrickController.unmount()}catch(e){}}
-          $('paymentBrickWrap').hidden=true;
-        }else if(['rejected','cancelled'].includes(status)){
-          clearInterval(paymentPollTimer);
-          showPaymentStatus('error','<h3>Pagamento não aprovado</h3><p>Tente novamente com outra forma de pagamento.</p>');
-        }
-      }catch(e){ console.warn('Consulta de pagamento:',e); }
-    },3000);
+  async function payHosted(){
+    $('paymentLoading').classList.add('active'); $('payButton').disabled=true;
+    try{const res=await fetch(`${API}/criar-pagamento`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(paymentPayload())});const data=await res.json();if(!res.ok||!data.init_point)throw new Error(data.mensagem||data.erro||'Link de pagamento não recebido');location.href=data.init_point}catch(e){console.error(e);alert(e.message||'Não foi possível abrir o pagamento agora.')}finally{$('paymentLoading').classList.remove('active');$('payButton').disabled=false}
   }
 
-  async function handlePaymentResponse(data){
-    const status=String(data.status||'').toLowerCase();
-    const orderId=data.pedido||data.external_reference||'';
-    if(status==='approved'){
-      CART_KEYS.forEach(key=>localStorage.removeItem(key));
-      showPaymentStatus('success',`<h3>✅ Pagamento confirmado!</h3><p>Pedido <strong>#${escapeHtml(orderId)}</strong> recebido com sucesso.</p><p>Obrigado por comprar na MS Matias Style.</p>`);
-      $('paymentBrickWrap').hidden=true;
-      return;
-    }
-    const tx=data.point_of_interaction?.transaction_data||data.pix||{};
-    const qr=tx.qr_code_base64||data.qr_code_base64;
-    const code=tx.qr_code||data.qr_code;
-    if(qr||code){
-      showPaymentStatus('pending',`<h3>Pix gerado</h3><p>Escaneie o QR Code ou copie o código abaixo. Esta tela confirmará automaticamente quando o pagamento cair.</p>${qr?`<img src="data:image/png;base64,${qr}" alt="QR Code Pix">`:''}${code?`<textarea id="pixCopyCode" class="ms-copy-pix" readonly>${escapeHtml(code)}</textarea><div class="ms-payment-actions"><button class="ms-btn" type="button" id="copyPixButton">Copiar código Pix</button></div>`:''}<p>Pedido <strong>#${escapeHtml(orderId)}</strong> aguardando pagamento.</p>`);
-      const copy=$('copyPixButton'); if(copy) copy.onclick=async()=>{await navigator.clipboard.writeText(code);copy.textContent='Código copiado ✓'};
-      pollPayment(orderId);
-      return;
-    }
-    showPaymentStatus('pending',`<h3>Pagamento em processamento</h3><p>Pedido <strong>#${escapeHtml(orderId)}</strong>. A confirmação aparecerá automaticamente nesta tela.</p>`);
-    pollPayment(orderId);
+  async function payPixInside(){
+    let modal=document.createElement('div'); modal.id='msPixInside'; modal.innerHTML=`<div class="ms-pix-box"><button type="button" class="ms-pix-close">×</button><div class="ms-pay-logo">MS</div><h2>Gerando seu PIX...</h2><p>Aguarde alguns segundos.</p><div class="ms-pix-status">Conectando ao Mercado Pago...</div></div>`; document.body.appendChild(modal); modal.querySelector('.ms-pix-close').onclick=()=>modal.remove();
+    try{const res=await fetch(`${API}/criar-pagamento-pix`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(paymentPayload())});const data=await res.json();if(!res.ok||!data.qr_code)throw new Error(data.mensagem||'Não foi possível gerar o PIX.');const box=modal.querySelector('.ms-pix-box');box.innerHTML=`<button type="button" class="ms-pix-close">×</button><div class="ms-pay-logo">MS</div><h2>Pague com PIX</h2><p>Pedido <strong>#${data.pedido}</strong></p>${data.qr_code_base64?`<img class="ms-pix-qr" src="data:image/png;base64,${data.qr_code_base64}" alt="QR Code PIX">`:''}<strong>${brl(data.total)}</strong><textarea class="ms-pix-code" readonly>${data.qr_code}</textarea><button type="button" class="ms-pix-copy">Copiar código PIX</button><div class="ms-pix-status" id="msPixStatusCart">Aguardando pagamento...</div><small>Esta tela confirma automaticamente.</small>`;box.querySelector('.ms-pix-close').onclick=()=>modal.remove();box.querySelector('.ms-pix-copy').onclick=async e=>{await navigator.clipboard.writeText(data.qr_code);e.currentTarget.textContent='Código copiado ✓'};watchPix(data.pedido,modal)}catch(e){modal.remove();alert(e.message||'Não foi possível gerar o PIX.')}
   }
 
-  async function pay(){
-    if(!validateDelivery())return;
-    if(paymentBrickController){try{await paymentBrickController.unmount()}catch(e){} paymentBrickController=null;}
-    clearInterval(paymentPollTimer);
-    $('paymentStatus').className='ms-payment-status';
-    $('paymentStatus').innerHTML='';
-    $('paymentLoading').classList.add('active');
-    $('payButton').disabled=true;
-    try{
-      const configRes=await fetch(`${API}/mercado-pago/config`,{cache:'no-store'});
-      const config=await configRes.json();
-      if(!configRes.ok||!config.publicKey) throw new Error(config.mensagem||'Public Key do Mercado Pago não configurada.');
-      if(typeof MercadoPago==='undefined') throw new Error('O formulário seguro do Mercado Pago não carregou.');
-      mp=new MercadoPago(config.publicKey,{locale:'pt-BR'});
-      $('paymentBrickWrap').hidden=false;
-      const bricks=mp.bricks();
-      paymentBrickController=await bricks.create('payment','paymentBrick_container',{
-        initialization:{amount:Number(finalTotal().toFixed(2)),payer:{email:$('customerEmail').value.trim()||undefined}},
-        customization:{visual:{style:{theme:'default'}},paymentMethods:{creditCard:'all',debitCard:'all',bankTransfer:'all',ticket:'all',mercadoPago:'all',maxInstallments:12}},
-        callbacks:{
-          onReady:()=>{$('paymentLoading').classList.remove('active');$('payButton').textContent='Recarregar formas de pagamento';},
-          onSubmit:({selectedPaymentMethod,formData})=>new Promise(async(resolve,reject)=>{
-            try{
-              const res=await fetch(`${API}/processar-pagamento-brick`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({selectedPaymentMethod,formData,pedido:orderPayload()})});
-              const data=await res.json();
-              if(!res.ok) throw new Error(data.mensagem||data.erro||'Pagamento não processado.');
-              await handlePaymentResponse(data);
-              resolve();
-            }catch(e){showPaymentStatus('error',`<h3>Não foi possível concluir</h3><p>${escapeHtml(e.message||'Tente novamente.')}</p>`);reject(e);}
-          }),
-          onError:error=>{console.error('Payment Brick:',error);showPaymentStatus('error','<h3>Erro no formulário de pagamento</h3><p>Recarregue as opções e tente novamente.</p>');}
-        }
-      });
-    }catch(e){console.error(e);showPaymentStatus('error',`<h3>Pagamento indisponível</h3><p>${escapeHtml(e.message||'Tente novamente em instantes.')}</p>`);$('paymentBrickWrap').hidden=true;}
-    finally{$('paymentLoading').classList.remove('active');$('payButton').disabled=false;}
+  function watchPix(orderId,modal){
+    const timer=setInterval(async()=>{if(!document.body.contains(modal)){clearInterval(timer);return}try{const r=await fetch(`${API}/pagamento/status/${encodeURIComponent(orderId)}?t=${Date.now()}`,{cache:'no-store'});if(!r.ok)return;const d=await r.json();const st=String(d.status||d.pagamento?.status||'').toLowerCase();if(st==='pago'||st==='approved'){clearInterval(timer);cart=[];save();modal.querySelector('.ms-pix-box').innerHTML=`<div style="font-size:58px">✅</div><h2>Pagamento confirmado!</h2><p>Pedido <strong>#${orderId}</strong> recebido e enviado para separação.</p><button type="button" class="ms-pix-copy" onclick="location.href='index.html'">Voltar para a loja</button>`}else if(['rejected','recusado','cancelled','cancelado'].includes(st)){clearInterval(timer);$('msPixStatusCart').textContent='Pagamento não aprovado.'}}catch(e){}},3000)
   }
+
+  function handleReturn(){
+    const p=new URLSearchParams(location.search),result=p.get('resultado'),order=p.get('pedido');if(!result)return;
+    const modal=document.createElement('div');modal.id='msPixInside';document.body.appendChild(modal);const approved=result==='aprovado';modal.innerHTML=`<div class="ms-pix-box"><div style="font-size:58px">${approved?'✅':result==='pendente'?'⏳':'❌'}</div><h2>${approved?'Pagamento aprovado!':result==='pendente'?'Pagamento em análise':'Pagamento não aprovado'}</h2><p>${order?`Pedido <strong>#${order}</strong>.`:''}</p><button type="button" class="ms-pix-copy" onclick="location.href='index.html'">Voltar para a loja</button></div>`;if(approved){cart=[];save()}
+  }
+
+  async function pay(){if(!validateDelivery())return;ensurePaymentChoice()}
 
   function escapeHtml(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))} function escapeAttr(v){return escapeHtml(v)}
   window.voltarLoja=()=>{if(history.length>1)history.back();else location.href='index.html'};
@@ -340,6 +263,7 @@
     $('deliveryModeShipping').checked=true;
   }
   renderCart();
+  handleReturn();
 })();
 </script>
 </body>
