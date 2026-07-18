@@ -1,3 +1,9 @@
-Substitua somente o script.js.
-Depois faça git add script.js, commit e push.
-Atualize o site com Ctrl+F5.
+PACOTE CONFERIDO - MS MATIAS STYLE
+
+Arquivos dentro deste pacote:
+- script.js (CORRIGIDO)
+- server.js
+- carrinho.html
+
+Substitua os 3 arquivos antigos pelos arquivos deste pacote.
+O script.js corrigido tem 236838 bytes.

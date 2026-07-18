@@ -4847,7 +4847,11 @@ document.addEventListener('DOMContentLoaded', () => {
     var dentroCheckout = alvo.closest("#carrinho, #carrinhoMobileMS, #checkoutMobile, .checkout-mobile, .carrinho, .carrinho-lateral, .modal-carrinho");
     if(!dentroCheckout && !texto.includes("mercado pago")) return;
 
-    finalizarCompraMPCorrigido(e);
+    // Chama sempre a função pública atual. Assim, a correção final que abre
+    // a escolha PIX ou cartão não é ignorada por este listener antigo.
+    if (typeof window.finalizarCompra === "function") {
+      window.finalizarCompra(e);
+    }
   }, true);
 
   console.log("Correção Mercado Pago MS carregada.");
