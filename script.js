@@ -7958,3 +7958,109 @@ document.addEventListener('DOMContentLoaded',()=>setTimeout(carregarConfigFreteL
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',aplicar,{once:true});
   else aplicar();
 })();
+
+/* ========================================================================
+   CORRECAO FINAL MS - TAMANHOS SINCRONIZADOS ENTRE CARD E DETALHE
+   O detalhe antigo possuia P/M/G/GG fixos no HTML. Agora ele sempre usa
+   exatamente os tamanhos cadastrados no produto que foi aberto.
+   ======================================================================== */
+(function corrigirTamanhosDetalheMS(){
+  function limparTextoMS(valor){
+    return String(valor == null ? '' : valor).trim();
+  }
+
+  function listaTamanhosMS(valor){
+    const origem = Array.isArray(valor) ? valor : limparTextoMS(valor).split(',');
+    return [...new Set(origem
+      .map(limparTextoMS)
+      .filter(Boolean)
+      .map(tamanho => /^unic[oa]$/i.test(tamanho) ? 'Único' : tamanho.toUpperCase()))];
+  }
+
+  function tamanhosDoCardMS(card){
+    if(!card) return [];
+    const cadastrados = listaTamanhosMS(card.dataset?.tamanhos || '');
+    if(cadastrados.length) return cadastrados;
+
+    // Reserva apenas para cards antigos que ainda não possuem data-tamanhos.
+    return [...card.querySelectorAll('.tamanhos button')]
+      .map(botao => limparTextoMS(botao.textContent))
+      .filter(Boolean);
+  }
+
+  function montarTamanhosNoDetalheMS(tamanhos){
+    const detalhe = document.getElementById('produtoDetalhe');
+    if(!detalhe) return;
+
+    const area = detalhe.querySelector('.tamanhos-detalhe, .detalhe-tamanhos');
+    if(!area) return;
+
+    const lista = listaTamanhosMS(tamanhos);
+    detalhe.dataset.tamanho = '';
+    area.innerHTML = '';
+
+    lista.forEach(tamanho => {
+      const botao = document.createElement('button');
+      botao.type = 'button';
+      botao.className = 'tamanho-btn';
+      botao.textContent = tamanho;
+      botao.dataset.tamanho = tamanho;
+      botao.addEventListener('click', function(event){
+        event.preventDefault();
+        event.stopPropagation();
+        area.querySelectorAll('button').forEach(item => item.classList.remove('ativo', 'selecionado'));
+        botao.classList.add('ativo', 'selecionado');
+        detalhe.dataset.tamanho = tamanho;
+        window.tamanhoSelecionado = tamanho;
+        window.tamanhoSelecionadoDetalhe = tamanho;
+      });
+      area.appendChild(botao);
+    });
+
+    // Produtos de tamanho único já ficam corretamente selecionados.
+    if(lista.length === 1){
+      const unico = area.querySelector('button');
+      if(unico) unico.click();
+    }
+
+    const rotulo = area.previousElementSibling;
+    if(rotulo && rotulo.tagName === 'P'){
+      rotulo.textContent = lista.length === 1 ? 'Tamanho' : 'Selecione o tamanho';
+    }
+  }
+
+  function sincronizarPeloCardMS(card){
+    if(!card) return;
+    const tamanhos = tamanhosDoCardMS(card);
+    montarTamanhosNoDetalheMS(tamanhos);
+
+    if(window.produtoDetalheAtual && typeof window.produtoDetalheAtual === 'object'){
+      window.produtoDetalheAtual.tamanhos = tamanhos;
+    }
+    try{
+      if(typeof produtoDetalheAtual === 'object' && produtoDetalheAtual){
+        produtoDetalheAtual.tamanhos = tamanhos;
+      }
+    }catch(_erro){}
+  }
+
+  const abrirOriginal = window.abrirProdutoDetalheCard;
+  if(typeof abrirOriginal === 'function'){
+    window.abrirProdutoDetalheCard = function(card){
+      const retorno = abrirOriginal.apply(this, arguments);
+      sincronizarPeloCardMS(card);
+      return retorno;
+    };
+  }
+
+  // Proteção adicional para qualquer card aberto por outros manipuladores antigos.
+  document.addEventListener('click', function(event){
+    const imagem = event.target.closest?.('.card-produto .produto-img');
+    if(!imagem) return;
+    const card = imagem.closest('.card-produto');
+    setTimeout(() => sincronizarPeloCardMS(card), 0);
+  }, true);
+
+  window.montarTamanhosNoDetalheMS = montarTamanhosNoDetalheMS;
+  window.sincronizarTamanhosProdutoMS = sincronizarPeloCardMS;
+})();
