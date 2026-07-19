@@ -573,7 +573,14 @@ let estoqueServidorMS = [];
 let alteracoesEstoqueMS = new Map();
 
 function abrirAbaMS(id, btn){
-  document.querySelectorAll('.ms-painel').forEach(p => p.classList.remove('ativa'));
+  // Sempre libera as abas normais. O gerenciador antigo de produtos aplicava
+  // display:none diretamente e acabava prendendo a navegação.
+  document.querySelectorAll('.ms-painel').forEach(p => {
+    p.classList.remove('ativa');
+    p.style.removeProperty('display');
+  });
+  const gerenciadorProdutos = document.getElementById('abaProdutosMS');
+  if(gerenciadorProdutos) gerenciadorProdutos.style.display = 'none';
   document.getElementById(id)?.classList.add('ativa');
   document.querySelectorAll('.ms-tab').forEach(b => b.classList.remove('ativa'));
   btn?.classList.add('ativa');

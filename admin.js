@@ -820,7 +820,20 @@ Equipe MS Matias Style 🤍`;
   function criarInterface(){
     if(document.getElementById('abaProdutosMS')) return;
     const nav = document.querySelector('.menu-ms, nav');
-    if(nav){ const b=document.createElement('button'); b.type='button'; b.className='ms-tab'; b.innerHTML='📦 Produtos'; b.onclick=()=>abrirProdutosMS(); nav.appendChild(b); }
+    if(nav){
+      // Reutiliza o botão Produtos que já existe no HTML. Antes era criado um
+      // segundo botão com o mesmo nome, causando duas telas concorrentes.
+      const botaoExistente = [...nav.querySelectorAll('.ms-tab')]
+        .find(b => /produtos/i.test(b.textContent || ''));
+      if(botaoExistente){
+        botaoExistente.onclick = function(){ abrirProdutosMS(this); };
+      }else{
+        const b=document.createElement('button');
+        b.type='button'; b.className='ms-tab'; b.innerHTML='<span>▦</span> Produtos';
+        b.onclick=function(){ abrirProdutosMS(this); };
+        nav.appendChild(b);
+      }
+    }
     const main=document.querySelector('main, .conteudo-admin, .admin-main, .main-content') || document.body;
     const sec=document.createElement('section'); sec.id='abaProdutosMS'; sec.style.display='none';
     sec.innerHTML=`
@@ -852,8 +865,25 @@ M: busto 55 cm | comprimento 70 cm"></textarea></label><label>Detalhes do produt
     document.getElementById('produtoArquivosMS').addEventListener('change', selecionarImagensMS);
   }
 
-  function esconderOutrasAbas(){ document.querySelectorAll('main > section, .conteudo-admin > section, .admin-main > section').forEach(s=>{if(s.id!=='abaProdutosMS') s.style.display='none';}); }
-  window.abrirProdutosMS=async function(){ criarInterface(); esconderOutrasAbas(); document.getElementById('abaProdutosMS').style.display='block'; await carregarCategoriasMS(); await carregarProdutosMS(); };
+  function esconderOutrasAbas(){
+    document.querySelectorAll('.ms-painel').forEach(s=>{
+      s.classList.remove('ativa');
+      s.style.removeProperty('display');
+    });
+  }
+  window.abrirProdutosMS=async function(btn){
+    criarInterface();
+    esconderOutrasAbas();
+    document.querySelectorAll('.ms-tab').forEach(b=>b.classList.remove('ativa'));
+    if(btn) btn.classList.add('ativa');
+    const sec=document.getElementById('abaProdutosMS');
+    if(sec) sec.style.display='block';
+    const titulo=document.getElementById('tituloPaginaMS');
+    if(titulo) titulo.textContent='Produtos';
+    if(typeof fecharMenuMobileMS==='function') fecharMenuMobileMS();
+    await carregarCategoriasMS();
+    await carregarProdutosMS();
+  };
   window.novoProdutoMS=async function(){ document.getElementById('formProdutoMS').reset(); produtoIdMS.value=''; if(!categoriasMS.length) await carregarCategoriasMS(); produtoCategoriaMS.value=categoriasMS[0]?.nome||'Roupas'; imagensSelecionadasMS=[]; renderPreviewMS(); atualizarStatusMedidasMS(); produtoAtivoMS.checked=true; formProdutoMS.style.display='grid'; scrollTo({top:0,behavior:'smooth'}); };
   window.cancelarProdutoMS=function(){ formProdutoMS.style.display='none'; imagensSelecionadasMS=[]; renderPreviewMS(); };
   function msg(t,erro=false){const e=msgProdutoMS;e.textContent=t;e.style.display='block';e.style.background=erro?'#4a1820':'#1d3b2a';setTimeout(()=>e.style.display='none',4500)}
