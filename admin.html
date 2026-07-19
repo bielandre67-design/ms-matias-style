@@ -214,6 +214,7 @@ html, body { min-height: 100%; }
       <button class="ms-tab" onclick="abrirAbaMS('pedidosAba', this)"><span>◌</span> Pedidos</button>
       <button class="ms-tab" onclick="abrirAbaMS('cuponsAba', this)"><span>%</span> Cupons</button>
       <button class="ms-tab" onclick="abrirAbaMS('relatoriosAba', this)"><span>▥</span> Relatórios</button>
+      <button class="ms-tab" onclick="abrirAbaMS('configuracoesAba', this)"><span>⚙</span> Configurações</button>
     </nav>
 
     <div class="sidebar-footer">
@@ -596,13 +597,53 @@ html, body { min-height: 100%; }
       </section>
     </section>
 
-    <section id="relatoriosAba" class="ms-painel">
-      <div class="page-title-ms"><div><h2>Relatórios</h2><p>Resumo simples para acompanhar a loja.</p></div></div>
-      <section class="cards-resumo">
-        <div class="card"><span>Pedidos</span><strong id="relTotalPedidos">0</strong><small>Total geral</small></div>
-        <div class="card"><span>Pagos</span><strong id="relPagos">0</strong><small>Confirmados</small></div>
-        <div class="card"><span>Estoque total</span><strong id="relEstoque">0</strong><small>Itens disponíveis</small></div>
+    <section id="relatoriosAba" class="ms-painel relatorios-etapa6-ms">
+      <div class="page-title-ms"><div><h2>Relatórios</h2><p>Analise vendas, pedidos e produtos por período.</p></div><button class="btn-dark-ms" type="button" onclick="carregarRelatoriosEtapa6MS()">↻ Atualizar</button></div>
+      <section class="painel-card-ms rel-filtros-ms">
+        <label><span>Período</span><select id="relPeriodoMS" onchange="aplicarPeriodoRelatorioMS()"><option value="7">Últimos 7 dias</option><option value="30" selected>Últimos 30 dias</option><option value="mes">Este mês</option><option value="personalizado">Personalizado</option></select></label>
+        <label><span>De</span><input id="relInicioMS" type="date" onchange="renderRelatoriosEtapa6MS()"></label>
+        <label><span>Até</span><input id="relFimMS" type="date" onchange="renderRelatoriosEtapa6MS()"></label>
+        <button type="button" onclick="exportarRelatorioCSVMS()">⬇ Exportar CSV</button>
+        <button type="button" onclick="window.print()">🖨 Imprimir</button>
       </section>
+      <section class="cards-resumo rel-kpis-ms">
+        <div class="card"><span>Pedidos no período</span><strong id="relTotalPedidos">0</strong><small>Total encontrado</small></div>
+        <div class="card"><span>Pagos</span><strong id="relPagos">0</strong><small>Confirmados</small></div>
+        <div class="card"><span>Faturamento</span><strong id="relFaturamentoMS">R$ 0,00</strong><small>Somente pagos</small></div>
+        <div class="card"><span>Ticket médio</span><strong id="relTicketMS">R$ 0,00</strong><small>Média dos pagos</small></div>
+        <div class="card"><span>Pendentes</span><strong id="relPendentesMS">0</strong><small>Aguardando</small></div>
+        <div class="card"><span>Enviados</span><strong id="relEnviadosMS">0</strong><small>Já despachados</small></div>
+        <div class="card"><span>Estoque total</span><strong id="relEstoque">0</strong><small>Itens disponíveis</small></div>
+        <div class="card"><span>Descontos</span><strong id="relDescontosMS">R$ 0,00</strong><small>Cupons e promoções</small></div>
+      </section>
+      <div class="rel-grid-ms">
+        <section class="painel-card-ms"><div class="card-header-ms"><div><h3>Produtos mais vendidos</h3><p>Ranking dentro do período selecionado.</p></div></div><div id="relRankingMS" class="ranking-produtos-ms"></div></section>
+        <section class="painel-card-ms"><div class="card-header-ms"><div><h3>Resumo por status</h3><p>Distribuição dos pedidos.</p></div></div><div id="relStatusMS" class="rel-status-list-ms"></div></section>
+      </div>
+    </section>
+
+    <section id="configuracoesAba" class="ms-painel configuracoes-etapa6-ms">
+      <div class="page-title-ms"><div><h2>Configurações</h2><p>Centralize os dados operacionais da MS Matias Style.</p></div></div>
+      <div class="config-grid-ms">
+        <section class="painel-card-ms">
+          <div class="card-header-ms"><div><h3>Contato da loja</h3><p>Informações usadas no atendimento e nas mensagens.</p></div></div>
+          <div class="config-form-ms">
+            <label><span>Nome da loja</span><input id="cfgNomeLojaMS" value="MS Matias Style"></label>
+            <label><span>WhatsApp</span><input id="cfgWhatsappMS" placeholder="+55 51 99999-9999"></label>
+            <label><span>Instagram</span><input id="cfgInstagramMS" placeholder="@matiasstyleofc"></label>
+            <label class="full"><span>Mensagem de atendimento</span><textarea id="cfgMensagemMS" rows="4" placeholder="Olá! Como podemos ajudar?"></textarea></label>
+          </div>
+        </section>
+        <section class="painel-card-ms">
+          <div class="card-header-ms"><div><h3>Operação</h3><p>Preferências para alertas e gestão do painel.</p></div></div>
+          <div class="config-form-ms">
+            <label><span>Alerta de estoque baixo</span><input id="cfgEstoqueBaixoMS" type="number" min="1" value="5"></label>
+            <label><span>Texto do checkout</span><input id="cfgCheckoutMS" placeholder="Compra segura e protegida"></label>
+          </div>
+          <div class="config-links-ms"><button onclick="abrirAbaPorIdMS('aparenciaAba')">🎨 Personalizar loja</button><button onclick="abrirAbaPorIdMS('freteAba')">🚚 Configurar frete</button><button onclick="abrirAbaPorIdMS('cuponsAba')">🎟 Gerenciar cupons</button></div>
+        </section>
+      </div>
+      <div class="config-savebar-ms"><span id="cfgStatusMS"></span><button onclick="salvarConfiguracoesEtapa6MS()">💾 Salvar configurações</button></div>
     </section>
   </main>
 </div>
@@ -630,7 +671,7 @@ function abrirAbaMS(id, btn){
   document.getElementById(id)?.classList.add('ativa');
   document.querySelectorAll('.ms-tab').forEach(b => b.classList.remove('ativa'));
   btn?.classList.add('ativa');
-  const titulos = {visao:'Dashboard', vitrineAba:'Vitrine do site', destaquesAba:'Destaques da home', aparenciaAba:'Personalizar loja', produtosAba:'Produtos', estoqueAba:'Estoque', pedidosAba:'Pedidos', cuponsAba:'Cupons', relatoriosAba:'Relatórios'};
+  const titulos = {visao:'Dashboard', vitrineAba:'Vitrine do site', destaquesAba:'Destaques da home', aparenciaAba:'Personalizar loja', produtosAba:'Produtos', estoqueAba:'Estoque', pedidosAba:'Pedidos', cuponsAba:'Cupons', relatoriosAba:'Relatórios', configuracoesAba:'Configurações'};
   const titulo = document.getElementById('tituloPaginaMS');
   if(titulo) titulo.innerText = titulos[id] || 'Painel ADM';
   if(id === 'vitrineAba') carregarBannersMS();
@@ -638,6 +679,8 @@ function abrirAbaMS(id, btn){
   if(id === 'estoqueAba') carregarEstoqueMS();
   if(id === 'produtosAba') carregarProdutosAdminMS();
   if(id === 'cuponsAba') carregarCuponsMS();
+  if(id === 'relatoriosAba') carregarRelatoriosEtapa6MS();
+  if(id === 'configuracoesAba') carregarConfiguracoesEtapa6MS();
 }
 
 function normalizarMS(v){
@@ -1114,6 +1157,27 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape') fecharMenuM
 window.addEventListener('resize',function(){if(innerWidth>860) fecharMenuMobileMS()});
 new MutationObserver(aplicarRotulosTabelaMobileMS).observe(document.documentElement,{subtree:true,childList:true});
 document.addEventListener('DOMContentLoaded',aplicarRotulosTabelaMobileMS);
+</script>
+
+
+<style>
+.rel-filtros-ms{display:grid;grid-template-columns:180px 160px 160px auto auto;gap:12px;align-items:end;margin-bottom:16px}.rel-filtros-ms label{display:grid;gap:6px}.rel-filtros-ms span,.config-form-ms span{font-size:12px;color:var(--muted);font-weight:850}.rel-filtros-ms input,.rel-filtros-ms select,.config-form-ms input,.config-form-ms textarea{width:100%;min-height:46px;border:1px solid var(--line);border-radius:13px;background:var(--panel);color:var(--text);padding:10px 13px}.rel-filtros-ms button{min-height:46px;border:1px solid var(--line);border-radius:13px;background:var(--panel2);color:var(--text);font-weight:900;padding:0 14px}.rel-kpis-ms{grid-template-columns:repeat(4,minmax(0,1fr))!important}.rel-grid-ms,.config-grid-ms{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}.rel-status-list-ms{display:grid;gap:10px}.rel-status-item-ms{display:grid;grid-template-columns:1fr auto;gap:12px;padding:14px;border:1px solid var(--line);border-radius:15px;background:var(--panel2)}.rel-status-item-ms strong{color:var(--gold)}.config-form-ms{display:grid;grid-template-columns:1fr 1fr;gap:14px}.config-form-ms label{display:grid;gap:7px}.config-form-ms .full{grid-column:1/-1}.config-links-ms{display:grid;gap:10px;margin-top:18px}.config-links-ms button,.config-savebar-ms button{min-height:48px;border:1px solid var(--line);border-radius:14px;background:var(--panel2);color:var(--text);font-weight:900}.config-savebar-ms{position:sticky;bottom:10px;display:flex;justify-content:flex-end;align-items:center;gap:14px;margin-top:16px;padding:14px;border:1px solid var(--line);border-radius:18px;background:var(--panel2);box-shadow:0 15px 40px rgba(0,0,0,.25)}.config-savebar-ms button{background:#e3b93f;color:#111;border-color:#e3b93f;padding:0 22px}@media(max-width:1050px){.rel-filtros-ms{grid-template-columns:1fr 1fr}.rel-kpis-ms{grid-template-columns:repeat(2,minmax(0,1fr))!important}}@media(max-width:760px){.rel-grid-ms,.config-grid-ms{grid-template-columns:1fr}.rel-filtros-ms{grid-template-columns:1fr}.rel-kpis-ms{grid-template-columns:1fr 1fr!important}.config-form-ms{grid-template-columns:1fr}.config-form-ms .full{grid-column:auto}.config-savebar-ms{bottom:76px;display:grid}.config-savebar-ms button{width:100%}}@media(max-width:420px){.rel-kpis-ms{grid-template-columns:1fr!important}}
+@media print{.sidebar-ms,.topbar-ms,.rel-filtros-ms,.config-savebar-ms{display:none!important}.admin-shell,.main-ms{display:block!important;margin:0!important;padding:0!important}.ms-painel{display:none!important}.relatorios-etapa6-ms{display:block!important}}
+</style>
+<script>
+let relPedidosEtapa6MS=[];
+function moedaRelMS(v){return Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});}
+function dataPedidoRelMS(p){const v=p.criado_em||p.criadoEm||p.data||p.created_at;const d=new Date(v);return Number.isNaN(d.getTime())?null:d;}
+function totalPedidoRelMS(p){return Number(p.total||p.valorTotal||p.valor_total||0);}
+function statusRelMS(p){const s=normalizarMS(p.status||'pendente');if(s.includes('pago')||s.includes('aprov'))return'pago';if(s.includes('enviado')||s.includes('entreg'))return'enviado';if(s.includes('cancel'))return'cancelado';return'pendente';}
+function aplicarPeriodoRelatorioMS(){const tipo=document.getElementById('relPeriodoMS').value;const fim=new Date();const ini=new Date();if(tipo==='7')ini.setDate(fim.getDate()-6);else if(tipo==='30')ini.setDate(fim.getDate()-29);else if(tipo==='mes')ini.setDate(1);else return;const f=d=>d.toISOString().slice(0,10);relInicioMS.value=f(ini);relFimMS.value=f(fim);renderRelatoriosEtapa6MS();}
+async function carregarRelatoriosEtapa6MS(){try{const [rp,re,rc]=await Promise.all([fetch(`${API_ADMIN_MS}/pedidos?t=${Date.now()}`),fetch(`${API_ADMIN_MS}/estoque?t=${Date.now()}`),fetch(`${API_ADMIN_MS}/cupons?t=${Date.now()}`)]);relPedidosEtapa6MS=rp.ok?await rp.json():[];estoqueServidorMS=re.ok?await re.json():estoqueServidorMS;cuponsAdminMS=rc.ok?await rc.json():cuponsAdminMS;if(!relInicioMS.value)aplicarPeriodoRelatorioMS();else renderRelatoriosEtapa6MS();}catch(e){document.getElementById('relRankingMS').innerHTML='<p class="dashboard-vazio-ms">Não foi possível carregar os relatórios.</p>';}}
+function renderRelatoriosEtapa6MS(){const ini=document.getElementById('relInicioMS').value?new Date(document.getElementById('relInicioMS').value+'T00:00:00'):null;const fim=document.getElementById('relFimMS').value?new Date(document.getElementById('relFimMS').value+'T23:59:59'):null;const lista=relPedidosEtapa6MS.filter(p=>{const d=dataPedidoRelMS(p);return(!ini||!d||d>=ini)&&(!fim||!d||d<=fim)});const pagos=lista.filter(p=>statusRelMS(p)==='pago');const fat=pagos.reduce((a,p)=>a+totalPedidoRelMS(p),0);const desconto=lista.reduce((a,p)=>a+Number(p.desconto||p.valorDesconto||p.valor_desconto||0),0);relTotalPedidos.textContent=lista.length;relPagos.textContent=pagos.length;relFaturamentoMS.textContent=moedaRelMS(fat);relTicketMS.textContent=moedaRelMS(pagos.length?fat/pagos.length:0);relPendentesMS.textContent=lista.filter(p=>statusRelMS(p)==='pendente').length;relEnviadosMS.textContent=lista.filter(p=>statusRelMS(p)==='enviado').length;relEstoque.textContent=(estoqueServidorMS||[]).reduce((a,i)=>a+Number(i.quantidade||0),0);relDescontosMS.textContent=moedaRelMS(desconto);const rank={};pagos.forEach(p=>(p.produtos||p.itens||[]).forEach(i=>{const n=i.nome||i.title||'Produto';rank[n]=(rank[n]||0)+Number(i.quantidade||i.qtd||1)}));const r=Object.entries(rank).sort((a,b)=>b[1]-a[1]).slice(0,8);relRankingMS.innerHTML=r.length?r.map(([n,q],i)=>`<div class="ranking-item-ms"><span class="ranking-posicao-ms">${i+1}</span><div><strong>${n}</strong><small>${q} unidade${q===1?'':'s'} vendida${q===1?'':'s'}</small></div><b class="ranking-qtd-ms">${q}</b></div>`).join(''):'<p class="dashboard-vazio-ms">Nenhuma venda paga no período.</p>';const sts=['pago','pendente','enviado','cancelado'];relStatusMS.innerHTML=sts.map(st=>`<div class="rel-status-item-ms"><span>${st[0].toUpperCase()+st.slice(1)}</span><strong>${lista.filter(p=>statusRelMS(p)===st).length}</strong></div>`).join('');}
+function exportarRelatorioCSVMS(){const ini=relInicioMS.value?new Date(relInicioMS.value+'T00:00:00'):null,fim=relFimMS.value?new Date(relFimMS.value+'T23:59:59'):null;const lista=relPedidosEtapa6MS.filter(p=>{const d=dataPedidoRelMS(p);return(!ini||!d||d>=ini)&&(!fim||!d||d<=fim)});const linhas=[['Pedido','Data','Cliente','Status','Total'],...lista.map(p=>[p.id||'',dataPedidoRelMS(p)?.toLocaleDateString('pt-BR')||'',p.nome||p.cliente||'',statusRelMS(p),totalPedidoRelMS(p).toFixed(2)])];const csv='﻿'+linhas.map(l=>l.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(';')).join('
+');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download=`relatorio-ms-${new Date().toISOString().slice(0,10)}.csv`;a.click();URL.revokeObjectURL(a.href);}
+function abrirAbaPorIdMS(id){const btn=[...document.querySelectorAll('.ms-tab')].find(b=>b.getAttribute('onclick')?.includes(`'${id}'`));abrirAbaMS(id,btn);}
+async function carregarConfiguracoesEtapa6MS(){const st=document.getElementById('cfgStatusMS');if(st)st.textContent='Carregando...';try{const r=await fetch(`${API_ADMIN_MS}/loja-config?t=${Date.now()}`);const d=r.ok?await r.json():{};cfgNomeLojaMS.value=d.nomeLoja||'MS Matias Style';cfgWhatsappMS.value=d.whatsapp||'';cfgInstagramMS.value=d.instagram||'@matiasstyleofc';cfgMensagemMS.value=d.mensagemAtendimento||'';cfgEstoqueBaixoMS.value=Number(d.estoqueBaixo||5);cfgCheckoutMS.value=d.textoCheckout||'';if(st)st.textContent='';}catch(e){if(st)st.textContent='Não foi possível carregar.';}}
+async function salvarConfiguracoesEtapa6MS(){const st=document.getElementById('cfgStatusMS');const body={nomeLoja:cfgNomeLojaMS.value.trim(),whatsapp:cfgWhatsappMS.value.trim(),instagram:cfgInstagramMS.value.trim(),mensagemAtendimento:cfgMensagemMS.value.trim(),estoqueBaixo:Math.max(1,Number(cfgEstoqueBaixoMS.value||5)),textoCheckout:cfgCheckoutMS.value.trim()};if(st)st.textContent='Salvando...';try{const r=await fetch(`${API_ADMIN_MS}/loja-config`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const d=await r.json();if(!r.ok)throw new Error(d.mensagem||'Erro ao salvar');if(st){st.textContent='Configurações salvas ✓';st.style.color='#75df8e';}}catch(e){if(st){st.textContent=e.message;st.style.color='#ff7d8f';}}}
 </script>
 
 </body>

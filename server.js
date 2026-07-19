@@ -2087,6 +2087,16 @@ function limparAparenciaMS(body = {}) {
     fonte: fontePermitida.includes(body.fonte) ? body.fonte : APARENCIA_PADRAO_MS.fonte
   };
 }
+
+// CONFIGURAÇÕES GERAIS DA LOJA - ETAPA 6
+app.get("/loja-config", async (req,res,next)=>{
+  if(!pool) return res.json({nomeLoja:"MS Matias Style",whatsapp:"",instagram:"@matiasstyleofc",mensagemAtendimento:"",estoqueBaixo:5,textoCheckout:""});
+  try{const r=await pool.query("SELECT dados FROM app_state WHERE chave=$1 LIMIT 1",["loja_config"]);res.json(r.rows[0]?.dados||{nomeLoja:"MS Matias Style",whatsapp:"",instagram:"@matiasstyleofc",mensagemAtendimento:"",estoqueBaixo:5,textoCheckout:""});}catch(e){next(e);}
+});
+app.put("/loja-config", async (req,res,next)=>{
+  if(!pool) return res.status(503).json({mensagem:"PostgreSQL não configurado."});
+  try{const b=req.body||{};const config={nomeLoja:String(b.nomeLoja||"MS Matias Style").slice(0,100),whatsapp:String(b.whatsapp||"").slice(0,40),instagram:String(b.instagram||"").slice(0,80),mensagemAtendimento:String(b.mensagemAtendimento||"").slice(0,500),estoqueBaixo:Math.max(1,Math.min(100,Number(b.estoqueBaixo)||5)),textoCheckout:String(b.textoCheckout||"").slice(0,180)};await pool.query(`INSERT INTO app_state(chave,dados,atualizado_em) VALUES($1,$2::jsonb,NOW()) ON CONFLICT(chave) DO UPDATE SET dados=EXCLUDED.dados, atualizado_em=NOW()`,["loja_config",JSON.stringify(config)]);res.json({ok:true,config});}catch(e){next(e);}
+});
 app.get("/aparencia-config", async (req, res, next) => {
   if (!pool) return res.json(APARENCIA_PADRAO_MS);
   try {
