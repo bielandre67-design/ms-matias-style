@@ -15395,3 +15395,48 @@ body.aparencia-ms-ativa .preco,body.aparencia-ms-ativa .produto-preco,body.apare
   .rodape-base-ms>span{display:block !important;margin:4px 0 !important}
   .pagamento-logo-ms{width:74px !important;height:46px !important}
 }
+
+/* =========================================================
+   AJUSTE VISUAL: BOTÃO DE TAMANHO ÚNICO NO DETALHE DO PRODUTO
+   ========================================================= */
+#produtoDetalhe .detalhe-tamanhos button[data-tamanho="Único"],
+#produtoDetalhe .tamanhos-detalhe button[data-tamanho="Único"] {
+  width: auto !important;
+  min-width: 108px !important;
+  height: 52px !important;
+  padding: 0 22px !important;
+  border-radius: 12px !important;
+  white-space: nowrap !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 1 !important;
+  font-size: 16px !important;
+  letter-spacing: .5px !important;
+  overflow: visible !important;
+  background: #fff !important;
+  color: #111 !important;
+  border: 1px solid #d7d7d7 !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+#produtoDetalhe .detalhe-tamanhos button[data-tamanho="Único"].ativo,
+#produtoDetalhe .detalhe-tamanhos button[data-tamanho="Único"].selecionado,
+#produtoDetalhe .tamanhos-detalhe button[data-tamanho="Único"].ativo,
+#produtoDetalhe .tamanhos-detalhe button[data-tamanho="Único"].selecionado {
+  background: #e2b63f !important;
+  color: #111 !important;
+  border-color: #e2b63f !important;
+  box-shadow: 0 0 0 3px rgba(226, 182, 63, .18) !important;
+}
+
+@media (max-width: 700px) {
+  #produtoDetalhe .detalhe-tamanhos button[data-tamanho="Único"],
+  #produtoDetalhe .tamanhos-detalhe button[data-tamanho="Único"] {
+    min-width: 96px !important;
+    height: 48px !important;
+    padding: 0 18px !important;
+    font-size: 14px !important;
+  }
+}
