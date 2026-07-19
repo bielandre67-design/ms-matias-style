@@ -250,6 +250,53 @@ Equipe MS Matias Style 🤍`;
     return d.toISOString().slice(0, 10);
   }
 
+  function inicioDoDiaMS(data = new Date()) {
+    const d = new Date(data); d.setHours(0,0,0,0); return d;
+  }
+
+  function renderizarDashboardEtapa4MS(pedidos) {
+    const pagos = pedidos.filter((p) => normalizarStatus(p.status) === "pago");
+    const agora = new Date();
+    const inicioHoje = inicioDoDiaMS(agora);
+    const inicioSemana = new Date(inicioHoje); inicioSemana.setDate(inicioSemana.getDate() - 6);
+    const inicioMes = new Date(agora.getFullYear(), agora.getMonth(), 1);
+    const dataPedido = (p) => { const iso = dataISOdoPedido(p.data); return iso ? inicioDoDiaMS(new Date(`${iso}T12:00:00`)) : null; };
+    const somarDesde = (inicio) => pagos.reduce((s,p) => { const d=dataPedido(p); return d && d>=inicio ? s+totalPedido(p) : s; },0);
+    const faturamentoSemana = somarDesde(inicioSemana);
+    const faturamentoMes = somarDesde(inicioMes);
+    const ticket = pagos.length ? pagos.reduce((s,p)=>s+totalPedido(p),0)/pagos.length : 0;
+    const hojeISO = agora.toISOString().slice(0,10);
+    const pedidosHoje = pedidos.filter(p=>dataISOdoPedido(p.data)===hojeISO).length;
+    const valores = {
+      dashPedidosHojeMS: pedidosHoje,
+      dashFaturamentoSemanaMS: formatarMoeda(faturamentoSemana),
+      dashFaturamentoMesMS: formatarMoeda(faturamentoMes),
+      dashTicketMedioMS: formatarMoeda(ticket)
+    };
+    Object.entries(valores).forEach(([id,v])=>{const el=document.getElementById(id);if(el)el.textContent=v;});
+    const atualizacao=document.getElementById("dashUltimaAtualizacaoMS");
+    if(atualizacao) atualizacao.textContent=agora.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+
+    const ranking = new Map();
+    pagos.forEach(p=>produtosDoPedido(p).forEach(prod=>{
+      const nome=String(prod.nome||prod.title||"Produto").trim();
+      const chave=nome.toLowerCase();
+      const atual=ranking.get(chave)||{nome,qtd:0,valor:0};
+      const qtd=produtoQtd(prod); atual.qtd+=qtd; atual.valor+=produtoPreco(prod)*qtd; ranking.set(chave,atual);
+    }));
+    const rankingBox=document.getElementById("dashMaisVendidosMS");
+    if(rankingBox){
+      const lista=[...ranking.values()].sort((a,b)=>b.qtd-a.qtd).slice(0,5);
+      rankingBox.innerHTML=lista.length?lista.map((item,i)=>`<div class="ranking-item-ms"><span class="ranking-posicao-ms">${i+1}</span><div><strong>${safe(item.nome)}</strong><small>${formatarMoeda(item.valor)} em vendas</small></div><span class="ranking-qtd-ms">${item.qtd} un.</span></div>`).join(""):'<p class="dashboard-vazio-ms">Ainda não há vendas pagas.</p>';
+    }
+    const recentesBox=document.getElementById("dashVendasRecentesMS");
+    if(recentesBox){
+      const recentes=pagos.slice().sort((a,b)=>String(dataISOdoPedido(b.data)).localeCompare(String(dataISOdoPedido(a.data)))).slice(0,5);
+      recentesBox.innerHTML=recentes.length?recentes.map(p=>`<div class="venda-recente-item-ms"><div><strong>Pedido #${safe(p.id||"-")} · ${safe(p.nome||"Cliente")}</strong><small>${safe(p.data||"Data não informada")}</small></div><span class="venda-recente-valor-ms">${formatarMoeda(totalPedido(p))}</span></div>`).join(""):'<p class="dashboard-vazio-ms">Ainda não há vendas pagas.</p>';
+    }
+    if(typeof window.atualizarAlertaDashboardEstoqueMS === "function") window.atualizarAlertaDashboardEstoqueMS();
+  }
+
   function atualizarResumo(pedidos) {
     const pagos = pedidos.filter((p) => normalizarStatus(p.status) === "pago");
     const pendentes = pedidos.filter((p) => normalizarStatus(p.status) === "pendente");
@@ -281,6 +328,7 @@ Equipe MS Matias Style 🤍`;
 
     atualizarFaturamentoHoje(pedidos);
     criarGraficoVendas(pedidos);
+    renderizarDashboardEtapa4MS(pedidos);
   }
 
   function renderizarPedidos(pedidos = pedidosCache) {

@@ -176,6 +176,13 @@ html, body { min-height: 100%; }
 @media(max-width:420px){.cards-resumo,.estoque-cards-ms{grid-template-columns:1fr 1fr!important}.card{min-height:98px!important}.estoque-lista tr{grid-template-columns:1fr!important}.estoque-lista td:first-child{grid-column:auto}.topbar-ms{grid-template-columns:42px minmax(0,1fr) 91px!important}}
 </style>
 
+
+<style id="dashboard-etapa4-css-ms">
+.dashboard-etapa4-ms{display:none}.dashboard-etapa4-ms.ativa{display:block}.dashboard-boasvindas-ms{display:flex;justify-content:space-between;gap:18px;align-items:center;margin-bottom:18px;padding:22px 24px;border:1px solid var(--line);border-radius:24px;background:linear-gradient(135deg,var(--panel2),var(--panel));box-shadow:var(--shadow)}.dashboard-boasvindas-ms h2{margin:8px 0 6px;font-size:clamp(21px,2.4vw,31px);letter-spacing:-.04em}.dashboard-boasvindas-ms p{margin:0;color:var(--muted);font-weight:700}.dashboard-selo-ms,.dashboard-mini-badge-ms{display:inline-flex;width:max-content;padding:7px 11px;border-radius:999px;background:rgba(216,173,67,.14);border:1px solid rgba(216,173,67,.3);color:var(--gold);font-size:11px;font-weight:950;letter-spacing:.08em;text-transform:uppercase}.dashboard-atualizacao-ms{display:grid;gap:5px;text-align:right;white-space:nowrap}.dashboard-atualizacao-ms span{color:var(--muted);font-size:11px;font-weight:850}.dashboard-atualizacao-ms strong{font-size:14px}.dashboard-kpis-ms{grid-template-columns:repeat(4,minmax(0,1fr))!important}.dashboard-kpis-ms .card{min-height:148px;text-align:left}.dashboard-card-clicavel-ms{cursor:pointer;color:inherit}.dashboard-card-clicavel-ms:hover{transform:translateY(-3px);border-color:rgba(216,173,67,.42)}.atalhos-dashboard-ms{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:18px 0}.atalhos-dashboard-ms button{display:grid;grid-template-columns:48px 1fr;grid-template-rows:auto auto;column-gap:12px;align-items:center;text-align:left;min-height:82px;padding:14px;border:1px solid var(--line);border-radius:18px;background:var(--panel2);color:var(--text);cursor:pointer}.atalhos-dashboard-ms button:hover{transform:translateY(-2px);border-color:rgba(216,173,67,.45)}.atalhos-dashboard-ms button>span{grid-row:1/3;display:grid;place-items:center;width:48px;height:48px;border-radius:15px;background:rgba(216,173,67,.14);color:var(--gold);font-size:23px;font-weight:950}.atalhos-dashboard-ms strong{font-size:14px}.atalhos-dashboard-ms small{color:var(--muted);font-weight:700}.dashboard-grid-principal-ms{grid-template-columns:minmax(0,1.65fr) minmax(300px,.75fr)!important}.dashboard-canvas-ms{position:relative;min-height:280px}.dashboard-canvas-ms canvas{max-height:290px}.card-header-ms{gap:12px}.link-card-ms{min-height:38px;padding:0 12px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--text);font-weight:850;cursor:pointer}.dashboard-mini-stats-ms{grid-template-columns:1fr!important}.dashboard-mini-stats-ms>div{min-height:76px}.dash-alerta-estoque-ms{margin-top:13px;padding:13px;border-radius:15px;border:1px solid var(--line);background:var(--panel2);color:var(--muted);font-size:13px;font-weight:800}.dash-alerta-estoque-ms.alerta{border-color:rgba(239,68,68,.32);background:rgba(239,68,68,.08);color:#ff8a98}.dash-alerta-estoque-ms.ok{border-color:rgba(34,197,94,.3);background:rgba(34,197,94,.08);color:#75df8e}.dashboard-grid-secundario-ms{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}.ranking-produtos-ms,.vendas-recentes-ms{display:grid;gap:9px}.ranking-item-ms,.venda-recente-item-ms{display:grid;align-items:center;gap:12px;padding:12px;border:1px solid var(--line);border-radius:15px;background:var(--panel2)}.ranking-item-ms{grid-template-columns:36px 1fr auto}.ranking-posicao-ms{display:grid;place-items:center;width:36px;height:36px;border-radius:12px;background:rgba(216,173,67,.14);color:var(--gold);font-weight:950}.ranking-item-ms strong,.venda-recente-item-ms strong{display:block;font-size:13px}.ranking-item-ms small,.venda-recente-item-ms small{display:block;margin-top:3px;color:var(--muted);font-weight:700}.ranking-qtd-ms{font-size:13px;color:var(--gold);font-weight:950}.venda-recente-item-ms{grid-template-columns:1fr auto}.venda-recente-valor-ms{text-align:right;color:var(--gold);font-weight:950}.dashboard-vazio-ms{margin:0;padding:18px;border:1px dashed var(--line);border-radius:15px;color:var(--muted);text-align:center}.dashboard-estoque-ms{height:max-content}
+@media(max-width:1180px){.dashboard-kpis-ms{grid-template-columns:repeat(2,minmax(0,1fr))!important}.atalhos-dashboard-ms{grid-template-columns:repeat(2,minmax(0,1fr))}.dashboard-grid-principal-ms{grid-template-columns:1fr!important}.dashboard-mini-stats-ms{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+@media(max-width:760px){.dashboard-boasvindas-ms{align-items:flex-start;padding:17px;border-radius:20px}.dashboard-atualizacao-ms{display:none}.dashboard-kpis-ms{grid-template-columns:1fr 1fr!important;gap:9px!important}.dashboard-kpis-ms .card{min-height:122px;padding:14px!important}.dashboard-kpis-ms .card strong{font-size:22px!important}.atalhos-dashboard-ms{grid-template-columns:1fr 1fr;gap:9px}.atalhos-dashboard-ms button{grid-template-columns:40px 1fr;min-height:72px;padding:11px}.atalhos-dashboard-ms button>span{width:40px;height:40px;font-size:19px}.atalhos-dashboard-ms small{font-size:10px}.dashboard-grid-secundario-ms{grid-template-columns:1fr}.dashboard-canvas-ms{min-height:225px}.dashboard-mini-stats-ms{grid-template-columns:1fr!important}.ranking-item-ms,.venda-recente-item-ms{padding:11px}}
+@media(max-width:410px){.dashboard-kpis-ms{grid-template-columns:1fr!important}.atalhos-dashboard-ms{grid-template-columns:1fr}.dashboard-kpis-ms .card{min-height:110px}}
+</style>
 </head>
 <body>
 <script>
@@ -231,30 +238,61 @@ html, body { min-height: 100%; }
       </div>
     </header>
 
-    <section id="visao" class="ms-painel ativa">
-      <section class="cards-resumo cards-resumo-ms">
-        <div class="card"><div class="card-icon-ms">▣</div><span>Total de pedidos</span><strong id="totalPedidos">0</strong><small>Pedidos recebidos</small></div>
-        <div class="card"><div class="card-icon-ms">✓</div><span>Pagos</span><strong id="totalPagos">0</strong><small>Pedidos confirmados</small></div>
-        <div class="card"><div class="card-icon-ms">⌛</div><span>Pendentes</span><strong id="totalPendentes">0</strong><small>Aguardando pagamento</small></div>
+    <section id="visao" class="ms-painel ativa dashboard-etapa4-ms">
+      <div class="dashboard-boasvindas-ms">
+        <div>
+          <span class="dashboard-selo-ms">Visão geral da loja</span>
+          <h2>Olá! Aqui está o pulso da MS Matias Style.</h2>
+          <p>Valores de faturamento consideram somente pedidos marcados como pagos.</p>
+        </div>
+        <div class="dashboard-atualizacao-ms"><span>Última atualização</span><strong id="dashUltimaAtualizacaoMS">Agora</strong></div>
+      </div>
+
+      <section class="cards-resumo cards-resumo-ms dashboard-kpis-ms">
+        <button class="card dashboard-card-clicavel-ms" onclick="atalhoDashboardMS('pedidosAba')"><div class="card-icon-ms">▣</div><span>Total de pedidos</span><strong id="totalPedidos">0</strong><small>Abrir pedidos</small></button>
+        <button class="card dashboard-card-clicavel-ms" onclick="atalhoDashboardMS('pedidosAba')"><div class="card-icon-ms">◉</div><span>Pedidos hoje</span><strong id="dashPedidosHojeMS">0</strong><small>Recebidos hoje</small></button>
+        <button class="card dashboard-card-clicavel-ms" onclick="atalhoDashboardMS('pedidosAba')"><div class="card-icon-ms">✓</div><span>Pagos</span><strong id="totalPagos">0</strong><small>Pedidos confirmados</small></button>
+        <button class="card dashboard-card-clicavel-ms" onclick="atalhoDashboardMS('pedidosAba')"><div class="card-icon-ms">⌛</div><span>Pendentes</span><strong id="totalPendentes">0</strong><small>Aguardando pagamento</small></button>
         <div class="card"><div class="card-icon-ms">R$</div><span>Faturamento hoje</span><strong id="faturamentoHoje">R$ 0,00</strong><small>Somente pagos</small></div>
+        <div class="card"><div class="card-icon-ms">7d</div><span>Últimos 7 dias</span><strong id="dashFaturamentoSemanaMS">R$ 0,00</strong><small>Somente pagos</small></div>
+        <div class="card"><div class="card-icon-ms">30d</div><span>Este mês</span><strong id="dashFaturamentoMesMS">R$ 0,00</strong><small>Somente pagos</small></div>
+        <div class="card"><div class="card-icon-ms">↗</div><span>Ticket médio</span><strong id="dashTicketMedioMS">R$ 0,00</strong><small>Média dos pedidos pagos</small></div>
       </section>
 
-      <section class="grid-dashboard-ms">
-        <div class="painel-card-ms grafico-admin">
-          <div class="card-header-ms"><div><h2>Vendas dos últimos 7 dias</h2><p>Resumo rápido da loja</p></div></div>
-          <canvas id="graficoVendas" height="120"></canvas>
+      <section class="atalhos-dashboard-ms">
+        <button onclick="atalhoDashboardMS('produtosAba')"><span>＋</span><strong>Novo produto</strong><small>Cadastrar ou editar</small></button>
+        <button onclick="atalhoDashboardMS('estoqueAba')"><span>▤</span><strong>Abrir estoque</strong><small>Repor quantidades</small></button>
+        <button onclick="atalhoDashboardMS('pedidosAba')"><span>▣</span><strong>Ver pedidos</strong><small>Separar e enviar</small></button>
+        <button onclick="carregarTudoMS()"><span>↻</span><strong>Atualizar dados</strong><small>Sincronizar painel</small></button>
+      </section>
+
+      <section class="grid-dashboard-ms dashboard-grid-principal-ms">
+        <div class="painel-card-ms grafico-admin dashboard-grafico-ms">
+          <div class="card-header-ms"><div><h2>Vendas dos últimos 7 dias</h2><p>Faturamento diário de pedidos pagos</p></div><span class="dashboard-mini-badge-ms">7 dias</span></div>
+          <div class="dashboard-canvas-ms"><canvas id="graficoVendas" height="120"></canvas></div>
         </div>
-        <div class="painel-card-ms">
-          <div class="card-header-ms"><div><h2>Resumo do estoque</h2><p>Raio-x do armário MS</p></div></div>
-          <div class="mini-stats-ms">
+        <div class="painel-card-ms dashboard-estoque-ms">
+          <div class="card-header-ms"><div><h2>Resumo do estoque</h2><p>O que precisa da sua atenção</p></div><button class="link-card-ms" onclick="atalhoDashboardMS('estoqueAba')">Abrir estoque</button></div>
+          <div class="mini-stats-ms dashboard-mini-stats-ms">
             <div><span>Itens em estoque</span><strong id="dashItensEstoque">0</strong></div>
             <div><span>Estoque baixo</span><strong id="dashEstoqueBaixo">0</strong></div>
             <div><span>Esgotados</span><strong id="dashEsgotados">0</strong></div>
           </div>
+          <div id="dashAlertaEstoqueMS" class="dash-alerta-estoque-ms">Carregando situação do estoque...</div>
+        </div>
+      </section>
+
+      <section class="dashboard-grid-secundario-ms">
+        <div class="painel-card-ms">
+          <div class="card-header-ms"><div><h2>Produtos mais vendidos</h2><p>Ranking pelos pedidos pagos</p></div></div>
+          <div id="dashMaisVendidosMS" class="ranking-produtos-ms"><p class="dashboard-vazio-ms">Ainda não há vendas pagas.</p></div>
+        </div>
+        <div class="painel-card-ms">
+          <div class="card-header-ms"><div><h2>Vendas recentes</h2><p>Últimos pedidos pagos</p></div><button class="link-card-ms" onclick="atalhoDashboardMS('pedidosAba')">Ver todos</button></div>
+          <div id="dashVendasRecentesMS" class="vendas-recentes-ms"><p class="dashboard-vazio-ms">Ainda não há vendas pagas.</p></div>
         </div>
       </section>
     </section>
-
 
     <section id="vitrineAba" class="ms-painel">
       <div class="page-title-ms">
@@ -1044,6 +1082,22 @@ document.addEventListener('change',e=>{if(e.target?.id==='aparenciaLogoArquivoMS
 @media(max-width:700px){#estoqueAba .page-title-ms{align-items:stretch!important}#estoqueAba .page-title-ms .btn-dark-ms{position:sticky;bottom:12px;z-index:12;min-height:48px;box-shadow:0 12px 30px rgba(0,0,0,.35)}.filtros-status-estoque-ms{display:grid;grid-template-columns:1fr 1fr}.filtros-status-estoque-ms button{padding:0 8px;font-size:12px}.estoque-lista tr{position:relative}.estoque-lista td[data-label="Quantidade"]{grid-column:1/-1}.controle-qtd-estoque-ms{grid-template-columns:48px 1fr 48px;width:100%}.controle-qtd-estoque-ms button,.controle-qtd-estoque-ms input{height:48px!important}.estoque-lista td[data-label="Status"]{position:absolute;top:12px;right:12px}.estoque-lista td[data-label="Status"]:before{display:none}.estoque-lista td:first-child{padding-right:92px!important}.alertas-ms{order:-1}.alerta-lista-ms{max-height:260px!important}}
 </style>
 
+
+<script id="dashboard-etapa4-helper-ms">
+function atalhoDashboardMS(id){
+  const botao=[...document.querySelectorAll('.menu-ms .ms-tab')].find(b=>String(b.getAttribute('onclick')||'').includes("'"+id+"'"));
+  if(typeof abrirAbaMS==='function') abrirAbaMS(id,botao||null);
+  if(typeof fecharMenuMobileMS==='function') fecharMenuMobileMS();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function atualizarAlertaDashboardEstoqueMS(){
+  const box=document.getElementById('dashAlertaEstoqueMS'); if(!box||typeof todasVariantesCatalogoMS!=='function')return;
+  const itens=todasVariantesCatalogoMS(); const baixo=itens.filter(i=>Number(i.quantidade||0)>0&&Number(i.quantidade||0)<=3).length; const zero=itens.filter(i=>Number(i.quantidade||0)<=0).length;
+  box.className='dash-alerta-estoque-ms '+((baixo||zero)?'alerta':'ok');
+  box.textContent=(baixo||zero)?`${zero} variante(s) esgotada(s) e ${baixo} com estoque baixo. Toque em “Abrir estoque” para repor.`:'Estoque saudável. Nenhuma variante está baixa ou esgotada.';
+}
+document.addEventListener('DOMContentLoaded',()=>setTimeout(atualizarAlertaDashboardEstoqueMS,700));
+</script>
 <script id="mobile-admin-upgrade-js-ms">
 function abrirMenuMobileMS(){document.body.classList.add('menu-mobile-aberto-ms')}
 function fecharMenuMobileMS(){document.body.classList.remove('menu-mobile-aberto-ms')}
