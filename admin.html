@@ -478,10 +478,18 @@ html, body { min-height: 100%; }
     </section>
 
     <section id="pedidosAba" class="ms-painel">
-      <div class="page-title-ms"><div><h2>Pedidos</h2><p>Controle os pedidos da loja.</p></div></div>
-      <section class="filtros-admin">
-        <input id="pesquisaCliente" type="text" placeholder="Pesquisar por nome do cliente..." oninput="carregarPedidos()">
-        <input id="filtroData" type="date" onchange="carregarPedidos()">
+      <div class="page-title-ms"><div><h2>Pedidos</h2><p>Acompanhe pagamentos, separação e envios em um só lugar.</p></div><button class="btn-dark-ms" type="button" onclick="carregarPedidos()">↻ Atualizar pedidos</button></div>
+      <section class="resumo-pedidos-etapa3-ms" aria-label="Resumo dos pedidos">
+        <button type="button" onclick="filtrarPedidos('todos', document.querySelector('.aba-pedido'))"><span>📋 Todos</span><strong id="resumoPedidosTodosMS">0</strong></button>
+        <button type="button" onclick="filtrarPedidos('pendente', document.querySelectorAll('.aba-pedido')[1])"><span>⏳ Pendentes</span><strong id="resumoPedidosPendentesMS">0</strong></button>
+        <button type="button" onclick="filtrarPedidos('pago', document.querySelectorAll('.aba-pedido')[2])"><span>💰 Pagos</span><strong id="resumoPedidosPagosMS">0</strong></button>
+        <button type="button" onclick="filtrarPedidos('enviado', document.querySelectorAll('.aba-pedido')[3])"><span>🚚 Enviados</span><strong id="resumoPedidosEnviadosMS">0</strong></button>
+        <div><span>🗓️ Hoje</span><strong id="resumoPedidosHojeMS">0</strong></div>
+      </section>
+      <section class="filtros-admin filtros-pedidos-etapa3-ms">
+        <label><span>Pesquisar pedido</span><input id="pesquisaCliente" type="search" placeholder="Cliente, telefone, nº do pedido ou produto" oninput="carregarPedidos()"></label>
+        <label><span>Data do pedido</span><input id="filtroData" type="date" onchange="carregarPedidos()"></label>
+        <button type="button" onclick="limparFiltrosPedidosMS()">Limpar filtros</button>
       </section>
       <div class="abas-pedidos">
         <button class="aba-pedido ativa" onclick="filtrarPedidos('todos', this)">Todos</button>

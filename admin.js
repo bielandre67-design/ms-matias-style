@@ -73,7 +73,9 @@
       html:not([data-theme="escuro"]) .pedido-actions-ms button:not(.btn-primary-ms):not(.btn-blue-ms):not(.btn-green-ms):not(.btn-danger-ms){background:#0f172a;color:#fff;border-color:#0f172a;}
       @media(max-width:1180px){.pedido-actions-ms{grid-template-columns:repeat(3,minmax(0,1fr));}.pedido-grid-ms{grid-template-columns:1fr 1fr}.pedido-grid-ms .info-card-ms:nth-child(3){grid-column:1/-1}.rastreio-tools-ms{grid-template-columns:1fr 1fr}.rastreio-tools-ms button{grid-column:1/-1}}
       @media(max-width:760px){.pedido-card.ms-pro.tem-selecao{padding-left:16px;padding-top:68px}.pedido-selecao-ms{top:16px;left:16px}.rastreio-tools-ms{grid-template-columns:1fr}.pedido-card.ms-pro{padding:16px;border-radius:22px}.pedido-head-ms{display:grid;gap:12px}.pedido-title-ms h3{font-size:18px}.pedido-meta-ms{gap:6px}.pill-ms{font-size:11px;padding:6px 9px}.status-pedido{width:max-content;font-size:11px;padding:8px 11px}.pedido-grid-ms{grid-template-columns:1fr;gap:10px}.info-card-ms{min-height:auto;padding:13px;border-radius:16px}.info-line-ms{grid-template-columns:78px 1fr;font-size:13px}.produtos-title-ms{padding:12px 13px;font-size:13px}.produto-row-ms{grid-template-columns:1fr auto;padding:12px 13px;gap:6px}.produto-qtd-ms{text-align:left}.produto-preco-ms,.produto-subtotal-ms{grid-column:1/-1;text-align:left;font-size:13px;color:var(--muted)}.pedido-total-ms{justify-content:space-between}.pedido-total-ms strong{font-size:20px}.pedido-actions-ms{grid-template-columns:1fr 1fr;gap:8px}.pedido-actions-ms button{min-height:44px;border-radius:14px;font-size:12px;padding:0 8px;white-space:normal;line-height:1.1}.pedido-actions-ms .btn-danger-ms{grid-column:1/-1}}
-      @media(max-width:420px){.pedido-actions-ms{grid-template-columns:1fr}.info-line-ms{grid-template-columns:1fr;gap:3px}.produto-row-ms{grid-template-columns:1fr}.produto-qtd-ms,.produto-preco-ms,.produto-subtotal-ms{text-align:left}}
+      .pedido-status-acoes-ms{display:grid;justify-items:end;gap:8px;min-width:180px}.troca-status-pedido-ms{display:grid;gap:4px;width:100%}.troca-status-pedido-ms span{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:900}.troca-status-pedido-ms select{min-height:40px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--text);padding:0 10px;font-weight:900}.ver-detalhes-pedido-ms{display:none;min-height:40px;width:100%;border-radius:12px;border:1px solid var(--line);background:var(--panel2);color:var(--text);font-weight:900}.pedido-detalhes-ms{display:block}.resumo-pedidos-etapa3-ms{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:16px}.resumo-pedidos-etapa3-ms button,.resumo-pedidos-etapa3-ms>div{display:grid;gap:8px;text-align:left;min-height:92px;padding:15px;border:1px solid var(--line);border-radius:18px;background:var(--panel2);color:var(--text)}.resumo-pedidos-etapa3-ms button{cursor:pointer}.resumo-pedidos-etapa3-ms button:hover{transform:translateY(-2px);border-color:rgba(216,173,67,.45)}.resumo-pedidos-etapa3-ms span{font-size:12px;color:var(--muted);font-weight:850}.resumo-pedidos-etapa3-ms strong{font-size:24px;color:var(--gold)}.filtros-pedidos-etapa3-ms{display:grid;grid-template-columns:minmax(220px,1fr) 190px auto;gap:12px;align-items:end}.filtros-pedidos-etapa3-ms label{display:grid;gap:6px}.filtros-pedidos-etapa3-ms label span{font-size:12px;color:var(--muted);font-weight:850}.filtros-pedidos-etapa3-ms button{min-height:46px;border:1px solid var(--line);border-radius:13px;background:var(--panel2);color:var(--text);font-weight:900;padding:0 14px}
+      @media(max-width:900px){.resumo-pedidos-etapa3-ms{grid-template-columns:repeat(2,minmax(0,1fr))}.resumo-pedidos-etapa3-ms>div:last-child{grid-column:1/-1}.filtros-pedidos-etapa3-ms{grid-template-columns:1fr 1fr}.filtros-pedidos-etapa3-ms button{grid-column:1/-1}.pedido-status-acoes-ms{justify-items:stretch;min-width:0}.ver-detalhes-pedido-ms{display:block}.pedido-detalhes-ms{display:none}.pedido-detalhes-ms.aberto{display:block}}
+      @media(max-width:420px){.pedido-actions-ms{grid-template-columns:1fr}.info-line-ms{grid-template-columns:1fr;gap:3px}.produto-row-ms{grid-template-columns:1fr}.produto-qtd-ms,.produto-preco-ms,.produto-subtotal-ms{text-align:left}.filtros-pedidos-etapa3-ms{grid-template-columns:1fr}.resumo-pedidos-etapa3-ms{gap:8px}.resumo-pedidos-etapa3-ms button,.resumo-pedidos-etapa3-ms>div{min-height:78px;padding:12px}}
     `;
     document.head.appendChild(style);
   }
@@ -225,7 +227,8 @@ Equipe MS Matias Style 🤍`;
 
     const termo = (buscaCliente?.value || "").toLowerCase().trim();
     if (termo) {
-      const alvo = `${pedido.nome || ""} ${pedido.telefone || ""} ${pedido.id || ""}`.toLowerCase();
+      const nomesProdutos = produtosDoPedido(pedido).map((produto) => `${produto.nome || produto.title || ""} ${produto.cor || produto.color || ""} ${produto.tamanho || produto.size || ""}`).join(" ");
+      const alvo = `${pedido.nome || ""} ${pedido.telefone || ""} ${pedido.id || ""} ${nomesProdutos}`.toLowerCase();
       if (!alvo.includes(termo)) return false;
     }
 
@@ -262,6 +265,19 @@ Equipe MS Matias Style 🤍`;
     if (qtdNovos) qtdNovos.innerText = pendentes.length;
     if (qtdPagosAba) qtdPagosAba.innerText = pagos.length;
     if (qtdEnviados) qtdEnviados.innerText = enviados.length;
+
+    const hojeISO = new Date().toISOString().slice(0, 10);
+    const pedidosHoje = pedidos.filter((p) => dataISOdoPedido(p.data) === hojeISO);
+    const resumoTodos = document.getElementById("resumoPedidosTodosMS");
+    const resumoPendentes = document.getElementById("resumoPedidosPendentesMS");
+    const resumoPagos = document.getElementById("resumoPedidosPagosMS");
+    const resumoEnviados = document.getElementById("resumoPedidosEnviadosMS");
+    const resumoHoje = document.getElementById("resumoPedidosHojeMS");
+    if (resumoTodos) resumoTodos.textContent = pedidos.length;
+    if (resumoPendentes) resumoPendentes.textContent = pendentes.length;
+    if (resumoPagos) resumoPagos.textContent = pagos.length;
+    if (resumoEnviados) resumoEnviados.textContent = enviados.length;
+    if (resumoHoje) resumoHoje.textContent = pedidosHoje.length;
 
     atualizarFaturamentoHoje(pedidos);
     criarGraficoVendas(pedidos);
@@ -318,9 +334,14 @@ Equipe MS Matias Style 🤍`;
               <span class="pill-ms">Total: ${formatarMoeda(total)}</span>
             </div>
           </div>
-          <span class="status-pedido ${status}">${statusLabel(status)}</span>
+          <div class="pedido-status-acoes-ms">
+            <span class="status-pedido ${status}">${statusLabel(status)}</span>
+            <label class="troca-status-pedido-ms"><span>Alterar status</span><select onchange="window.alterarStatusRapidoPedidoMS('${idSeguro}', this.value, this)"><option value="pendente" ${status === "pendente" ? "selected" : ""}>Pendente</option><option value="pago" ${status === "pago" ? "selected" : ""}>Pago</option><option value="enviado" ${status === "enviado" ? "selected" : ""}>Enviado</option></select></label>
+            <button class="ver-detalhes-pedido-ms" type="button" onclick="window.alternarDetalhesPedidoMS('${idSeguro}', this)">Ver detalhes</button>
+          </div>
         </div>
 
+        <div class="pedido-detalhes-ms" id="pedidoDetalhes-${idSeguro}">
         <div class="pedido-grid-ms">
           <div class="info-card-ms">
             <h4>Cliente</h4>
@@ -371,6 +392,7 @@ Equipe MS Matias Style 🤍`;
           <button type="button" class="btn-ghost-ms" onclick="window.consultarRastreioMelhorEnvio('${idSeguro}')">🔎 Consultar</button>
           <button type="button" class="btn-green-ms" onclick="window.avisarEnvioCliente('${idSeguro}')">🚚 Avisar envio</button>
           <button type="button" class="btn-danger-ms" onclick="window.excluirPedido('${idSeguro}')">🗑️ Excluir</button>
+        </div>
         </div>`;
       pedidosContainer.appendChild(card);
     });
@@ -523,6 +545,31 @@ Equipe MS Matias Style 🤍`;
     atualizarResumo(pedidosCache);
     renderizarPedidos();
   }
+
+  window.alterarStatusRapidoPedidoMS = async function(id, status, select) {
+    if (!acharPedido(id)) return alert("Pedido não encontrado.");
+    if (select) select.disabled = true;
+    try {
+      await salvarStatusPedido(id, status);
+    } finally {
+      if (select) select.disabled = false;
+    }
+  };
+
+  window.alternarDetalhesPedidoMS = function(id, botao) {
+    const detalhes = document.getElementById(`pedidoDetalhes-${id}`);
+    if (!detalhes) return;
+    const aberto = detalhes.classList.toggle("aberto");
+    if (botao) botao.textContent = aberto ? "Ocultar detalhes" : "Ver detalhes";
+  };
+
+  window.limparFiltrosPedidosMS = function() {
+    if (buscaCliente) buscaCliente.value = "";
+    if (filtroData) filtroData.value = "";
+    filtroAtual = "todos";
+    document.querySelectorAll(".aba-pedido").forEach((btn, indice) => btn.classList.toggle("ativa", indice === 0));
+    renderizarPedidos();
+  };
 
   async function carregarPedidos() {
     const pedidos = await pegarPedidos();
