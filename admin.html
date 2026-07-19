@@ -429,6 +429,13 @@ html, body { min-height: 100%; }
               </label>
             </div>
 
+            <div class="filtros-status-estoque-ms" aria-label="Filtros rápidos de estoque">
+              <button type="button" class="ativo" data-status="todos" onclick="filtrarStatusEstoqueMS('todos',this)">Todos</button>
+              <button type="button" data-status="normal" onclick="filtrarStatusEstoqueMS('normal',this)">🟢 Normal</button>
+              <button type="button" data-status="baixo" onclick="filtrarStatusEstoqueMS('baixo',this)">🟡 Estoque baixo</button>
+              <button type="button" data-status="zero" onclick="filtrarStatusEstoqueMS('zero',this)">🔴 Esgotados</button>
+            </div>
+
             <div class="variacoes-rapidas-ms">
               <div>
                 <strong>Tamanhos e numerações</strong>
@@ -738,6 +745,22 @@ function todasVariantesCatalogoMS(){
   return itens;
 }
 
+let filtroStatusEstoqueAtualMS = 'todos';
+
+function filtrarStatusEstoqueMS(status, botao){
+  filtroStatusEstoqueAtualMS = status || 'todos';
+  document.querySelectorAll('.filtros-status-estoque-ms button').forEach(b => b.classList.toggle('ativo', b === botao));
+  renderGradeEstoqueMS();
+}
+
+function ajustarQuantidadeEstoqueMS(botao, delta){
+  const controle = botao.closest('.controle-qtd-estoque-ms');
+  const input = controle?.querySelector('.qtd-input-ms');
+  if(!input) return;
+  input.value = Math.max(0, Number(input.value || 0) + Number(delta || 0));
+  alterarQtdEstoqueMS(input);
+}
+
 function renderGradeEstoqueMS(){
   const corpo = document.getElementById('listaEstoqueMS');
   if(!corpo) return;
@@ -747,17 +770,21 @@ function renderGradeEstoqueMS(){
   const variantes = todasVariantesCatalogoMS().filter(i => {
     if(filtroCat !== 'todas' && i.categoria !== filtroCat) return false;
     if(filtroProduto !== 'todos' && i.nome !== filtroProduto) return false;
+    const qtd = Number(i.quantidade || 0);
+    if(filtroStatusEstoqueAtualMS === 'normal' && qtd <= 3) return false;
+    if(filtroStatusEstoqueAtualMS === 'baixo' && !(qtd > 0 && qtd <= 3)) return false;
+    if(filtroStatusEstoqueAtualMS === 'zero' && qtd > 0) return false;
     return !busca || normalizarMS(`${i.nome} ${i.cor} ${i.tamanho} ${i.categoria}`).includes(busca);
   });
   corpo.innerHTML = variantes.map(i => {
     const qtd = Number(i.quantidade || 0);
     const chave = chaveVarianteMS(i.nome, i.cor, i.tamanho);
     return `<tr>
-      <td><strong>${escaparAdminMS(i.nome)}</strong><small>${escaparAdminMS(i.categoria)}</small></td>
-      <td>${escaparAdminMS(i.cor)}</td>
-      <td><strong>${escaparAdminMS(i.tamanho)}</strong></td>
-      <td><input class="qtd-input-ms ${classeQtd(qtd)}" type="number" min="0" value="${qtd}" data-chave="${escaparAdminMS(chave)}" data-produto="${escaparAdminMS(i.nome)}" data-cor="${escaparAdminMS(i.cor)}" data-tamanho="${escaparAdminMS(i.tamanho)}" onchange="alterarQtdEstoqueMS(this)" oninput="alterarQtdEstoqueMS(this)"></td>
-      <td>${statusLinha(qtd)}</td>
+      <td data-label="Produto"><strong>${escaparAdminMS(i.nome)}</strong><small>${escaparAdminMS(i.categoria)}</small></td>
+      <td data-label="Cor">${escaparAdminMS(i.cor)}</td>
+      <td data-label="Tamanho / Número"><strong>${escaparAdminMS(i.tamanho)}</strong></td>
+      <td data-label="Quantidade"><div class="controle-qtd-estoque-ms"><button type="button" onclick="ajustarQuantidadeEstoqueMS(this,-1)" aria-label="Diminuir quantidade">−</button><input class="qtd-input-ms ${classeQtd(qtd)}" type="number" min="0" value="${qtd}" data-chave="${escaparAdminMS(chave)}" data-produto="${escaparAdminMS(i.nome)}" data-cor="${escaparAdminMS(i.cor)}" data-tamanho="${escaparAdminMS(i.tamanho)}" onchange="alterarQtdEstoqueMS(this)" oninput="alterarQtdEstoqueMS(this)"><button type="button" onclick="ajustarQuantidadeEstoqueMS(this,1)" aria-label="Aumentar quantidade">+</button></div></td>
+      <td data-label="Status">${statusLinha(qtd)}</td>
     </tr>`;
   }).join('') || '<tr><td colspan="5">Nenhum item encontrado.</td></tr>';
   atualizarCardsEstoqueMS();
@@ -996,6 +1023,11 @@ document.addEventListener('input',e=>{const pares={aparenciaCorPrincipalMS:'corP
 document.addEventListener('change',e=>{if(e.target?.id==='aparenciaLogoArquivoMS')arquivoAparenciaMS('logo',e.target.files?.[0]);if(e.target?.id==='aparenciaFaviconArquivoMS')arquivoAparenciaMS('favicon',e.target.files?.[0]);});
 
 </script>
+
+<style id="estoque-mobile-etapa2-css-ms">
+.filtros-status-estoque-ms{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.filtros-status-estoque-ms button{min-height:40px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--text);font-weight:850;cursor:pointer}.filtros-status-estoque-ms button.ativo{background:#f4c542;color:#111;border-color:#f4c542}.controle-qtd-estoque-ms{display:grid;grid-template-columns:42px minmax(58px,86px) 42px;gap:7px;align-items:center}.controle-qtd-estoque-ms button{height:42px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--text);font-size:22px;font-weight:900;cursor:pointer}.controle-qtd-estoque-ms button:active{transform:scale(.96)}
+@media(max-width:700px){#estoqueAba .page-title-ms{align-items:stretch!important}#estoqueAba .page-title-ms .btn-dark-ms{position:sticky;bottom:12px;z-index:12;min-height:48px;box-shadow:0 12px 30px rgba(0,0,0,.35)}.filtros-status-estoque-ms{display:grid;grid-template-columns:1fr 1fr}.filtros-status-estoque-ms button{padding:0 8px;font-size:12px}.estoque-lista tr{position:relative}.estoque-lista td[data-label="Quantidade"]{grid-column:1/-1}.controle-qtd-estoque-ms{grid-template-columns:48px 1fr 48px;width:100%}.controle-qtd-estoque-ms button,.controle-qtd-estoque-ms input{height:48px!important}.estoque-lista td[data-label="Status"]{position:absolute;top:12px;right:12px}.estoque-lista td[data-label="Status"]:before{display:none}.estoque-lista td:first-child{padding-right:92px!important}.alertas-ms{order:-1}.alerta-lista-ms{max-height:260px!important}}
+</style>
 
 <script id="mobile-admin-upgrade-js-ms">
 function abrirMenuMobileMS(){document.body.classList.add('menu-mobile-aberto-ms')}
