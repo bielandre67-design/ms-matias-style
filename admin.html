@@ -715,28 +715,82 @@ function popularFiltrosEstoqueMS(){
 async function carregarEstoqueMS(){
   const corpo = document.getElementById('listaEstoqueMS');
   if(corpo) corpo.innerHTML = '<div class="estoque-carregando-ms">Carregando produtos e estoque...</div>';
-  try{
-    const [respProdutos, respEstoque] = await Promise.all([
-      fetch(`${API_ADMIN_MS}/produtos?t=${Date.now()}`),
-      fetch(`${API_ADMIN_MS}/estoque?t=${Date.now()}`)
-    ]);
-    if(!respProdutos.ok || !respEstoque.ok) throw new Error('Falha ao carregar');
-    const produtos = await respProdutos.json();
-    PRODUTOS_COMPLETOS_MS = Array.isArray(produtos) ? produtos : [];
-    estoqueServidorMS = await respEstoque.json();
-    CATALOGO_MS = catalogoDosProdutosMS(PRODUTOS_COMPLETOS_MS);
-    popularFiltrosEstoqueMS();
-    atualizarSeletorVariacoesMS();
-  }catch(e){
-    estoqueServidorMS = [];
-    CATALOGO_MS = [];
-    PRODUTOS_COMPLETOS_MS = [];
-    if (corpo) corpo.innerHTML = '<div class="estoque-vazio-ms">Não consegui carregar o estoque. Atualize a página e tente novamente.</div>';
-    return;
-  }
-  renderGradeEstoqueMS();
-}
 
+  let erroProdutos = '';
+  let erroEstoque = '';
+
+  const buscarJsonMS = async (url, nome) => {
+    const resposta = await fetch(url, { cache: 'no-store' });
+    const texto = await resposta.text();
+    let dados = null;
+    try { dados = texto ? JSON.parse(texto) : []; } catch (_) {}
+    if(!resposta.ok){
+      const mensagem = dados?.mensagem || dados?.erro || `${nome} respondeu ${resposta.status}`;
+      throw new Error(String(mensagem));
+    }
+    if(dados === null) throw new Error(`${nome} retornou uma resposta inválida.`);
+    return dados;
+  };
+
+  const resultados = await Promise.allSettled([
+    buscarJsonMS(`${API_ADMIN_MS}/produtos?t=${Date.now()}`, 'Produtos'),
+    buscarJsonMS(`${API_ADMIN_MS}/estoque?t=${Date.now()}`, 'Estoque')
+  ]);
+
+  if(resultados[0].status === 'fulfilled'){
+    PRODUTOS_COMPLETOS_MS = Array.isArray(resultados[0].value) ? resultados[0].value : [];
+  }else{
+    PRODUTOS_COMPLETOS_MS = [];
+    erroProdutos = resultados[0].reason?.message || 'Não foi possível carregar os produtos.';
+    console.error('Falha em /produtos:', resultados[0].reason);
+  }
+
+  if(resultados[1].status === 'fulfilled'){
+    estoqueServidorMS = Array.isArray(resultados[1].value) ? resultados[1].value : [];
+  }else{
+    estoqueServidorMS = [];
+    erroEstoque = resultados[1].reason?.message || 'Não foi possível carregar o estoque.';
+    console.error('Falha em /estoque:', resultados[1].reason);
+  }
+
+  // Catálogo principal vindo dos produtos cadastrados.
+  CATALOGO_MS = catalogoDosProdutosMS(PRODUTOS_COMPLETOS_MS);
+
+  // Segurança: se /produtos falhar, ainda monta o painel com o estoque existente.
+  if(!CATALOGO_MS.length && estoqueServidorMS.length){
+    const agrupados = new Map();
+    estoqueServidorMS.forEach(item => {
+      const nome = String(item?.nome || 'Produto').trim();
+      const chave = normalizarMS(nome);
+      if(!agrupados.has(chave)) agrupados.set(chave, {
+        id: `estoque-${chave}`,
+        categoria: String(item?.categoria || 'Estoque atual'),
+        produto: nome,
+        cores: [],
+        tamanhos: []
+      });
+      const grupo = agrupados.get(chave);
+      const cor = String(item?.cor || 'Única').trim();
+      const tamanho = String(item?.tamanho || 'ÚNICO').trim().toUpperCase();
+      if(!grupo.cores.includes(cor)) grupo.cores.push(cor);
+      if(!grupo.tamanhos.includes(tamanho)) grupo.tamanhos.push(tamanho);
+    });
+    CATALOGO_MS = [...agrupados.values()];
+  }
+
+  popularFiltrosEstoqueMS();
+  atualizarSeletorVariacoesMS();
+  renderGradeEstoqueMS();
+
+  if(erroProdutos || erroEstoque){
+    const avisos = [erroProdutos && `Produtos: ${erroProdutos}`, erroEstoque && `Estoque: ${erroEstoque}`].filter(Boolean);
+    const aviso = document.createElement('div');
+    aviso.className = 'estoque-vazio-ms';
+    aviso.style.cssText = 'margin:12px 0;padding:12px;border:1px solid rgba(255,193,7,.35);border-radius:12px;color:#ffd86b;background:rgba(255,193,7,.07);';
+    aviso.innerHTML = `<strong>Carregamento parcial.</strong><br>${avisos.map(escaparAdminMS).join('<br>')}`;
+    corpo?.prepend(aviso);
+  }
+}
 
 function produtoSelecionadoEstoqueMS(){
   if(!produtoEstoqueSelecionadoMS) return null;
