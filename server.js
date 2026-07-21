@@ -679,13 +679,26 @@ function gerarSkuEstoqueMS(item) {
 }
 
 function prepararItemEstoqueMS(item) {
+  const nome = String(item?.nome || item?.produto || "Produto MS").trim();
+  const corInformada = String(item?.cor || item?.Cor || "").trim();
+  const corDoNome = corPeloNomeMS(nome);
+  const corEhGenerica = ["", "unica", "única", "unico", "único"].includes(normalizarTextoMS(corInformada));
+  const corFinal = corEhGenerica && normalizarTextoMS(corDoNome) !== "unica"
+    ? corDoNome
+    : (corInformada || corDoNome || "Única");
+
   const pronto = {
-    nome: String(item?.nome || item?.produto || "Produto MS").trim(),
-    cor: String(item?.cor || item?.Cor || corPeloNomeMS(item?.nome || item?.produto || "")).trim(),
+    nome,
+    cor: corFinal,
     tamanho: String(item?.tamanho || item?.Tamanho || "Único").trim().toUpperCase(),
     quantidade: Math.max(1, Number(item?.quantidade || 1))
   };
-  pronto.sku = String(item?.sku || item?.SKU || gerarSkuEstoqueMS(pronto)).trim().toUpperCase();
+
+  const skuRecebido = String(item?.sku || item?.SKU || "").trim().toUpperCase();
+  const skuUsaCorGenerica = /-(UN|UNI|UNIC)-/.test(skuRecebido);
+  pronto.sku = (skuRecebido && !(skuUsaCorGenerica && normalizarTextoMS(corFinal) !== "unica"))
+    ? skuRecebido
+    : gerarSkuEstoqueMS(pronto);
   return pronto;
 }
 
