@@ -439,7 +439,10 @@ html, body { min-height: 100%; }
           <h2>Estoque</h2>
           <p>Escolha o produto, altere as quantidades por cor e tamanho, depois salve. Sem digitar produto ou cor.</p>
         </div>
-        <button id="btnSalvarTudoEstoqueMS" class="btn-dark-ms" onclick="salvarGradeEstoqueMS(this)">💾 Salvar tudo <span id="contadorAlteracoesEstoqueMS"></span></button>
+        <div class="estoque-top-actions-ms">
+          <button type="button" class="btn-repor-ms" onclick="abrirReposicaoRapidaMS()">📦 Reposição rápida</button>
+          <button id="btnSalvarTudoEstoqueMS" class="btn-dark-ms" onclick="salvarGradeEstoqueMS(this)">💾 Salvar tudo <span id="contadorAlteracoesEstoqueMS"></span></button>
+        </div>
       </div>
 
       <section class="cards-resumo estoque-cards-ms">
@@ -1228,11 +1231,81 @@ function statusRelMS(p){const s=normalizarMS(p.status||'pendente');if(s.includes
 function aplicarPeriodoRelatorioMS(){const tipo=document.getElementById('relPeriodoMS').value;const fim=new Date();const ini=new Date();if(tipo==='7')ini.setDate(fim.getDate()-6);else if(tipo==='30')ini.setDate(fim.getDate()-29);else if(tipo==='mes')ini.setDate(1);else return;const f=d=>d.toISOString().slice(0,10);relInicioMS.value=f(ini);relFimMS.value=f(fim);renderRelatoriosEtapa6MS();}
 async function carregarRelatoriosEtapa6MS(){try{const [rp,re,rc]=await Promise.all([fetch(`${API_ADMIN_MS}/pedidos?t=${Date.now()}`),fetch(`${API_ADMIN_MS}/estoque?t=${Date.now()}`),fetch(`${API_ADMIN_MS}/cupons?t=${Date.now()}`)]);relPedidosEtapa6MS=rp.ok?await rp.json():[];estoqueServidorMS=re.ok?await re.json():estoqueServidorMS;cuponsAdminMS=rc.ok?await rc.json():cuponsAdminMS;if(!relInicioMS.value)aplicarPeriodoRelatorioMS();else renderRelatoriosEtapa6MS();}catch(e){document.getElementById('relRankingMS').innerHTML='<p class="dashboard-vazio-ms">Não foi possível carregar os relatórios.</p>';}}
 function renderRelatoriosEtapa6MS(){const ini=document.getElementById('relInicioMS').value?new Date(document.getElementById('relInicioMS').value+'T00:00:00'):null;const fim=document.getElementById('relFimMS').value?new Date(document.getElementById('relFimMS').value+'T23:59:59'):null;const lista=relPedidosEtapa6MS.filter(p=>{const d=dataPedidoRelMS(p);return(!ini||!d||d>=ini)&&(!fim||!d||d<=fim)});const pagos=lista.filter(p=>statusRelMS(p)==='pago');const fat=pagos.reduce((a,p)=>a+totalPedidoRelMS(p),0);const desconto=lista.reduce((a,p)=>a+Number(p.desconto||p.valorDesconto||p.valor_desconto||0),0);relTotalPedidos.textContent=lista.length;relPagos.textContent=pagos.length;relFaturamentoMS.textContent=moedaRelMS(fat);relTicketMS.textContent=moedaRelMS(pagos.length?fat/pagos.length:0);relPendentesMS.textContent=lista.filter(p=>statusRelMS(p)==='pendente').length;relEnviadosMS.textContent=lista.filter(p=>statusRelMS(p)==='enviado').length;relEstoque.textContent=(estoqueServidorMS||[]).reduce((a,i)=>a+Number(i.quantidade||0),0);relDescontosMS.textContent=moedaRelMS(desconto);const rank={};pagos.forEach(p=>(p.produtos||p.itens||[]).forEach(i=>{const n=i.nome||i.title||'Produto';rank[n]=(rank[n]||0)+Number(i.quantidade||i.qtd||1)}));const r=Object.entries(rank).sort((a,b)=>b[1]-a[1]).slice(0,8);relRankingMS.innerHTML=r.length?r.map(([n,q],i)=>`<div class="ranking-item-ms"><span class="ranking-posicao-ms">${i+1}</span><div><strong>${n}</strong><small>${q} unidade${q===1?'':'s'} vendida${q===1?'':'s'}</small></div><b class="ranking-qtd-ms">${q}</b></div>`).join(''):'<p class="dashboard-vazio-ms">Nenhuma venda paga no período.</p>';const sts=['pago','pendente','enviado','cancelado'];relStatusMS.innerHTML=sts.map(st=>`<div class="rel-status-item-ms"><span>${st[0].toUpperCase()+st.slice(1)}</span><strong>${lista.filter(p=>statusRelMS(p)===st).length}</strong></div>`).join('');}
-function exportarRelatorioCSVMS(){const ini=relInicioMS.value?new Date(relInicioMS.value+'T00:00:00'):null,fim=relFimMS.value?new Date(relFimMS.value+'T23:59:59'):null;const lista=relPedidosEtapa6MS.filter(p=>{const d=dataPedidoRelMS(p);return(!ini||!d||d>=ini)&&(!fim||!d||d<=fim)});const linhas=[['Pedido','Data','Cliente','Status','Total'],...lista.map(p=>[p.id||'',dataPedidoRelMS(p)?.toLocaleDateString('pt-BR')||'',p.nome||p.cliente||'',statusRelMS(p),totalPedidoRelMS(p).toFixed(2)])];const csv='﻿'+linhas.map(l=>l.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(';')).join('
-');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download=`relatorio-ms-${new Date().toISOString().slice(0,10)}.csv`;a.click();URL.revokeObjectURL(a.href);}
+function exportarRelatorioCSVMS(){const ini=relInicioMS.value?new Date(relInicioMS.value+'T00:00:00'):null,fim=relFimMS.value?new Date(relFimMS.value+'T23:59:59'):null;const lista=relPedidosEtapa6MS.filter(p=>{const d=dataPedidoRelMS(p);return(!ini||!d||d>=ini)&&(!fim||!d||d<=fim)});const linhas=[['Pedido','Data','Cliente','Status','Total'],...lista.map(p=>[p.id||'',dataPedidoRelMS(p)?.toLocaleDateString('pt-BR')||'',p.nome||p.cliente||'',statusRelMS(p),totalPedidoRelMS(p).toFixed(2)])];const csv='﻿'+linhas.map(l=>l.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(';')).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download=`relatorio-ms-${new Date().toISOString().slice(0,10)}.csv`;a.click();URL.revokeObjectURL(a.href);}
 function abrirAbaPorIdMS(id){const btn=[...document.querySelectorAll('.ms-tab')].find(b=>b.getAttribute('onclick')?.includes(`'${id}'`));abrirAbaMS(id,btn);}
 async function carregarConfiguracoesEtapa6MS(){const st=document.getElementById('cfgStatusMS');if(st)st.textContent='Carregando...';try{const r=await fetch(`${API_ADMIN_MS}/loja-config?t=${Date.now()}`);const d=r.ok?await r.json():{};cfgNomeLojaMS.value=d.nomeLoja||'MS Matias Style';cfgWhatsappMS.value=d.whatsapp||'';cfgInstagramMS.value=d.instagram||'@matiasstyleofc';cfgMensagemMS.value=d.mensagemAtendimento||'';cfgEstoqueBaixoMS.value=Number(d.estoqueBaixo||5);cfgCheckoutMS.value=d.textoCheckout||'';if(st)st.textContent='';}catch(e){if(st)st.textContent='Não foi possível carregar.';}}
 async function salvarConfiguracoesEtapa6MS(){const st=document.getElementById('cfgStatusMS');const body={nomeLoja:cfgNomeLojaMS.value.trim(),whatsapp:cfgWhatsappMS.value.trim(),instagram:cfgInstagramMS.value.trim(),mensagemAtendimento:cfgMensagemMS.value.trim(),estoqueBaixo:Math.max(1,Number(cfgEstoqueBaixoMS.value||5)),textoCheckout:cfgCheckoutMS.value.trim()};if(st)st.textContent='Salvando...';try{const r=await fetch(`${API_ADMIN_MS}/loja-config`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const d=await r.json();if(!r.ok)throw new Error(d.mensagem||'Erro ao salvar');if(st){st.textContent='Configurações salvas ✓';st.style.color='#75df8e';}}catch(e){if(st){st.textContent=e.message;st.style.color='#ff7d8f';}}}
+</script>
+
+<div id="modalReposicaoRapidaMS" class="modal-reposicao-ms" aria-hidden="true">
+  <div class="modal-reposicao-backdrop-ms" onclick="fecharReposicaoRapidaMS()"></div>
+  <section class="modal-reposicao-card-ms" role="dialog" aria-modal="true" aria-labelledby="tituloReposicaoRapidaMS">
+    <header>
+      <div><span>Entrada de mercadoria</span><h2 id="tituloReposicaoRapidaMS">Reposição rápida</h2><p>Escolha o produto e informe quanto chegou de cada tamanho.</p></div>
+      <button type="button" class="fechar-reposicao-ms" onclick="fecharReposicaoRapidaMS()" aria-label="Fechar">×</button>
+    </header>
+    <div class="reposicao-seletores-ms">
+      <label>Produto<select id="reposicaoProdutoMS" onchange="atualizarCoresReposicaoMS()"></select></label>
+      <label>Cor<select id="reposicaoCorMS" onchange="renderCamposReposicaoMS()"></select></label>
+      <label>Modo<select id="reposicaoModoMS" onchange="renderCamposReposicaoMS()"><option value="somar">Somar ao estoque atual</option><option value="definir">Definir quantidade exata</option></select></label>
+    </div>
+    <div class="reposicao-resumo-ms"><strong id="reposicaoTituloMS">Selecione um produto</strong><span id="reposicaoTotalMS">0 unidades serão adicionadas</span></div>
+    <div id="reposicaoCamposMS" class="reposicao-campos-ms"></div>
+    <div class="reposicao-atalhos-ms"><span>Preencher todos:</span><button type="button" onclick="preencherReposicaoMS(1)">1</button><button type="button" onclick="preencherReposicaoMS(5)">5</button><button type="button" onclick="preencherReposicaoMS(10)">10</button><button type="button" onclick="preencherReposicaoMS(0)">Limpar</button></div>
+    <footer><span id="reposicaoStatusMS"></span><button type="button" class="cancelar" onclick="fecharReposicaoRapidaMS()">Cancelar</button><button type="button" class="salvar" onclick="salvarReposicaoRapidaMS(this)">Salvar reposição</button></footer>
+  </section>
+</div>
+
+<script>
+function produtoReposicaoAtualMS(){
+  const nome=document.getElementById('reposicaoProdutoMS')?.value;
+  return (CATALOGO_MS||[]).find(p=>p.produto===nome)||null;
+}
+function abrirReposicaoRapidaMS(){
+  const modal=document.getElementById('modalReposicaoRapidaMS');
+  const sel=document.getElementById('reposicaoProdutoMS');
+  if(!modal||!sel)return;
+  sel.innerHTML=(CATALOGO_MS||[]).map(p=>`<option value="${escaparAdminMS(p.produto)}">${escaparAdminMS(p.produto)}</option>`).join('');
+  modal.classList.add('aberto'); modal.setAttribute('aria-hidden','false'); document.body.classList.add('modal-aberto-ms');
+  atualizarCoresReposicaoMS();
+}
+function fecharReposicaoRapidaMS(){
+  const modal=document.getElementById('modalReposicaoRapidaMS');
+  modal?.classList.remove('aberto'); modal?.setAttribute('aria-hidden','true'); document.body.classList.remove('modal-aberto-ms');
+}
+function atualizarCoresReposicaoMS(){
+  const p=produtoReposicaoAtualMS(); const cor=document.getElementById('reposicaoCorMS');
+  if(!p||!cor)return;
+  cor.innerHTML=(p.cores||[]).map(c=>`<option value="${escaparAdminMS(c)}">${escaparAdminMS(c)}</option>`).join('');
+  renderCamposReposicaoMS();
+}
+function renderCamposReposicaoMS(){
+  const p=produtoReposicaoAtualMS(); const cor=document.getElementById('reposicaoCorMS')?.value; const box=document.getElementById('reposicaoCamposMS');
+  if(!p||!cor||!box)return;
+  document.getElementById('reposicaoTituloMS').textContent=`${p.produto} · ${cor}`;
+  box.innerHTML=(p.tamanhos||[]).map(t=>{const atual=quantidadeMS(p.produto,cor,t);return `<label class="reposicao-item-ms"><span><strong>${escaparAdminMS(t)}</strong><small>Atual: ${atual}</small></span><input type="number" min="0" value="0" data-tamanho="${escaparAdminMS(t)}" data-atual="${atual}" oninput="atualizarResumoReposicaoMS()"></label>`}).join('');
+  atualizarResumoReposicaoMS();
+}
+function preencherReposicaoMS(valor){document.querySelectorAll('#reposicaoCamposMS input').forEach(i=>i.value=valor);atualizarResumoReposicaoMS();}
+function atualizarResumoReposicaoMS(){
+  const modo=document.getElementById('reposicaoModoMS')?.value||'somar';
+  const vals=[...document.querySelectorAll('#reposicaoCamposMS input')].map(i=>Math.max(0,Number(i.value||0)));
+  const total=vals.reduce((a,b)=>a+b,0); const el=document.getElementById('reposicaoTotalMS');
+  if(el) el.textContent=modo==='somar'?`${total} unidade${total===1?'':'s'} serão adicionadas`:`Novo total informado: ${total} unidade${total===1?'':'s'}`;
+}
+async function salvarReposicaoRapidaMS(botao){
+  const p=produtoReposicaoAtualMS(); const cor=document.getElementById('reposicaoCorMS')?.value; const modo=document.getElementById('reposicaoModoMS')?.value||'somar'; const status=document.getElementById('reposicaoStatusMS');
+  if(!p||!cor)return;
+  const itens=[...document.querySelectorAll('#reposicaoCamposMS input')].map(input=>{const entrada=Math.max(0,Number(input.value||0));const atual=Number(input.dataset.atual||0);return {nome:p.produto,cor,tamanho:input.dataset.tamanho,quantidade:modo==='somar'?atual+entrada:entrada};});
+  if(modo==='somar' && itens.every((item,idx)=>Number(document.querySelectorAll('#reposicaoCamposMS input')[idx].value||0)===0)){status.textContent='Informe ao menos uma quantidade.';return;}
+  const original=botao.textContent; botao.disabled=true; botao.textContent='Salvando...'; status.textContent='';
+  try{
+    for(const item of itens){const r=await fetch(`${API_ADMIN_MS}/estoque`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(item)});if(!r.ok)throw new Error('Falha ao salvar');}
+    await carregarEstoqueMS(); status.textContent='Reposição salva ✓'; status.className='sucesso'; renderCamposReposicaoMS();
+  }catch(e){status.textContent='Não foi possível salvar.';status.className='erro';}
+  finally{botao.disabled=false;botao.textContent=original;}
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')fecharReposicaoRapidaMS();});
 </script>
 
 </body>

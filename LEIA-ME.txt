@@ -1,19 +1,6 @@
-ETAPA 1 - ESTOQUE MAIS FÁCIL
+ETAPA 2 - REPOSIÇÃO RÁPIDA
 
-Arquivos alterados:
-- admin.html
-- style.css
-
-Substitua os dois arquivos pelos arquivos deste pacote.
-
-O que mudou no painel de estoque:
-- Produtos agrupados em cartões por produto e cor.
-- Tamanhos aparecem juntos dentro do mesmo cartão.
-- Botões + e - em cada tamanho.
-- Atalhos +1, +5 e Zerar por produto.
-- Botão para salvar apenas um produto.
-- Botão Salvar tudo mostra quantas alterações estão pendentes.
-- Pesquisa e filtros antigos continuam funcionando.
-- Versão responsiva para celular.
-
-Esta etapa não altera o servidor, pagamentos ou regras do checkout.
+Substitua admin.html e style.css.
+Novo botão Reposição rápida no topo do estoque.
+Selecione produto, cor, modo Somar ou Definir, preencha todos os tamanhos e salve de uma vez.
+Não altera server.js, checkout ou pagamentos.
