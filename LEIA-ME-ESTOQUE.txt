@@ -1,13 +1,21 @@
-CORREÇÃO DO ESTOQUE
+ATUALIZAÇÃO DO ESTOQUE INTEGRADO - MS MATIAS STYLE
 
-- O estoque agora lê os produtos diretamente do cadastro do painel.
-- Produtos novos aparecem automaticamente no estoque, mesmo com quantidade zero.
-- Tamanhos deixam de ficar presos a P, M, G e GG.
-- Aceita numeração de calças e calçados, por exemplo: 36, 38, 40, 42 ou 37, 38, 39, 40.
-- No cadastro do produto, informe os tamanhos/números separados por vírgula.
-- A grade mostra cada combinação de produto, cor e tamanho/número.
+Arquivos incluídos:
+- server.js
+- admin.html
+- script.js
+- package.json
 
-Após substituir os arquivos:
+O que foi corrigido:
+1. Produto novo cria automaticamente todas as variações no estoque.
+2. As cores e tamanhos/numerações vêm do cadastro do produto.
+3. Se não houver cor, o sistema usa a cor identificada no nome ou "Única".
+4. Se não houver tamanho, cria "ÚNICO".
+5. Ao editar cores, tamanhos ou nome, o estoque é sincronizado preservando quantidades equivalentes.
+6. Ao excluir o produto, as variações dele também saem do estoque.
+7. O site continua carregando produtos ativos pela rota /produtos?ativos=true.
+
+Depois de substituir os arquivos, publique com:
 git add .
-git commit -m "corrige estoque dinamico e numeracoes"
+git commit -m "Integra produtos com estoque real"
 git push
