@@ -1,5 +1,13 @@
-Substitua somente:
+ETAPA 4 - PRODUTOS NOVOS ENTRAM AUTOMATICAMENTE NO ESTOQUE
+
+Substitua estes arquivos no projeto:
 - admin.html
 - admin.css
+- admin.js
 
-Não substitua style.css. O painel administrativo carrega admin.css.
+O que foi adicionado:
+- Ao cadastrar um produto novo, todas as combinações de cor e tamanho/numeração são criadas no estoque.
+- Funciona mesmo com quantidade inicial 0.
+- Presets rápidos: P/M/G/GG, numeração 34 a 44 e ÚNICO.
+- Opções personalizadas continuam disponíveis.
+- Ao editar produto existente, somente variações que ainda não existem são criadas, sem zerar o estoque atual.
