@@ -825,12 +825,114 @@ function reservarEstoquePedidoMS(items, pedidoId) {
   salvarJSON(caminhoReservas, reservas);
 }
 
+async function liberarReservaPedidoBancoMS(pedidoId) {
+  if (!pool || pedidoId === undefined || pedidoId === null) return;
+  try {
+    await pool.query(
+      `DELETE FROM reservas_estoque WHERE pedido_id = $1`,
+      [String(pedidoId)]
+    );
+  } catch (erro) {
+    console.error("Erro ao liberar reserva no banco:", erro.message);
+  }
+}
+
 function liberarReservaPedidoMS(pedidoId) {
   const reservas = lerJSON(caminhoReservas, []);
   const filtradas = Array.isArray(reservas)
     ? reservas.filter(r => String(r.pedidoId) !== String(pedidoId))
     : [];
   salvarJSON(caminhoReservas, filtradas);
+  void liberarReservaPedidoBancoMS(pedidoId);
+}
+
+async function reservarEstoqueSeguroMS(items, pedidoId) {
+  const agrupado = new Map();
+
+  (items || []).forEach(item => {
+    const pronto = prepararItemEstoqueMS(item);
+    const chave = chaveEstoqueMS(pronto);
+    const atual = agrupado.get(chave) || { ...pronto, quantidade: 0 };
+    atual.quantidade += pronto.quantidade;
+    agrupado.set(chave, atual);
+  });
+
+  if (!agrupado.size) {
+    const erro = new Error("Carrinho vazio. Não foi possível reservar o estoque.");
+    erro.statusCode = 400;
+    throw erro;
+  }
+
+  // Sem PostgreSQL, mantém o funcionamento antigo como fallback.
+  if (!pool) {
+    const validacao = validarCarrinhoEstoqueMS(items, pedidoId);
+    if (!validacao.ok) {
+      const erro = new Error(validacao.mensagem);
+      erro.statusCode = 409;
+      throw erro;
+    }
+    reservarEstoquePedidoMS(items, pedidoId);
+    return;
+  }
+
+  const clientDB = await pool.connect();
+  try {
+    await clientDB.query("BEGIN");
+    await clientDB.query(`DELETE FROM reservas_estoque WHERE expira_em <= NOW()`);
+    await clientDB.query(`DELETE FROM reservas_estoque WHERE pedido_id = $1`, [String(pedidoId)]);
+
+    // Ordem fixa evita travamentos quando dois carrinhos reservam vários itens.
+    const itensOrdenados = [...agrupado.values()].sort((a, b) =>
+      String(a.sku).localeCompare(String(b.sku))
+    );
+
+    for (const item of itensOrdenados) {
+      const estoqueResultado = await clientDB.query(
+        `SELECT quantidade FROM estoque_variantes WHERE sku = $1 FOR UPDATE`,
+        [item.sku]
+      );
+
+      if (!estoqueResultado.rows.length) {
+        const erro = new Error(`${item.nome} / ${item.cor} / ${item.tamanho} ainda não tem estoque cadastrado.`);
+        erro.statusCode = 409;
+        throw erro;
+      }
+
+      const reservasResultado = await clientDB.query(
+        `SELECT COALESCE(SUM(quantidade), 0)::int AS reservado
+           FROM reservas_estoque
+          WHERE sku = $1 AND status = 'reservado' AND expira_em > NOW()`,
+        [item.sku]
+      );
+
+      const estoqueAtual = Math.max(0, Number(estoqueResultado.rows[0].quantidade || 0));
+      const reservado = Math.max(0, Number(reservasResultado.rows[0].reservado || 0));
+      const disponivel = Math.max(0, estoqueAtual - reservado);
+
+      if (item.quantidade > disponivel) {
+        const erro = new Error(`Estoque insuficiente para ${item.nome} / ${item.cor} / ${item.tamanho}. Disponível agora: ${disponivel}.`);
+        erro.statusCode = 409;
+        throw erro;
+      }
+
+      await clientDB.query(
+        `INSERT INTO reservas_estoque
+          (pedido_id, sku, nome, cor, tamanho, quantidade, status, criado_em, expira_em)
+         VALUES ($1,$2,$3,$4,$5,$6,'reservado',NOW(),NOW() + INTERVAL '20 minutes')`,
+        [String(pedidoId), item.sku, item.nome, item.cor, item.tamanho, item.quantidade]
+      );
+    }
+
+    await clientDB.query("COMMIT");
+    // Espelho local para manter compatibilidade com as telas atuais.
+    reservarEstoquePedidoMS(items, pedidoId);
+  } catch (erro) {
+    await clientDB.query("ROLLBACK");
+    if (!erro.statusCode) erro.statusCode = 500;
+    throw erro;
+  } finally {
+    clientDB.release();
+  }
 }
 
 function baixarEstoquePedidoMS(pedido) {
@@ -1508,7 +1610,7 @@ app.post("/criar-pagamento-pix", async (req, res) => {
     };
     pedidos.push(pedidoNovo);
     salvarPedidos(pedidos);
-    reservarEstoquePedidoMS(carrinhoItems, idPedido);
+    await reservarEstoqueSeguroMS(carrinhoItems, idPedido);
 
     const backendUrl = (process.env.BACKEND_URL || "https://ms-matias-style.onrender.com").replace(/\/$/, "");
     const nomes = nome.split(/\s+/).filter(Boolean);
@@ -1693,7 +1795,7 @@ app.post("/criar-pagamento", async (req, res) => {
     }
 
     salvarPedidos(pedidos);
-    reservarEstoquePedidoMS(carrinhoItems, idPedido);
+    await reservarEstoqueSeguroMS(carrinhoItems, idPedido);
 
     let pagamento;
     try {
@@ -1827,7 +1929,7 @@ app.post("/checkout-mp", async (req, res) => {
 
     pedidos.push(novoPedido);
     salvarPedidos(pedidos);
-    reservarEstoquePedidoMS(carrinhoItems, idPedido);
+    await reservarEstoqueSeguroMS(carrinhoItems, idPedido);
 
     let pagamento;
     try {
