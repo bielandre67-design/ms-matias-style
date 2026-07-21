@@ -471,12 +471,26 @@ html, body { min-height: 100%; }
               </label>
             </div>
 
-            <div class="filtros-status-estoque-ms" aria-label="Filtros rápidos de estoque">
-              <button type="button" class="ativo" data-status="todos" onclick="filtrarStatusEstoqueMS('todos',this)">Todos</button>
-              <button type="button" data-status="normal" onclick="filtrarStatusEstoqueMS('normal',this)">🟢 Normal</button>
-              <button type="button" data-status="baixo" onclick="filtrarStatusEstoqueMS('baixo',this)">🟡 Estoque baixo</button>
-              <button type="button" data-status="zero" onclick="filtrarStatusEstoqueMS('zero',this)">🔴 Esgotados</button>
+            <div class="estoque-filtros-linha2-ms">
+              <div class="filtros-status-estoque-ms" aria-label="Filtros rápidos de estoque">
+                <button type="button" class="ativo" data-status="todos" onclick="filtrarStatusEstoqueMS('todos',this)">Todos</button>
+                <button type="button" data-status="normal" onclick="filtrarStatusEstoqueMS('normal',this)">🟢 Normal</button>
+                <button type="button" data-status="baixo" onclick="filtrarStatusEstoqueMS('baixo',this)">🟡 Estoque baixo</button>
+                <button type="button" data-status="zero" onclick="filtrarStatusEstoqueMS('zero',this)">🔴 Esgotados</button>
+              </div>
+              <div class="estoque-organizacao-ms">
+                <label>Ordenar
+                  <select id="ordenarEstoqueMS" onchange="renderGradeEstoqueMS()">
+                    <option value="produto">Produto A–Z</option>
+                    <option value="menor">Menor estoque primeiro</option>
+                    <option value="maior">Maior estoque primeiro</option>
+                    <option value="categoria">Categoria</option>
+                  </select>
+                </label>
+                <button type="button" class="btn-limpar-estoque-ms" onclick="limparFiltrosEstoqueMS()">Limpar filtros</button>
+              </div>
             </div>
+            <div class="resultado-filtro-estoque-ms"><span id="resultadoFiltroEstoqueMS">0 produtos exibidos</span></div>
 
             <div class="variacoes-rapidas-ms">
               <div>
@@ -845,6 +859,29 @@ function filtrarStatusEstoqueMS(status, botao){
   renderGradeEstoqueMS();
 }
 
+function limparFiltrosEstoqueMS(){
+  const categoria = document.getElementById('filtroCategoriaMS');
+  const produto = document.getElementById('filtroProdutoMS');
+  const pesquisa = document.getElementById('pesquisaEstoqueMS');
+  const ordenar = document.getElementById('ordenarEstoqueMS');
+  if(categoria) categoria.value = 'todas';
+  if(produto) produto.value = 'todos';
+  if(pesquisa) pesquisa.value = '';
+  if(ordenar) ordenar.value = 'produto';
+  filtroStatusEstoqueAtualMS = 'todos';
+  document.querySelectorAll('.filtros-status-estoque-ms button').forEach(b => b.classList.toggle('ativo', b.dataset.status === 'todos'));
+  atualizarSeletorVariacoesMS();
+  renderGradeEstoqueMS();
+}
+
+function atualizarResultadoFiltroEstoqueMS(qtdGrupos, qtdVariantes){
+  const el = document.getElementById('resultadoFiltroEstoqueMS');
+  if(!el) return;
+  const p = qtdGrupos === 1 ? 'produto exibido' : 'produtos exibidos';
+  const v = qtdVariantes === 1 ? 'opção' : 'opções';
+  el.textContent = `${qtdGrupos} ${p} · ${qtdVariantes} ${v}`;
+}
+
 function ajustarQuantidadeEstoqueMS(botao, delta){
   const controle = botao.closest('.controle-qtd-estoque-ms');
   const input = controle?.querySelector('.qtd-input-ms');
@@ -876,12 +913,23 @@ function renderGradeEstoqueMS(){
     grupos.get(chaveGrupo).itens.push(i);
   });
 
+  const ordenacao = document.getElementById('ordenarEstoqueMS')?.value || 'produto';
+  const gruposOrdenados = [...grupos.values()].sort((a,b) => {
+    const totalA = a.itens.reduce((s,i)=>s+Number(i.quantidade||0),0);
+    const totalB = b.itens.reduce((s,i)=>s+Number(i.quantidade||0),0);
+    if(ordenacao === 'menor') return totalA-totalB || a.nome.localeCompare(b.nome,'pt-BR');
+    if(ordenacao === 'maior') return totalB-totalA || a.nome.localeCompare(b.nome,'pt-BR');
+    if(ordenacao === 'categoria') return a.categoria.localeCompare(b.categoria,'pt-BR') || a.nome.localeCompare(b.nome,'pt-BR');
+    return a.nome.localeCompare(b.nome,'pt-BR') || a.cor.localeCompare(b.cor,'pt-BR');
+  });
+  atualizarResultadoFiltroEstoqueMS(gruposOrdenados.length, variantes.length);
+
   if(!grupos.size){
     corpo.innerHTML = '<div class="estoque-vazio-ms"><strong>Nenhum item encontrado.</strong><span>Tente retirar algum filtro ou pesquisar outro produto.</span></div>';
     atualizarCardsEstoqueMS(); renderAlertasEstoqueMS(); atualizarContadorAlteracoesEstoqueMS(); return;
   }
 
-  corpo.innerHTML = [...grupos.values()].map((grupo, indice) => {
+  corpo.innerHTML = gruposOrdenados.map((grupo, indice) => {
     const total = grupo.itens.reduce((s,i)=>s+Number(i.quantidade||0),0);
     const baixos = grupo.itens.filter(i=>Number(i.quantidade||0)>0 && Number(i.quantidade||0)<=3).length;
     const zerados = grupo.itens.filter(i=>Number(i.quantidade||0)<=0).length;

@@ -105,3 +105,69 @@ body.modal-aberto-ms{overflow:hidden}
   .modal-reposicao-ms{padding:8px}.modal-reposicao-card-ms{border-radius:18px;padding:16px}
   .modal-reposicao-card-ms>footer{position:sticky;bottom:-16px;background:var(--panel);padding-bottom:16px;flex-wrap:wrap}.modal-reposicao-card-ms>footer span{width:100%;margin:0}.modal-reposicao-card-ms>footer button{flex:1}
 }
+
+/* ETAPA 3: organização rápida do estoque */
+#estoqueAba .estoque-filtros-linha2-ms{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:14px;
+  margin-top:14px;
+}
+#estoqueAba .estoque-organizacao-ms{
+  display:flex;
+  align-items:flex-end;
+  gap:10px;
+  flex-wrap:wrap;
+}
+#estoqueAba .estoque-organizacao-ms label{
+  display:grid;
+  gap:6px;
+  min-width:210px;
+  color:var(--muted);
+  font-size:11px;
+  font-weight:900;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+}
+#estoqueAba .estoque-organizacao-ms select{
+  height:42px;
+  padding:0 38px 0 12px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:var(--panel);
+  color:var(--text);
+  font-weight:800;
+}
+#estoqueAba .btn-limpar-estoque-ms{
+  min-height:42px;
+  padding:0 14px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:transparent;
+  color:var(--text);
+  font-weight:850;
+  cursor:pointer;
+}
+#estoqueAba .btn-limpar-estoque-ms:hover{
+  border-color:rgba(216,173,67,.48);
+  background:rgba(216,173,67,.08);
+}
+#estoqueAba .resultado-filtro-estoque-ms{
+  display:flex;
+  justify-content:flex-end;
+  padding-top:10px;
+  color:var(--muted);
+  font-size:12px;
+  font-weight:800;
+}
+@media(max-width:900px){
+  #estoqueAba .estoque-filtros-linha2-ms{align-items:stretch;flex-direction:column}
+  #estoqueAba .estoque-organizacao-ms{display:grid;grid-template-columns:1fr auto}
+  #estoqueAba .estoque-organizacao-ms label{min-width:0}
+}
+@media(max-width:560px){
+  #estoqueAba .estoque-organizacao-ms{grid-template-columns:1fr}
+  #estoqueAba .btn-limpar-estoque-ms{width:100%}
+  #estoqueAba .resultado-filtro-estoque-ms{justify-content:flex-start}
+}
