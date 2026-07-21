@@ -718,40 +718,6 @@ function salvarEstoqueMS(lista) {
   void sincronizarTabelaEstoqueMS(dados);
 }
 
-// Mantém o cadastro de produtos e o estoque como um único sistema.
-function listaVariacoesProdutoMS(produto) {
-  const nome = String(produto?.nome || "Produto MS").trim();
-  const cores = [...new Set((Array.isArray(produto?.cores) ? produto.cores : []).map(v => String(v || "").trim()).filter(Boolean))];
-  const tamanhos = [...new Set((Array.isArray(produto?.tamanhos) ? produto.tamanhos : []).map(v => String(v || "").trim().toUpperCase()).filter(Boolean))];
-  if (!cores.length) cores.push(corPeloNomeMS(nome) || "Única");
-  if (!tamanhos.length) tamanhos.push("ÚNICO");
-  return cores.flatMap(cor => tamanhos.map(tamanho => prepararItemEstoqueMS({ nome, cor, tamanho, quantidade: 0 })));
-}
-
-function sincronizarEstoqueDoProdutoMS(produto, opcoes = {}) {
-  if (!produto?.nome) return [];
-  const estoqueAtual = lerEstoqueMS();
-  const nomeAtual = normalizarTextoMS(produto.nome);
-  const nomeAnterior = normalizarTextoMS(opcoes.nomeAnterior || produto.nome);
-  const quantidadeInicial = Math.max(0, Number(opcoes.quantidadeInicial || 0));
-  const relacionadas = estoqueAtual.filter(i => [nomeAtual, nomeAnterior].includes(normalizarTextoMS(i?.nome)));
-  const restantes = estoqueAtual.filter(i => ![nomeAtual, nomeAnterior].includes(normalizarTextoMS(i?.nome)));
-  const exatas = new Map(relacionadas.map(i => [chaveEstoqueMS(i), i]));
-  const equivalentes = new Map(relacionadas.map(i => [`${normalizarTextoMS(i?.cor)}|${normalizarTextoMS(i?.tamanho).toUpperCase()}`, i]));
-  const sincronizadas = listaVariacoesProdutoMS(produto).map(v => {
-    const anterior = exatas.get(chaveEstoqueMS(v)) || equivalentes.get(`${normalizarTextoMS(v.cor)}|${normalizarTextoMS(v.tamanho).toUpperCase()}`);
-    return prepararItemEstoqueMS({ ...v, quantidade: anterior ? Math.max(0, Number(anterior.quantidade || 0)) : quantidadeInicial, atualizadoEm: new Date().toISOString() });
-  });
-  salvarEstoqueMS([...restantes, ...sincronizadas]);
-  return sincronizadas;
-}
-
-function removerEstoqueDoProdutoMS(nomeProduto) {
-  const nome = normalizarTextoMS(nomeProduto);
-  if (!nome) return;
-  salvarEstoqueMS(lerEstoqueMS().filter(i => normalizarTextoMS(i?.nome) !== nome));
-}
-
 function limparReservasVencidasMS() {
   const agora = Date.now();
   const reservas = lerJSON(caminhoReservas, []);
@@ -2357,11 +2323,7 @@ app.post("/produtos/sincronizar-catalogo", async (req, res, next) => {
         [chave, nome, String(p.categoria || "Roupas").slice(0,80), preco, Number.isFinite(precoAntigo) ? precoAntigo : null,
          String(p.imagem || imagens[0] || ""), JSON.stringify(imagens), String(p.descricao || "")]
       );
-      if (r.rowCount) {
-        inseridos++;
-        const criado = await pool.query("SELECT * FROM produtos WHERE id=$1", [r.rows[0].id]);
-        if (criado.rowCount) sincronizarEstoqueDoProdutoMS(produtoRespostaMS(criado.rows[0]));
-      }
+      if (r.rowCount) inseridos++;
     }
     res.json({ ok: true, inseridos });
   } catch (erro) { next(erro); }
@@ -2374,7 +2336,6 @@ app.post("/produtos", async (req, res, next) => {
     const nome = String(p.nome || "").trim();
     if (!nome) return res.status(400).json({ erro: true, mensagem: "Informe o nome do produto." });
     const chave = chaveProdutoMS(p.chave || nome);
-    const existenteAntes = await pool.query("SELECT * FROM produtos WHERE chave=$1 LIMIT 1", [chave]);
     const resultado = await pool.query(
       `INSERT INTO produtos (chave,nome,categoria,preco,preco_antigo,imagem,imagens,descricao,tabela_medidas,detalhes_produto,composicao,cuidados,cores,tamanhos,ativo,destaque,promocao,peso_kg,altura_cm,largura_cm,comprimento_cm)
        VALUES ($1,$2,$3,$4,$5,$6,$7::jsonb,$8,$9,$10,$11,$12,$13::jsonb,$14::jsonb,$15,$16,$17,$18,$19,$20,$21)
@@ -2393,9 +2354,7 @@ app.post("/produtos", async (req, res, next) => {
        numeroMedidaProdutoMS(p.pesoKg, 'Peso'), numeroMedidaProdutoMS(p.alturaCm, 'Altura'),
        numeroMedidaProdutoMS(p.larguraCm, 'Largura'), numeroMedidaProdutoMS(p.comprimentoCm, 'Comprimento')]
     );
-    const produtoSalvo = produtoRespostaMS(resultado.rows[0]);
-    sincronizarEstoqueDoProdutoMS(produtoSalvo, { nomeAnterior: existenteAntes.rows[0]?.nome || produtoSalvo.nome, quantidadeInicial: p.quantidadeInicial });
-    res.json({ ok:true, produto:produtoSalvo, estoqueSincronizado:true });
+    res.json({ ok:true, produto:produtoRespostaMS(resultado.rows[0]) });
   } catch (erro) { next(erro); }
 });
 
@@ -2403,7 +2362,6 @@ app.put("/produtos/:id", async (req, res, next) => {
   if (!pool) return res.status(503).json({ erro: true, mensagem: "PostgreSQL não configurado." });
   try {
     const p=req.body||{};
-    const existenteAntes = await pool.query("SELECT * FROM produtos WHERE id=$1 LIMIT 1", [req.params.id]);
     const resultado=await pool.query(
       `UPDATE produtos SET nome=COALESCE($2,nome),categoria=COALESCE($3,categoria),
        preco=COALESCE($4,preco),preco_antigo=$5,imagem=COALESCE($6,imagem),
@@ -2426,20 +2384,14 @@ app.put("/produtos/:id", async (req, res, next) => {
        p.destaqueOrdem==null?null:Math.max(0,Number(p.destaqueOrdem)||0)]
     );
     if(!resultado.rowCount) return res.status(404).json({erro:true,mensagem:"Produto não encontrado."});
-    const produtoSalvo = produtoRespostaMS(resultado.rows[0]);
-    sincronizarEstoqueDoProdutoMS(produtoSalvo, { nomeAnterior: existenteAntes.rows[0]?.nome || produtoSalvo.nome, quantidadeInicial: p.quantidadeInicial });
-    res.json({ok:true,produto:produtoSalvo,estoqueSincronizado:true});
+    res.json({ok:true,produto:produtoRespostaMS(resultado.rows[0])});
   } catch(erro){ next(erro); }
 });
 
 app.delete("/produtos/:id", async (req,res,next)=>{
   if (!pool) return res.status(503).json({ erro: true, mensagem: "PostgreSQL não configurado." });
-  try {
-    const existente = await pool.query("SELECT nome FROM produtos WHERE id=$1 LIMIT 1", [req.params.id]);
-    await pool.query("DELETE FROM produtos WHERE id=$1",[req.params.id]);
-    if (existente.rowCount) removerEstoqueDoProdutoMS(existente.rows[0].nome);
-    res.json({ok:true,estoqueRemovido:Boolean(existente.rowCount)});
-  } catch(erro){ next(erro); }
+  try { await pool.query("DELETE FROM produtos WHERE id=$1",[req.params.id]); res.json({ok:true}); }
+  catch(erro){ next(erro); }
 });
 
 
