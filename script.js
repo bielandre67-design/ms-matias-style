@@ -6928,6 +6928,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("msPixCodigo").value=d.qr_code; document.getElementById("msPixCodigo").hidden=false;
     document.getElementById("msPixCopiar").hidden=false;
     localStorage.setItem("msUltimoPedidoId",String(d.pedido));
+    localStorage.setItem("msPedidoPagamentoAtivo",String(d.pedido));
     acompanharMS(d.pedido);
   }
 
@@ -6957,9 +6958,9 @@ document.addEventListener("DOMContentLoaded", () => {
         <span>✓</span>
         <p>Seu pagamento foi aprovado. Agora vamos separar seu pedido e avisar você sobre as próximas etapas.</p>
       </div>
-      <button class="ms-sucesso-botao" type="button" onclick="localStorage.removeItem('carrinho');localStorage.removeItem('carrinhoMS');location.href='index.html'">Voltar para a loja</button>
+      <button class="ms-sucesso-botao" type="button" onclick="localStorage.removeItem('carrinho');localStorage.removeItem('carrinhoMS');localStorage.removeItem('msPedidoPagamentoAtivo');location.href='index.html'">Voltar para a loja</button>
       <p class="ms-sucesso-seguranca">Compra processada com segurança</p>`;
-    try{ localStorage.removeItem("carrinho"); localStorage.removeItem("carrinhoMS"); }catch(e){}
+    try{ localStorage.removeItem("carrinho"); localStorage.removeItem("carrinhoMS"); localStorage.removeItem("msPedidoPagamentoAtivo"); }catch(e){}
   }
   async function consultarMS(pedido){
     try{ const r=await fetch(`${apiMS()}/pagamento/status/${encodeURIComponent(pedido)}?t=${Date.now()}`,{cache:"no-store"}); if(!r.ok)return; const d=await r.json(); const st=String(d.status||d.pagamento?.status||"").toLowerCase();
@@ -6991,7 +6992,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let lista=[]; try{lista=JSON.parse(localStorage.getItem("carrinho")||"[]");}catch(e){}
     if(!lista.length && typeof carrinho!=="undefined" && Array.isArray(carrinho)) lista=carrinho;
     const c=clienteMS(), tipo=localStorage.getItem("tipoEntregaMS")||"entrega", retirada=tipo==="retirada";
-    return {lista,c,tipo,retirada,payload:{tipoEntrega:tipo,retiradaLocal:retirada,items:itensMS(lista),nome:c.nome,telefone:c.telefone,email:c.email,cep:c.cep,rua:c.rua,numero:c.numero,complemento:c.complemento,bairro:c.bairro,cidade:c.cidade,estado:c.estado,cliente:c,endereco:c,valorFrete:Number(window.valorFrete||((typeof valorFrete!=="undefined")?valorFrete:0)||localStorage.getItem("valorFreteMS")||0),freteSelecionado:window.freteSelecionado||((typeof freteSelecionado!=="undefined")?freteSelecionado:null),codigoCupom:(typeof codigoCupomAplicadoMS!=="undefined"?codigoCupomAplicadoMS:(localStorage.getItem("codigoCupomAplicadoMS")||""))}};
+    return {lista,c,tipo,retirada,payload:{pedidoId:localStorage.getItem("msPedidoPagamentoAtivo")||null,tipoEntrega:tipo,retiradaLocal:retirada,items:itensMS(lista),nome:c.nome,telefone:c.telefone,email:c.email,cep:c.cep,rua:c.rua,numero:c.numero,complemento:c.complemento,bairro:c.bairro,cidade:c.cidade,estado:c.estado,cliente:c,endereco:c,valorFrete:Number(window.valorFrete||((typeof valorFrete!=="undefined")?valorFrete:0)||localStorage.getItem("valorFreteMS")||0),freteSelecionado:window.freteSelecionado||((typeof freteSelecionado!=="undefined")?freteSelecionado:null),codigoCupom:(typeof codigoCupomAplicadoMS!=="undefined"?codigoCupomAplicadoMS:(localStorage.getItem("codigoCupomAplicadoMS")||""))}};
   }
 
   function validarAntesPagamentoMS(d){
@@ -7455,6 +7456,7 @@ document.addEventListener("DOMContentLoaded", () => {
       itens,
       cliente,
       payload: {
+        pedidoId: localStorage.getItem("msPedidoPagamentoAtivo") || null,
         tipoEntrega,
         retiradaLocal,
         items: normalizarItensPCMS(itens),
@@ -7600,6 +7602,7 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("loaderPixPCMSFinal").hidden = true;
       document.getElementById("tituloPixPCMSFinal").textContent = "Pague com PIX";
       document.getElementById("textoPixPCMSFinal").textContent = `Pedido #${retorno.pedido}. Escaneie o QR Code ou copie o código.`;
+      localStorage.setItem("msPedidoPagamentoAtivo", String(retorno.pedido));
       document.getElementById("valorPixPCMSFinal").textContent = Number(retorno.total || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
       const qr = document.getElementById("qrPixPCMSFinal");
       if (retorno.qr_code_base64) { qr.src = `data:image/png;base64,${retorno.qr_code_base64}`; qr.hidden = false; }

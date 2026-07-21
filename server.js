@@ -779,7 +779,10 @@ function validarCarrinhoEstoqueMS(items, ignorarPedidoId = null) {
 
 function reservarEstoquePedidoMS(items, pedidoId) {
   limparReservasVencidasMS();
-  const reservas = lerJSON(caminhoReservas, []);
+  const reservasLidas = lerJSON(caminhoReservas, []);
+  // Uma troca de forma de pagamento não pode duplicar a reserva do mesmo pedido.
+  const reservas = (Array.isArray(reservasLidas) ? reservasLidas : [])
+    .filter(r => String(r.pedidoId) !== String(pedidoId));
   const expiraEm = Date.now() + 20 * 60 * 1000; // 20 minutos
   const agrupado = new Map();
 
@@ -1567,6 +1570,7 @@ app.post("/criar-pagamento", async (req, res) => {
 
     const body = req.body || {};
     const carrinhoItems = body.items || [];
+    const pedidoIdExistente = body.pedidoId || body.pedidoExistenteId || null;
 
     const nome = body.nome || body.cliente?.nome || "";
     const telefone = body.telefone || body.whatsapp || body.cliente?.telefone || "";
@@ -1609,7 +1613,7 @@ app.post("/criar-pagamento", async (req, res) => {
       });
     }
 
-    const validacaoEstoque = validarCarrinhoEstoqueMS(carrinhoItems);
+    const validacaoEstoque = validarCarrinhoEstoqueMS(carrinhoItems, pedidoIdExistente);
     if (!validacaoEstoque.ok) {
       return res.status(400).json({
         erro: true,
@@ -1628,13 +1632,16 @@ app.post("/criar-pagamento", async (req, res) => {
     const totalPedido = subtotal - valorDesconto + valorFrete;
 
     const pedidos = lerPedidos();
-    const idPedido = proximoIdPedidoMS(pedidos);
+    const pedidoExistente = pedidoIdExistente
+      ? pedidos.find((p) => idsIguaisMS(p.id, pedidoIdExistente) && !p.estoqueBaixado)
+      : null;
+    const idPedido = pedidoExistente ? pedidoExistente.id : proximoIdPedidoMS(pedidos);
     const agoraBrasil = new Date().toLocaleString("pt-BR", {
       timeZone: "America/Sao_Paulo",
       hour12: false
     });
 
-    pedidos.push({
+    const dadosPedido = {
       id: idPedido,
       nome,
       telefone,
@@ -1658,8 +1665,14 @@ app.post("/criar-pagamento", async (req, res) => {
       codigoCupom: codigoCupom || null,
       total: totalPedido,
       status: "aguardando pagamento",
-      data: agoraBrasil
-    });
+      data: pedidoExistente?.data || agoraBrasil
+    };
+
+    if (pedidoExistente) {
+      Object.assign(pedidoExistente, dadosPedido);
+    } else {
+      pedidos.push(dadosPedido);
+    }
 
     salvarPedidos(pedidos);
     reservarEstoquePedidoMS(carrinhoItems, idPedido);
@@ -1674,8 +1687,10 @@ app.post("/criar-pagamento", async (req, res) => {
         percentualDesconto: desconto
       });
     } catch (erroPagamento) {
-      liberarReservaPedidoMS(idPedido);
-      salvarPedidos(lerPedidos().filter((p) => !idsIguaisMS(p.id, idPedido)));
+      if (!pedidoExistente) {
+        liberarReservaPedidoMS(idPedido);
+        salvarPedidos(lerPedidos().filter((p) => !idsIguaisMS(p.id, idPedido)));
+      }
       throw erroPagamento;
     }
 
