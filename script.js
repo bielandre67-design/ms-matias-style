@@ -5854,7 +5854,10 @@ function dinheiro(valor){
     const resp = await fetch(`${API_ESTOQUE_MS}/estoque/disponivel`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(itemProntoMS(item))
+      body: JSON.stringify({
+        ...itemProntoMS(item),
+        pedidoId: localStorage.getItem("msPedidoPagamentoAtivo") || null
+      })
     });
     const dados = await resp.json().catch(() => ({}));
     if(!resp.ok) throw new Error(dados.mensagem || "Erro ao consultar estoque.");
@@ -6017,7 +6020,10 @@ function dinheiro(valor){
       const resp = await fetch(`${API_ESTOQUE_MS}/estoque/validar-carrinho`, {
         method:"POST",
         headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({items: lista})
+        body: JSON.stringify({
+          items: lista,
+          pedidoId: localStorage.getItem("msPedidoPagamentoAtivo") || null
+        })
       });
       const dados = await resp.json().catch(() => ({}));
       if(!resp.ok){

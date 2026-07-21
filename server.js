@@ -915,14 +915,19 @@ app.delete("/estoque", (req, res) => {
 });
 
 app.post("/estoque/disponivel", (req, res) => {
-  const item = prepararItemEstoqueMS(req.body || {});
-  const info = disponivelMS(item);
-  res.json({ ...info, ...item });
+  const body = req.body || {};
+  const item = prepararItemEstoqueMS(body);
+  // Ao editar o mesmo carrinho/pedido, a reserva dele não pode ser descontada
+  // novamente. Reservas de outros pedidos continuam sendo respeitadas.
+  const pedidoId = body.pedidoId || body.pedidoExistenteId || null;
+  const info = disponivelMS(item, pedidoId);
+  res.json({ ...info, ...item, pedidoIdIgnorado: pedidoId || null });
 });
 
 app.post("/estoque/validar-carrinho", (req, res) => {
   const items = req.body?.items || [];
-  const validacao = validarCarrinhoEstoqueMS(items);
+  const pedidoId = req.body?.pedidoId || req.body?.pedidoExistenteId || null;
+  const validacao = validarCarrinhoEstoqueMS(items, pedidoId);
   if (!validacao.ok) return res.status(400).json({ erro: true, mensagem: validacao.mensagem });
   res.json({ sucesso: true });
 });
