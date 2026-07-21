@@ -15440,3 +15440,25 @@ body.aparencia-ms-ativa .preco,body.aparencia-ms-ativa .produto-preco,body.apare
     font-size: 14px !important;
   }
 }
+
+/* Estoque organizado em cartões, edição rápida */
+#estoqueAba .estoque-acoes-rapidas-ms{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:13px 18px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.018)}
+#estoqueAba .estoque-acoes-rapidas-ms span{font-size:12px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-right:3px}
+#estoqueAba .estoque-acoes-rapidas-ms button,.estoque-atalhos-card-ms button{min-height:34px;padding:0 11px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--text);font-weight:850;cursor:pointer}
+#estoqueAba .estoque-acoes-rapidas-ms button:hover,.estoque-atalhos-card-ms button:hover{border-color:rgba(216,173,67,.55);color:var(--gold)}
+.estoque-grupos-ms{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;padding:16px}
+.estoque-produto-card-ms{min-width:0;border:1px solid var(--line);border-radius:19px;background:linear-gradient(145deg,var(--panel2),var(--panel));overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.14)}
+.estoque-produto-head-ms{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;padding:16px 17px 13px;border-bottom:1px solid var(--line)}
+.estoque-produto-head-ms h3{margin:5px 0 4px;font-size:17px;line-height:1.2}.estoque-produto-head-ms p{margin:0;color:var(--muted);font-size:12px}
+.estoque-categoria-ms{display:inline-flex;padding:4px 8px;border-radius:999px;background:rgba(216,173,67,.12);color:var(--gold);font-size:9px;font-weight:950;letter-spacing:.08em;text-transform:uppercase}
+.estoque-produto-total-ms{display:grid;text-align:right;flex:0 0 auto}.estoque-produto-total-ms strong{font-size:27px;color:var(--gold);line-height:1}.estoque-produto-total-ms span{font-size:10px;color:var(--muted);font-weight:850;margin-top:4px}
+.estoque-produto-resumo-ms{display:flex;gap:7px;flex-wrap:wrap;padding:10px 17px;background:rgba(255,255,255,.018)}.estoque-produto-resumo-ms span{font-size:10px;font-weight:850;color:var(--muted);padding:4px 7px;border-radius:999px;border:1px solid var(--line)}.estoque-produto-resumo-ms .atencao{color:#f0c659;border-color:rgba(240,198,89,.35)}.estoque-produto-resumo-ms .perigo{color:#ff7d8f;border-color:rgba(255,125,143,.35)}
+.estoque-variantes-grid-ms{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;padding:13px 16px}
+.estoque-variante-ms{display:grid;grid-template-columns:minmax(60px,.7fr) minmax(132px,1.3fr);align-items:center;gap:8px;padding:10px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.022)}
+.estoque-variante-identidade-ms{display:grid;gap:5px;min-width:0}.estoque-variante-identidade-ms>strong{font-size:15px}.estoque-variante-identidade-ms small span{font-size:9px;padding:4px 6px}
+.estoque-variante-ms .controle-qtd-estoque-ms{grid-template-columns:34px minmax(48px,1fr) 34px}.estoque-variante-ms .controle-qtd-estoque-ms button{width:34px;height:38px}.estoque-variante-ms .qtd-input-ms{width:100%!important;height:38px!important;padding:0 4px!important;text-align:center}
+.estoque-produto-footer-ms{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 16px;border-top:1px solid var(--line);background:rgba(0,0,0,.09)}.estoque-atalhos-card-ms{display:flex;gap:6px;flex-wrap:wrap}.salvar-card-estoque-ms{min-height:38px;padding:0 13px;border:0;border-radius:11px;background:var(--gold);color:#111;font-weight:950;cursor:pointer;white-space:nowrap}.salvar-card-estoque-ms:disabled{opacity:.6;cursor:wait}
+.estoque-carregando-ms,.estoque-vazio-ms{grid-column:1/-1;display:grid;place-items:center;gap:5px;min-height:180px;padding:25px;text-align:center;color:var(--muted)}.estoque-vazio-ms strong{color:var(--text);font-size:16px}.estoque-vazio-ms span{font-size:12px}
+#btnSalvarTudoEstoqueMS.tem-alteracoes{box-shadow:0 0 0 3px rgba(216,173,67,.18);border-color:var(--gold)}
+@media(max-width:1180px){.estoque-grupos-ms{grid-template-columns:1fr}}
+@media(max-width:700px){.estoque-grupos-ms{padding:10px;gap:10px}.estoque-variantes-grid-ms{grid-template-columns:1fr;padding:10px}.estoque-produto-footer-ms{align-items:stretch;flex-direction:column}.salvar-card-estoque-ms{width:100%}.estoque-atalhos-card-ms button{flex:1}.estoque-variante-ms{grid-template-columns:minmax(70px,.75fr) minmax(150px,1.25fr)}#estoqueAba .estoque-acoes-rapidas-ms{padding:11px}.estoque-produto-head-ms{padding:14px}}

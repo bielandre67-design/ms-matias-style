@@ -439,7 +439,7 @@ html, body { min-height: 100%; }
           <h2>Estoque</h2>
           <p>Escolha o produto, altere as quantidades por cor e tamanho, depois salve. Sem digitar produto ou cor.</p>
         </div>
-        <button class="btn-dark-ms" onclick="salvarGradeEstoqueMS()">Salvar alterações</button>
+        <button id="btnSalvarTudoEstoqueMS" class="btn-dark-ms" onclick="salvarGradeEstoqueMS(this)">💾 Salvar tudo <span id="contadorAlteracoesEstoqueMS"></span></button>
       </div>
 
       <section class="cards-resumo estoque-cards-ms">
@@ -490,20 +490,13 @@ html, body { min-height: 100%; }
             </div>
           </div>
 
-          <div class="tabela-wrap-ms">
-            <table class="estoque-lista grade-estoque-ms">
-              <thead>
-                <tr>
-                  <th>Produto</th>
-                  <th>Cor</th>
-                  <th>Tamanho / Número</th>
-                  <th>Quantidade</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody id="listaEstoqueMS"><tr><td colspan="5">Carregando estoque...</td></tr></tbody>
-            </table>
+          <div class="estoque-acoes-rapidas-ms">
+            <span>Alteração rápida:</span>
+            <button type="button" onclick="ajustarGrupoVisivelEstoqueMS(1)">+1 em todos visíveis</button>
+            <button type="button" onclick="ajustarGrupoVisivelEstoqueMS(5)">+5 em todos visíveis</button>
+            <button type="button" onclick="ajustarGrupoVisivelEstoqueMS(-1)">−1 em todos visíveis</button>
           </div>
+          <div id="listaEstoqueMS" class="estoque-grupos-ms"><div class="estoque-carregando-ms">Carregando estoque...</div></div>
           <div class="legenda-ms"><span class="dot ok"></span> Normal <span class="dot baixo"></span> Baixo <span class="dot zero"></span> Sem estoque</div>
         </div>
 
@@ -730,7 +723,7 @@ function popularFiltrosEstoqueMS(){
 
 async function carregarEstoqueMS(){
   const corpo = document.getElementById('listaEstoqueMS');
-  if(corpo) corpo.innerHTML = '<tr><td colspan="5">Carregando produtos e estoque...</td></tr>';
+  if(corpo) corpo.innerHTML = '<div class="estoque-carregando-ms">Carregando produtos e estoque...</div>';
   try{
     const [respProdutos, respEstoque] = await Promise.all([
       fetch(`${API_ADMIN_MS}/produtos?t=${Date.now()}`),
@@ -747,7 +740,7 @@ async function carregarEstoqueMS(){
     estoqueServidorMS = [];
     CATALOGO_MS = [];
     PRODUTOS_COMPLETOS_MS = [];
-    if (corpo) corpo.innerHTML = '<tr><td colspan="5">Não consegui carregar o estoque. Atualize a página e tente novamente.</td></tr>';
+    if (corpo) corpo.innerHTML = '<div class="estoque-vazio-ms">Não consegui carregar o estoque. Atualize a página e tente novamente.</div>';
     return;
   }
   renderGradeEstoqueMS();
@@ -872,19 +865,94 @@ function renderGradeEstoqueMS(){
     if(filtroStatusEstoqueAtualMS === 'zero' && qtd > 0) return false;
     return !busca || normalizarMS(`${i.nome} ${i.cor} ${i.tamanho} ${i.categoria}`).includes(busca);
   });
-  corpo.innerHTML = variantes.map(i => {
-    const qtd = Number(i.quantidade || 0);
-    const chave = chaveVarianteMS(i.nome, i.cor, i.tamanho);
-    return `<tr>
-      <td data-label="Produto"><strong>${escaparAdminMS(i.nome)}</strong><small>${escaparAdminMS(i.categoria)}</small></td>
-      <td data-label="Cor">${escaparAdminMS(i.cor)}</td>
-      <td data-label="Tamanho / Número"><strong>${escaparAdminMS(i.tamanho)}</strong></td>
-      <td data-label="Quantidade"><div class="controle-qtd-estoque-ms"><button type="button" onclick="ajustarQuantidadeEstoqueMS(this,-1)" aria-label="Diminuir quantidade">−</button><input class="qtd-input-ms ${classeQtd(qtd)}" type="number" min="0" value="${qtd}" data-chave="${escaparAdminMS(chave)}" data-produto="${escaparAdminMS(i.nome)}" data-cor="${escaparAdminMS(i.cor)}" data-tamanho="${escaparAdminMS(i.tamanho)}" onchange="alterarQtdEstoqueMS(this)" oninput="alterarQtdEstoqueMS(this)"><button type="button" onclick="ajustarQuantidadeEstoqueMS(this,1)" aria-label="Aumentar quantidade">+</button></div></td>
-      <td data-label="Status">${statusLinha(qtd)}</td>
-    </tr>`;
-  }).join('') || '<tr><td colspan="5">Nenhum item encontrado.</td></tr>';
-  atualizarCardsEstoqueMS();
-  renderAlertasEstoqueMS();
+
+  const grupos = new Map();
+  variantes.forEach(i => {
+    const chaveGrupo = `${i.categoria}|||${i.nome}|||${i.cor}`;
+    if(!grupos.has(chaveGrupo)) grupos.set(chaveGrupo, {nome:i.nome,categoria:i.categoria,cor:i.cor,itens:[]});
+    grupos.get(chaveGrupo).itens.push(i);
+  });
+
+  if(!grupos.size){
+    corpo.innerHTML = '<div class="estoque-vazio-ms"><strong>Nenhum item encontrado.</strong><span>Tente retirar algum filtro ou pesquisar outro produto.</span></div>';
+    atualizarCardsEstoqueMS(); renderAlertasEstoqueMS(); atualizarContadorAlteracoesEstoqueMS(); return;
+  }
+
+  corpo.innerHTML = [...grupos.values()].map((grupo, indice) => {
+    const total = grupo.itens.reduce((s,i)=>s+Number(i.quantidade||0),0);
+    const baixos = grupo.itens.filter(i=>Number(i.quantidade||0)>0 && Number(i.quantidade||0)<=3).length;
+    const zerados = grupo.itens.filter(i=>Number(i.quantidade||0)<=0).length;
+    const idGrupo = `grupoEstoqueMS-${indice}`;
+    const variantesHtml = grupo.itens.map(i => {
+      const qtd = Number(i.quantidade || 0);
+      const chave = chaveVarianteMS(i.nome, i.cor, i.tamanho);
+      return `<div class="estoque-variante-ms" data-variante-visivel="true">
+        <div class="estoque-variante-identidade-ms"><strong>${escaparAdminMS(i.tamanho)}</strong><small>${statusLinha(qtd)}</small></div>
+        <div class="controle-qtd-estoque-ms">
+          <button type="button" onclick="ajustarQuantidadeEstoqueMS(this,-1)" aria-label="Diminuir ${escaparAdminMS(i.tamanho)}">−</button>
+          <input class="qtd-input-ms ${classeQtd(qtd)}" type="number" min="0" value="${qtd}" data-chave="${escaparAdminMS(chave)}" data-produto="${escaparAdminMS(i.nome)}" data-cor="${escaparAdminMS(i.cor)}" data-tamanho="${escaparAdminMS(i.tamanho)}" onchange="alterarQtdEstoqueMS(this)" oninput="alterarQtdEstoqueMS(this)">
+          <button type="button" onclick="ajustarQuantidadeEstoqueMS(this,1)" aria-label="Aumentar ${escaparAdminMS(i.tamanho)}">+</button>
+        </div>
+      </div>`;
+    }).join('');
+    return `<article class="estoque-produto-card-ms" id="${idGrupo}">
+      <header class="estoque-produto-head-ms">
+        <div><span class="estoque-categoria-ms">${escaparAdminMS(grupo.categoria)}</span><h3>${escaparAdminMS(grupo.nome)}</h3><p>Cor: <strong>${escaparAdminMS(grupo.cor)}</strong></p></div>
+        <div class="estoque-produto-total-ms"><strong>${total}</strong><span>unidades</span></div>
+      </header>
+      <div class="estoque-produto-resumo-ms"><span>${grupo.itens.length} opções</span><span class="${baixos?'atencao':''}">${baixos} baixos</span><span class="${zerados?'perigo':''}">${zerados} zerados</span></div>
+      <div class="estoque-variantes-grid-ms">${variantesHtml}</div>
+      <footer class="estoque-produto-footer-ms">
+        <div class="estoque-atalhos-card-ms"><button type="button" onclick="ajustarCardEstoqueMS(this,1)">+1 em todos</button><button type="button" onclick="ajustarCardEstoqueMS(this,5)">+5 em todos</button><button type="button" onclick="zerarCardEstoqueMS(this)">Zerar</button></div>
+        <button type="button" class="salvar-card-estoque-ms" onclick="salvarCardEstoqueMS(this)">Salvar este produto</button>
+      </footer>
+    </article>`;
+  }).join('');
+  atualizarCardsEstoqueMS(); renderAlertasEstoqueMS(); atualizarContadorAlteracoesEstoqueMS();
+}
+
+function atualizarContadorAlteracoesEstoqueMS(){
+  const qtd = alteracoesEstoqueMS.size;
+  const contador = document.getElementById('contadorAlteracoesEstoqueMS');
+  const botao = document.getElementById('btnSalvarTudoEstoqueMS');
+  if(contador) contador.textContent = qtd ? `(${qtd})` : '';
+  if(botao) botao.classList.toggle('tem-alteracoes', qtd > 0);
+}
+
+function ajustarCardEstoqueMS(botao, delta){
+  botao.closest('.estoque-produto-card-ms')?.querySelectorAll('.qtd-input-ms').forEach(input=>{
+    input.value=Math.max(0,Number(input.value||0)+Number(delta||0)); alterarQtdEstoqueMS(input);
+  });
+}
+function zerarCardEstoqueMS(botao){
+  botao.closest('.estoque-produto-card-ms')?.querySelectorAll('.qtd-input-ms').forEach(input=>{input.value=0; alterarQtdEstoqueMS(input);});
+}
+function ajustarGrupoVisivelEstoqueMS(delta){
+  document.querySelectorAll('#listaEstoqueMS .qtd-input-ms').forEach(input=>{input.value=Math.max(0,Number(input.value||0)+Number(delta||0)); alterarQtdEstoqueMS(input);});
+}
+
+async function salvarItensEstoqueMS(itens, botao){
+  if(!itens.length) return false;
+  const original = botao?.innerHTML;
+  if(botao){botao.disabled=true;botao.textContent='Salvando...';}
+  try{
+    for(const item of itens){
+      const resp=await fetch(`${API_ADMIN_MS}/estoque`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(item)});
+      if(!resp.ok) throw new Error('Erro ao salvar estoque');
+      alteracoesEstoqueMS.delete(chaveVarianteMS(item.nome,item.cor,item.tamanho));
+    }
+    await carregarEstoqueMS();
+    return true;
+  }catch(e){ alert('Não consegui salvar o estoque.'); return false; }
+  finally{if(botao){botao.disabled=false;botao.innerHTML=original||'Salvar';} atualizarContadorAlteracoesEstoqueMS();}
+}
+
+async function salvarCardEstoqueMS(botao){
+  const card=botao.closest('.estoque-produto-card-ms');
+  const chaves=[...(card?.querySelectorAll('.qtd-input-ms')||[])].map(i=>i.dataset.chave);
+  const itens=chaves.map(c=>alteracoesEstoqueMS.get(c)).filter(Boolean);
+  if(!itens.length){alert('Este produto não tem alterações.');return;}
+  if(await salvarItensEstoqueMS(itens,botao)) alert('Produto salvo com sucesso.');
 }
 
 function alterarQtdEstoqueMS(input){
@@ -898,6 +966,7 @@ function alterarQtdEstoqueMS(input){
   if(tr) tr.lastElementChild.innerHTML = statusLinha(quantidade);
   atualizarCardsEstoqueMS();
   renderAlertasEstoqueMS();
+  atualizarContadorAlteracoesEstoqueMS();
 }
 
 function atualizarCardsEstoqueMS(){
@@ -921,24 +990,10 @@ function renderAlertasEstoqueMS(){
   box.innerHTML = alertas.map(i => `<div class="alerta-item-ms"><div><strong>${escaparAdminMS(i.nome)} ${escaparAdminMS(i.cor)} - ${escaparAdminMS(i.tamanho)}</strong><span>${i.quantidade <= 0 ? 'Sem estoque' : 'Apenas ' + i.quantidade + ' unidade(s)'}</span></div><em class="${i.quantidade <= 0 ? 'zero' : 'baixo'}">${i.quantidade <= 0 ? 'Esgotado' : 'Baixo'}</em></div>`).join('');
 }
 
-async function salvarGradeEstoqueMS(){
-  if(!alteracoesEstoqueMS.size){ alert('Nenhuma alteração para salvar.'); return; }
-  const botao = (typeof event !== 'undefined' && event?.target) ? event.target : null;
-  const textoOriginal = botao?.innerText;
-  if(botao) botao.innerText = 'Salvando...';
-  try{
-    for(const item of alteracoesEstoqueMS.values()){
-      const resp = await fetch(`${API_ADMIN_MS}/estoque`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(item) });
-      if(!resp.ok) throw new Error('Erro ao salvar estoque');
-    }
-    alteracoesEstoqueMS.clear();
-    await carregarEstoqueMS();
-    alert('Estoque salvo com sucesso.');
-  }catch(e){
-    alert('Não consegui salvar o estoque.');
-  }finally{
-    if(botao) botao.innerText = textoOriginal || 'Salvar alterações';
-  }
+async function salvarGradeEstoqueMS(botao){
+  const itens=[...alteracoesEstoqueMS.values()];
+  if(!itens.length){ alert('Nenhuma alteração para salvar.'); return; }
+  if(await salvarItensEstoqueMS(itens,botao)) alert('Estoque salvo com sucesso.');
 }
 
 

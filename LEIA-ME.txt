@@ -1,18 +1,19 @@
-CORREÇÃO DO ESTOQUE - MS MATIAS STYLE
+ETAPA 1 - ESTOQUE MAIS FÁCIL
 
-Substitua somente o arquivo admin.html do projeto.
+Arquivos alterados:
+- admin.html
+- style.css
 
-O que foi corrigido:
-- volta ao visual compacto: uma linha por produto e cor;
-- tamanhos e numerações aparecem juntos na mesma linha;
-- aceita P, M, G, GG, 36, 38, 40, 42, 37, 39 etc.;
-- produtos novos cadastrados no painel entram automaticamente na tela de estoque;
-- não cria uma linha gigante para cada variação;
-- mantém as rotas atuais do servidor e o desconto automático após pagamento aprovado.
+Substitua os dois arquivos pelos arquivos deste pacote.
 
-Depois rode:
-git add .
-git commit -m "corrige visual do estoque e numeracoes"
-git push
+O que mudou no painel de estoque:
+- Produtos agrupados em cartões por produto e cor.
+- Tamanhos aparecem juntos dentro do mesmo cartão.
+- Botões + e - em cada tamanho.
+- Atalhos +1, +5 e Zerar por produto.
+- Botão para salvar apenas um produto.
+- Botão Salvar tudo mostra quantas alterações estão pendentes.
+- Pesquisa e filtros antigos continuam funcionando.
+- Versão responsiva para celular.
 
-Após o deploy, use Ctrl + F5 no painel.
+Esta etapa não altera o servidor, pagamentos ou regras do checkout.
