@@ -1,6 +1,5 @@
-ETAPA 2 - REPOSIÇÃO RÁPIDA
+Substitua somente:
+- admin.html
+- admin.css
 
-Substitua admin.html e style.css.
-Novo botão Reposição rápida no topo do estoque.
-Selecione produto, cor, modo Somar ou Definir, preencha todos os tamanhos e salve de uma vez.
-Não altera server.js, checkout ou pagamentos.
+Não substitua style.css. O painel administrativo carrega admin.css.

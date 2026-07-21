@@ -28,3 +28,80 @@ html[data-theme="escuro"] .admin-shell{background:radial-gradient(circle at 82% 
   body{padding-bottom:86px}.admin-shell{display:block;min-height:100vh}.main-ms:before{display:none}.sidebar-ms{position:fixed;left:10px;right:10px;bottom:10px;top:auto;height:68px;padding:8px;background:rgba(4,5,7,.86);border:1px solid rgba(255,255,255,.14);border-radius:24px;box-shadow:0 18px 60px rgba(0,0,0,.45);backdrop-filter:blur(20px);z-index:60}.sidebar-ms:before,.brand-ms,.sidebar-footer{display:none!important}.menu-ms{margin:0;height:100%;display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.menu-ms button{height:100%;padding:8px 4px;border-radius:18px;flex-direction:column;gap:3px;justify-content:center;text-align:center;font-size:11px;line-height:1.05;color:#d7dce6}.menu-ms button span{width:26px;height:24px;border-radius:10px;font-size:13px}.menu-ms button:hover{transform:none}.menu-ms button.ativa:after{display:none}.menu-ms button.ativa{background:linear-gradient(180deg,rgba(216,173,67,.34),rgba(216,173,67,.10));border-color:rgba(216,173,67,.38)}
   .topbar-ms{height:auto;min-height:82px;padding:16px;align-items:flex-start;flex-direction:column;gap:13px}.topbar-ms h1{font-size:28px}.subtop-ms{margin-top:6px}.acoes-topo{width:100%;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}.acoes-topo button{min-height:42px;border-radius:14px;padding:9px 10px;font-size:12px}.ms-painel{padding:18px 14px 22px}.cards-resumo{grid-template-columns:1fr 1fr;gap:12px}.card{min-height:118px;padding:16px;border-radius:20px}.card strong{font-size:25px}.card small{font-size:11px}.card-icon-ms{width:38px;height:38px;border-radius:14px;margin-bottom:8px}.page-title-ms{flex-direction:column;gap:12px}.page-title-ms h2{font-size:24px}.painel-card-ms{padding:16px;border-radius:22px}.grid-dashboard-ms,.estoque-layout-ms{grid-template-columns:1fr;gap:14px}.filtros-estoque-ms,.filtros-admin{grid-template-columns:1fr;gap:10px}.filtros-estoque-ms input,.filtros-estoque-ms select,.filtros-admin input{height:46px}.tabela-wrap-ms{border-radius:18px;margin:0 -2px}.estoque-lista{min-width:760px}.alertas-ms{order:-1}.abas-pedidos{display:grid;grid-template-columns:1fr 1fr;gap:8px}.aba-pedido{min-width:0;min-height:42px;border-radius:14px;font-size:12px;padding:9px 8px}.grafico-admin canvas{min-height:210px}.login-page-ms{grid-template-columns:1fr;min-height:auto;border-radius:26px}.login-hero-ms{padding:28px;min-height:310px}.login-copy-ms h1{font-size:34px}.login-logo-wrap-ms img{width:112px;height:112px}.login-card-area-ms{padding:24px}.login-card-head-ms h2{font-size:30px}}
 @media(max-width:520px){.cards-resumo{grid-template-columns:1fr}.topbar-ms h1{font-size:25px}.eyebrow-ms{font-size:10px}.acoes-topo{grid-template-columns:1fr 1fr}.acoes-topo .btn-sair{grid-column:1/-1}.abas-pedidos{grid-template-columns:1fr}.menu-ms button{font-size:10px}.ms-painel{padding-left:12px;padding-right:12px}.login-copy-ms h1{font-size:31px}}
+
+/* ===== ESTOQUE FÁCIL MS | CORREÇÃO VISUAL ===== */
+#estoqueAba .estoque-top-actions-ms{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+#estoqueAba .btn-repor-ms{min-height:46px;padding:0 17px;border:1px solid rgba(216,173,67,.48);border-radius:14px;background:rgba(216,173,67,.12);color:var(--gold);font-weight:900;cursor:pointer}
+#estoqueAba .btn-repor-ms:hover{background:rgba(216,173,67,.20)}
+#estoqueAba .estoque-acoes-rapidas-ms{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 -16px;padding:13px 16px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:rgba(255,255,255,.018)}
+#estoqueAba .estoque-acoes-rapidas-ms>span{font-size:11px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+#estoqueAba .estoque-acoes-rapidas-ms button,#estoqueAba .estoque-atalhos-card-ms button{min-height:34px;padding:0 11px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);color:var(--text);font-weight:850;cursor:pointer}
+#estoqueAba .estoque-acoes-rapidas-ms button:hover,#estoqueAba .estoque-atalhos-card-ms button:hover{border-color:rgba(216,173,67,.55);color:var(--gold)}
+#estoqueAba .estoque-grupos-ms{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;padding:16px 0}
+#estoqueAba .estoque-produto-card-ms{display:block;min-width:0;border:1px solid var(--line);border-radius:18px;background:linear-gradient(145deg,var(--panel2),var(--panel));overflow:hidden;box-shadow:0 10px 28px rgba(0,0,0,.14)}
+#estoqueAba .estoque-produto-head-ms{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;padding:16px;border-bottom:1px solid var(--line)}
+#estoqueAba .estoque-produto-head-ms h3{margin:5px 0 4px;font-size:17px;line-height:1.2;color:var(--text)}
+#estoqueAba .estoque-produto-head-ms p{margin:0;color:var(--muted);font-size:12px}
+#estoqueAba .estoque-categoria-ms{display:inline-flex;padding:4px 8px;border-radius:999px;background:rgba(216,173,67,.12);color:var(--gold);font-size:9px;font-weight:950;letter-spacing:.08em;text-transform:uppercase}
+#estoqueAba .estoque-produto-total-ms{display:grid;text-align:right;flex:0 0 auto}
+#estoqueAba .estoque-produto-total-ms strong{font-size:27px;color:var(--gold);line-height:1}
+#estoqueAba .estoque-produto-total-ms span{font-size:10px;color:var(--muted);font-weight:850;margin-top:4px}
+#estoqueAba .estoque-produto-resumo-ms{display:flex;gap:7px;flex-wrap:wrap;padding:10px 16px;background:rgba(255,255,255,.018)}
+#estoqueAba .estoque-produto-resumo-ms span{font-size:10px;font-weight:850;color:var(--muted);padding:4px 7px;border-radius:999px;border:1px solid var(--line)}
+#estoqueAba .estoque-produto-resumo-ms .atencao{color:#f0c659;border-color:rgba(240,198,89,.35)}
+#estoqueAba .estoque-produto-resumo-ms .perigo{color:#ff7d8f;border-color:rgba(255,125,143,.35)}
+#estoqueAba .estoque-variantes-grid-ms{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;padding:13px 16px}
+#estoqueAba .estoque-variante-ms{display:grid;grid-template-columns:minmax(54px,.65fr) minmax(132px,1.35fr);align-items:center;gap:8px;padding:10px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.025)}
+#estoqueAba .estoque-variante-identidade-ms{display:grid;gap:5px;min-width:0}
+#estoqueAba .estoque-variante-identidade-ms>strong{font-size:15px;color:var(--text)}
+#estoqueAba .estoque-variante-identidade-ms small{display:block}
+#estoqueAba .estoque-variante-identidade-ms small span{font-size:9px;padding:4px 6px}
+#estoqueAba .estoque-variante-ms .controle-qtd-estoque-ms{display:grid;grid-template-columns:34px minmax(48px,1fr) 34px;gap:6px;align-items:center}
+#estoqueAba .estoque-variante-ms .controle-qtd-estoque-ms button{width:34px;height:38px;padding:0;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--text);font-size:19px;font-weight:900;cursor:pointer}
+#estoqueAba .estoque-variante-ms .qtd-input-ms{width:100%!important;height:38px!important;padding:0 4px!important;text-align:center!important;margin:0!important}
+#estoqueAba .estoque-produto-footer-ms{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 16px;border-top:1px solid var(--line);background:rgba(0,0,0,.09)}
+#estoqueAba .estoque-atalhos-card-ms{display:flex;gap:6px;flex-wrap:wrap}
+#estoqueAba .salvar-card-estoque-ms{min-height:38px;padding:0 13px;border:0;border-radius:11px;background:var(--gold);color:#111;font-weight:950;cursor:pointer;white-space:nowrap}
+#estoqueAba .estoque-carregando-ms,#estoqueAba .estoque-vazio-ms{grid-column:1/-1;display:grid;place-items:center;gap:6px;min-height:170px;padding:25px;text-align:center;color:var(--muted)}
+#estoqueAba #btnSalvarTudoEstoqueMS.tem-alteracoes{box-shadow:0 0 0 3px rgba(216,173,67,.18);border-color:var(--gold)}
+
+/* Modal de reposição */
+body.modal-aberto-ms{overflow:hidden}
+.modal-reposicao-ms{position:fixed;inset:0;z-index:9999;display:none;place-items:center;padding:20px}
+.modal-reposicao-ms.aberto{display:grid}
+.modal-reposicao-backdrop-ms{position:absolute;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(4px)}
+.modal-reposicao-card-ms{position:relative;width:min(760px,100%);max-height:90vh;overflow:auto;border:1px solid var(--line);border-radius:24px;background:var(--panel);box-shadow:0 30px 80px rgba(0,0,0,.5);padding:22px}
+.modal-reposicao-card-ms>header{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;border-bottom:1px solid var(--line);padding-bottom:18px}
+.modal-reposicao-card-ms>header span{font-size:11px;text-transform:uppercase;letter-spacing:.15em;color:var(--gold);font-weight:900}
+.modal-reposicao-card-ms h2{margin:5px 0 4px}.modal-reposicao-card-ms p{margin:0;color:var(--muted)}
+.fechar-reposicao-ms{width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:var(--panel2);color:var(--text);font-size:26px;cursor:pointer}
+.reposicao-seletores-ms{display:grid;grid-template-columns:1.3fr 1fr 1.2fr;gap:12px;margin:20px 0}
+.reposicao-seletores-ms label{display:grid;gap:7px;font-size:12px;color:var(--muted);font-weight:850}
+.reposicao-seletores-ms select{min-height:46px;border:1px solid var(--line);border-radius:13px;background:var(--panel2);color:var(--text);padding:0 12px}
+.reposicao-resumo-ms{display:flex;justify-content:space-between;gap:14px;align-items:center;padding:14px 16px;border-radius:15px;background:var(--panel2);margin-bottom:14px}
+.reposicao-resumo-ms span{color:var(--muted);font-size:13px}
+.reposicao-campos-ms{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.reposicao-item-ms{display:flex;justify-content:space-between;align-items:center;gap:15px;border:1px solid var(--line);border-radius:15px;padding:12px 14px;background:var(--panel2)}
+.reposicao-item-ms span{display:grid;gap:3px}.reposicao-item-ms small{color:var(--muted)}
+.reposicao-item-ms input{width:92px;min-height:44px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--text);text-align:center;font-size:17px;font-weight:900}
+.reposicao-atalhos-ms{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:16px 0}.reposicao-atalhos-ms span{font-size:12px;color:var(--muted);font-weight:850}
+.reposicao-atalhos-ms button{border:1px solid var(--line);border-radius:10px;background:var(--panel2);color:var(--text);padding:8px 12px;font-weight:850;cursor:pointer}
+.modal-reposicao-card-ms>footer{display:flex;justify-content:flex-end;align-items:center;gap:10px;border-top:1px solid var(--line);padding-top:18px}
+.modal-reposicao-card-ms>footer span{margin-right:auto;font-weight:850}.modal-reposicao-card-ms>footer .sucesso{color:#75df8e}.modal-reposicao-card-ms>footer .erro{color:#ff7d8f}
+.modal-reposicao-card-ms>footer button{min-height:46px;border-radius:13px;padding:0 18px;font-weight:900;cursor:pointer}.modal-reposicao-card-ms>footer .cancelar{border:1px solid var(--line);background:var(--panel2);color:var(--text)}.modal-reposicao-card-ms>footer .salvar{border:1px solid var(--gold);background:var(--gold);color:#111}
+
+@media(max-width:1250px){#estoqueAba .estoque-grupos-ms{grid-template-columns:1fr}}
+@media(max-width:760px){
+  #estoqueAba .estoque-top-actions-ms{width:100%;display:grid;grid-template-columns:1fr}
+  #estoqueAba .estoque-grupos-ms{padding:10px 0;gap:10px}
+  #estoqueAba .estoque-variantes-grid-ms{grid-template-columns:1fr;padding:10px}
+  #estoqueAba .estoque-produto-footer-ms{align-items:stretch;flex-direction:column}
+  #estoqueAba .salvar-card-estoque-ms{width:100%}
+  #estoqueAba .estoque-atalhos-card-ms button{flex:1}
+  #estoqueAba .estoque-variante-ms{grid-template-columns:minmax(68px,.7fr) minmax(145px,1.3fr)}
+  #estoqueAba .estoque-acoes-rapidas-ms{margin:0 -16px;padding:11px 16px}
+  .reposicao-seletores-ms,.reposicao-campos-ms{grid-template-columns:1fr}
+  .reposicao-resumo-ms{align-items:flex-start;flex-direction:column}
+  .modal-reposicao-ms{padding:8px}.modal-reposicao-card-ms{border-radius:18px;padding:16px}
+  .modal-reposicao-card-ms>footer{position:sticky;bottom:-16px;background:var(--panel);padding-bottom:16px;flex-wrap:wrap}.modal-reposicao-card-ms>footer span{width:100%;margin:0}.modal-reposicao-card-ms>footer button{flex:1}
+}
