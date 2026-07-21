@@ -1,13 +1,14 @@
-ETAPA 4 - PRODUTOS NOVOS ENTRAM AUTOMATICAMENTE NO ESTOQUE
+ESTOQUE OPÇÃO A
 
-Substitua estes arquivos no projeto:
+Substitua no projeto:
 - admin.html
 - admin.css
 - admin.js
 
-O que foi adicionado:
-- Ao cadastrar um produto novo, todas as combinações de cor e tamanho/numeração são criadas no estoque.
-- Funciona mesmo com quantidade inicial 0.
-- Presets rápidos: P/M/G/GG, numeração 34 a 44 e ÚNICO.
-- Opções personalizadas continuam disponíveis.
-- Ao editar produto existente, somente variações que ainda não existem são criadas, sem zerar o estoque atual.
+O novo estoque funciona em etapas:
+1. Categoria
+2. Produto
+3. Cor
+4. Tamanho ou numeração
+
+Produtos novos cadastrados continuam aparecendo automaticamente na categoria correta, incluindo P/M/G/GG, numeração 34 a 44, Único e opções personalizadas.
