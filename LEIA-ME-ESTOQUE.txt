@@ -1,21 +1,16 @@
-ATUALIZAÇÃO DO ESTOQUE INTEGRADO - MS MATIAS STYLE
+CORREÇÃO: TAMANHOS E NUMERAÇÕES NO ESTOQUE
 
 Arquivos incluídos:
-- server.js
 - admin.html
+- server.js
 - script.js
 - package.json
 
-O que foi corrigido:
-1. Produto novo cria automaticamente todas as variações no estoque.
-2. As cores e tamanhos/numerações vêm do cadastro do produto.
-3. Se não houver cor, o sistema usa a cor identificada no nome ou "Única".
-4. Se não houver tamanho, cria "ÚNICO".
-5. Ao editar cores, tamanhos ou nome, o estoque é sincronizado preservando quantidades equivalentes.
-6. Ao excluir o produto, as variações dele também saem do estoque.
-7. O site continua carregando produtos ativos pela rota /produtos?ativos=true.
+Agora, ao abrir um produto no estoque, aparece o seletor:
+- P / M / G / GG
+- 34 / 36 / 38 / 40 / 42 / 44
+- Único
+- Personalizado
 
-Depois de substituir os arquivos, publique com:
-git add .
-git commit -m "Integra produtos com estoque real"
-git push
+A opção escolhida é salva no produto, sincronizada com o estoque e usada pelo site.
+Quantidades de variações que continuam existindo são preservadas.

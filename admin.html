@@ -26,6 +26,12 @@
 .estoque-a-opcao-ms .controle-qtd-estoque-ms{display:grid;grid-template-columns:38px 72px 38px;gap:6px;align-items:center}
 .estoque-a-opcao-ms .controle-qtd-estoque-ms button{height:38px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--text);font-size:19px;font-weight:900;cursor:pointer}
 .estoque-a-opcao-ms .qtd-input-ms{width:72px;height:38px;text-align:center;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--text);font-weight:950}
+.estoque-a-variacoes-ms{padding:16px 0;border-bottom:1px solid var(--line)}
+.estoque-a-variacoes-ms>label{display:block;margin-bottom:10px;color:var(--muted);font-size:11px;font-weight:950;text-transform:uppercase}
+.estoque-a-variacoes-botoes-ms{display:flex;flex-wrap:wrap;gap:8px}
+.estoque-a-variacoes-botoes-ms button{min-height:39px;padding:0 13px;border:1px solid var(--line);border-radius:12px;background:var(--panel2);color:var(--text);font-weight:900;cursor:pointer}
+.estoque-a-variacoes-botoes-ms button.ativo{background:rgba(216,173,67,.16);border-color:var(--gold);color:var(--gold)}
+.estoque-a-variacoes-ms small{display:block;margin-top:9px;color:var(--muted);line-height:1.45}
 .estoque-a-mobile-voltar-ms{display:none}
 .estoque-toast-ms{position:fixed;right:20px;bottom:20px;z-index:99999;min-width:260px;max-width:390px;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:#17191f;color:#fff;box-shadow:0 18px 45px rgba(0,0,0,.35);font-weight:850;transform:translateY(20px);opacity:0;pointer-events:none;transition:.2s ease}
 .estoque-toast-ms.visivel{transform:translateY(0);opacity:1}.estoque-toast-ms.erro{border-color:rgba(239,68,68,.6)}
@@ -733,69 +739,64 @@ async function carregarEstoqueMS(){
 
 
 function produtoSelecionadoEstoqueMS(){
-  const nome = document.getElementById('filtroProdutoMS')?.value || 'todos';
-  if(nome === 'todos') return null;
-  return PRODUTOS_COMPLETOS_MS.find(p => String(p.nome || '') === nome) || null;
+  if(!produtoEstoqueSelecionadoMS) return null;
+  return PRODUTOS_COMPLETOS_MS.find(p => String(p.nome || '') === produtoEstoqueSelecionadoMS) || null;
 }
 
-function atualizarSeletorVariacoesMS(){
-  const aviso = document.getElementById('avisoVariacoesMS');
-  const produto = produtoSelecionadoEstoqueMS();
-  const botoes = document.querySelectorAll('.variacoes-botoes-ms button');
-  botoes.forEach(b => b.disabled = !produto);
-  if(!aviso) return;
-  if(!produto){
-    aviso.textContent = 'Selecione um produto para liberar as opções.';
-    aviso.className = 'aviso-variacoes-ms';
-    return;
-  }
-  const opcoes = Array.isArray(produto.tamanhos) ? produto.tamanhos : [];
-  aviso.textContent = `${produto.nome}: ${opcoes.length ? opcoes.join(' · ') : 'nenhuma opção cadastrada'}`;
-  aviso.className = 'aviso-variacoes-ms ativo';
+function tipoVariacaoProdutoMS(produto){
+  const lista=(Array.isArray(produto?.tamanhos)?produto.tamanhos:[]).map(v=>String(v).trim().toUpperCase());
+  const chave=lista.join('|');
+  if(chave==='P|M|G|GG') return 'roupa';
+  if(chave==='34|36|38|40|42|44') return 'numeros';
+  if(chave==='ÚNICO'||chave==='UNICO') return 'unico';
+  return 'personalizado';
 }
 
-async function salvarVariacoesProdutoMS(lista){
+async function salvarVariacoesProdutoMS(lista, botao){
   const produto = produtoSelecionadoEstoqueMS();
-  if(!produto){
-    alert('Primeiro selecione um produto no filtro Produto.');
-    return;
-  }
+  if(!produto){ mostrarToastEstoqueMS('Escolha um produto primeiro.', true); return; }
+  if(alteracoesEstoqueMS.size && !confirm('Há quantidades ainda não salvas. Continuar vai trocar as variações do produto.')) return;
   const tamanhos = [...new Set(lista.map(v => String(v).trim().toUpperCase()).filter(Boolean))];
   if(!tamanhos.length) return;
-  const aviso = document.getElementById('avisoVariacoesMS');
+  const texto=botao?.innerText;
   try{
-    if(aviso) aviso.textContent = 'Salvando tamanhos e numerações...';
+    if(botao){botao.disabled=true;botao.innerText='Salvando...';}
     const resposta = await fetch(`${API_ADMIN_MS}/produtos/${encodeURIComponent(produto.id)}`, {
       method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ tamanhos })
     });
     const dados = await resposta.json().catch(()=>({}));
     if(!resposta.ok) throw new Error(dados.mensagem || 'Não foi possível salvar.');
-    if(aviso){ aviso.textContent = 'Opções salvas com sucesso ✓'; aviso.className='aviso-variacoes-ms sucesso'; }
     alteracoesEstoqueMS.clear();
+    produtoEstoqueSelecionadoMS=produto.nome;
     await carregarEstoqueMS();
-    const seletor = document.getElementById('filtroProdutoMS');
-    if(seletor){ seletor.value = produto.nome; renderGradeEstoqueMS(); atualizarSeletorVariacoesMS(); }
+    produtoEstoqueSelecionadoMS=produto.nome;
+    corEstoqueSelecionadaMS=CATALOGO_MS.find(p=>p.produto===produto.nome)?.cores?.[0]||'Única';
+    renderGradeEstoqueMS();
+    renderDetalheProdutoEstoqueMS();
+    mostrarToastEstoqueMS(`Variações atualizadas: ${tamanhos.join(', ')} ✓`);
   }catch(erro){
-    if(aviso){ aviso.textContent = erro.message; aviso.className='aviso-variacoes-ms erro'; }
+    mostrarToastEstoqueMS(erro.message || 'Erro ao atualizar variações.', true);
+  }finally{
+    if(botao){botao.disabled=false;botao.innerText=texto||'Aplicar';}
   }
 }
 
-function aplicarVariacoesPresetMS(tipo){
+function aplicarVariacoesPresetMS(tipo, botao){
   const presets = {
     roupa:['P','M','G','GG'],
-    calcado:['34','35','36','37','38','39','40','41','42','43','44'],
+    numeros:['34','36','38','40','42','44'],
     unico:['ÚNICO']
   };
-  salvarVariacoesProdutoMS(presets[tipo] || []);
+  salvarVariacoesProdutoMS(presets[tipo] || [], botao);
 }
 
-function abrirVariacoesPersonalizadasMS(){
+function abrirVariacoesPersonalizadasMS(botao){
   const produto = produtoSelecionadoEstoqueMS();
-  if(!produto){ alert('Primeiro selecione um produto.'); return; }
+  if(!produto){ mostrarToastEstoqueMS('Escolha um produto primeiro.', true); return; }
   const atuais = Array.isArray(produto.tamanhos) ? produto.tamanhos.join(', ') : '';
-  const valor = prompt('Digite tamanhos ou números separados por vírgula.\nExemplo: 36, 38, 40, 42 ou P, M, G, GG', atuais);
+  const valor = prompt('Digite tamanhos ou números separados por vírgula.\nExemplo: PP, P, M, G, GG ou 35, 37, 39, 41', atuais);
   if(valor === null) return;
-  salvarVariacoesProdutoMS(valor.split(','));
+  salvarVariacoesProdutoMS(valor.split(','), botao);
 }
 
 function statusLinha(total){
@@ -954,7 +955,7 @@ function renderDetalheProdutoEstoqueMS(){
     const alterada=alteracoesEstoqueMS.has(chave);
     return `<div class="estoque-a-opcao-ms ${alterada?'alterada':''}"><div><strong>${escaparAdminMS(t)}</strong><small>${qtd<=0?'Esgotado':qtd<=3?'Estoque baixo':'Disponível'}</small></div><div class="controle-qtd-estoque-ms"><button type="button" aria-label="Diminuir ${escaparAdminMS(t)}" onclick="ajustarQuantidadeEstoqueMS(this,-1)">−</button><input class="qtd-input-ms ${classeQtd(qtd)}" type="number" min="0" inputmode="numeric" value="${qtd}" data-chave="${escaparAdminMS(chave)}" data-produto="${escaparAdminMS(produto.produto)}" data-cor="${escaparAdminMS(cor)}" data-tamanho="${escaparAdminMS(t)}" oninput="alterarQtdEstoqueMS(this)"><button type="button" aria-label="Aumentar ${escaparAdminMS(t)}" onclick="ajustarQuantidadeEstoqueMS(this,1)">+</button></div></div>`;
   }).join('');
-  detalhe.innerHTML=`<button type="button" class="estoque-a-mobile-voltar-ms" onclick="voltarProdutosEstoqueMS()">← Voltar aos produtos</button><article class="estoque-produto-card-ms estoque-a-editor-ms"><header><div><span>${escaparAdminMS(produto.categoria)}</span><h3>${escaparAdminMS(produto.produto)}</h3><p>Cor: <strong>${escaparAdminMS(cor)}</strong>. Ajuste cada opção e salve.</p><em class="estoque-a-editor-status-ms ${pendentes?'alterado':''}">${pendentes?pendentes+' alteração(ões) não salva(s)':'Tudo salvo'}</em></div><div><strong data-total-cor-ms>${total}</strong><small>unidades nesta cor</small></div></header><section class="estoque-a-cores-ms"><label>Escolha a cor</label><div>${cores}</div></section><section class="estoque-a-opcoes-grid-ms">${opcoes}</section><footer><div><button type="button" onclick="ajustarCardEstoqueMS(this,1)">+1 em todos</button><button type="button" onclick="ajustarCardEstoqueMS(this,5)">+5 em todos</button><button type="button" onclick="zerarCardEstoqueMS(this)">Zerar</button></div><button type="button" class="salvar-card-estoque-ms" onclick="salvarCardEstoqueMS(this)">Salvar esta cor</button></footer></article>`;
+  detalhe.innerHTML=`<button type="button" class="estoque-a-mobile-voltar-ms" onclick="voltarProdutosEstoqueMS()">← Voltar aos produtos</button><article class="estoque-produto-card-ms estoque-a-editor-ms"><header><div><span>${escaparAdminMS(produto.categoria)}</span><h3>${escaparAdminMS(produto.produto)}</h3><p>Cor: <strong>${escaparAdminMS(cor)}</strong>. Ajuste cada opção e salve.</p><em class="estoque-a-editor-status-ms ${pendentes?'alterado':''}">${pendentes?pendentes+' alteração(ões) não salva(s)':'Tudo salvo'}</em></div><div><strong data-total-cor-ms>${total}</strong><small>unidades nesta cor</small></div></header><section class="estoque-a-variacoes-ms"><label>Tipo de tamanho / numeração</label><div class="estoque-a-variacoes-botoes-ms"><button type="button" class="${tipoVariacaoProdutoMS(produto)==='roupa'?'ativo':''}" onclick="aplicarVariacoesPresetMS('roupa',this)">P / M / G / GG</button><button type="button" class="${tipoVariacaoProdutoMS(produto)==='numeros'?'ativo':''}" onclick="aplicarVariacoesPresetMS('numeros',this)">34 / 36 / 38 / 40 / 42 / 44</button><button type="button" class="${tipoVariacaoProdutoMS(produto)==='unico'?'ativo':''}" onclick="aplicarVariacoesPresetMS('unico',this)">Único</button><button type="button" class="${tipoVariacaoProdutoMS(produto)==='personalizado'?'ativo':''}" onclick="abrirVariacoesPersonalizadasMS(this)">Personalizado</button></div><small>Ao trocar o tipo, o produto e o site passam a usar essas opções. Quantidades das opções que já existiam são preservadas.</small></section><section class="estoque-a-cores-ms"><label>Escolha a cor</label><div>${cores}</div></section><section class="estoque-a-opcoes-grid-ms">${opcoes}</section><footer><div><button type="button" onclick="ajustarCardEstoqueMS(this,1)">+1 em todos</button><button type="button" onclick="ajustarCardEstoqueMS(this,5)">+5 em todos</button><button type="button" onclick="zerarCardEstoqueMS(this)">Zerar</button></div><button type="button" class="salvar-card-estoque-ms" onclick="salvarCardEstoqueMS(this)">Salvar esta cor</button></footer></article>`;
   atualizarModoNavegacaoEstoqueMS();
 }
 
