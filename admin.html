@@ -956,8 +956,7 @@ async function alterarOpcoesProdutoEstoqueMS(acao){
     produtoEstoqueSelecionadoMS = produtoAnterior;
     const atualizado = CATALOGO_MS.find(p => p.produto === produtoAnterior && p.categoria === categoriaAnterior);
     if(atualizado && !atualizado.cores.includes(corEstoqueSelecionadaMS)) corEstoqueSelecionadaMS = atualizado.cores[0] || 'Única';
-    renderNavegacaoEstoqueMS();
-    renderDetalheProdutoEstoqueMS();
+    renderGradeEstoqueMS();
     alert(`Opções atualizadas: ${novas.join(', ')}`);
   }catch(erro){
     alert(erro.message || 'Erro ao atualizar tamanhos e números.');
