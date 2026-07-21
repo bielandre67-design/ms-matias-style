@@ -8073,3 +8073,62 @@ document.addEventListener('DOMContentLoaded',()=>setTimeout(carregarConfigFreteL
   window.montarTamanhosNoDetalheMS = montarTamanhosNoDetalheMS;
   window.sincronizarTamanhosProdutoMS = sincronizarPeloCardMS;
 })();
+
+/* ========================================================================
+   INTEGRACAO SEGURA MS - NUMERACOES VISIVEIS NO SITE
+   Mantem os botoes dos cards e do detalhe sincronizados com produto.tamanhos.
+   Aceita letras, numeros, tamanho unico e listas personalizadas.
+   ======================================================================== */
+(function integrarNumeracoesCatalogoMS(){
+  const limpar = valor => String(valor == null ? '' : valor).trim();
+  const normalizarLista = valor => {
+    const origem = Array.isArray(valor) ? valor : limpar(valor).split(',');
+    return [...new Set(origem.map(limpar).filter(Boolean).map(item =>
+      /^unic[oa]$/i.test(item) ? 'Único' : item.toUpperCase()
+    ))];
+  };
+
+  function criarBotao(tamanho){
+    const botao = document.createElement('button');
+    botao.type = 'button';
+    botao.textContent = tamanho;
+    botao.dataset.tamanho = tamanho;
+    botao.addEventListener('click', function(evento){
+      evento.preventDefault();
+      evento.stopPropagation();
+      const grupo = botao.closest('.tamanhos, .tamanhos-detalhe, .detalhe-tamanhos');
+      grupo?.querySelectorAll('button').forEach(item => item.classList.remove('ativo','selecionado'));
+      botao.classList.add('ativo','selecionado');
+      const card = botao.closest('.card-produto');
+      const detalhe = botao.closest('#produtoDetalhe');
+      if(card) card.dataset.tamanho = tamanho;
+      if(detalhe) detalhe.dataset.tamanho = tamanho;
+      window.tamanhoSelecionado = tamanho;
+      window.tamanhoSelecionadoDetalhe = tamanho;
+    });
+    return botao;
+  }
+
+  function sincronizarCard(card){
+    if(!card) return;
+    const lista = normalizarLista(card.dataset.tamanhos || '');
+    const grupo = card.querySelector('.tamanhos');
+    if(!grupo || !lista.length) return;
+
+    const atuais = [...grupo.querySelectorAll('button')].map(b => limpar(b.textContent));
+    if(JSON.stringify(atuais) === JSON.stringify(lista)) return;
+
+    grupo.innerHTML = '';
+    lista.forEach(tamanho => grupo.appendChild(criarBotao(tamanho)));
+    card.dataset.tamanho = '';
+    if(lista.length === 1) grupo.querySelector('button')?.click();
+  }
+
+  function sincronizarTodos(){
+    document.querySelectorAll('.card-produto[data-tamanhos]').forEach(sincronizarCard);
+  }
+
+  document.addEventListener('catalogoMSCarregado', () => setTimeout(sincronizarTodos, 0));
+  document.addEventListener('DOMContentLoaded', sincronizarTodos);
+  window.sincronizarNumeracoesCatalogoMS = sincronizarTodos;
+})();
