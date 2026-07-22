@@ -343,8 +343,26 @@ function montarItensMercadoPago(carrinhoItems, valorFrete, freteSelecionado, per
   return items;
 }
 
+const PAGAMENTO_PADRAO_MS = { pixAtivo:true, cartaoAtivo:true, boletoAtivo:false, maxParcelas:12, valorMinimo:0 };
+async function carregarConfigPagamentoServidorMS(){
+  if(!pool) return { ...PAGAMENTO_PADRAO_MS };
+  try{
+    const r=await pool.query("SELECT dados FROM app_state WHERE chave=$1 LIMIT 1",["pagamento_config"]);
+    return { ...PAGAMENTO_PADRAO_MS, ...(r.rows[0]?.dados || {}) };
+  }catch(e){
+    console.error("Erro ao carregar configuração de pagamento:",e.message);
+    return { ...PAGAMENTO_PADRAO_MS };
+  }
+}
+
 async function criarPreferenciaMP({ carrinhoItems, valorFrete, freteSelecionado, idPedido, percentualDesconto = 0 }) {
   garantirMercadoPagoConfigurado();
+  const configPagamento = await carregarConfigPagamentoServidorMS();
+  if(configPagamento.cartaoAtivo === false){
+    const erro = new Error("O pagamento com cartão está desativado no painel administrativo.");
+    erro.statusCode = 400;
+    throw erro;
+  }
   const items = montarItensMercadoPago(carrinhoItems, valorFrete, freteSelecionado, percentualDesconto);
 
   if (!items.length) {
@@ -373,7 +391,7 @@ async function criarPreferenciaMP({ carrinhoItems, valorFrete, freteSelecionado,
     payment_methods: {
       excluded_payment_methods: [],
       excluded_payment_types: [{ id: "bank_transfer" }],
-      installments: 12
+      installments: Math.max(1, Math.min(12, Number(configPagamento.maxParcelas) || 12))
     },
     auto_return: "approved"
   };
@@ -1661,6 +1679,10 @@ function proximoIdPedidoMS(pedidos) {
 app.post("/criar-pagamento-pix", async (req, res) => {
   try {
     garantirMercadoPagoConfigurado();
+    const configPagamento = await carregarConfigPagamentoServidorMS();
+    if(configPagamento.pixAtivo === false){
+      return res.status(400).json({ erro:true, mensagem:"O PIX está desativado no painel administrativo." });
+    }
 
     const body = req.body || {};
     const carrinhoItems = body.items || body.carrinho || [];
@@ -1706,6 +1728,9 @@ app.post("/criar-pagamento-pix", async (req, res) => {
     if (codigoCupom && !validacaoCupom.valido) return res.status(400).json({ erro:true, mensagem:validacaoCupom.mensagem });
     const desconto = validacaoCupom.valido ? Number(validacaoCupom.percentual) : 0;
     const totalPedido = Number((subtotal - subtotal * desconto / 100 + valorFrete).toFixed(2));
+    if(totalPedido < Math.max(0, Number(configPagamento.valorMinimo) || 0)){
+      return res.status(400).json({ erro:true, mensagem:`O valor mínimo para pagamento é ${Number(configPagamento.valorMinimo).toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}.` });
+    }
     if (!(totalPedido > 0)) return res.status(400).json({ erro:true, mensagem:"O total do pedido é inválido." });
 
     const pedidos = lerPedidos();
@@ -2335,6 +2360,27 @@ function limparAparenciaMS(body = {}) {
     fonte: fontePermitida.includes(body.fonte) ? body.fonte : APARENCIA_PADRAO_MS.fonte
   };
 }
+
+// CONFIGURAÇÕES DE PAGAMENTO -------------------------------------------------
+app.get("/pagamento-config", async (req,res,next)=>{
+  try{ res.json(await carregarConfigPagamentoServidorMS()); }catch(e){ next(e); }
+});
+app.put("/pagamento-config", async (req,res,next)=>{
+  if(!pool) return res.status(503).json({mensagem:"PostgreSQL não configurado."});
+  try{
+    const b=req.body||{};
+    const config={
+      pixAtivo:b.pixAtivo!==false,
+      cartaoAtivo:b.cartaoAtivo!==false,
+      boletoAtivo:false,
+      maxParcelas:Math.max(1,Math.min(12,Number(b.maxParcelas)||12)),
+      valorMinimo:Math.max(0,Number(b.valorMinimo)||0)
+    };
+    if(!config.pixAtivo&&!config.cartaoAtivo) return res.status(400).json({mensagem:"Ative pelo menos uma forma de pagamento."});
+    await pool.query(`INSERT INTO app_state(chave,dados,atualizado_em) VALUES($1,$2::jsonb,NOW()) ON CONFLICT(chave) DO UPDATE SET dados=EXCLUDED.dados, atualizado_em=NOW()`,["pagamento_config",JSON.stringify(config)]);
+    res.json({ok:true,config});
+  }catch(e){next(e);}
+});
 
 // CONFIGURAÇÕES GERAIS DA LOJA - ETAPA 6
 app.get("/loja-config", async (req,res,next)=>{

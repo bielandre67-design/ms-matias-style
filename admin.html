@@ -228,6 +228,7 @@ html, body { min-height: 100%; }
       <button class="ms-tab" onclick="abrirAbaMS('vitrineAba', this)"><span>▧</span> Vitrine do site</button>
       <button class="ms-tab" onclick="abrirAbaMS('destaquesAba', this)"><span>★</span> Destaques da home</button>
       <button class="ms-tab" onclick="abrirAbaMS('aparenciaAba', this)"><span>🎨</span> Personalizar loja</button>
+      <button class="ms-tab" onclick="abrirAbaMS('pagamentosAba', this); carregarPainelPagamentosMS()"><span>💳</span> Pagamentos</button>
       <button class="ms-tab" onclick="abrirAbaMS('freteAba', this); carregarConfigFreteMS()"><span>🚚</span> Frete</button>
       <button class="ms-tab" onclick="abrirAbaMS('estoqueAba', this)"><span>◇</span> Estoque</button>
       <button class="ms-tab" onclick="abrirAbaMS('pedidosAba', this)"><span>◌</span> Pedidos</button>
@@ -428,6 +429,54 @@ html, body { min-height: 100%; }
       </div>
     </section>
 
+
+    <section id="pagamentosAba" class="ms-painel pagamentos-admin-ms">
+      <div class="page-title-ms">
+        <div><h2>Pagamentos</h2><p>Controle as formas de pagamento da loja e acompanhe a conexão com o Mercado Pago.</p></div>
+        <button class="btn-dark-ms" type="button" onclick="carregarPainelPagamentosMS(true)">Atualizar</button>
+      </div>
+
+      <div class="pagamentos-status-grid-ms">
+        <article class="pagamento-status-card-ms">
+          <div class="pagamento-status-icone-ms">MP</div>
+          <div><span>Mercado Pago</span><strong id="pagamentoConexaoTituloMS">Verificando...</strong><small id="pagamentoConexaoTextoMS">Aguarde um instante.</small></div>
+          <i id="pagamentoConexaoBolinhaMS" class="pagamento-bolinha-ms"></i>
+        </article>
+        <article class="pagamento-status-card-ms">
+          <div class="pagamento-status-icone-ms">✓</div>
+          <div><span>Aprovados</span><strong id="pagamentosAprovadosMS">0</strong><small>Pedidos pagos</small></div>
+        </article>
+        <article class="pagamento-status-card-ms">
+          <div class="pagamento-status-icone-ms">⌛</div>
+          <div><span>Pendentes</span><strong id="pagamentosPendentesMS">0</strong><small>Aguardando confirmação</small></div>
+        </article>
+        <article class="pagamento-status-card-ms">
+          <div class="pagamento-status-icone-ms">×</div>
+          <div><span>Recusados</span><strong id="pagamentosRecusadosMS">0</strong><small>Falhas ou cancelamentos</small></div>
+        </article>
+      </div>
+
+      <div class="pagamentos-config-grid-ms">
+        <article class="painel-card-ms pagamento-config-card-ms">
+          <div class="pagamento-config-head-ms"><div><h3>Formas de pagamento</h3><p>Escolha o que o cliente poderá usar no checkout.</p></div></div>
+          <label class="pagamento-opcao-ms"><span class="pagamento-opcao-icon-ms">◆</span><span><strong>PIX</strong><small>QR Code e copia e cola dentro da loja</small></span><label class="switch-frete-ms"><input id="pagamentoPixAtivoMS" type="checkbox"><i></i></label></label>
+          <label class="pagamento-opcao-ms"><span class="pagamento-opcao-icon-ms">▣</span><span><strong>Cartão de crédito</strong><small>Checkout seguro do Mercado Pago</small></span><label class="switch-frete-ms"><input id="pagamentoCartaoAtivoMS" type="checkbox"><i></i></label></label>
+          <label class="pagamento-opcao-ms desabilitada-ms"><span class="pagamento-opcao-icon-ms">▤</span><span><strong>Boleto</strong><small>Preparado para uma etapa futura</small></span><label class="switch-frete-ms"><input id="pagamentoBoletoAtivoMS" type="checkbox" disabled><i></i></label></label>
+        </article>
+
+        <article class="painel-card-ms pagamento-config-card-ms">
+          <div class="pagamento-config-head-ms"><div><h3>Parcelamento</h3><p>Defina o máximo oferecido no cartão.</p></div></div>
+          <label class="pagamento-campo-ms">Máximo de parcelas<select id="pagamentoParcelasMS"><option value="1">1x</option><option value="2">2x</option><option value="3">3x</option><option value="4">4x</option><option value="5">5x</option><option value="6">6x</option><option value="7">7x</option><option value="8">8x</option><option value="9">9x</option><option value="10">10x</option><option value="11">11x</option><option value="12">12x</option></select></label>
+          <label class="pagamento-campo-ms">Valor mínimo da compra<div class="input-dinheiro-ms"><span>R$</span><input id="pagamentoValorMinimoMS" type="number" min="0" step="0.01" value="0"></div></label>
+          <small class="pagamento-ajuda-ms">Use R$ 0,00 para não exigir valor mínimo.</small>
+        </article>
+      </div>
+
+      <article class="painel-card-ms pagamento-resumo-ms">
+        <div><h3>Publicar configurações</h3><p id="pagamentoResumoMS">Carregando regras de pagamento...</p></div>
+        <div class="pagamento-actions-ms"><span id="pagamentoStatusSalvarMS"></span><button type="button" onclick="testarConexaoPagamentoMS()">Testar conexão</button><button class="salvar" type="button" onclick="salvarConfigPagamentoMS()">Salvar pagamentos</button></div>
+      </article>
+    </section>
 
     <section id="freteAba" class="ms-painel">
       <div class="titulo-secao"><div><h2>Configurações de frete</h2><p>Controle as regras de entrega sem abrir o VS Code.</p></div></div>
@@ -658,11 +707,12 @@ function abrirAbaMS(id, btn){
   document.getElementById(id)?.classList.add('ativa');
   document.querySelectorAll('.ms-tab').forEach(b => b.classList.remove('ativa'));
   btn?.classList.add('ativa');
-  const titulos = {visao:'Dashboard', vitrineAba:'Vitrine do site', destaquesAba:'Destaques da home', aparenciaAba:'Personalizar loja', produtosAba:'Produtos', estoqueAba:'Estoque', pedidosAba:'Pedidos', cuponsAba:'Cupons', relatoriosAba:'Relatórios', configuracoesAba:'Configurações'};
+  const titulos = {visao:'Dashboard', vitrineAba:'Vitrine do site', destaquesAba:'Destaques da home', aparenciaAba:'Personalizar loja', pagamentosAba:'Pagamentos', freteAba:'Frete', produtosAba:'Produtos', estoqueAba:'Estoque', pedidosAba:'Pedidos', cuponsAba:'Cupons', relatoriosAba:'Relatórios', configuracoesAba:'Configurações'};
   const titulo = document.getElementById('tituloPaginaMS');
   if(titulo) titulo.innerText = titulos[id] || 'Painel ADM';
   if(id === 'vitrineAba') carregarBannersMS();
   if(id === 'aparenciaAba') carregarAparenciaMS();
+  if(id === 'pagamentosAba') carregarPainelPagamentosMS();
   if(id === 'estoqueAba') carregarEstoqueMS();
   if(id === 'produtosAba') carregarProdutosAdminMS();
   if(id === 'cuponsAba') carregarCuponsMS();
