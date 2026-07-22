@@ -8132,3 +8132,108 @@ document.addEventListener('DOMContentLoaded',()=>setTimeout(carregarConfigFreteL
   document.addEventListener('DOMContentLoaded', sincronizarTodos);
   window.sincronizarNumeracoesCatalogoMS = sincronizarTodos;
 })();
+
+/* ========================================================================
+   PROTECAO FINAL MS - BLOQUEIO VISUAL E FUNCIONAL DE VARIACOES SEM ESTOQUE
+   Consulta o estoque real ao abrir o detalhe, desativa opcoes zeradas e
+   impede selecionar/adicionar combinacoes indisponiveis.
+   ======================================================================== */
+(function bloquearVariacoesSemEstoqueMS(){
+  const API = typeof API_BASE !== 'undefined' ? API_BASE : 'https://ms-matias-style.onrender.com';
+  const limpar = v => String(v == null ? '' : v).trim();
+
+  function dadosProdutoDetalhe(){
+    const detalhe = document.getElementById('produtoDetalhe');
+    if(!detalhe) return null;
+    const card = window.cardProdutoAbertoMS || document.querySelector('.card-produto.produto-aberto-ms');
+    const nome = limpar(
+      detalhe.dataset.nome ||
+      card?.dataset?.nome ||
+      detalhe.querySelector('h2,h3,.nome-produto')?.textContent ||
+      window.produtoDetalheAtual?.nome ||
+      window.produtoDetalheAtual?.produto
+    );
+    const cor = limpar(
+      detalhe.dataset.cor ||
+      card?.dataset?.cor ||
+      detalhe.querySelector('.cor-ativa,.cor-selecionada,.cores button.ativo')?.textContent ||
+      window.produtoDetalheAtual?.cor ||
+      'Única'
+    );
+    return nome ? { detalhe, nome, cor } : null;
+  }
+
+  async function consultar(item){
+    const resposta = await fetch(`${API}/estoque/disponivel`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        ...item,
+        pedidoId: localStorage.getItem('msPedidoPagamentoAtivo') || null
+      })
+    });
+    const dados = await resposta.json().catch(() => ({}));
+    if(!resposta.ok) throw new Error(dados.mensagem || 'Falha ao consultar estoque');
+    return dados;
+  }
+
+  async function atualizarDetalhe(){
+    const dados = dadosProdutoDetalhe();
+    if(!dados) return;
+    const botoes = [...dados.detalhe.querySelectorAll('.tamanhos-detalhe button, .detalhe-tamanhos button, .tamanho-btn')];
+    if(!botoes.length) return;
+
+    await Promise.all(botoes.map(async botao => {
+      const tamanho = limpar(botao.dataset.tamanho || botao.textContent);
+      if(!tamanho) return;
+      botao.dataset.verificandoEstoque = '1';
+      try{
+        const info = await consultar({nome:dados.nome, cor:dados.cor, tamanho, quantidade:1});
+        const semEstoque = !info.cadastrado || Number(info.disponivel || 0) <= 0;
+        botao.disabled = semEstoque;
+        botao.classList.toggle('esgotado-ms', semEstoque);
+        botao.setAttribute('aria-disabled', semEstoque ? 'true' : 'false');
+        botao.title = semEstoque ? 'Esgotado' : `${Number(info.disponivel || 0)} disponível(is)`;
+        if(semEstoque && (botao.classList.contains('ativo') || botao.classList.contains('selecionado'))){
+          botao.classList.remove('ativo','selecionado');
+          dados.detalhe.dataset.tamanho = '';
+          window.tamanhoSelecionado = '';
+          window.tamanhoSelecionadoDetalhe = '';
+        }
+      }catch(erro){
+        console.warn('Não foi possível verificar a variação:', erro.message);
+      }finally{
+        delete botao.dataset.verificandoEstoque;
+      }
+    }));
+  }
+
+  document.addEventListener('click', function(evento){
+    if(evento.target.closest?.('.card-produto .produto-img, .card-produto .ver-produto, .card-produto')){
+      setTimeout(atualizarDetalhe, 120);
+    }
+    if(evento.target.closest?.('.cores button, .cor-btn')){
+      setTimeout(atualizarDetalhe, 100);
+    }
+    const tamanho = evento.target.closest?.('.esgotado-ms');
+    if(tamanho){
+      evento.preventDefault();
+      evento.stopImmediatePropagation();
+      alert('Esta opção está esgotada. Escolha outro tamanho ou numeração.');
+    }
+  }, true);
+
+  const observador = new MutationObserver(() => {
+    const detalhe = document.getElementById('produtoDetalhe');
+    if(detalhe && detalhe.offsetParent !== null) setTimeout(atualizarDetalhe, 80);
+  });
+  observador.observe(document.documentElement, {subtree:true, childList:true});
+
+  const estilo = document.createElement('style');
+  estilo.textContent = `
+    .esgotado-ms{opacity:.42!important;cursor:not-allowed!important;text-decoration:line-through!important;filter:grayscale(1)}
+    .esgotado-ms::after{content:' • esgotado';font-size:.72em;text-decoration:none}
+  `;
+  document.head.appendChild(estilo);
+  window.atualizarEstoqueDetalheMS = atualizarDetalhe;
+})();

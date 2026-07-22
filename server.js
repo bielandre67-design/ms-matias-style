@@ -224,6 +224,12 @@ async function iniciarPostgresMS() {
   `);
   await pool.query(`CREATE INDEX IF NOT EXISTS idx_reservas_estoque_sku_status ON reservas_estoque (sku, status)`);
   await pool.query(`CREATE INDEX IF NOT EXISTS idx_reservas_estoque_expira_em ON reservas_estoque (expira_em)`);
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS estoque_baixas (
+      pedido_id TEXT PRIMARY KEY,
+      baixado_em TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
 
   for (const [caminho, padrao] of arquivosPersistidosMS.entries()) {
     const chave = chaveBancoMS(caminho);
@@ -966,6 +972,84 @@ function baixarEstoquePedidoMS(pedido) {
   pedido.estoqueBaixado = true;
 }
 
+
+async function baixarEstoquePedidoSeguroMS(pedido) {
+  if (!pedido || pedido.estoqueBaixado) return true;
+
+  // Fallback para ambientes sem PostgreSQL.
+  if (!pool) {
+    await baixarEstoquePedidoSeguroMS(pedido);
+    return Boolean(pedido.estoqueBaixado);
+  }
+
+  const agrupado = new Map();
+  (pedido.produtos || []).forEach(item => {
+    const pronto = prepararItemEstoqueMS(item);
+    const atual = agrupado.get(pronto.sku) || { ...pronto, quantidade: 0 };
+    atual.quantidade += pronto.quantidade;
+    agrupado.set(pronto.sku, atual);
+  });
+
+  if (!agrupado.size) throw new Error("Pedido sem produtos para baixar do estoque.");
+
+  const clientDB = await pool.connect();
+  try {
+    await clientDB.query("BEGIN");
+
+    // Idempotência: o mesmo pagamento/webhook nunca baixa duas vezes.
+    const registroBaixa = await clientDB.query(
+      `INSERT INTO estoque_baixas (pedido_id, baixado_em)
+       VALUES ($1, NOW())
+       ON CONFLICT (pedido_id) DO NOTHING
+       RETURNING pedido_id`,
+      [String(pedido.id)]
+    );
+
+    if (!registroBaixa.rows.length) {
+      await clientDB.query("COMMIT");
+      pedido.estoqueBaixado = true;
+      liberarReservaPedidoMS(pedido.id);
+      return true;
+    }
+
+    const itensOrdenados = [...agrupado.values()].sort((a, b) =>
+      String(a.sku).localeCompare(String(b.sku))
+    );
+
+    for (const item of itensOrdenados) {
+      const resultado = await clientDB.query(
+        `UPDATE estoque_variantes
+            SET quantidade = quantidade - $2,
+                atualizado_em = NOW()
+          WHERE sku = $1
+            AND quantidade >= $2
+        RETURNING quantidade`,
+        [item.sku, Math.max(1, Number(item.quantidade || 1))]
+      );
+
+      if (!resultado.rows.length) {
+        const erro = new Error(`Estoque insuficiente para ${item.nome} / ${item.cor} / ${item.tamanho}.`);
+        erro.statusCode = 409;
+        throw erro;
+      }
+    }
+
+    await clientDB.query(`DELETE FROM reservas_estoque WHERE pedido_id = $1`, [String(pedido.id)]);
+    await clientDB.query("COMMIT");
+
+    pedido.estoqueBaixado = true;
+    liberarReservaPedidoMS(pedido.id);
+    await carregarEstoqueDaTabelaMS();
+    return true;
+  } catch (erro) {
+    await clientDB.query("ROLLBACK");
+    console.error("Falha na baixa segura do estoque:", erro.message);
+    throw erro;
+  } finally {
+    clientDB.release();
+  }
+}
+
 app.get("/estoque", (req, res) => {
   limparReservasVencidasMS();
   const estoque = lerEstoqueMS().map(item => {
@@ -1111,7 +1195,7 @@ app.delete("/pedidos-excluidos/:id", (req, res) => {
   res.json({ sucesso: true, id });
 });
 
-app.post("/pedidos/:id/status", (req, res) => {
+app.post("/pedidos/:id/status", async (req, res) => {
   const id = String(req.params.id);
   const status = String(req.body?.status || "pendente").toLowerCase();
   const pedidos = lerPedidos();
@@ -1122,7 +1206,7 @@ app.post("/pedidos/:id/status", (req, res) => {
   }
 
   pedido.status = status;
-  if (status === "pago") baixarEstoquePedidoMS(pedido);
+  if (status === "pago") await baixarEstoquePedidoSeguroMS(pedido);
   if (["cancelado", "cancelada", "recusado", "recusada"].includes(status)) liberarReservaPedidoMS(pedido.id);
   salvarPedidos(pedidos);
 
@@ -1962,7 +2046,7 @@ app.post("/checkout-mp", async (req, res) => {
   }
 });
 
-app.post("/atualizar-status", (req, res) => {
+app.post("/atualizar-status", async (req, res) => {
   const { id, status } = req.body;
   const pedidos = lerPedidos();
   const pedido = pedidos.find((p) => Number(p.id) === Number(id));
@@ -2054,7 +2138,7 @@ app.post("/webhook", async (req, res) => {
     };
 
     if (statusMP === "approved") {
-      baixarEstoquePedidoMS(pedido);
+      await baixarEstoquePedidoSeguroMS(pedido);
       pedido.pagoEm = pagamento.date_approved || new Date().toISOString();
     }
 
