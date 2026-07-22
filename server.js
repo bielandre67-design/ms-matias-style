@@ -434,7 +434,7 @@ async function buscarProdutoFreteBancoMS(item) {
   return null;
 }
 
-async function produtoFreteMS(item, indice) {
+async function produtoFreteMS(item, indice, configFrete = null) {
   const quantidade = Math.max(1, Math.floor(Number(item?.quantidade || item?.quantity || 1)));
   const preco = Math.max(1, Number(item?.preco || item?.price || 0));
   const produtoBanco = await buscarProdutoFreteBancoMS(item);
@@ -447,16 +447,23 @@ async function produtoFreteMS(item, indice) {
     throw erro;
   }
 
-  const weight = Number(produtoBanco.peso_kg || 0);
-  const height = Number(produtoBanco.altura_cm || 0);
-  const width = Number(produtoBanco.largura_cm || 0);
-  const length = Number(produtoBanco.comprimento_cm || 0);
+  const configAtual = configFrete || await obterFreteConfigMS();
+  const chaveCategoria = normalizarCategoriaFreteMS(produtoBanco.categoria);
+  const medidasCategoria = configAtual.medidasCategorias?.[chaveCategoria] || null;
+
+  // Medidas preenchidas diretamente no produto têm prioridade.
+  // Quando estiverem zeradas, usamos automaticamente o padrão da categoria.
+  const weight = Number(produtoBanco.peso_kg || medidasCategoria?.peso || 0);
+  const height = Number(produtoBanco.altura_cm || medidasCategoria?.altura || 0);
+  const width = Number(produtoBanco.largura_cm || medidasCategoria?.largura || 0);
+  const length = Number(produtoBanco.comprimento_cm || medidasCategoria?.comprimento || 0);
 
   if (!(weight > 0 && height > 0 && width > 0 && length > 0)) {
-    const erro = new Error(`Cadastre peso, altura, largura e comprimento de "${nome}" no painel antes de calcular o frete.`);
+    const categoria = String(produtoBanco.categoria || "Sem categoria").trim();
+    const erro = new Error(`Cadastre as dimensões de envio da categoria "${categoria}" no painel de Frete.`);
     erro.statusCode = 400;
-    erro.codigo = "MEDIDAS_FRETE_PENDENTES";
-    erro.produto = { id: produtoBanco.id, nome };
+    erro.codigo = "MEDIDAS_CATEGORIA_FRETE_PENDENTES";
+    erro.produto = { id: produtoBanco.id, nome, categoria };
     throw erro;
   }
 
@@ -473,15 +480,37 @@ async function produtoFreteMS(item, indice) {
 
 
 
+function normalizarCategoriaFreteMS(valor) {
+  return String(valor || "sem-categoria")
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .trim().toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "sem-categoria";
+}
+function limparMedidasCategoriaFreteMS(entrada = {}) {
+  const saida = {};
+  for (const [chaveOriginal, valor] of Object.entries(entrada || {})) {
+    const chave = normalizarCategoriaFreteMS(chaveOriginal);
+    const nome = String(valor?.nome || chaveOriginal || "Categoria").trim().slice(0, 100);
+    const peso = Math.max(0, Number(valor?.peso || valor?.pesoKg || 0));
+    const altura = Math.max(0, Number(valor?.altura || valor?.alturaCm || 0));
+    const largura = Math.max(0, Number(valor?.largura || valor?.larguraCm || 0));
+    const comprimento = Math.max(0, Number(valor?.comprimento || valor?.comprimentoCm || 0));
+    saida[chave] = { nome, peso, altura, largura, comprimento };
+  }
+  return saida;
+}
+
 const FRETE_PADRAO_MS = {
   gratisAtivo: false, gratisAcima: 199.90, fixoAtivo: false, fixoValor: 15,
+  medidasCategorias: {},
   regioes: {
     sul:{ativo:true,min:3,max:7}, sudeste:{ativo:true,min:4,max:8},
     centroOeste:{ativo:true,min:5,max:10}, nordeste:{ativo:true,min:7,max:14}, norte:{ativo:true,min:9,max:18}
   }
 };
 const UFS_REGIAO_MS={RS:'sul',SC:'sul',PR:'sul',SP:'sudeste',RJ:'sudeste',MG:'sudeste',ES:'sudeste',GO:'centroOeste',MT:'centroOeste',MS:'centroOeste',DF:'centroOeste',BA:'nordeste',SE:'nordeste',AL:'nordeste',PE:'nordeste',PB:'nordeste',RN:'nordeste',CE:'nordeste',PI:'nordeste',MA:'nordeste',AM:'norte',PA:'norte',AC:'norte',RO:'norte',RR:'norte',AP:'norte',TO:'norte'};
-function limparFreteConfigMS(b={}){const regioes={};for(const k of Object.keys(FRETE_PADRAO_MS.regioes)){const r=b.regioes?.[k]||{};const min=Math.max(1,Math.min(60,Number(r.min||FRETE_PADRAO_MS.regioes[k].min)));const max=Math.max(min,Math.min(60,Number(r.max||FRETE_PADRAO_MS.regioes[k].max)));regioes[k]={ativo:r.ativo!==false,min,max};}return {gratisAtivo:b.gratisAtivo===true,gratisAcima:Math.max(0,Number(b.gratisAcima||FRETE_PADRAO_MS.gratisAcima)),fixoAtivo:b.fixoAtivo===true,fixoValor:Math.max(0,Number(b.fixoValor||FRETE_PADRAO_MS.fixoValor)),regioes};}
+function limparFreteConfigMS(b={}){const regioes={};for(const k of Object.keys(FRETE_PADRAO_MS.regioes)){const r=b.regioes?.[k]||{};const min=Math.max(1,Math.min(60,Number(r.min||FRETE_PADRAO_MS.regioes[k].min)));const max=Math.max(min,Math.min(60,Number(r.max||FRETE_PADRAO_MS.regioes[k].max)));regioes[k]={ativo:r.ativo!==false,min,max};}return {gratisAtivo:b.gratisAtivo===true,gratisAcima:Math.max(0,Number(b.gratisAcima||FRETE_PADRAO_MS.gratisAcima)),fixoAtivo:b.fixoAtivo===true,fixoValor:Math.max(0,Number(b.fixoValor||FRETE_PADRAO_MS.fixoValor)),medidasCategorias:limparMedidasCategoriaFreteMS(b.medidasCategorias||{}),regioes};}
 async function obterFreteConfigMS(){if(!pool)return FRETE_PADRAO_MS;const r=await pool.query('SELECT dados FROM app_state WHERE chave=$1',['frete_config']);return limparFreteConfigMS(r.rows[0]?.dados||FRETE_PADRAO_MS);}
 async function descobrirRegiaoCepMS(cep){const r=await fetch(`https://viacep.com.br/ws/${cep}/json/`);const d=await r.json();if(!r.ok||d.erro||!UFS_REGIAO_MS[d.uf]){const e=new Error('Não foi possível identificar a região desse CEP.');e.statusCode=400;throw e;}return {uf:d.uf,regiao:UFS_REGIAO_MS[d.uf]};}
 app.get('/frete-config',async(req,res,next)=>{try{res.json(await obterFreteConfigMS());}catch(e){next(e);}});
@@ -522,7 +551,7 @@ app.post("/calcular-frete", async (req, res) => {
       return res.json([{id:"ms-fixo",name:"Frete fixo",price:Number(configFrete.fixoValor).toFixed(2),delivery_time:prazoPersonalizado,company:{name:"MS Matias Style"},custom:true}]);
     }
 
-    const products = await Promise.all(itensRecebidos.map(produtoFreteMS));
+    const products = await Promise.all(itensRecebidos.map((item, indice) => produtoFreteMS(item, indice, configFrete)));
 
     const response = await fetch("https://www.melhorenvio.com.br/api/v2/me/shipment/calculate", {
       method: "POST",

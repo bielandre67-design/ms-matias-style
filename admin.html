@@ -198,6 +198,10 @@ html, body { min-height: 100%; }
 @media(max-width:760px){.dashboard-boasvindas-ms{align-items:flex-start;padding:17px;border-radius:20px}.dashboard-atualizacao-ms{display:none}.dashboard-kpis-ms{grid-template-columns:1fr 1fr!important;gap:9px!important}.dashboard-kpis-ms .card{min-height:122px;padding:14px!important}.dashboard-kpis-ms .card strong{font-size:22px!important}.atalhos-dashboard-ms{grid-template-columns:1fr 1fr;gap:9px}.atalhos-dashboard-ms button{grid-template-columns:40px 1fr;min-height:72px;padding:11px}.atalhos-dashboard-ms button>span{width:40px;height:40px;font-size:19px}.atalhos-dashboard-ms small{font-size:10px}.dashboard-grid-secundario-ms{grid-template-columns:1fr}.dashboard-canvas-ms{min-height:225px}.dashboard-mini-stats-ms{grid-template-columns:1fr!important}.ranking-item-ms,.venda-recente-item-ms{padding:11px}}
 @media(max-width:410px){.dashboard-kpis-ms{grid-template-columns:1fr!important}.atalhos-dashboard-ms{grid-template-columns:1fr}.dashboard-kpis-ms .card{min-height:110px}}
 </style>
+
+<style>
+.frete-medidas-aviso-ms{margin:12px 0 16px;padding:12px 14px;border:1px solid rgba(227,185,63,.22);border-radius:12px;background:rgba(227,185,63,.06);color:#c9cbd3;font-size:13px}.frete-medidas-categorias-ms{display:grid;gap:12px}.frete-medida-categoria-ms{padding:14px;border:1px solid #30333b;border-radius:14px;background:#15171c}.frete-medida-categoria-ms h4{margin:0 0 12px;color:#fff;font-size:15px}.frete-medida-grid-ms{display:grid;grid-template-columns:repeat(4,minmax(120px,1fr));gap:10px}.frete-medida-grid-ms label{display:grid;gap:6px;color:#bfc3cd;font-size:12px;font-weight:700}.frete-medida-grid-ms input{width:100%;box-sizing:border-box;padding:11px;border:1px solid #383b44;border-radius:10px;background:#202229;color:#fff}.frete-medida-grid-ms small{font-weight:400;color:#8f94a0}@media(max-width:760px){.frete-medida-grid-ms{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
 </head>
 <body>
 <script>
@@ -441,6 +445,11 @@ html, body { min-height: 100%; }
       <section class="frete-admin-card-ms frete-regioes-card-ms">
         <div class="frete-card-title-ms"><div><h3>📍 Regiões atendidas e prazos</h3><p>Ative as regiões em que a loja entrega e escolha o prazo exibido ao cliente.</p></div><button type="button" class="btn-mini-frete-ms" onclick="marcarTodasRegioesFreteMS(true)">Marcar todas</button></div>
         <div id="freteRegioesMS" class="frete-regioes-grid-ms"></div>
+      </section>
+      <section class="frete-admin-card-ms frete-regioes-card-ms">
+        <div class="frete-card-title-ms"><div><h3>📐 Dimensões por categoria</h3><p>Cadastre uma vez. Produtos da mesma categoria usarão automaticamente estas medidas no Melhor Envio.</p></div><button type="button" class="btn-mini-frete-ms" onclick="carregarCategoriasMedidasFreteMS(true)">Atualizar categorias</button></div>
+        <div class="frete-medidas-aviso-ms">As medidas individuais do produto, quando preenchidas, continuam tendo prioridade.</div>
+        <div id="freteMedidasCategoriasMS" class="frete-medidas-categorias-ms"><p>Carregando categorias...</p></div>
       </section>
       <section class="frete-admin-card-ms frete-resumo-card-ms">
         <div><h3>Prévia da regra</h3><p id="freteResumoRegraMS">Carregando configuração...</p></div>
