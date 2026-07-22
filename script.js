@@ -7019,7 +7019,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return false;
   }
 
-  function abrirEscolhaPagamentoMS(event){
+  async function abrirEscolhaPagamentoMS(event){
     if(event){event.preventDefault();event.stopPropagation();event.stopImmediatePropagation?.();}
     const d=dadosPagamentoMS(); if(!validarAntesPagamentoMS(d)) return false;
     let modal=document.getElementById("msEscolhaPagamento");
@@ -7031,6 +7031,13 @@ document.addEventListener("DOMContentLoaded", () => {
       modal.querySelector(".ms-escolha-fechar").onclick=()=>modal.style.display="none";
       modal.querySelector(".ms-opcao-pix").onclick=(ev)=>{ev.preventDefault();ev.stopPropagation();modal.style.display="none";pagarPixDentroDaLoja(ev);};
       modal.querySelector(".ms-opcao-cartao").onclick=(ev)=>{ev.preventDefault();ev.stopPropagation();modal.style.display="none";pagarCartaoOutrosMS();};
+      const configPagamentoMS=await carregarConfigPagamentoLojaMS();
+      const botaoPix=modal.querySelector(".ms-opcao-pix");
+      const botaoCartao=modal.querySelector(".ms-opcao-cartao");
+      if(botaoPix) botaoPix.style.display=configPagamentoMS.pixAtivo===false?"none":"flex";
+      if(botaoCartao) botaoCartao.style.display=configPagamentoMS.cartaoAtivo===false?"none":"flex";
+      if(configPagamentoMS.pixAtivo===false&&configPagamentoMS.cartaoAtivo===false){modal.style.display="none";alert("Nenhuma forma de pagamento está disponível no momento.");}
+
     }
     modal.style.display="flex"; return false;
   }
