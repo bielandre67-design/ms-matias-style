@@ -1,0 +1,16 @@
+ETAPA 5.4 - LOG DE AUDITORIA
+
+Inclui:
+- Registro de login, falha de login e logout.
+- Registro automático de mudanças administrativas bem-sucedidas.
+- IP, navegador, data, rota, método e status HTTP.
+- Proteção de campos sensíveis no histórico.
+- Filtros, paginação, impressão e exportação CSV.
+- Logs somente leitura, sem rota de edição ou exclusão no painel.
+
+Após substituir os arquivos:
+git add .
+git commit -m "Adicionar log de auditoria"
+git push
+
+A tabela audit_logs é criada automaticamente no PostgreSQL no próximo deploy.

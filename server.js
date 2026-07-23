@@ -122,6 +122,27 @@ async function iniciarPostgresMS() {
   `);
 
   await pool.query(`
+    CREATE TABLE IF NOT EXISTS audit_logs (
+      id BIGSERIAL PRIMARY KEY,
+      usuario VARCHAR(120) NOT NULL DEFAULT 'Administrador',
+      acao VARCHAR(100) NOT NULL,
+      recurso VARCHAR(100) NOT NULL,
+      metodo VARCHAR(12) NOT NULL,
+      rota TEXT NOT NULL,
+      status_http INTEGER NOT NULL DEFAULT 200,
+      ip VARCHAR(100),
+      navegador TEXT,
+      dados_antes JSONB,
+      dados_depois JSONB,
+      detalhes JSONB,
+      criado_em TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_audit_logs_criado_em ON audit_logs (criado_em DESC)`);
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_audit_logs_acao ON audit_logs (acao)`);
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_audit_logs_recurso ON audit_logs (recurso)`);
+
+  await pool.query(`
     CREATE TABLE IF NOT EXISTS produtos (
       id BIGSERIAL PRIMARY KEY,
       chave VARCHAR(180) UNIQUE NOT NULL,
@@ -325,6 +346,47 @@ app.use(limiteGeralMS);
 app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: true, limit: "1mb" }));
 
+const CHAVES_SENSIVEIS_AUDITORIA_MS = /senha|password|token|secret|access[_-]?token|api[_-]?key|authorization|session|cartao|card|cvv|cvc/i;
+function limparDadosAuditoriaMS(valor, profundidade = 0) {
+  if (profundidade > 5) return '[limite de profundidade]';
+  if (valor === null || valor === undefined) return valor;
+  if (Array.isArray(valor)) return valor.slice(0, 100).map((v) => limparDadosAuditoriaMS(v, profundidade + 1));
+  if (typeof valor !== 'object') return typeof valor === 'string' ? valor.slice(0, 1000) : valor;
+  const saida = {};
+  for (const [chave, item] of Object.entries(valor).slice(0, 100)) {
+    saida[chave] = CHAVES_SENSIVEIS_AUDITORIA_MS.test(chave) ? '[PROTEGIDO]' : limparDadosAuditoriaMS(item, profundidade + 1);
+  }
+  return saida;
+}
+function ipAuditoriaMS(req) {
+  return String(req.get('cf-connecting-ip') || req.get('x-forwarded-for') || req.ip || '').split(',')[0].trim().slice(0, 100);
+}
+function descreverAcaoAuditoriaMS(req) {
+  const rota = req.path;
+  const metodo = req.method;
+  let recurso = rota.split('/').filter(Boolean)[0] || 'sistema';
+  const nomes = { produtos:'Produto', estoque:'Estoque', pedidos:'Pedido', 'pedidos-excluidos':'Pedido excluído', cupons:'Cupom', banners:'Banner', categorias:'Categoria', backups:'Backup', 'frete-config':'Frete', 'pagamento-config':'Pagamento', 'loja-config':'Loja', 'aparencia-config':'Aparência', 'home-config':'Página inicial', 'upload-imagens':'Imagens' };
+  recurso = nomes[recurso] || recurso;
+  let verbo = metodo === 'POST' ? 'Criou' : metodo === 'PUT' || metodo === 'PATCH' ? 'Alterou' : metodo === 'DELETE' ? 'Excluiu' : 'Executou';
+  if (/\/restore$/.test(rota)) verbo = 'Restaurou';
+  if (/atualizar-status/.test(rota)) verbo = 'Alterou status de';
+  return { acao: `${verbo} ${recurso}`.slice(0, 100), recurso: String(recurso).slice(0, 100) };
+}
+async function registrarAuditoriaMS({ req, acao, recurso, status = 200, antes = null, depois = null, detalhes = null, usuario = 'Administrador' }) {
+  if (!pool) return;
+  try {
+    await pool.query(`INSERT INTO audit_logs
+      (usuario, acao, recurso, metodo, rota, status_http, ip, navegador, dados_antes, dados_depois, detalhes)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9::jsonb,$10::jsonb,$11::jsonb)`, [
+      String(usuario || 'Administrador').slice(0,120), String(acao || 'Ação administrativa').slice(0,100),
+      String(recurso || 'sistema').slice(0,100), String(req?.method || 'SYSTEM').slice(0,12),
+      String(req?.originalUrl || req?.path || '').slice(0,1000), Number(status || 200), ipAuditoriaMS(req),
+      String(req?.get?.('user-agent') || '').slice(0,500), antes == null ? null : JSON.stringify(limparDadosAuditoriaMS(antes)),
+      depois == null ? null : JSON.stringify(limparDadosAuditoriaMS(depois)), detalhes == null ? null : JSON.stringify(limparDadosAuditoriaMS(detalhes))
+    ]);
+  } catch (erro) { console.error('Falha ao registrar auditoria:', erro.message); }
+}
+
 const sessoesAdminMS = new Map();
 const DURACAO_SESSAO_ADMIN_MS = Math.max(15, Number(process.env.ADMIN_SESSION_MINUTES || 480)) * 60 * 1000;
 
@@ -377,6 +439,7 @@ app.post("/admin-auth", limiteLoginAdminMS, (req, res) => {
     return res.status(503).json({ mensagem: "ADMIN_PANEL_TOKEN não configurado." });
   }
   if (!senhaAdminValidaMS(req.body?.senha)) {
+    registrarAuditoriaMS({ req, acao: 'Falha de login', recurso: 'Acesso', status: 401, detalhes: { motivo: 'Credencial inválida' }, usuario: 'Não autenticado' });
     return res.status(401).json({ mensagem: "Senha administrativa incorreta." });
   }
   limparSessoesExpiradasMS();
@@ -388,6 +451,7 @@ app.post("/admin-auth", limiteLoginAdminMS, (req, res) => {
     ip: req.ip,
     agente: String(req.get("user-agent") || "").slice(0, 250)
   });
+  registrarAuditoriaMS({ req, acao: 'Login realizado', recurso: 'Acesso', status: 200 });
   res.set("Cache-Control", "no-store");
   res.json({
     ok: true,
@@ -406,6 +470,7 @@ app.get("/admin-session", (req, res) => {
 app.post("/admin-logout", (req, res) => {
   const token = String(req.get("X-Admin-Session") || "").trim();
   if (token) sessoesAdminMS.delete(token);
+  registrarAuditoriaMS({ req, acao: 'Logout realizado', recurso: 'Acesso', status: 200 });
   res.set("Cache-Control", "no-store");
   res.json({ ok: true });
 });
@@ -413,13 +478,13 @@ app.post("/admin-logout", (req, res) => {
 setInterval(limparSessoesExpiradasMS, 10 * 60 * 1000).unref();
 
 const rotasAdminLeituraMS = [
-  "/pedidos", "/pedidos-excluidos", "/estoque", "/cupons", "/backups"
+  "/pedidos", "/pedidos-excluidos", "/estoque", "/cupons", "/backups", "/auditoria"
 ];
 const rotasAdminEscritaMS = [
   "/frete-config", "/frete-teste", "/estoque", "/pedidos", "/pedidos-excluidos",
   "/excluir-pedido", "/atualizar-status", "/cupons", "/banners", "/pagamento-config",
   "/loja-config", "/aparencia-config", "/home-config", "/upload-imagens", "/categorias",
-  "/produtos", "/diagnostico-mercado-pago", "/backups"
+  "/produtos", "/diagnostico-mercado-pago", "/backups", "/auditoria"
 ];
 app.use((req, res, next) => {
   const caminho = req.path;
@@ -427,6 +492,21 @@ app.use((req, res, next) => {
   const leituraProtegida = req.method === "GET" && rotasAdminLeituraMS.some((r) => caminho === r || caminho.startsWith(r + "/"));
   const escritaProtegida = escrita && rotasAdminEscritaMS.some((r) => caminho === r || caminho.startsWith(r + "/"));
   if (leituraProtegida || escritaProtegida) return exigirAdminMS(req, res, next);
+  next();
+});
+
+// Auditoria automática das mudanças administrativas bem-sucedidas.
+app.use((req, res, next) => {
+  const escrita = !["GET", "HEAD", "OPTIONS"].includes(req.method);
+  const protegida = escrita && rotasAdminEscritaMS.some((r) => req.path === r || req.path.startsWith(r + "/"));
+  const ignorar = req.path === "/admin-auth" || req.path === "/admin-logout" || req.path.startsWith("/auditoria");
+  if (!protegida || ignorar) return next();
+  res.on("finish", () => {
+    if (res.statusCode >= 200 && res.statusCode < 400) {
+      const info = descreverAcaoAuditoriaMS(req);
+      registrarAuditoriaMS({ req, ...info, status: res.statusCode, depois: { body: req.body || {}, params: req.params || {}, query: req.query || {} } });
+    }
+  });
   next();
 });
 
@@ -3000,6 +3080,41 @@ async function restaurarSnapshotBancoMS(snapshot) {
     cliente.release();
   }
 }
+
+app.get("/auditoria", async (req, res, next) => {
+  if (!pool) return res.status(503).json({ mensagem: "PostgreSQL não configurado." });
+  try {
+    const limite = Math.min(500, Math.max(10, Number(req.query.limite || 100)));
+    const pagina = Math.max(1, Number(req.query.pagina || 1));
+    const condicoes = []; const valores = [];
+    const add = (sql, valor) => { valores.push(valor); condicoes.push(sql.replace('?', `$${valores.length}`)); };
+    if (req.query.acao) add('acao ILIKE ?', `%${String(req.query.acao).slice(0,100)}%`);
+    if (req.query.recurso) add('recurso ILIKE ?', `%${String(req.query.recurso).slice(0,100)}%`);
+    if (req.query.usuario) add('usuario ILIKE ?', `%${String(req.query.usuario).slice(0,100)}%`);
+    if (req.query.busca) { valores.push(`%${String(req.query.busca).slice(0,200)}%`); const n=valores.length; condicoes.push(`(acao ILIKE $${n} OR recurso ILIKE $${n} OR rota ILIKE $${n} OR COALESCE(dados_depois::text,'') ILIKE $${n})`); }
+    if (req.query.inicio) add('criado_em >= ?', String(req.query.inicio));
+    if (req.query.fim) add('criado_em < (?::date + INTERVAL \'1 day\')', String(req.query.fim));
+    const where = condicoes.length ? `WHERE ${condicoes.join(' AND ')}` : '';
+    const totalR = await pool.query(`SELECT COUNT(*)::int AS total FROM audit_logs ${where}`, valores);
+    valores.push(limite, (pagina-1)*limite);
+    const r = await pool.query(`SELECT id,usuario,acao,recurso,metodo,rota,status_http,ip,navegador,dados_antes,dados_depois,detalhes,criado_em FROM audit_logs ${where} ORDER BY criado_em DESC LIMIT $${valores.length-1} OFFSET $${valores.length}`, valores);
+    res.set('Cache-Control','no-store');
+    res.json({ itens:r.rows, total:Number(totalR.rows[0]?.total||0), pagina, limite });
+  } catch (e) { next(e); }
+});
+
+app.get("/auditoria/export.csv", async (req, res, next) => {
+  if (!pool) return res.status(503).json({ mensagem: "PostgreSQL não configurado." });
+  try {
+    const r = await pool.query(`SELECT criado_em,usuario,acao,recurso,metodo,rota,status_http,ip FROM audit_logs ORDER BY criado_em DESC LIMIT 10000`);
+    const esc = (v) => `"${String(v ?? '').replace(/"/g,'""')}"`;
+    const linhas = [['Data','Usuário','Ação','Recurso','Método','Rota','Status','IP'].map(esc).join(',')];
+    for (const x of r.rows) linhas.push([new Date(x.criado_em).toISOString(),x.usuario,x.acao,x.recurso,x.metodo,x.rota,x.status_http,x.ip].map(esc).join(','));
+    res.setHeader('Content-Type','text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition',`attachment; filename="auditoria-ms-${new Date().toISOString().slice(0,10)}.csv"`);
+    res.send('\ufeff'+linhas.join('\n'));
+  } catch (e) { next(e); }
+});
 
 app.get("/backups", async (req, res, next) => {
   if (!pool) return res.status(503).json({ mensagem: "PostgreSQL não configurado." });

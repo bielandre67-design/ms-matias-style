@@ -1320,3 +1320,34 @@ async function criarBackupMS(){const nome=prompt('Nome opcional para este backup
 async function baixarBackupMS(id){statusBackupMS('Preparando download...');try{const r=await fetch(`${apiBackupMS()}/backups/${id}/download`,{cache:'no-store'});if(!r.ok){const d=await r.json().catch(()=>({}));throw new Error(d.mensagem||'Falha no download.');}const blob=await r.blob();const disp=r.headers.get('content-disposition')||'';const m=disp.match(/filename="?([^";]+)"?/i);const nome=m?.[1]||`ms-backup-${id}.json`;const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=nome;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);statusBackupMS('Backup baixado. Guarde o arquivo em local seguro.','sucesso');}catch(e){statusBackupMS(e.message,'erro');alert(e.message);}}
 async function restaurarBackupMS(id){const b=backupsCacheMS.find(x=>Number(x.id)===Number(id));if(!confirm(`ATENÇÃO: isso substituirá os dados atuais pelos dados de “${b?.nome||'backup'}”.\n\nCrie antes um backup do estado atual.`))return;const palavra=prompt('Para confirmar, digite RESTAURAR:','');if(String(palavra||'').trim().toUpperCase()!=='RESTAURAR'){alert('Restauração cancelada.');return;}statusBackupMS('Restaurando banco. Não feche esta página...');try{const r=await fetch(`${apiBackupMS()}/backups/${id}/restore`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({confirmacao:'RESTAURAR'})});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.mensagem||'Falha ao restaurar.');statusBackupMS('Banco restaurado com sucesso. Atualizando painel...','sucesso');await carregarBackupsMS();setTimeout(()=>location.reload(),1200);}catch(e){statusBackupMS(e.message,'erro');alert(e.message);}}
 async function excluirBackupMS(id){const b=backupsCacheMS.find(x=>Number(x.id)===Number(id));if(!confirm(`Excluir definitivamente “${b?.nome||'este backup'}”?`))return;try{const r=await fetch(`${apiBackupMS()}/backups/${id}`,{method:'DELETE'});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.mensagem||'Falha ao excluir.');statusBackupMS('Backup excluído.','sucesso');await carregarBackupsMS();}catch(e){statusBackupMS(e.message,'erro');alert(e.message);}}
+
+
+// ===== ETAPA 5.4 - LOG DE AUDITORIA =====
+let paginaAuditoriaMS = 1;
+let totalAuditoriaMS = 0;
+const limiteAuditoriaMS = 50;
+function escAuditoriaMS(v=''){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function apiAuditoriaMS(){return (typeof API_URL!=='undefined'&&API_URL)||window.location.origin;}
+function dataAuditoriaMS(v){try{return new Date(v).toLocaleString('pt-BR')}catch{return '-'}}
+function resumoDadosAuditoriaMS(item){const d=item.dados_depois||item.detalhes||{};const bruto=JSON.stringify(d);if(!bruto||bruto==='{}')return `${item.metodo||''} ${item.rota||''}`.trim();return bruto.length>180?bruto.slice(0,180)+'…':bruto;}
+async function carregarAuditoriaMS(reset=false){
+  if(reset)paginaAuditoriaMS=1;
+  const tb=document.getElementById('auditoriaTabelaMS');if(!tb)return;
+  const status=document.getElementById('auditoriaStatusMS');if(status)status.textContent='Carregando registros...';
+  const q=new URLSearchParams({pagina:String(paginaAuditoriaMS),limite:String(limiteAuditoriaMS)});
+  const campos={busca:'auditoriaBuscaMS',acao:'auditoriaAcaoMS',recurso:'auditoriaRecursoMS',inicio:'auditoriaInicioMS',fim:'auditoriaFimMS'};
+  Object.entries(campos).forEach(([k,id])=>{const v=document.getElementById(id)?.value?.trim();if(v)q.set(k,v)});
+  try{
+    const r=await fetch(`${apiAuditoriaMS()}/auditoria?${q}`,{cache:'no-store'});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.mensagem||'Não foi possível carregar a auditoria.');
+    totalAuditoriaMS=Number(d.total||0);const itens=Array.isArray(d.itens)?d.itens:[];
+    document.getElementById('auditoriaTotalMS').textContent=totalAuditoriaMS.toLocaleString('pt-BR');
+    document.getElementById('auditoriaUltimaMS').textContent=itens[0]?dataAuditoriaMS(itens[0].criado_em):'Nenhuma';
+    tb.innerHTML=itens.length?itens.map(x=>`<tr><td>${escAuditoriaMS(dataAuditoriaMS(x.criado_em))}</td><td>${escAuditoriaMS(x.usuario)}</td><td><b>${escAuditoriaMS(x.acao)}</b><small>${escAuditoriaMS(x.metodo)} · HTTP ${escAuditoriaMS(x.status_http)}</small></td><td>${escAuditoriaMS(x.recurso)}</td><td>${escAuditoriaMS(x.ip||'-')}</td><td><details><summary>Ver</summary><pre>${escAuditoriaMS(resumoDadosAuditoriaMS(x))}</pre><small>${escAuditoriaMS(x.rota||'')}</small></details></td></tr>`).join(''):'<tr><td colspan="6">Nenhum registro encontrado.</td></tr>';
+    const paginas=Math.max(1,Math.ceil(totalAuditoriaMS/limiteAuditoriaMS));document.getElementById('auditoriaPaginaMS').textContent=`Página ${paginaAuditoriaMS} de ${paginas}`;document.getElementById('auditoriaAnteriorMS').disabled=paginaAuditoriaMS<=1;document.getElementById('auditoriaProximaMS').disabled=paginaAuditoriaMS>=paginas;
+    if(status)status.textContent=`${totalAuditoriaMS} registro(s) encontrado(s).`;
+  }catch(e){tb.innerHTML=`<tr><td colspan="6">${escAuditoriaMS(e.message)}</td></tr>`;if(status)status.textContent=e.message;}
+}
+function mudarPaginaAuditoriaMS(delta){paginaAuditoriaMS=Math.max(1,paginaAuditoriaMS+delta);carregarAuditoriaMS();}
+function limparFiltrosAuditoriaMS(){['auditoriaBuscaMS','auditoriaAcaoMS','auditoriaRecursoMS','auditoriaInicioMS','auditoriaFimMS'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=''});carregarAuditoriaMS(true);}
+async function exportarAuditoriaCSVMS(){try{const r=await fetch(`${apiAuditoriaMS()}/auditoria/export.csv`,{cache:'no-store'});if(!r.ok)throw new Error('Falha ao exportar.');const b=await r.blob();const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=`auditoria-ms-${new Date().toISOString().slice(0,10)}.csv`;a.click();URL.revokeObjectURL(u);}catch(e){alert(e.message)}}
+function imprimirAuditoriaMS(){window.print();}

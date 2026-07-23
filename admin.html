@@ -235,6 +235,7 @@ html, body { min-height: 100%; }
       <button class="ms-tab" onclick="abrirAbaMS('cuponsAba', this)"><span>%</span> Cupons</button>
       <button class="ms-tab" onclick="abrirAbaMS('relatoriosAba', this)"><span>▥</span> Relatórios</button>
       <button class="ms-tab" onclick="abrirAbaMS('backupsAba', this); carregarBackupsMS()"><span>🛡</span> Backups</button>
+      <button class="ms-tab" onclick="abrirAbaMS('auditoriaAba', this); carregarAuditoriaMS()"><span>◉</span> Auditoria</button>
       <button class="ms-tab" onclick="abrirAbaMS('configuracoesAba', this)"><span>⚙</span> Configurações</button>
     </nav>
 
@@ -603,6 +604,31 @@ html, body { min-height: 100%; }
       <div id="backupsListaMS" class="backups-lista-ms"><div class="backups-vazio-ms">Carregando backups...</div></div>
     </section>
 
+
+    <section id="auditoriaAba" class="ms-painel auditoria-etapa54-ms">
+      <div class="auditoria-topo-ms">
+        <div><span>SEGURANÇA 5.4</span><h2>Log de auditoria</h2><p>Histórico imutável das ações importantes realizadas no painel.</p></div>
+        <div class="auditoria-acoes-topo-ms"><button type="button" onclick="exportarAuditoriaCSVMS()">⬇ Exportar CSV</button><button type="button" onclick="imprimirAuditoriaMS()">🖨 Imprimir</button></div>
+      </div>
+      <div class="auditoria-resumo-ms">
+        <article><span>Registros encontrados</span><strong id="auditoriaTotalMS">0</strong></article>
+        <article><span>Última ação</span><strong id="auditoriaUltimaMS">Nenhuma</strong></article>
+        <article><span>Proteção</span><strong>Somente leitura</strong></article>
+      </div>
+      <div class="auditoria-filtros-ms">
+        <label>Buscar<input id="auditoriaBuscaMS" type="search" placeholder="Produto, pedido, rota..." onkeydown="if(event.key==='Enter')carregarAuditoriaMS()"></label>
+        <label>Ação<input id="auditoriaAcaoMS" type="text" placeholder="Ex.: Alterou estoque"></label>
+        <label>Recurso<select id="auditoriaRecursoMS"><option value="">Todos</option><option>Produto</option><option>Estoque</option><option>Pedido</option><option>Cupom</option><option>Frete</option><option>Pagamento</option><option>Backup</option><option>Acesso</option></select></label>
+        <label>De<input id="auditoriaInicioMS" type="date"></label>
+        <label>Até<input id="auditoriaFimMS" type="date"></label>
+        <button type="button" onclick="carregarAuditoriaMS(true)">Filtrar</button>
+        <button type="button" class="limpar" onclick="limparFiltrosAuditoriaMS()">Limpar</button>
+      </div>
+      <div id="auditoriaStatusMS" class="auditoria-status-ms"></div>
+      <div class="auditoria-tabela-wrap-ms"><table class="auditoria-tabela-ms"><thead><tr><th>Data</th><th>Usuário</th><th>Ação</th><th>Recurso</th><th>IP</th><th>Detalhes</th></tr></thead><tbody id="auditoriaTabelaMS"><tr><td colspan="6">Carregando histórico...</td></tr></tbody></table></div>
+      <div class="auditoria-paginacao-ms"><button id="auditoriaAnteriorMS" onclick="mudarPaginaAuditoriaMS(-1)">← Anterior</button><span id="auditoriaPaginaMS">Página 1</span><button id="auditoriaProximaMS" onclick="mudarPaginaAuditoriaMS(1)">Próxima →</button></div>
+    </section>
+
     <section id="estoqueAba" class="ms-painel estoque-opcao-a-ms">
       <div class="page-title-ms estoque-a-titulo-ms">
         <div>
@@ -804,7 +830,7 @@ function abrirAbaMS(id, btn){
   document.getElementById(id)?.classList.add('ativa');
   document.querySelectorAll('.ms-tab').forEach(b => b.classList.remove('ativa'));
   btn?.classList.add('ativa');
-  const titulos = {visao:'Dashboard', vitrineAba:'Vitrine do site', destaquesAba:'Destaques da home', aparenciaAba:'Personalizar loja', integracoesAba:'Integrações', produtosAba:'Produtos', estoqueAba:'Estoque', pedidosAba:'Pedidos', cuponsAba:'Cupons', relatoriosAba:'Relatórios', backupsAba:'Backups', configuracoesAba:'Configurações'};
+  const titulos = {visao:'Dashboard', vitrineAba:'Vitrine do site', destaquesAba:'Destaques da home', aparenciaAba:'Personalizar loja', integracoesAba:'Integrações', produtosAba:'Produtos', estoqueAba:'Estoque', pedidosAba:'Pedidos', cuponsAba:'Cupons', relatoriosAba:'Relatórios', backupsAba:'Backups', auditoriaAba:'Auditoria', configuracoesAba:'Configurações'};
   const titulo = document.getElementById('tituloPaginaMS');
   if(titulo) titulo.innerText = titulos[id] || 'Painel ADM';
   if(id === 'vitrineAba') carregarBannersMS();
@@ -814,6 +840,7 @@ function abrirAbaMS(id, btn){
   if(id === 'cuponsAba') carregarCuponsMS();
   if(id === 'relatoriosAba') carregarRelatoriosEtapa6MS();
   if(id === 'backupsAba') carregarBackupsMS();
+  if(id === 'auditoriaAba') carregarAuditoriaMS();
   if(id === 'configuracoesAba') carregarConfiguracoesEtapa6MS();
 }
 
