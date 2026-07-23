@@ -2628,8 +2628,7 @@ const APARENCIA_PADRAO_MS = {
   logo: "logo.png", favicon: "logo.png", corPrincipal: "#d9aa35",
   corSecundaria: "#111214", corBotao: "#d9aa35", corTextoBotao: "#111111",
   corFundo: "#0b0b0c", corFundoCentro: "#0b0b0c", corSecoes: "#0b0b0c",
-  corCards: "#18191d", corCabecalho: "#111214",
-  corTexto: "#ffffff", corRodape: "#090909",
+  corCards: "#18191d", corCabecalho: "#111214", corTexto: "#ffffff", corRodape: "#090909",
   fonte: "Inter,Arial,sans-serif"
 };
 function corHexAparenciaMS(valor, padrao) { return /^#[0-9a-f]{6}$/i.test(String(valor || "")) ? String(valor) : padrao; }

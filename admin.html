@@ -235,7 +235,7 @@ html, body { min-height: 100%; }
       <button class="ms-tab" onclick="abrirAbaMS('precosAba', this)"><span>R$</span> Preços</button>
       <button class="ms-tab" onclick="abrirAbaMS('vitrineAba', this)"><span>▧</span> Vitrine do site</button>
       <button class="ms-tab" onclick="abrirAbaMS('destaquesAba', this)"><span>★</span> Destaques da home</button>
-      <button class="ms-tab" onclick="abrirAbaMS('aparenciaAba', this)"><span>🎨</span> Personalizar loja</button>
+      <button class="ms-tab" onclick="abrirAbaMS('aparenciaAba', this)"><span>◈</span> Visual da Loja</button>
       <button class="ms-tab" onclick="abrirAbaMS('beneficiosAba', this); carregarBeneficiosMS()"><span>✦</span> Barra de benefícios</button>
       <button class="ms-tab" onclick="abrirAbaMS('integracoesAba', this); carregarIntegracoesMS(); carregarPainelPagamentosMS()"><span>🔗</span> Integrações</button>
       <button class="ms-tab" onclick="abrirAbaMS('freteAba', this); carregarConfigFreteMS()"><span>🚚</span> Frete</button>
@@ -438,7 +438,7 @@ html, body { min-height: 100%; }
 
 
     <section id="aparenciaAba" class="ms-painel">
-      <div class="card-header-ms"><div><h2>Personalizar loja</h2><p>Troque a identidade visual sem abrir o VS Code. A prévia muda na hora.</p></div></div>
+      <div class="card-header-ms"><div><h2>Visual da Loja</h2><p>Edite toda a aparência da loja em uma aba exclusiva, incluindo o centro, as laterais, as seções e os cards.</p></div></div>
       <div class="aparencia-grid-ms">
         <div>
           <section class="aparencia-card-ms">
@@ -455,11 +455,11 @@ html, body { min-height: 100%; }
               <label class="aparencia-campo-ms">Cor secundária<div class="aparencia-cor-ms"><input id="aparenciaCorSecundariaMS" type="color" value="#111214"><input id="aparenciaCorSecundariaTextoMS" type="text" value="#111214"></div></label>
               <label class="aparencia-campo-ms">Botões<div class="aparencia-cor-ms"><input id="aparenciaCorBotaoMS" type="color" value="#d9aa35"><input id="aparenciaCorBotaoTextoMS" type="text" value="#d9aa35"></div></label>
               <label class="aparencia-campo-ms">Texto dos botões<div class="aparencia-cor-ms"><input id="aparenciaCorTextoBotaoMS" type="color" value="#111111"><input id="aparenciaCorTextoBotaoTextoMS" type="text" value="#111111"></div></label>
-              <label class="aparencia-campo-ms">Fundo geral / laterais<div class="aparencia-cor-ms"><input id="aparenciaCorFundoMS" type="color" value="#0b0b0c"><input id="aparenciaCorFundoTextoMS" type="text" value="#0b0b0c"></div></label>
-              <label class="aparencia-campo-ms">Fundo central<div class="aparencia-cor-ms"><input id="aparenciaCorFundoCentroMS" type="color" value="#0b0b0c"><input id="aparenciaCorFundoCentroTextoMS" type="text" value="#0b0b0c"></div></label>
+              <label class="aparencia-campo-ms">Fundo geral e laterais<div class="aparencia-cor-ms"><input id="aparenciaCorFundoMS" type="color" value="#0b0b0c"><input id="aparenciaCorFundoTextoMS" type="text" value="#0b0b0c"></div></label>
+              <label class="aparencia-campo-ms">Fundo central da loja<div class="aparencia-cor-ms"><input id="aparenciaCorFundoCentroMS" type="color" value="#0b0b0c"><input id="aparenciaCorFundoCentroTextoMS" type="text" value="#0b0b0c"></div></label>
               <label class="aparencia-campo-ms">Fundo das seções<div class="aparencia-cor-ms"><input id="aparenciaCorSecoesMS" type="color" value="#0b0b0c"><input id="aparenciaCorSecoesTextoMS" type="text" value="#0b0b0c"></div></label>
               <label class="aparencia-campo-ms">Fundo dos cards<div class="aparencia-cor-ms"><input id="aparenciaCorCardsMS" type="color" value="#18191d"><input id="aparenciaCorCardsTextoMS" type="text" value="#18191d"></div></label>
-              <label class="aparencia-campo-ms">Cabeçalho<div class="aparencia-cor-ms"><input id="aparenciaCorCabecalhoMS" type="color" value="#111214"><input id="aparenciaCorCabecalhoTextoMS" type="text" value="#111214"></div></label>
+              <label class="aparencia-campo-ms">Cabeçalho e menu<div class="aparencia-cor-ms"><input id="aparenciaCorCabecalhoMS" type="color" value="#111214"><input id="aparenciaCorCabecalhoTextoMS" type="text" value="#111214"></div></label>
               <label class="aparencia-campo-ms">Textos<div class="aparencia-cor-ms"><input id="aparenciaCorTextoMS" type="color" value="#ffffff"><input id="aparenciaCorTextoTextoMS" type="text" value="#ffffff"></div></label>
               <label class="aparencia-campo-ms">Rodapé<div class="aparencia-cor-ms"><input id="aparenciaCorRodapeMS" type="color" value="#090909"><input id="aparenciaCorRodapeTextoMS" type="text" value="#090909"></div></label>
               <label class="aparencia-campo-ms">Fonte<select id="aparenciaFonteMS"><option value="Inter,Arial,sans-serif">Moderna</option><option value="Montserrat,Arial,sans-serif">Montserrat</option><option value="Arial,sans-serif">Arial</option><option value="Georgia,serif">Elegante</option></select></label>
@@ -845,7 +845,7 @@ html, body { min-height: 100%; }
             <label><span>Alerta de estoque baixo</span><input id="cfgEstoqueBaixoMS" type="number" min="1" value="5"></label>
             <label><span>Texto do checkout</span><input id="cfgCheckoutMS" placeholder="Compra segura e protegida"></label>
           </div>
-          <div class="config-links-ms"><button onclick="abrirAbaPorIdMS('aparenciaAba')">🎨 Personalizar loja</button><button onclick="abrirAbaPorIdMS('freteAba')">🚚 Configurar frete</button><button onclick="abrirAbaPorIdMS('cuponsAba')">🎟 Gerenciar cupons</button></div>
+          <div class="config-links-ms"><button onclick="abrirAbaPorIdMS('aparenciaAba')">◈ Visual da Loja</button><button onclick="abrirAbaPorIdMS('freteAba')">🚚 Configurar frete</button><button onclick="abrirAbaPorIdMS('cuponsAba')">🎟 Gerenciar cupons</button></div>
         </section>
       </div>
       <div class="config-savebar-ms"><span id="cfgStatusMS"></span><button onclick="salvarConfiguracoesEtapa6MS()">💾 Salvar configurações</button></div>
@@ -888,7 +888,7 @@ function abrirAbaMS(id, btn){
   document.getElementById(id)?.classList.add('ativa');
   document.querySelectorAll('.ms-tab').forEach(b => b.classList.remove('ativa'));
   btn?.classList.add('ativa');
-  const titulos = {visao:'Dashboard', vitrineAba:'Vitrine do site', destaquesAba:'Destaques da home', aparenciaAba:'Personalizar loja', beneficiosAba:'Barra de benefícios', integracoesAba:'Integrações', produtosAba:'Produtos', precosAba:'Preços', estoqueAba:'Estoque', pedidosAba:'Pedidos', cuponsAba:'Cupons', relatoriosAba:'Relatórios', backupsAba:'Backups', auditoriaAba:'Auditoria', configuracoesAba:'Configurações'};
+  const titulos = {visao:'Dashboard', vitrineAba:'Vitrine do site', destaquesAba:'Destaques da home', aparenciaAba:'Visual da Loja', beneficiosAba:'Barra de benefícios', integracoesAba:'Integrações', produtosAba:'Produtos', precosAba:'Preços', estoqueAba:'Estoque', pedidosAba:'Pedidos', cuponsAba:'Cupons', relatoriosAba:'Relatórios', backupsAba:'Backups', auditoriaAba:'Auditoria', configuracoesAba:'Configurações'};
   const titulo = document.getElementById('tituloPaginaMS');
   if(titulo) titulo.innerText = titulos[id] || 'Painel ADM';
   if(id === 'vitrineAba') carregarBannersMS();
@@ -1470,7 +1470,7 @@ const APARENCIA_PADRAO_MS={logo:'logo.png',favicon:'logo.png',corPrincipal:'#d9a
 let aparenciaAtualMS={...APARENCIA_PADRAO_MS};
 function normalizarCorMS(v,p){return /^#[0-9a-f]{6}$/i.test(String(v||''))?String(v):p;}
 function statusAparenciaMS(t,e=false){const x=document.getElementById('aparenciaStatusMS');if(x){x.textContent=t||'';x.className='aparencia-status-ms '+(e?'erro':'ok');}}
-function aplicarPreviewAparenciaMS(){const a=aparenciaAtualMS;const box=document.getElementById('previewLojaMS');if(!box)return;box.style.background=a.corFundoCentro;box.style.color=a.corTexto;box.style.fontFamily=a.fonte;box.querySelector('.preview-top-ms').style.background=a.corCabecalho;box.querySelector('.preview-hero-ms').style.background=`linear-gradient(135deg,${a.corSecoes},${a.corFundoCentro})`;box.querySelector('.preview-produtos-ms').style.background=a.corSecoes;box.querySelectorAll('.preview-mini-card-ms').forEach(c=>c.style.background=a.corCards);box.querySelector('.preview-footer-ms').style.background=a.corRodape;const bt=document.getElementById('previewBotaoLojaMS');bt.style.background=a.corBotao;bt.style.color=a.corTextoBotao;box.querySelectorAll('b').forEach(b=>b.style.color=a.corPrincipal);document.getElementById('previewLogoLojaMS').src=a.logo||'logo.png';}
+function aplicarPreviewAparenciaMS(){const a=aparenciaAtualMS;const box=document.getElementById('previewLojaMS');if(!box)return;box.style.background=a.corFundoCentro||a.corFundo;box.style.color=a.corTexto;box.style.fontFamily=a.fonte;box.querySelector('.preview-top-ms').style.background=a.corCabecalho||a.corSecundaria;box.querySelector('.preview-hero-ms').style.background=`linear-gradient(135deg,${a.corSecundaria},${a.corFundoCentro||a.corFundo})`;box.querySelector('.preview-produtos-ms').style.background=a.corSecoes||a.corFundoCentro||a.corFundo;box.querySelectorAll('.preview-mini-card-ms').forEach(c=>c.style.background=a.corCards);box.querySelector('.preview-footer-ms').style.background=a.corRodape;const bt=document.getElementById('previewBotaoLojaMS');bt.style.background=a.corBotao;bt.style.color=a.corTextoBotao;box.querySelectorAll('b').forEach(b=>b.style.color=a.corPrincipal);document.getElementById('previewLogoLojaMS').src=a.logo||'logo.png';}
 function preencherAparenciaMS(a){aparenciaAtualMS={...APARENCIA_PADRAO_MS,...a};const mapa={aparenciaCorPrincipalMS:'corPrincipal',aparenciaCorSecundariaMS:'corSecundaria',aparenciaCorBotaoMS:'corBotao',aparenciaCorTextoBotaoMS:'corTextoBotao',aparenciaCorFundoMS:'corFundo',aparenciaCorFundoCentroMS:'corFundoCentro',aparenciaCorSecoesMS:'corSecoes',aparenciaCorCardsMS:'corCards',aparenciaCorCabecalhoMS:'corCabecalho',aparenciaCorTextoMS:'corTexto',aparenciaCorRodapeMS:'corRodape'};Object.entries(mapa).forEach(([id,k])=>{const c=document.getElementById(id),t=document.getElementById(id.replace('MS','TextoMS'));if(c)c.value=normalizarCorMS(aparenciaAtualMS[k],APARENCIA_PADRAO_MS[k]);if(t)t.value=c?.value||aparenciaAtualMS[k];});document.getElementById('aparenciaFonteMS').value=aparenciaAtualMS.fonte||APARENCIA_PADRAO_MS.fonte;document.getElementById('aparenciaLogoPreviewMS').src=aparenciaAtualMS.logo||'logo.png';document.getElementById('aparenciaFaviconPreviewMS').src=aparenciaAtualMS.favicon||'logo.png';aplicarPreviewAparenciaMS();}
 async function carregarAparenciaMS(){statusAparenciaMS('Carregando...');try{const r=await fetch(`${API_ADMIN_MS}/aparencia-config?t=${Date.now()}`,{cache:'no-store'});const d=r.ok?await r.json():APARENCIA_PADRAO_MS;preencherAparenciaMS(d);statusAparenciaMS('');}catch(e){preencherAparenciaMS(APARENCIA_PADRAO_MS);statusAparenciaMS('Não consegui carregar. Mostrando o padrão.',true);}}
 async function uploadAparenciaMS(arq){const fd=new FormData();fd.append('imagens',arq);const r=await fetch(`${API_ADMIN_MS}/upload-imagens`,{method:'POST',body:fd});const d=await r.json();if(!r.ok)throw new Error(d.mensagem||'Erro no upload');return d.urls?.[0];}
@@ -1671,15 +1671,5 @@ async function salvarTodosPrecosMS(){
 </script>
 <script src="beneficios-admin.js?v=20260722-1"></script>
 <script src="ms-icons.js"></script>
-
-<script id="restaurar-editor-produtos-ms">
-document.addEventListener('DOMContentLoaded',()=>{
-  const botaoProdutos=[...document.querySelectorAll('.menu-ms .ms-tab')].find(b=>String(b.getAttribute('onclick')||'').includes("'produtosAba'"));
-  const abaProdutos=document.getElementById('produtosAba');
-  if(botaoProdutos){botaoProdutos.hidden=false;botaoProdutos.style.removeProperty('display');}
-  if(abaProdutos){abaProdutos.hidden=false;abaProdutos.removeAttribute('aria-hidden');}
-});
-</script>
-
 </body>
 </html>
