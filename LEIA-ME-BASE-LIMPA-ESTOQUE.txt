@@ -1,0 +1,16 @@
+MS MATIAS STYLE - BASE LIMPA + PROTEÇÃO DE ESTOQUE
+
+O que foi feito:
+1. Removidos node_modules, histórico .git e ZIPs antigos internos para reduzir o projeto.
+2. Mantidos todos os arquivos principais, imagens, painel, servidor e configurações.
+3. Adicionada validação obrigatória antes de qualquer produto entrar no carrinho.
+4. Estoque zero ou produto não cadastrado não pode ser adicionado.
+5. A soma do item já existente no carrinho também é considerada.
+6. O carrinho completo é validado novamente antes do checkout.
+7. Favoritos continuam usando a validação de estoque já existente.
+
+Para instalar as dependências após extrair:
+npm install
+
+Para testar localmente:
+npm start

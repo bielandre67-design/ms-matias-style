@@ -1,0 +1,10 @@
+MS MATIAS STYLE - ETAPA 2
+Visual profissional e sistema central de ícones SVG.
+
+ALTERAÇÕES:
+- Criados ms-icons.js e ms-icons.css.
+- Emojis comuns da interface são convertidos automaticamente em SVG.
+- Barra de benefícios usa ícones profissionais.
+- Painel da barra de benefícios passa a oferecer seleção por tipo de ícone.
+- Compatibilidade mantida com configurações antigas salvas como emoji.
+- Nenhuma regra de estoque, carrinho, pagamento ou frete foi removida.

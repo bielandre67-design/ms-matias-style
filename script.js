@@ -8341,3 +8341,166 @@ document.addEventListener('DOMContentLoaded',()=>setTimeout(carregarConfigFreteL
   }
   document.addEventListener('DOMContentLoaded',aplicarConfigFreteCheckoutMS);window.addEventListener('focus',aplicarConfigFreteCheckoutMS);
 })();
+
+/* =========================================================
+   MS MATIAS STYLE - PROTEÇÃO FINAL DE ESTOQUE (ETAPA BASE 1)
+   Esta camada fica por último para impedir que funções antigas
+   adicionem itens sem validar a disponibilidade real no servidor.
+   ========================================================= */
+(function(){
+  'use strict';
+
+  const API_ESTOQUE_MS = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+    ? 'http://127.0.0.1:3000'
+    : 'https://ms-matias-style.onrender.com';
+
+  function lerCarrinhoSeguroMS(){
+    try {
+      const lista = JSON.parse(localStorage.getItem('carrinho') || '[]');
+      return Array.isArray(lista) ? lista : [];
+    } catch (_) { return []; }
+  }
+
+  function chaveItemMS(item){
+    return [item?.nome, item?.cor, item?.tamanho]
+      .map(v => String(v || '').trim().toUpperCase())
+      .join('|');
+  }
+
+  function quantidadeNoCarrinhoMS(item, lista){
+    const chave = chaveItemMS(item);
+    return (lista || []).reduce((total, atual) => {
+      return total + (chaveItemMS(atual) === chave ? Math.max(1, Number(atual.quantidade || 1)) : 0);
+    }, 0);
+  }
+
+  async function consultarDisponibilidadeMS(item){
+    const resposta = await fetch(`${API_ESTOQUE_MS}/estoque/disponivel`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        nome: item.nome,
+        cor: item.cor || '',
+        tamanho: item.tamanho,
+        sku: item.sku || ''
+      })
+    });
+    const dados = await resposta.json().catch(() => ({}));
+    if(!resposta.ok) throw new Error(dados.mensagem || 'Não foi possível consultar o estoque.');
+    return dados;
+  }
+
+  function mensagemSemEstoqueMS(item, disponivel){
+    const tamanho = item?.tamanho ? ` no tamanho ${item.tamanho}` : '';
+    if(Number(disponivel || 0) <= 0) return `Este produto${tamanho} está esgotado.`;
+    return `Só temos ${disponivel} unidade(s) disponível(is) deste produto${tamanho}.`;
+  }
+
+  async function adicionarComEstoqueMS(item, opcoes = {}){
+    if(!item || !item.nome || !item.tamanho){
+      alert('Selecione um tamanho antes de adicionar ao carrinho.');
+      return false;
+    }
+
+    const quantidadeAdicionar = Math.max(1, Number(item.quantidade || 1));
+    const lista = lerCarrinhoSeguroMS();
+
+    try {
+      const estoque = await consultarDisponibilidadeMS(item);
+      const atual = quantidadeNoCarrinhoMS(item, lista);
+      const disponivel = Math.max(0, Number(estoque.disponivel || 0));
+
+      if(!estoque.cadastrado || atual + quantidadeAdicionar > disponivel){
+        alert(mensagemSemEstoqueMS(item, disponivel));
+        return false;
+      }
+
+      const chave = chaveItemMS(item);
+      const existente = lista.find(produto => chaveItemMS(produto) === chave);
+      if(existente) existente.quantidade = Math.max(1, Number(existente.quantidade || 1)) + quantidadeAdicionar;
+      else lista.push({...item, quantidade: quantidadeAdicionar});
+
+      localStorage.setItem('carrinho', JSON.stringify(lista));
+      window.carrinho = lista;
+      try { carrinho = lista; } catch (_) {}
+
+      if(typeof atualizarCarrinho === 'function') atualizarCarrinho();
+      if(typeof atualizarContador === 'function') atualizarContador();
+      if(typeof atualizarBadgeCarrinho === 'function') atualizarBadgeCarrinho();
+      if(typeof renderCarrinhoMobileMS === 'function') renderCarrinhoMobileMS();
+      if(typeof atualizarTudo === 'function') atualizarTudo();
+
+      if(opcoes.aviso !== false){
+        if(typeof avisoCarrinhoPremium === 'function') avisoCarrinhoPremium('Seu item foi enviado ao carrinho.');
+        else if(typeof mostrarToastMS === 'function') mostrarToastMS('Produto adicionado ao carrinho.');
+      }
+      return true;
+    } catch (erro) {
+      console.error('Falha ao validar estoque:', erro);
+      alert('Não foi possível confirmar o estoque agora. O produto não foi adicionado. Tente novamente.');
+      return false;
+    }
+  }
+
+  window.adicionarCarrinho = async function(botao){
+    const item = typeof msPegarProdutoDoCard === 'function' ? msPegarProdutoDoCard(botao) : null;
+    if(!item) return false;
+    const ok = await adicionarComEstoqueMS(item);
+    if(ok && typeof animarProdutoAoCarrinho === 'function') animarProdutoAoCarrinho(botao);
+    return ok;
+  };
+
+  window.adicionarProdutoDetalhe = async function(){
+    const item = typeof msPegarProdutoDoDetalhe === 'function' ? msPegarProdutoDoDetalhe() : null;
+    if(!item) return false;
+    return adicionarComEstoqueMS(item);
+  };
+
+  window.comprarAgoraDetalhe = async function(){
+    const item = typeof msPegarProdutoDoDetalhe === 'function' ? msPegarProdutoDoDetalhe() : null;
+    if(!item) return false;
+    const ok = await adicionarComEstoqueMS(item);
+    if(ok){
+      if(typeof abrirCarrinhoResponsivoMS === 'function') abrirCarrinhoResponsivoMS();
+      else if(typeof abrirCarrinhoMS === 'function') abrirCarrinhoMS();
+    }
+    return false;
+  };
+
+  window.msAdicionarComEstoqueMS = adicionarComEstoqueMS;
+  window.msConsultarDisponibilidadeMS = consultarDisponibilidadeMS;
+
+  // Impede aumento de quantidade além do estoque no carrinho principal.
+  const aumentarAntigo = window.aumentarQuantidade;
+  window.aumentarQuantidade = async function(index){
+    const lista = lerCarrinhoSeguroMS();
+    const item = lista[Number(index)];
+    if(!item) return;
+    const copia = {...item, quantidade: 1};
+    const ok = await adicionarComEstoqueMS(copia, {aviso:false});
+    if(!ok) return;
+  };
+
+  // Antes de seguir para pagamento, o servidor valida o carrinho inteiro novamente.
+  window.validarCarrinhoEstoqueMS = async function(){
+    const items = lerCarrinhoSeguroMS();
+    if(!items.length) return false;
+    try{
+      const resposta = await fetch(`${API_ESTOQUE_MS}/estoque/validar-carrinho`, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({items})
+      });
+      const dados = await resposta.json().catch(() => ({}));
+      if(!resposta.ok){
+        alert(dados.mensagem || 'Um produto do carrinho ficou sem estoque. Revise o carrinho.');
+        return false;
+      }
+      return true;
+    }catch(erro){
+      console.error('Erro ao validar carrinho:', erro);
+      alert('Não foi possível confirmar o estoque antes do pagamento. Tente novamente.');
+      return false;
+    }
+  };
+})();

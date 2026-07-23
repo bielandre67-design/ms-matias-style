@@ -365,7 +365,7 @@ function descreverAcaoAuditoriaMS(req) {
   const rota = req.path;
   const metodo = req.method;
   let recurso = rota.split('/').filter(Boolean)[0] || 'sistema';
-  const nomes = { produtos:'Produto', estoque:'Estoque', pedidos:'Pedido', 'pedidos-excluidos':'Pedido excluído', cupons:'Cupom', banners:'Banner', categorias:'Categoria', backups:'Backup', 'frete-config':'Frete', 'pagamento-config':'Pagamento', 'loja-config':'Loja', 'aparencia-config':'Aparência', 'home-config':'Página inicial', 'beneficios-config':'Barra de benefícios', 'produto-visual-config':'Editor visual do produto', 'upload-imagens':'Imagens' };
+  const nomes = { produtos:'Produto', estoque:'Estoque', pedidos:'Pedido', 'pedidos-excluidos':'Pedido excluído', cupons:'Cupom', banners:'Banner', categorias:'Categoria', backups:'Backup', 'frete-config':'Frete', 'pagamento-config':'Pagamento', 'loja-config':'Loja', 'aparencia-config':'Aparência', 'home-config':'Página inicial', 'beneficios-config':'Barra de benefícios', 'upload-imagens':'Imagens' };
   recurso = nomes[recurso] || recurso;
   let verbo = metodo === 'POST' ? 'Criou' : metodo === 'PUT' || metodo === 'PATCH' ? 'Alterou' : metodo === 'DELETE' ? 'Excluiu' : 'Executou';
   if (/\/restore$/.test(rota)) verbo = 'Restaurou';
@@ -483,7 +483,7 @@ const rotasAdminLeituraMS = [
 const rotasAdminEscritaMS = [
   "/frete-config", "/frete-teste", "/estoque", "/pedidos", "/pedidos-excluidos",
   "/excluir-pedido", "/atualizar-status", "/cupons", "/banners", "/pagamento-config",
-  "/loja-config", "/aparencia-config", "/home-config", "/beneficios-config", "/produto-visual-config", "/upload-imagens", "/categorias",
+  "/loja-config", "/aparencia-config", "/home-config", "/beneficios-config", "/upload-imagens", "/categorias",
   "/produtos", "/diagnostico-mercado-pago", "/backups", "/auditoria"
 ];
 const rotasPublicasEstoqueMS = new Set([
@@ -3209,9 +3209,9 @@ app.delete("/backups/:id", async (req, res, next) => {
 const BENEFICIOS_PADRAO_MS = {
   ativo: true, fundo: "#000000", corTexto: "#ffffff", mostrarDesktop: true, mostrarMobile: true,
   itens: [
-    { id: "frete", icone: "🚚", texto: "FRETE PARA TODO O BRASIL", ativo: true, ordem: 1 },
-    { id: "parcelamento", icone: "💳", texto: "PARCELE EM ATÉ 3X SEM JUROS", ativo: true, ordem: 2 },
-    { id: "troca", icone: "🔁", texto: "TROCA GARANTIDA EM ATÉ 7 DIAS", ativo: true, ordem: 3 }
+    { id: "frete", icone: "truck", texto: "FRETE PARA TODO O BRASIL", ativo: true, ordem: 1 },
+    { id: "parcelamento", icone: "card", texto: "PARCELE EM ATÉ 3X SEM JUROS", ativo: true, ordem: 2 },
+    { id: "troca", icone: "repeat", texto: "TROCA GARANTIDA EM ATÉ 7 DIAS", ativo: true, ordem: 3 }
   ]
 };
 function limparBeneficiosConfigMS(valor = {}) {
@@ -3219,7 +3219,7 @@ function limparBeneficiosConfigMS(valor = {}) {
   const itensEntrada = Array.isArray(entrada.itens) ? entrada.itens : BENEFICIOS_PADRAO_MS.itens;
   const itens = itensEntrada.slice(0, 6).map((item, indice) => ({
     id: String(item?.id || `beneficio-${indice + 1}`).replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 50) || `beneficio-${indice + 1}`,
-    icone: String(item?.icone || "✓").trim().slice(0, 12),
+    icone: String(item?.icone || "check").trim().slice(0, 12),
     texto: String(item?.texto || "").trim().slice(0, 100),
     ativo: item?.ativo !== false,
     ordem: Math.max(1, Math.min(99, Number(item?.ordem) || indice + 1))
@@ -3248,81 +3248,6 @@ app.put("/beneficios-config", async (req, res, next) => {
     await pool.query(`INSERT INTO app_state(chave,dados,atualizado_em) VALUES($1,$2::jsonb,NOW()) ON CONFLICT(chave) DO UPDATE SET dados=EXCLUDED.dados, atualizado_em=NOW()`, ["beneficios_config", JSON.stringify(config)]);
     res.json({ ok: true, config });
   } catch (erro) { next(erro); }
-});
-
-
-
-// ETAPA 6.3 - Editor visual da página do produto
-const PRODUTO_VISUAL_PADRAO_MS = {
-  ativo: true,
-  fundoPagina: "#ffffff",
-  larguraConteudo: 1540,
-  imagemLargura: 555,
-  imagemRaio: 18,
-  imagemSombra: true,
-  tituloCor: "#050505",
-  tituloTamanho: 42,
-  precoCor: "#050505",
-  precoTamanho: 56,
-  botaoComprarFundo: "#e7ba36",
-  botaoComprarTexto: "#080808",
-  botaoCarrinhoFundo: "#ffffff",
-  botaoCarrinhoTexto: "#080808",
-  botaoRaio: 18,
-  tamanhoFormato: "quadrado",
-  corFormato: "circulo",
-  mostrarAvaliacao: true,
-  mostrarParcelamento: true,
-  mostrarQuantidade: true,
-  mostrarBreadcrumb: true,
-  mostrarMiniaturas: true,
-  mobileImagemLargura: 100,
-  mobileTituloTamanho: 29,
-  mobilePrecoTamanho: 40,
-  atualizadoEm: null
-};
-function numeroProdutoVisualMS(v,min,max,padrao){ const n=Number(v); return Number.isFinite(n)?Math.min(max,Math.max(min,n)):padrao; }
-function corProdutoVisualMS(v,padrao){ return /^#[0-9a-f]{6}$/i.test(String(v||''))?String(v):padrao; }
-function limparProdutoVisualConfigMS(e={}) {
-  const p=PRODUTO_VISUAL_PADRAO_MS;
-  return {
-    ativo:e.ativo!==false,
-    fundoPagina:corProdutoVisualMS(e.fundoPagina,p.fundoPagina),
-    larguraConteudo:numeroProdutoVisualMS(e.larguraConteudo,900,1800,p.larguraConteudo),
-    imagemLargura:numeroProdutoVisualMS(e.imagemLargura,320,760,p.imagemLargura),
-    imagemRaio:numeroProdutoVisualMS(e.imagemRaio,0,48,p.imagemRaio),
-    imagemSombra:e.imagemSombra!==false,
-    tituloCor:corProdutoVisualMS(e.tituloCor,p.tituloCor),
-    tituloTamanho:numeroProdutoVisualMS(e.tituloTamanho,24,72,p.tituloTamanho),
-    precoCor:corProdutoVisualMS(e.precoCor,p.precoCor),
-    precoTamanho:numeroProdutoVisualMS(e.precoTamanho,30,84,p.precoTamanho),
-    botaoComprarFundo:corProdutoVisualMS(e.botaoComprarFundo,p.botaoComprarFundo),
-    botaoComprarTexto:corProdutoVisualMS(e.botaoComprarTexto,p.botaoComprarTexto),
-    botaoCarrinhoFundo:corProdutoVisualMS(e.botaoCarrinhoFundo,p.botaoCarrinhoFundo),
-    botaoCarrinhoTexto:corProdutoVisualMS(e.botaoCarrinhoTexto,p.botaoCarrinhoTexto),
-    botaoRaio:numeroProdutoVisualMS(e.botaoRaio,0,40,p.botaoRaio),
-    tamanhoFormato:['quadrado','arredondado','pilula'].includes(e.tamanhoFormato)?e.tamanhoFormato:p.tamanhoFormato,
-    corFormato:['circulo','quadrado'].includes(e.corFormato)?e.corFormato:p.corFormato,
-    mostrarAvaliacao:e.mostrarAvaliacao!==false,
-    mostrarParcelamento:e.mostrarParcelamento!==false,
-    mostrarQuantidade:e.mostrarQuantidade!==false,
-    mostrarBreadcrumb:e.mostrarBreadcrumb!==false,
-    mostrarMiniaturas:e.mostrarMiniaturas!==false,
-    mobileImagemLargura:numeroProdutoVisualMS(e.mobileImagemLargura,70,100,p.mobileImagemLargura),
-    mobileTituloTamanho:numeroProdutoVisualMS(e.mobileTituloTamanho,20,44,p.mobileTituloTamanho),
-    mobilePrecoTamanho:numeroProdutoVisualMS(e.mobilePrecoTamanho,28,58,p.mobilePrecoTamanho),
-    atualizadoEm:new Date().toISOString()
-  };
-}
-async function obterProdutoVisualConfigMS(){
-  if(!pool) return PRODUTO_VISUAL_PADRAO_MS;
-  const r=await pool.query("SELECT dados FROM app_state WHERE chave=$1 LIMIT 1",["produto_visual_config"]);
-  return limparProdutoVisualConfigMS(r.rows[0]?.dados||PRODUTO_VISUAL_PADRAO_MS);
-}
-app.get('/produto-visual-config',async(req,res,next)=>{try{res.setHeader('Cache-Control','no-store');res.json(await obterProdutoVisualConfigMS());}catch(e){next(e);}});
-app.put('/produto-visual-config',async(req,res,next)=>{
-  if(!pool)return res.status(503).json({mensagem:'PostgreSQL não configurado.'});
-  try{const config=limparProdutoVisualConfigMS(req.body||{});await pool.query(`INSERT INTO app_state(chave,dados,atualizado_em) VALUES($1,$2::jsonb,NOW()) ON CONFLICT(chave) DO UPDATE SET dados=EXCLUDED.dados, atualizado_em=NOW()`,['produto_visual_config',JSON.stringify(config)]);res.json({ok:true,config});}catch(e){next(e);}
 });
 
 // Resposta JSON para rotas de API inexistentes.

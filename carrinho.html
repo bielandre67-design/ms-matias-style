@@ -36,6 +36,7 @@
   
     .ms-ship-info{display:flex;flex-direction:column;gap:3px;text-align:left}.ms-ship-info small{line-height:1.35}.ms-ship-info small b{color:#fff}.ms-ship-badges{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:2px}.ms-ship-badge{font-style:normal;font-size:9px;font-weight:900;text-transform:uppercase;border-radius:999px;padding:4px 7px;background:var(--gold);color:#050505}.ms-ship-badge.fast{background:#fff;color:#050505}
 </style>
+<link rel="stylesheet" href="ms-icons.css">
 </head>
 <body>
 <main class="ms-cart">
@@ -321,5 +322,29 @@
 })();
 </script>
 
+
+<script>
+/* Proteção de estoque do carrinho independente */
+(function(){
+  const API=(location.hostname==='localhost'||location.hostname==='127.0.0.1')?'http://127.0.0.1:3000':'https://ms-matias-style.onrender.com';
+  async function validar(){
+    let items=[];try{items=JSON.parse(localStorage.getItem('carrinho')||'[]')}catch(e){}
+    if(!Array.isArray(items)||!items.length)return false;
+    try{
+      const r=await fetch(API+'/estoque/validar-carrinho',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({items})});
+      const d=await r.json().catch(()=>({}));
+      if(!r.ok){alert(d.mensagem||'Um produto do carrinho está sem estoque. Revise os itens.');return false}
+      return true;
+    }catch(e){alert('Não foi possível confirmar o estoque agora. Tente novamente.');return false}
+  }
+  document.addEventListener('click',async function(e){
+    const seguir=e.target.closest('#toShipping');
+    if(!seguir)return;
+    e.preventDefault();e.stopImmediatePropagation();
+    if(await validar())showStep(2);
+  },true);
+})();
+</script>
+<script src="ms-icons.js"></script>
 </body>
 </html>
