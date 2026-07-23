@@ -1,0 +1,7 @@
+MS MATIAS STYLE - ETAPA 5.6 - ABA DE PRECOS
+
+1. Substitua os arquivos do pacote no projeto.
+2. Rode git add ., git commit e git push.
+3. A aba Preços usa a rota /produtos do PostgreSQL.
+4. Ao salvar, os novos valores são gravados no banco e o site os busca novamente sem cache.
+5. Teste primeiro em um produto e atualize a loja com Ctrl+F5.

@@ -202,6 +202,12 @@ html, body { min-height: 100%; }
 <style>
 .frete-medidas-aviso-ms{margin:12px 0 16px;padding:12px 14px;border:1px solid rgba(227,185,63,.22);border-radius:12px;background:rgba(227,185,63,.06);color:#c9cbd3;font-size:13px}.frete-medidas-categorias-ms{display:grid;gap:12px}.frete-medida-categoria-ms{padding:14px;border:1px solid #30333b;border-radius:14px;background:#15171c}.frete-medida-categoria-ms h4{margin:0 0 12px;color:#fff;font-size:15px}.frete-medida-grid-ms{display:grid;grid-template-columns:repeat(4,minmax(120px,1fr));gap:10px}.frete-medida-grid-ms label{display:grid;gap:6px;color:#bfc3cd;font-size:12px;font-weight:700}.frete-medida-grid-ms input{width:100%;box-sizing:border-box;padding:11px;border:1px solid #383b44;border-radius:10px;background:#202229;color:#fff}.frete-medida-grid-ms small{font-weight:400;color:#8f94a0}@media(max-width:760px){.frete-medida-grid-ms{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
+
+<style id="aba-precos-ms-css">
+.precos-resumo-ms{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:18px}.precos-resumo-ms>div{padding:16px;border:1px solid var(--line);border-radius:15px;background:var(--panel2)}.precos-resumo-ms span{display:block;color:var(--muted);font-size:11px;font-weight:900;text-transform:uppercase}.precos-resumo-ms strong{display:block;margin-top:6px;font-size:27px;color:var(--gold)}
+.filtros-precos-ms{display:grid;grid-template-columns:minmax(220px,1.5fr) minmax(160px,.8fr) minmax(160px,.8fr) auto;gap:12px;align-items:end}.filtros-precos-ms label{display:grid;gap:7px;color:var(--muted);font-size:11px;font-weight:900;text-transform:uppercase}.filtros-precos-ms input,.filtros-precos-ms select{height:44px;border:1px solid var(--line);border-radius:12px;background:var(--panel2);color:var(--text);padding:0 12px}.btn-salvar-precos-lote-ms{height:44px;border:0;border-radius:12px;padding:0 18px;background:var(--gold);color:#111;font-weight:950;cursor:pointer}.btn-salvar-precos-lote-ms:disabled{opacity:.45;cursor:not-allowed}.status-precos-ms{min-height:20px;margin:10px 0 0;color:var(--muted);font-size:12px}.tabela-precos-ms{width:100%;border-collapse:collapse;min-width:900px}.tabela-precos-ms th,.tabela-precos-ms td{padding:13px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}.tabela-precos-ms th{color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.06em}.produto-preco-info-ms{display:flex;align-items:center;gap:10px;min-width:240px}.produto-preco-info-ms img{width:48px;height:56px;object-fit:cover;border-radius:10px;background:#08090c}.produto-preco-info-ms strong{display:block}.produto-preco-info-ms small{display:block;color:var(--muted);margin-top:3px}.campo-preco-ms{width:125px;height:42px;border:1px solid var(--line);border-radius:11px;background:var(--panel2);color:var(--text);padding:0 10px;font-weight:850}.linha-preco-alterada-ms{background:rgba(216,173,67,.07)}.switch-preco-ms{display:inline-flex;align-items:center;gap:8px;font-weight:800;font-size:12px}.preview-preco-ms strong{display:block;color:var(--gold);font-size:16px}.preview-preco-ms del{display:block;color:var(--muted);font-size:11px}.btn-salvar-preco-ms{min-height:38px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);color:var(--text);font-weight:900;padding:0 12px;cursor:pointer}.btn-salvar-preco-ms.pendente{border-color:var(--gold);color:var(--gold)}
+@media(max-width:900px){.precos-resumo-ms{grid-template-columns:1fr}.filtros-precos-ms{grid-template-columns:1fr}.btn-salvar-precos-lote-ms{width:100%}}
+</style>
 </head>
 <body>
 <script>
@@ -225,6 +231,7 @@ html, body { min-height: 100%; }
     <nav class="menu-ms">
       <button class="ms-tab ativa" onclick="abrirAbaMS('visao', this)"><span>⌂</span> Dashboard</button>
       <button class="ms-tab" onclick="abrirAbaMS('produtosAba', this)"><span>▦</span> Produtos</button>
+      <button class="ms-tab" onclick="abrirAbaMS('precosAba', this)"><span>R$</span> Preços</button>
       <button class="ms-tab" onclick="abrirAbaMS('vitrineAba', this)"><span>▧</span> Vitrine do site</button>
       <button class="ms-tab" onclick="abrirAbaMS('destaquesAba', this)"><span>★</span> Destaques da home</button>
       <button class="ms-tab" onclick="abrirAbaMS('aparenciaAba', this)"><span>🎨</span> Personalizar loja</button>
@@ -364,6 +371,38 @@ html, body { min-height: 100%; }
         </div>
       </section>
       <div id="gradeDestaquesHomeMS" class="grade-destaques-ms"><div class="destaque-vazio-ms">Carregando produtos...</div></div>
+    </section>
+
+    <section id="precosAba" class="ms-painel">
+      <div class="page-title-ms">
+        <div><h2>Preços</h2><p>Atualize os valores dos produtos em uma tela rápida. Ao salvar, a mudança é publicada no site.</p></div>
+        <button class="btn-dark-ms" type="button" onclick="carregarPrecosAdminMS(true)">Atualizar lista</button>
+      </div>
+
+      <section class="painel-card-ms precos-resumo-ms">
+        <div><span>Produtos exibidos</span><strong id="precosTotalMS">0</strong></div>
+        <div><span>Em promoção</span><strong id="precosPromocaoMS">0</strong></div>
+        <div><span>Alterações pendentes</span><strong id="precosPendentesMS">0</strong></div>
+      </section>
+
+      <section class="painel-card-ms" style="margin-bottom:18px">
+        <div class="filtros-precos-ms">
+          <label>Pesquisar<input id="pesquisaPrecosMS" placeholder="Nome ou categoria" oninput="renderPrecosAdminMS()"></label>
+          <label>Categoria<select id="filtroCategoriaPrecosMS" onchange="renderPrecosAdminMS()"><option value="todos">Todas</option></select></label>
+          <label>Status<select id="filtroPromocaoPrecosMS" onchange="renderPrecosAdminMS()"><option value="todos">Todos</option><option value="promocao">Em promoção</option><option value="normal">Sem promoção</option></select></label>
+          <button class="btn-salvar-precos-lote-ms" id="btnSalvarTodosPrecosMS" type="button" onclick="salvarTodosPrecosMS()" disabled>Salvar alterações</button>
+        </div>
+        <p id="statusPrecosMS" class="status-precos-ms"></p>
+      </section>
+
+      <section class="painel-card-ms">
+        <div class="tabela-wrap-ms">
+          <table class="tabela-precos-ms">
+            <thead><tr><th>Produto</th><th>Categoria</th><th>Preço atual</th><th>Preço antigo</th><th>Promoção</th><th>Prévia</th><th>Ação</th></tr></thead>
+            <tbody id="listaPrecosAdminMS"><tr><td colspan="7">Carregando preços...</td></tr></tbody>
+          </table>
+        </div>
+      </section>
     </section>
 
     <section id="produtosAba" class="ms-painel">
@@ -830,13 +869,14 @@ function abrirAbaMS(id, btn){
   document.getElementById(id)?.classList.add('ativa');
   document.querySelectorAll('.ms-tab').forEach(b => b.classList.remove('ativa'));
   btn?.classList.add('ativa');
-  const titulos = {visao:'Dashboard', vitrineAba:'Vitrine do site', destaquesAba:'Destaques da home', aparenciaAba:'Personalizar loja', integracoesAba:'Integrações', produtosAba:'Produtos', estoqueAba:'Estoque', pedidosAba:'Pedidos', cuponsAba:'Cupons', relatoriosAba:'Relatórios', backupsAba:'Backups', auditoriaAba:'Auditoria', configuracoesAba:'Configurações'};
+  const titulos = {visao:'Dashboard', vitrineAba:'Vitrine do site', destaquesAba:'Destaques da home', aparenciaAba:'Personalizar loja', integracoesAba:'Integrações', produtosAba:'Produtos', precosAba:'Preços', estoqueAba:'Estoque', pedidosAba:'Pedidos', cuponsAba:'Cupons', relatoriosAba:'Relatórios', backupsAba:'Backups', auditoriaAba:'Auditoria', configuracoesAba:'Configurações'};
   const titulo = document.getElementById('tituloPaginaMS');
   if(titulo) titulo.innerText = titulos[id] || 'Painel ADM';
   if(id === 'vitrineAba') carregarBannersMS();
   if(id === 'aparenciaAba') carregarAparenciaMS();
   if(id === 'estoqueAba') carregarEstoqueMS();
   if(id === 'produtosAba') carregarProdutosAdminMS();
+  if(id === 'precosAba') carregarPrecosAdminMS();
   if(id === 'cuponsAba') carregarCuponsMS();
   if(id === 'relatoriosAba') carregarRelatoriosEtapa6MS();
   if(id === 'backupsAba') carregarBackupsMS();
@@ -1553,5 +1593,62 @@ async function salvarReposicaoRapidaMS(botao){
 document.addEventListener('keydown',e=>{if(e.key==='Escape')fecharReposicaoRapidaMS();});
 </script>
 
+
+<script id="aba-precos-ms-js">
+let produtosPrecosMS=[];
+const alteracoesPrecosMS=new Map();
+function numeroPrecoMS(v){const n=Number(String(v??'').replace(',','.'));return Number.isFinite(n)?Math.max(0,n):0;}
+function moedaPrecoMS(v){return Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});}
+function escaparPrecoMS(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
+function dadosPrecoLinhaMS(id){
+  const p=produtosPrecosMS.find(x=>Number(x.id)===Number(id)); if(!p)return null;
+  const preco=numeroPrecoMS(document.getElementById(`precoAtualMS-${id}`)?.value);
+  const antigoEl=document.getElementById(`precoAntigoMS-${id}`);
+  const precoAntigo=antigoEl&&antigoEl.value!==''?numeroPrecoMS(antigoEl.value):null;
+  const promocao=!!document.getElementById(`promocaoPrecoMS-${id}`)?.checked;
+  return {p,preco,precoAntigo,promocao};
+}
+function marcarPrecoAlteradoMS(id){
+  const d=dadosPrecoLinhaMS(id); if(!d)return;
+  const alterado=Number(d.p.preco)!==Number(d.preco)||((d.p.precoAntigo??null)!==(d.precoAntigo??null))||Boolean(d.p.promocao)!==Boolean(d.promocao);
+  if(alterado)alteracoesPrecosMS.set(Number(id),{preco:d.preco,precoAntigo:d.precoAntigo,promocao:d.promocao});else alteracoesPrecosMS.delete(Number(id));
+  document.getElementById(`linhaPrecoMS-${id}`)?.classList.toggle('linha-preco-alterada-ms',alterado);
+  document.getElementById(`salvarPrecoMS-${id}`)?.classList.toggle('pendente',alterado);
+  const prev=document.getElementById(`previewPrecoMS-${id}`);if(prev)prev.innerHTML=`${d.precoAntigo&&d.precoAntigo>d.preco?`<del>${moedaPrecoMS(d.precoAntigo)}</del>`:''}<strong>${moedaPrecoMS(d.preco)}</strong>`;
+  atualizarResumoPrecosMS();
+}
+function atualizarResumoPrecosMS(){
+  const visiveis=document.querySelectorAll('#listaPrecosAdminMS tr[data-produto-preco]').length;
+  const promo=produtosPrecosMS.filter(p=>p.promocao).length;
+  if(document.getElementById('precosTotalMS'))precosTotalMS.textContent=visiveis;
+  if(document.getElementById('precosPromocaoMS'))precosPromocaoMS.textContent=promo;
+  if(document.getElementById('precosPendentesMS'))precosPendentesMS.textContent=alteracoesPrecosMS.size;
+  const btn=document.getElementById('btnSalvarTodosPrecosMS');if(btn)btn.disabled=!alteracoesPrecosMS.size;
+}
+async function carregarPrecosAdminMS(forcar=false){
+  const corpo=document.getElementById('listaPrecosAdminMS');if(!corpo)return;
+  if(!produtosPrecosMS.length||forcar){corpo.innerHTML='<tr><td colspan="7">Carregando preços...</td></tr>';try{const r=await fetch(`${API_ADMIN_MS}/produtos?t=${Date.now()}`,{cache:'no-store'});if(!r.ok)throw new Error('Falha ao carregar');const d=await r.json();produtosPrecosMS=Array.isArray(d)?d:(d.produtos||[]);alteracoesPrecosMS.clear();popularCategoriasPrecosMS();}catch(e){corpo.innerHTML='<tr><td colspan="7">Não foi possível carregar os produtos.</td></tr>';return;}}
+  renderPrecosAdminMS();
+}
+function popularCategoriasPrecosMS(){const sel=document.getElementById('filtroCategoriaPrecosMS');if(!sel)return;const atual=sel.value;const cats=[...new Set(produtosPrecosMS.map(p=>String(p.categoria||'Sem categoria')).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR'));sel.innerHTML='<option value="todos">Todas</option>'+cats.map(c=>`<option value="${escaparPrecoMS(c)}">${escaparPrecoMS(c)}</option>`).join('');if([...sel.options].some(o=>o.value===atual))sel.value=atual;}
+function renderPrecosAdminMS(){
+  const corpo=document.getElementById('listaPrecosAdminMS');if(!corpo)return;
+  const busca=String(document.getElementById('pesquisaPrecosMS')?.value||'').toLowerCase().trim();const cat=document.getElementById('filtroCategoriaPrecosMS')?.value||'todos';const st=document.getElementById('filtroPromocaoPrecosMS')?.value||'todos';
+  const lista=produtosPrecosMS.filter(p=>(!busca||`${p.nome||''} ${p.categoria||''}`.toLowerCase().includes(busca))&&(cat==='todos'||String(p.categoria||'Sem categoria')===cat)&&(st==='todos'||(st==='promocao'&&p.promocao)||(st==='normal'&&!p.promocao)));
+  if(!lista.length){corpo.innerHTML='<tr><td colspan="7">Nenhum produto encontrado.</td></tr>';atualizarResumoPrecosMS();return;}
+  corpo.innerHTML=lista.map(p=>{const a=alteracoesPrecosMS.get(Number(p.id));const preco=a?a.preco:Number(p.preco||0);const antigo=a?a.precoAntigo:(p.precoAntigo??null);const promo=a?a.promocao:Boolean(p.promocao);return `<tr id="linhaPrecoMS-${p.id}" data-produto-preco="${p.id}" class="${a?'linha-preco-alterada-ms':''}"><td><div class="produto-preco-info-ms"><img src="${escaparPrecoMS(p.imagem||'logo.png')}" onerror="this.src='logo.png'"><div><strong>${escaparPrecoMS(p.nome)}</strong><small>${p.ativo?'Visível no site':'Oculto no site'}</small></div></div></td><td>${escaparPrecoMS(p.categoria||'Sem categoria')}</td><td><input class="campo-preco-ms" id="precoAtualMS-${p.id}" type="number" min="0" step="0.01" value="${preco}" oninput="marcarPrecoAlteradoMS(${p.id})"></td><td><input class="campo-preco-ms" id="precoAntigoMS-${p.id}" type="number" min="0" step="0.01" value="${antigo??''}" placeholder="Sem preço antigo" oninput="marcarPrecoAlteradoMS(${p.id})"></td><td><label class="switch-preco-ms"><input id="promocaoPrecoMS-${p.id}" type="checkbox" ${promo?'checked':''} onchange="marcarPrecoAlteradoMS(${p.id})"> Ativa</label></td><td><div class="preview-preco-ms" id="previewPrecoMS-${p.id}">${antigo&&antigo>preco?`<del>${moedaPrecoMS(antigo)}</del>`:''}<strong>${moedaPrecoMS(preco)}</strong></div></td><td><button id="salvarPrecoMS-${p.id}" class="btn-salvar-preco-ms ${a?'pendente':''}" type="button" onclick="salvarPrecoIndividualMS(${p.id},this)">Salvar</button></td></tr>`}).join('');
+  atualizarResumoPrecosMS();
+}
+async function salvarPrecoIndividualMS(id,botao){
+  marcarPrecoAlteradoMS(id);const alt=alteracoesPrecosMS.get(Number(id));if(!alt){const st=document.getElementById('statusPrecosMS');if(st)st.textContent='Esse produto não possui alterações pendentes.';return true;}
+  const original=botao?.textContent||'Salvar';if(botao){botao.disabled=true;botao.textContent='Salvando...';}
+  try{const r=await fetch(`${API_ADMIN_MS}/produtos/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(alt)});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.mensagem||'Erro ao salvar');const i=produtosPrecosMS.findIndex(p=>Number(p.id)===Number(id));if(i>=0)produtosPrecosMS[i]=d.produto||{...produtosPrecosMS[i],...alt};alteracoesPrecosMS.delete(Number(id));renderPrecosAdminMS();const st=document.getElementById('statusPrecosMS');if(st){st.textContent='Preço publicado no site com sucesso ✓';st.style.color='#75df8e';}return true;}catch(e){const st=document.getElementById('statusPrecosMS');if(st){st.textContent=e.message||'Não foi possível salvar o preço.';st.style.color='#ff7d8f';}return false;}finally{if(botao){botao.disabled=false;botao.textContent=original;}}
+}
+async function salvarTodosPrecosMS(){
+  const btn=document.getElementById('btnSalvarTodosPrecosMS');if(!alteracoesPrecosMS.size)return;btn.disabled=true;btn.textContent='Salvando...';const ids=[...alteracoesPrecosMS.keys()];let salvos=0;
+  for(const id of ids){const ok=await salvarPrecoIndividualMS(id,null);if(ok)salvos++;}
+  btn.textContent='Salvar alterações';atualizarResumoPrecosMS();const st=document.getElementById('statusPrecosMS');if(st){st.textContent=`${salvos} produto${salvos===1?'':'s'} atualizado${salvos===1?'':'s'} no site.`;st.style.color=salvos===ids.length?'#75df8e':'#ff7d8f';}
+}
+</script>
 </body>
 </html>
