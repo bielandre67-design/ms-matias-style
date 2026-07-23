@@ -1,0 +1,13 @@
+ETAPA 5.3 - BACKUP E RECUPERAÇÃO
+
+1. Substitua os arquivos deste pacote no projeto.
+2. Faça git add, commit e push.
+3. O Render criará automaticamente a tabela backup_snapshots no PostgreSQL.
+4. Abra o painel > Backups > Criar backup agora.
+5. Baixe uma cópia para o computador.
+
+Variável opcional no Render:
+BACKUP_MAX=10
+Define quantos backups permanecem salvos no banco (mínimo 3, máximo 50).
+
+IMPORTANTE: backups mantidos no mesmo PostgreSQL ajudam contra alterações acidentais, mas uma cópia baixada é a proteção externa contra perda total do banco.

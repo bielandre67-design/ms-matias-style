@@ -234,6 +234,7 @@ html, body { min-height: 100%; }
       <button class="ms-tab" onclick="abrirAbaMS('pedidosAba', this)"><span>◌</span> Pedidos</button>
       <button class="ms-tab" onclick="abrirAbaMS('cuponsAba', this)"><span>%</span> Cupons</button>
       <button class="ms-tab" onclick="abrirAbaMS('relatoriosAba', this)"><span>▥</span> Relatórios</button>
+      <button class="ms-tab" onclick="abrirAbaMS('backupsAba', this); carregarBackupsMS()"><span>🛡</span> Backups</button>
       <button class="ms-tab" onclick="abrirAbaMS('configuracoesAba', this)"><span>⚙</span> Configurações</button>
     </nav>
 
@@ -585,6 +586,23 @@ html, body { min-height: 100%; }
       </section>
     </section>
 
+
+    <section id="backupsAba" class="ms-painel backups-etapa53-ms">
+      <div class="backups-topo-ms">
+        <div><span class="backups-kicker-ms">SEGURANÇA 5.3</span><h2>Backup e recuperação</h2><p>Crie uma fotografia completa dos dados da loja antes de alterações importantes.</p></div>
+        <button class="backups-criar-ms" type="button" onclick="criarBackupMS()">＋ Criar backup agora</button>
+      </div>
+      <div class="backups-aviso-ms"><strong>🛡️ Camada de proteção</strong><span>Os backups ficam registrados no PostgreSQL e podem ser baixados para o computador. Guarde uma cópia baixada fora do Render.</span></div>
+      <div class="backups-resumo-ms">
+        <article><span>Total salvo</span><strong id="backupTotalMS">0</strong></article>
+        <article><span>Último backup</span><strong id="backupUltimoMS">Nenhum</strong></article>
+        <article><span>Espaço utilizado</span><strong id="backupTamanhoMS">0 KB</strong></article>
+      </div>
+      <div class="backups-lista-head-ms"><div><h3>Backups disponíveis</h3><p>Baixe, restaure ou exclua cópias antigas.</p></div><button type="button" onclick="carregarBackupsMS(true)">↻ Atualizar</button></div>
+      <div id="backupsStatusMS" class="backups-status-ms"></div>
+      <div id="backupsListaMS" class="backups-lista-ms"><div class="backups-vazio-ms">Carregando backups...</div></div>
+    </section>
+
     <section id="estoqueAba" class="ms-painel estoque-opcao-a-ms">
       <div class="page-title-ms estoque-a-titulo-ms">
         <div>
@@ -786,7 +804,7 @@ function abrirAbaMS(id, btn){
   document.getElementById(id)?.classList.add('ativa');
   document.querySelectorAll('.ms-tab').forEach(b => b.classList.remove('ativa'));
   btn?.classList.add('ativa');
-  const titulos = {visao:'Dashboard', vitrineAba:'Vitrine do site', destaquesAba:'Destaques da home', aparenciaAba:'Personalizar loja', integracoesAba:'Integrações', produtosAba:'Produtos', estoqueAba:'Estoque', pedidosAba:'Pedidos', cuponsAba:'Cupons', relatoriosAba:'Relatórios', configuracoesAba:'Configurações'};
+  const titulos = {visao:'Dashboard', vitrineAba:'Vitrine do site', destaquesAba:'Destaques da home', aparenciaAba:'Personalizar loja', integracoesAba:'Integrações', produtosAba:'Produtos', estoqueAba:'Estoque', pedidosAba:'Pedidos', cuponsAba:'Cupons', relatoriosAba:'Relatórios', backupsAba:'Backups', configuracoesAba:'Configurações'};
   const titulo = document.getElementById('tituloPaginaMS');
   if(titulo) titulo.innerText = titulos[id] || 'Painel ADM';
   if(id === 'vitrineAba') carregarBannersMS();
@@ -795,6 +813,7 @@ function abrirAbaMS(id, btn){
   if(id === 'produtosAba') carregarProdutosAdminMS();
   if(id === 'cuponsAba') carregarCuponsMS();
   if(id === 'relatoriosAba') carregarRelatoriosEtapa6MS();
+  if(id === 'backupsAba') carregarBackupsMS();
   if(id === 'configuracoesAba') carregarConfiguracoesEtapa6MS();
 }
 

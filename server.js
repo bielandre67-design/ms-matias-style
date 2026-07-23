@@ -110,6 +110,18 @@ async function iniciarPostgresMS() {
   `);
 
   await pool.query(`
+    CREATE TABLE IF NOT EXISTS backup_snapshots (
+      id BIGSERIAL PRIMARY KEY,
+      nome VARCHAR(180) NOT NULL,
+      dados JSONB NOT NULL,
+      tamanho_bytes BIGINT NOT NULL DEFAULT 0,
+      hash_sha256 VARCHAR(64) NOT NULL,
+      criado_em TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      restaurado_em TIMESTAMPTZ
+    )
+  `);
+
+  await pool.query(`
     CREATE TABLE IF NOT EXISTS produtos (
       id BIGSERIAL PRIMARY KEY,
       chave VARCHAR(180) UNIQUE NOT NULL,
@@ -401,13 +413,13 @@ app.post("/admin-logout", (req, res) => {
 setInterval(limparSessoesExpiradasMS, 10 * 60 * 1000).unref();
 
 const rotasAdminLeituraMS = [
-  "/pedidos", "/pedidos-excluidos", "/estoque", "/cupons"
+  "/pedidos", "/pedidos-excluidos", "/estoque", "/cupons", "/backups"
 ];
 const rotasAdminEscritaMS = [
   "/frete-config", "/frete-teste", "/estoque", "/pedidos", "/pedidos-excluidos",
   "/excluir-pedido", "/atualizar-status", "/cupons", "/banners", "/pagamento-config",
   "/loja-config", "/aparencia-config", "/home-config", "/upload-imagens", "/categorias",
-  "/produtos", "/diagnostico-mercado-pago"
+  "/produtos", "/diagnostico-mercado-pago", "/backups"
 ];
 app.use((req, res, next) => {
   const caminho = req.path;
@@ -2890,6 +2902,180 @@ app.get("/diagnostico-mercado-pago", async (req, res) => {
       mensagem: erro.message || "Erro ao consultar os meios de pagamento."
     });
   }
+});
+
+
+// BACKUPS E RECUPERAÇÃO DO BANCO -------------------------------------------
+const LIMITE_BACKUPS_MS = Math.max(3, Math.min(50, Number(process.env.BACKUP_MAX || 10)));
+
+function identificadorSQLMS(nome) {
+  if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(String(nome || ""))) {
+    throw new Error("Identificador de banco inválido.");
+  }
+  return `"${nome}"`;
+}
+
+async function tabelasBackupMS(cliente = pool) {
+  const resultado = await cliente.query(`
+    SELECT table_name
+    FROM information_schema.tables
+    WHERE table_schema = 'public'
+      AND table_type = 'BASE TABLE'
+      AND table_name <> 'backup_snapshots'
+    ORDER BY table_name
+  `);
+  return resultado.rows.map((r) => r.table_name);
+}
+
+async function criarSnapshotBancoMS(cliente = pool) {
+  if (!cliente) throw new Error("PostgreSQL não configurado.");
+  const tabelas = await tabelasBackupMS(cliente);
+  const dados = {};
+  const contagens = {};
+  for (const tabela of tabelas) {
+    const nomeSeguro = identificadorSQLMS(tabela);
+    const resultado = await cliente.query(`SELECT * FROM ${nomeSeguro}`);
+    dados[tabela] = resultado.rows;
+    contagens[tabela] = resultado.rowCount;
+  }
+  return {
+    formato: "ms-matias-style-backup",
+    versao: 1,
+    criadoEm: new Date().toISOString(),
+    banco: "postgresql",
+    contagens,
+    tabelas: dados
+  };
+}
+
+async function restaurarSnapshotBancoMS(snapshot) {
+  if (!pool) throw new Error("PostgreSQL não configurado.");
+  if (!snapshot || snapshot.formato !== "ms-matias-style-backup" || !snapshot.tabelas) {
+    throw new Error("Backup inválido ou incompatível.");
+  }
+  const cliente = await pool.connect();
+  try {
+    await cliente.query("BEGIN");
+    const existentes = new Set(await tabelasBackupMS(cliente));
+    const tabelas = Object.keys(snapshot.tabelas).filter((t) => existentes.has(t));
+
+    // Limpa primeiro. Não há FKs críticas no modelo atual, mas CASCADE deixa a
+    // restauração preparada para relações futuras.
+    for (const tabela of [...tabelas].reverse()) {
+      await cliente.query(`TRUNCATE TABLE ${identificadorSQLMS(tabela)} RESTART IDENTITY CASCADE`);
+    }
+
+    for (const tabela of tabelas) {
+      const linhas = Array.isArray(snapshot.tabelas[tabela]) ? snapshot.tabelas[tabela] : [];
+      for (const linha of linhas) {
+        const colunas = Object.keys(linha || {});
+        if (!colunas.length) continue;
+        const nomes = colunas.map(identificadorSQLMS).join(", ");
+        const valores = colunas.map((c) => linha[c]);
+        const marcadores = valores.map((_, i) => `$${i + 1}`).join(", ");
+        await cliente.query(
+          `INSERT INTO ${identificadorSQLMS(tabela)} (${nomes}) VALUES (${marcadores})`,
+          valores
+        );
+      }
+    }
+
+    // Reposiciona sequências BIGSERIAL/SERIAL para os próximos cadastros.
+    const sequencias = await cliente.query(`
+      SELECT table_name, column_name
+      FROM information_schema.columns
+      WHERE table_schema='public' AND column_default LIKE 'nextval(%'
+    `);
+    for (const item of sequencias.rows) {
+      if (!tabelas.includes(item.table_name)) continue;
+      const tabela = identificadorSQLMS(item.table_name);
+      const coluna = identificadorSQLMS(item.column_name);
+      await cliente.query(`SELECT setval(pg_get_serial_sequence($1,$2), COALESCE((SELECT MAX(${coluna}) FROM ${tabela}), 1), (SELECT COUNT(*) > 0 FROM ${tabela}))`, [item.table_name, item.column_name]);
+    }
+    await cliente.query("COMMIT");
+  } catch (erro) {
+    try { await cliente.query("ROLLBACK"); } catch (_) {}
+    throw erro;
+  } finally {
+    cliente.release();
+  }
+}
+
+app.get("/backups", async (req, res, next) => {
+  if (!pool) return res.status(503).json({ mensagem: "PostgreSQL não configurado." });
+  try {
+    const resultado = await pool.query(`
+      SELECT id, nome, tamanho_bytes, hash_sha256, criado_em, restaurado_em,
+             COALESCE((dados->'contagens'), '{}'::jsonb) AS contagens
+      FROM backup_snapshots
+      ORDER BY criado_em DESC
+      LIMIT 50
+    `);
+    res.set("Cache-Control", "no-store");
+    res.json(resultado.rows);
+  } catch (erro) { next(erro); }
+});
+
+app.post("/backups", async (req, res, next) => {
+  if (!pool) return res.status(503).json({ mensagem: "PostgreSQL não configurado." });
+  try {
+    const snapshot = await criarSnapshotBancoMS();
+    const texto = JSON.stringify(snapshot);
+    const tamanho = Buffer.byteLength(texto, "utf8");
+    const hash = crypto.createHash("sha256").update(texto).digest("hex");
+    const nomeInformado = String(req.body?.nome || "").trim().slice(0, 120);
+    const nome = nomeInformado || `Backup ${new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}`;
+    const resultado = await pool.query(
+      `INSERT INTO backup_snapshots(nome,dados,tamanho_bytes,hash_sha256)
+       VALUES($1,$2::jsonb,$3,$4)
+       RETURNING id,nome,tamanho_bytes,hash_sha256,criado_em`,
+      [nome, texto, tamanho, hash]
+    );
+    await pool.query(`DELETE FROM backup_snapshots WHERE id IN (
+      SELECT id FROM backup_snapshots ORDER BY criado_em DESC OFFSET $1
+    )`, [LIMITE_BACKUPS_MS]);
+    res.status(201).json({ ok: true, backup: resultado.rows[0], limite: LIMITE_BACKUPS_MS });
+  } catch (erro) { next(erro); }
+});
+
+app.get("/backups/:id/download", async (req, res, next) => {
+  if (!pool) return res.status(503).json({ mensagem: "PostgreSQL não configurado." });
+  try {
+    const resultado = await pool.query("SELECT id,nome,dados,hash_sha256,criado_em FROM backup_snapshots WHERE id=$1", [req.params.id]);
+    if (!resultado.rowCount) return res.status(404).json({ mensagem: "Backup não encontrado." });
+    const backup = resultado.rows[0];
+    const arquivo = `ms-backup-${backup.id}-${new Date(backup.criado_em).toISOString().slice(0,10)}.json`;
+    res.set({
+      "Content-Type": "application/json; charset=utf-8",
+      "Content-Disposition": `attachment; filename="${arquivo}"`,
+      "Cache-Control": "no-store",
+      "X-Backup-SHA256": backup.hash_sha256
+    });
+    res.send(JSON.stringify(backup.dados, null, 2));
+  } catch (erro) { next(erro); }
+});
+
+app.post("/backups/:id/restore", async (req, res, next) => {
+  if (!pool) return res.status(503).json({ mensagem: "PostgreSQL não configurado." });
+  if (String(req.body?.confirmacao || "").trim().toUpperCase() !== "RESTAURAR") {
+    return res.status(400).json({ mensagem: "Digite RESTAURAR para confirmar." });
+  }
+  try {
+    const resultado = await pool.query("SELECT id,nome,dados FROM backup_snapshots WHERE id=$1", [req.params.id]);
+    if (!resultado.rowCount) return res.status(404).json({ mensagem: "Backup não encontrado." });
+    await restaurarSnapshotBancoMS(resultado.rows[0].dados);
+    await pool.query("UPDATE backup_snapshots SET restaurado_em=NOW() WHERE id=$1", [req.params.id]);
+    res.json({ ok: true, mensagem: "Banco restaurado com sucesso.", backup: { id: resultado.rows[0].id, nome: resultado.rows[0].nome } });
+  } catch (erro) { next(erro); }
+});
+
+app.delete("/backups/:id", async (req, res, next) => {
+  if (!pool) return res.status(503).json({ mensagem: "PostgreSQL não configurado." });
+  try {
+    const resultado = await pool.query("DELETE FROM backup_snapshots WHERE id=$1 RETURNING id", [req.params.id]);
+    if (!resultado.rowCount) return res.status(404).json({ mensagem: "Backup não encontrado." });
+    res.json({ ok: true });
+  } catch (erro) { next(erro); }
 });
 
 // Resposta JSON para rotas de API inexistentes.
