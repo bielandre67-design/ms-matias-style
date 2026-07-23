@@ -488,7 +488,10 @@ const rotasAdminEscritaMS = [
 ];
 const rotasPublicasEstoqueMS = new Set([
   "/estoque/disponivel",
-  "/estoque/validar-carrinho"
+  "/estoque/validar-carrinho",
+  // O cliente precisa validar o cupom no checkout sem possuir sessão do painel.
+  // As rotas de cadastro, edição e exclusão de cupons continuam protegidas.
+  "/cupons/validar"
 ]);
 
 app.use((req, res, next) => {
