@@ -1,0 +1,16 @@
+MS MATIAS STYLE - ETAPA 3: CARRINHO ESTÁVEL
+
+Arquivos alterados:
+- index.html
+- carrinho.html
+- carrinho-ms.js
+
+O que mudou:
+1. O módulo seguro carrinho-ms.js agora é carregado por último na loja.
+2. As funções antigas deixam de sobrescrever a validação final do carrinho.
+3. O botão + no carrinho mobile consulta o estoque antes de aumentar.
+4. Quantidade acima do estoque disponível é bloqueada.
+5. Falha de conexão com o estoque não libera a venda por segurança.
+
+Como instalar:
+Copie os três arquivos para a pasta principal do projeto e substitua os existentes.

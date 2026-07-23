@@ -253,7 +253,37 @@
 
   function escapeHtml(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))} function escapeAttr(v){return escapeHtml(v)}
   window.voltarLoja=()=>{if(history.length>1)history.back();else location.href='index.html'};
-  $('cartList').addEventListener('click',e=>{const plus=e.target.dataset.plus,minus=e.target.dataset.minus,remove=e.target.dataset.remove;if(plus!==undefined){const i=Number(plus);cart[i].quantidade=qty(cart[i])+1}else if(minus!==undefined){const i=Number(minus);if(qty(cart[i])>1)cart[i].quantidade=qty(cart[i])-1;else cart.splice(i,1)}else if(remove!==undefined){cart.splice(Number(remove),1)}else return;save();clearCoupon('Aplique o cupom novamente após alterar o carrinho.');renderCart()});
+  async function consultarEstoqueItemCarrinhoMS(item){
+    const resposta=await fetch(`${API}/estoque/disponivel`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome:item.nome,cor:item.cor||'',tamanho:item.tamanho,sku:item.sku||''})});
+    const dados=await resposta.json().catch(()=>({}));
+    if(!resposta.ok)throw new Error(dados.mensagem||'Não foi possível consultar o estoque.');
+    return dados;
+  }
+
+  $('cartList').addEventListener('click',async e=>{
+    const plus=e.target.dataset.plus,minus=e.target.dataset.minus,remove=e.target.dataset.remove;
+    if(plus!==undefined){
+      const i=Number(plus),item=cart[i];
+      if(!item)return;
+      e.target.disabled=true;
+      try{
+        const estoque=await consultarEstoqueItemCarrinhoMS(item);
+        const disponivel=Math.max(0,Number(estoque.disponivel||0));
+        if(!estoque.cadastrado||qty(item)+1>disponivel){
+          alert(disponivel<=0?'Este produto está esgotado.':`Só temos ${disponivel} unidade(s) disponível(is) desta opção.`);
+          return;
+        }
+        cart[i].quantidade=qty(item)+1;
+      }catch(erro){
+        console.error('[MS] Falha ao aumentar quantidade:',erro);
+        alert('Não foi possível confirmar o estoque agora. Tente novamente.');
+        return;
+      }finally{e.target.disabled=false}
+    }else if(minus!==undefined){
+      const i=Number(minus);if(qty(cart[i])>1)cart[i].quantidade=qty(cart[i])-1;else cart.splice(i,1)
+    }else if(remove!==undefined){cart.splice(Number(remove),1)}else return;
+    save();clearCoupon('Aplique o cupom novamente após alterar o carrinho.');renderCart();
+  });
   $('clearCart').onclick=()=>{if(confirm('Deseja remover todos os produtos do carrinho?')){cart=[];save();clearCoupon();renderCart()}};
   $('toShipping').onclick=()=>{if(!cart.length){alert('Seu carrinho está vazio.');return}showStep(2)};
   $('toPayment').onclick=()=>{if(validateDelivery())showStep(3)};
