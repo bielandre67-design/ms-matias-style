@@ -235,6 +235,7 @@ html, body { min-height: 100%; }
       <button class="ms-tab" onclick="abrirAbaMS('vitrineAba', this)"><span>▧</span> Vitrine do site</button>
       <button class="ms-tab" onclick="abrirAbaMS('destaquesAba', this)"><span>★</span> Destaques da home</button>
       <button class="ms-tab" onclick="abrirAbaMS('aparenciaAba', this)"><span>🎨</span> Personalizar loja</button>
+      <button class="ms-tab" onclick="abrirAbaMS('beneficiosAba', this); carregarBeneficiosMS()"><span>✦</span> Barra de benefícios</button>
       <button class="ms-tab" onclick="abrirAbaMS('integracoesAba', this); carregarIntegracoesMS(); carregarPainelPagamentosMS()"><span>🔗</span> Integrações</button>
       <button class="ms-tab" onclick="abrirAbaMS('freteAba', this); carregarConfigFreteMS()"><span>🚚</span> Frete</button>
       <button class="ms-tab" onclick="abrirAbaMS('estoqueAba', this)"><span>◇</span> Estoque</button>
@@ -644,6 +645,19 @@ html, body { min-height: 100%; }
     </section>
 
 
+
+    <section id="beneficiosAba" class="ms-painel beneficios-config-ms">
+      <div class="beneficios-topo-ms"><div><h2>Barra de benefícios</h2><p>Edite os avisos exibidos no topo dos detalhes dos produtos. Ao salvar, o site é atualizado automaticamente.</p></div><button type="button" onclick="carregarBeneficiosMS()">↻ Atualizar</button></div>
+      <div class="beneficios-grade-config-ms">
+        <article class="beneficios-card-config-ms"><h3>Visibilidade</h3><div class="beneficios-switches-ms"><label><span>Barra ativa no site</span><input id="beneficiosBarraAtivaMS" type="checkbox" checked></label><label><span>Mostrar no computador</span><input id="beneficiosDesktopMS" type="checkbox" checked></label><label><span>Mostrar no celular</span><input id="beneficiosMobileMS" type="checkbox" checked></label></div></article>
+        <article class="beneficios-card-config-ms"><h3>Cores</h3><div class="beneficios-cores-ms"><label>Fundo<input id="beneficiosFundoMS" type="color" value="#000000"></label><label>Texto<input id="beneficiosTextoCorMS" type="color" value="#ffffff"></label></div></article>
+      </div>
+      <div class="beneficios-topo-ms"><div><h3>Benefícios</h3><p>Altere ícone, texto, ordem e visibilidade. Limite de 6 itens.</p></div><button type="button" onclick="adicionarBeneficioMS()">＋ Adicionar benefício</button></div>
+      <div id="beneficiosListaMS" class="beneficios-lista-ms"></div>
+      <div class="beneficios-preview-wrap-ms"><h3>Prévia</h3><div id="beneficiosPreviewMS" class="beneficios-preview-ms"></div></div>
+      <div class="beneficios-acoes-ms"><div id="beneficiosStatusMS" class="beneficios-status-ms"></div><button id="salvarBeneficiosMS" type="button" onclick="salvarBeneficiosMS()">Salvar e publicar no site</button></div>
+    </section>
+
     <section id="auditoriaAba" class="ms-painel auditoria-etapa54-ms">
       <div class="auditoria-topo-ms">
         <div><span>SEGURANÇA 5.4</span><h2>Log de auditoria</h2><p>Histórico imutável das ações importantes realizadas no painel.</p></div>
@@ -869,7 +883,7 @@ function abrirAbaMS(id, btn){
   document.getElementById(id)?.classList.add('ativa');
   document.querySelectorAll('.ms-tab').forEach(b => b.classList.remove('ativa'));
   btn?.classList.add('ativa');
-  const titulos = {visao:'Dashboard', vitrineAba:'Vitrine do site', destaquesAba:'Destaques da home', aparenciaAba:'Personalizar loja', integracoesAba:'Integrações', produtosAba:'Produtos', precosAba:'Preços', estoqueAba:'Estoque', pedidosAba:'Pedidos', cuponsAba:'Cupons', relatoriosAba:'Relatórios', backupsAba:'Backups', auditoriaAba:'Auditoria', configuracoesAba:'Configurações'};
+  const titulos = {visao:'Dashboard', vitrineAba:'Vitrine do site', destaquesAba:'Destaques da home', aparenciaAba:'Personalizar loja', beneficiosAba:'Barra de benefícios', integracoesAba:'Integrações', produtosAba:'Produtos', precosAba:'Preços', estoqueAba:'Estoque', pedidosAba:'Pedidos', cuponsAba:'Cupons', relatoriosAba:'Relatórios', backupsAba:'Backups', auditoriaAba:'Auditoria', configuracoesAba:'Configurações'};
   const titulo = document.getElementById('tituloPaginaMS');
   if(titulo) titulo.innerText = titulos[id] || 'Painel ADM';
   if(id === 'vitrineAba') carregarBannersMS();
@@ -1650,5 +1664,6 @@ async function salvarTodosPrecosMS(){
   btn.textContent='Salvar alterações';atualizarResumoPrecosMS();const st=document.getElementById('statusPrecosMS');if(st){st.textContent=`${salvos} produto${salvos===1?'':'s'} atualizado${salvos===1?'':'s'} no site.`;st.style.color=salvos===ids.length?'#75df8e':'#ff7d8f';}
 }
 </script>
+<script src="beneficios-admin.js?v=20260722-1"></script>
 </body>
 </html>

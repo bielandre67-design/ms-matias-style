@@ -1,0 +1,33 @@
+ETAPA 6.2 - BARRA DE BENEFÍCIOS PELO PAINEL
+
+Arquivos adicionados:
+- beneficios-admin.js
+- beneficios-loja.js
+
+Arquivos atualizados:
+- admin.html
+- admin.css
+- admin.js
+- index.html
+- style.css
+- server.js
+- carrinho.html
+- carrinho-ms.js
+- script.js
+- package.json
+
+COMO PUBLICAR
+1. Extraia o ZIP dentro da pasta principal do projeto.
+2. Confirme a substituição dos arquivos existentes.
+3. Não esqueça de enviar os dois arquivos novos beneficios-admin.js e beneficios-loja.js.
+4. Rode:
+   git add .
+   git commit -m "Adicionar barra de beneficios pelo painel"
+   git push
+5. Aguarde o deploy do Render/Vercel.
+6. No painel, abra Barra de benefícios, altere um texto e clique em Salvar e publicar no site.
+7. Na loja, use Ctrl + F5 e abra os detalhes de um produto.
+
+O GET /beneficios-config é público para a loja carregar os textos.
+O PUT /beneficios-config exige sessão administrativa.
+As alterações ficam registradas no Log de Auditoria.

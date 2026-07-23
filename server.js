@@ -365,7 +365,7 @@ function descreverAcaoAuditoriaMS(req) {
   const rota = req.path;
   const metodo = req.method;
   let recurso = rota.split('/').filter(Boolean)[0] || 'sistema';
-  const nomes = { produtos:'Produto', estoque:'Estoque', pedidos:'Pedido', 'pedidos-excluidos':'Pedido excluído', cupons:'Cupom', banners:'Banner', categorias:'Categoria', backups:'Backup', 'frete-config':'Frete', 'pagamento-config':'Pagamento', 'loja-config':'Loja', 'aparencia-config':'Aparência', 'home-config':'Página inicial', 'upload-imagens':'Imagens' };
+  const nomes = { produtos:'Produto', estoque:'Estoque', pedidos:'Pedido', 'pedidos-excluidos':'Pedido excluído', cupons:'Cupom', banners:'Banner', categorias:'Categoria', backups:'Backup', 'frete-config':'Frete', 'pagamento-config':'Pagamento', 'loja-config':'Loja', 'aparencia-config':'Aparência', 'home-config':'Página inicial', 'beneficios-config':'Barra de benefícios', 'upload-imagens':'Imagens' };
   recurso = nomes[recurso] || recurso;
   let verbo = metodo === 'POST' ? 'Criou' : metodo === 'PUT' || metodo === 'PATCH' ? 'Alterou' : metodo === 'DELETE' ? 'Excluiu' : 'Executou';
   if (/\/restore$/.test(rota)) verbo = 'Restaurou';
@@ -483,7 +483,7 @@ const rotasAdminLeituraMS = [
 const rotasAdminEscritaMS = [
   "/frete-config", "/frete-teste", "/estoque", "/pedidos", "/pedidos-excluidos",
   "/excluir-pedido", "/atualizar-status", "/cupons", "/banners", "/pagamento-config",
-  "/loja-config", "/aparencia-config", "/home-config", "/upload-imagens", "/categorias",
+  "/loja-config", "/aparencia-config", "/home-config", "/beneficios-config", "/upload-imagens", "/categorias",
   "/produtos", "/diagnostico-mercado-pago", "/backups", "/auditoria"
 ];
 const rotasPublicasEstoqueMS = new Set([
@@ -3201,6 +3201,52 @@ app.delete("/backups/:id", async (req, res, next) => {
     const resultado = await pool.query("DELETE FROM backup_snapshots WHERE id=$1 RETURNING id", [req.params.id]);
     if (!resultado.rowCount) return res.status(404).json({ mensagem: "Backup não encontrado." });
     res.json({ ok: true });
+  } catch (erro) { next(erro); }
+});
+
+
+// BARRA DE BENEFÍCIOS DA LOJA ------------------------------------------------
+const BENEFICIOS_PADRAO_MS = {
+  ativo: true, fundo: "#000000", corTexto: "#ffffff", mostrarDesktop: true, mostrarMobile: true,
+  itens: [
+    { id: "frete", icone: "🚚", texto: "FRETE PARA TODO O BRASIL", ativo: true, ordem: 1 },
+    { id: "parcelamento", icone: "💳", texto: "PARCELE EM ATÉ 3X SEM JUROS", ativo: true, ordem: 2 },
+    { id: "troca", icone: "🔁", texto: "TROCA GARANTIDA EM ATÉ 7 DIAS", ativo: true, ordem: 3 }
+  ]
+};
+function limparBeneficiosConfigMS(valor = {}) {
+  const entrada = valor && typeof valor === "object" ? valor : {};
+  const itensEntrada = Array.isArray(entrada.itens) ? entrada.itens : BENEFICIOS_PADRAO_MS.itens;
+  const itens = itensEntrada.slice(0, 6).map((item, indice) => ({
+    id: String(item?.id || `beneficio-${indice + 1}`).replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 50) || `beneficio-${indice + 1}`,
+    icone: String(item?.icone || "✓").trim().slice(0, 12),
+    texto: String(item?.texto || "").trim().slice(0, 100),
+    ativo: item?.ativo !== false,
+    ordem: Math.max(1, Math.min(99, Number(item?.ordem) || indice + 1))
+  })).filter(item => item.texto);
+  return {
+    ativo: entrada.ativo !== false,
+    fundo: /^#[0-9a-f]{6}$/i.test(String(entrada.fundo || "")) ? entrada.fundo : BENEFICIOS_PADRAO_MS.fundo,
+    corTexto: /^#[0-9a-f]{6}$/i.test(String(entrada.corTexto || "")) ? entrada.corTexto : BENEFICIOS_PADRAO_MS.corTexto,
+    mostrarDesktop: entrada.mostrarDesktop !== false,
+    mostrarMobile: entrada.mostrarMobile !== false,
+    itens: (itens.length ? itens : BENEFICIOS_PADRAO_MS.itens).sort((a,b) => a.ordem - b.ordem)
+  };
+}
+async function obterBeneficiosConfigMS() {
+  if (!pool) return BENEFICIOS_PADRAO_MS;
+  const resultado = await pool.query("SELECT dados FROM app_state WHERE chave=$1 LIMIT 1", ["beneficios_config"]);
+  return limparBeneficiosConfigMS(resultado.rows[0]?.dados || BENEFICIOS_PADRAO_MS);
+}
+app.get("/beneficios-config", async (req, res, next) => {
+  try { res.setHeader("Cache-Control", "no-store"); res.json(await obterBeneficiosConfigMS()); } catch (erro) { next(erro); }
+});
+app.put("/beneficios-config", async (req, res, next) => {
+  if (!pool) return res.status(503).json({ mensagem: "PostgreSQL não configurado." });
+  try {
+    const config = limparBeneficiosConfigMS(req.body || {});
+    await pool.query(`INSERT INTO app_state(chave,dados,atualizado_em) VALUES($1,$2::jsonb,NOW()) ON CONFLICT(chave) DO UPDATE SET dados=EXCLUDED.dados, atualizado_em=NOW()`, ["beneficios_config", JSON.stringify(config)]);
+    res.json({ ok: true, config });
   } catch (erro) { next(erro); }
 });
 
