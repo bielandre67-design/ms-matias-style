@@ -11,6 +11,93 @@
   function salvarSessaoMS(valor){ sessionStorage.setItem(CHAVE_SESSAO_MS, valor); }
   function limparSessaoMS(){ sessionStorage.removeItem(CHAVE_SESSAO_MS); }
 
+  function garantirLoginVisualMS(){
+    let overlay = document.getElementById("loginSeguroMS");
+    if(overlay) return overlay;
+    overlay = document.createElement("div");
+    overlay.id = "loginSeguroMS";
+    overlay.className = "login-seguro-ms";
+    overlay.innerHTML = `
+      <section class="login-seguro-card-ms" role="dialog" aria-modal="true" aria-labelledby="loginSeguroTituloMS">
+        <div class="login-seguro-marca-ms">
+          <span class="login-seguro-logo-ms">MS</span>
+          <div><strong>MS MATIAS STYLE</strong><small>Painel administrativo</small></div>
+        </div>
+        <div class="login-seguro-cadeado-ms">🔐</div>
+        <h1 id="loginSeguroTituloMS">Acesso protegido</h1>
+        <p>Digite sua senha para entrar no painel da loja.</p>
+        <form id="loginSeguroFormMS" autocomplete="on">
+          <label for="loginSeguroSenhaMS">Senha do painel</label>
+          <div class="login-seguro-campo-ms">
+            <input id="loginSeguroSenhaMS" name="password" type="password" autocomplete="current-password" required placeholder="Digite sua senha">
+            <button id="loginSeguroVerMS" type="button" aria-label="Mostrar senha" title="Mostrar senha">👁</button>
+          </div>
+          <div id="loginSeguroErroMS" class="login-seguro-erro-ms" role="alert"></div>
+          <button id="loginSeguroEntrarMS" class="login-seguro-entrar-ms" type="submit">Entrar no painel</button>
+        </form>
+        <small class="login-seguro-rodape-ms">Sessão protegida e com expiração automática.</small>
+      </section>`;
+    document.body.appendChild(overlay);
+    const senha = overlay.querySelector("#loginSeguroSenhaMS");
+    overlay.querySelector("#loginSeguroVerMS").addEventListener("click", (evento)=>{
+      const mostrar = senha.type === "password";
+      senha.type = mostrar ? "text" : "password";
+      evento.currentTarget.textContent = mostrar ? "🙈" : "👁";
+      evento.currentTarget.setAttribute("aria-label", mostrar ? "Ocultar senha" : "Mostrar senha");
+    });
+    return overlay;
+  }
+
+  function abrirLoginVisualMS(){
+    return new Promise((resolve)=>{
+      const overlay = garantirLoginVisualMS();
+      const form = overlay.querySelector("#loginSeguroFormMS");
+      const senha = overlay.querySelector("#loginSeguroSenhaMS");
+      const erro = overlay.querySelector("#loginSeguroErroMS");
+      const botao = overlay.querySelector("#loginSeguroEntrarMS");
+      document.documentElement.classList.remove("admin-autenticado-ms");
+      document.documentElement.classList.add("admin-login-aberto-ms");
+      overlay.classList.add("visivel");
+      erro.textContent = "";
+      senha.value = "";
+      setTimeout(()=>senha.focus(), 80);
+
+      const enviar = async(evento)=>{
+        evento.preventDefault();
+        const valor = senha.value;
+        if(!valor){ erro.textContent = "Digite a senha do painel."; senha.focus(); return; }
+        botao.disabled = true;
+        botao.textContent = "Entrando...";
+        erro.textContent = "";
+        try{
+          const resposta = await fetchOriginalMS(`${apiAdminMS}/admin-auth`, {
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({senha:valor}),
+            cache:"no-store"
+          });
+          const dados = await resposta.json().catch(()=>({}));
+          if(!resposta.ok || !dados.sessionToken){
+            erro.textContent = dados.mensagem || "Senha incorreta. Tente novamente.";
+            senha.select();
+            return;
+          }
+          salvarSessaoMS(dados.sessionToken);
+          overlay.classList.remove("visivel");
+          document.documentElement.classList.remove("admin-login-aberto-ms");
+          document.documentElement.classList.add("admin-autenticado-ms");
+          resolve(true);
+        }catch(_){
+          erro.textContent = "Não foi possível conectar ao servidor do painel.";
+        }finally{
+          botao.disabled = false;
+          botao.textContent = "Entrar no painel";
+        }
+      };
+      form.onsubmit = enviar;
+    });
+  }
+
   async function validarSessaoMS(){
     const token = sessaoMS();
     if(!token) return false;
@@ -26,31 +113,12 @@
     if(loginEmAndamentoMS) return loginEmAndamentoMS;
     loginEmAndamentoMS = (async()=>{
       if(await validarSessaoMS()){
+        document.documentElement.classList.remove("admin-login-aberto-ms");
         document.documentElement.classList.add("admin-autenticado-ms");
         return true;
       }
       limparSessaoMS();
-      const senha = prompt("Digite a senha do painel MS:") || "";
-      if(!senha) return false;
-      try{
-        const resposta = await fetchOriginalMS(`${apiAdminMS}/admin-auth`, {
-          method:"POST",
-          headers:{"Content-Type":"application/json"},
-          body:JSON.stringify({senha}),
-          cache:"no-store"
-        });
-        const dados = await resposta.json().catch(()=>({}));
-        if(!resposta.ok || !dados.sessionToken){
-          alert(dados.mensagem || "Senha incorreta.");
-          return false;
-        }
-        salvarSessaoMS(dados.sessionToken);
-        document.documentElement.classList.add("admin-autenticado-ms");
-        return true;
-      }catch(_){
-        alert("Não foi possível conectar ao servidor do painel.");
-        return false;
-      }
+      return abrirLoginVisualMS();
     })();
     try { return await loginEmAndamentoMS; }
     finally { loginEmAndamentoMS = null; }
@@ -86,17 +154,15 @@
       if(token) await fetchOriginalMS(`${apiAdminMS}/admin-logout`, {
         method:"POST", headers:{"X-Admin-Session":token}, cache:"no-store"
       });
-    }catch(_){}
+    }catch(_){ }
     limparSessaoMS();
     document.documentElement.classList.remove("admin-autenticado-ms");
     location.reload();
   };
 
-  document.addEventListener("DOMContentLoaded", async()=>{
-    const ok = await autenticarMS();
-    if(!ok) document.body.innerHTML = '<main style="min-height:100vh;display:grid;place-items:center;background:#090b10;color:#fff;font-family:Arial;padding:24px;text-align:center"><div><h1>Acesso ao painel cancelado</h1><p>Atualize a página para tentar novamente.</p></div></main>';
-  });
+  document.addEventListener("DOMContentLoaded", autenticarMS);
 })();
+
 
 (function () {
   const pedidosContainer = document.getElementById("pedidos");

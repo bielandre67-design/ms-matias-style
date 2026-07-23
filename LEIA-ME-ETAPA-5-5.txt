@@ -1,0 +1,16 @@
+ETAPA 5.5 - LOGIN VISUAL SEGURO
+
+O que mudou:
+- Removido o prompt nativo do navegador para a senha.
+- Criada tela de login profissional dentro do painel.
+- Mantida a mesma senha configurada em ADMIN_PANEL_TOKEN no Render.
+- Mantida a sessão real no servidor e expiração automática.
+- Adicionado botão para mostrar/ocultar senha, estado de carregamento e mensagens de erro.
+- Ao encerrar a sessão ou receber 401, a tela de login reaparece sem expor o painel.
+
+Teste recomendado:
+1. Faça deploy.
+2. Abra o painel em janela anônima.
+3. Confirme que aparece a nova tela de login, e não a caixa do navegador.
+4. Teste senha errada e depois a senha correta.
+5. Clique em Sair e confirme que a tela volta.
