@@ -15199,7 +15199,7 @@ body.aviso-ms-aberto{overflow:hidden!important;}
 
 
 /* APARÊNCIA DINÂMICA DA LOJA - ETAPA 5 */
-:root{--ms-cor-principal:#d9aa35;--ms-cor-secundaria:#111214;--ms-cor-botao:#d9aa35;--ms-cor-texto-botao:#111111;--ms-cor-fundo:#0b0b0c;--ms-cor-texto:#ffffff;--ms-cor-rodape:#090909;--ms-fonte:Inter,Arial,sans-serif}
+:root{--ms-cor-principal:#d9aa35;--ms-cor-secundaria:#111214;--ms-cor-botao:#d9aa35;--ms-cor-texto-botao:#111111;--ms-cor-fundo:#0b0b0c;--ms-cor-fundo-centro:#0b0b0c;--ms-cor-secoes:#0b0b0c;--ms-cor-cards:#18191d;--ms-cor-cabecalho:#111214;--ms-cor-texto:#ffffff;--ms-cor-rodape:#090909;--ms-fonte:Inter,Arial,sans-serif}
 body{font-family:var(--ms-fonte)}
 body.aparencia-ms-ativa{background-color:var(--ms-cor-fundo);color:var(--ms-cor-texto)}
 body.aparencia-ms-ativa header,body.aparencia-ms-ativa nav.menu,body.aparencia-ms-ativa .menu-mobile-ms{background-color:var(--ms-cor-secundaria)}
@@ -15612,49 +15612,46 @@ body.aparencia-ms-ativa .rodape-premium-ms{
   }
 }
 
-/* =====================================================
-   MS - CENTRALIZACAO DEFINITIVA DOS CARDS NO COMPUTADOR
-   Mantem categorias e produtos alinhados ao centro.
-===================================================== */
-@media (min-width: 769px) {
-  /* Cards das categorias */
-  #categoriasHome.categorias-home {
-    width: 100% !important;
-    box-sizing: border-box !important;
-    display: flex !important;
-    flex-wrap: wrap !important;
-    justify-content: center !important;
-    align-items: flex-start !important;
-    gap: 48px !important;
-    padding-left: 24px !important;
-    padding-right: 24px !important;
-    overflow-x: visible !important;
-  }
 
-  #categoriasHome .categoria-item {
-    flex: 0 0 110px !important;
-    min-width: 110px !important;
-  }
-
-  /* Cards dos produtos */
-  .produtos .grid-produtos,
-  section.produtos .grid-produtos,
-  .grid-produtos {
-    width: min(100%, 1100px) !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-    display: grid !important;
-    grid-template-columns: repeat(3, minmax(260px, 320px)) !important;
-    justify-content: center !important;
-    justify-items: stretch !important;
-    gap: 32px !important;
-    overflow: visible !important;
-  }
-
-  .grid-produtos > .card-produto {
-    width: 100% !important;
-    max-width: 320px !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-  }
+/* ===== PERSONALIZAÇÃO COMPLETA DE FUNDOS PELO PAINEL ===== */
+body.aparencia-ms-ativa{
+  background:var(--ms-cor-fundo)!important;
+  color:var(--ms-cor-texto);
+}
+body.aparencia-ms-ativa #app,
+body.aparencia-ms-ativa main,
+body.aparencia-ms-ativa .pagina-loja-ms,
+body.aparencia-ms-ativa .conteudo-principal-ms,
+body.aparencia-ms-ativa .produto-detalhe-page,
+body.aparencia-ms-ativa .pagina-produto,
+body.aparencia-ms-ativa .modal-produto-conteudo{
+  background:var(--ms-cor-fundo-centro)!important;
+}
+body.aparencia-ms-ativa .categorias-home,
+body.aparencia-ms-ativa .produtos,
+body.aparencia-ms-ativa .recomendados-ms,
+body.aparencia-ms-ativa .recomendados-produtos,
+body.aparencia-ms-ativa .conteudo-final,
+body.aparencia-ms-ativa .secao-produtos-ms,
+body.aparencia-ms-ativa .destaques-home-ms,
+body.aparencia-ms-ativa .vitrine-home-ms,
+body.aparencia-ms-ativa .produto-info,
+body.aparencia-ms-ativa .produto-galeria{
+  background:var(--ms-cor-secoes)!important;
+}
+body.aparencia-ms-ativa .card-produto,
+body.aparencia-ms-ativa .produto-card,
+body.aparencia-ms-ativa .recomendado-card-ms,
+body.aparencia-ms-ativa .destaque-home-card-ms,
+body.aparencia-ms-ativa .produto-card-detalhe,
+body.aparencia-ms-ativa .produto-imagem-container{
+  background:var(--ms-cor-cards)!important;
+}
+body.aparencia-ms-ativa header,
+body.aparencia-ms-ativa .header,
+body.aparencia-ms-ativa .topo,
+body.aparencia-ms-ativa nav.menu,
+body.aparencia-ms-ativa .menu-mobile-ms,
+body.aparencia-ms-ativa .submenu-categorias-ms{
+  background:var(--ms-cor-cabecalho)!important;
 }

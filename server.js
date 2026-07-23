@@ -2627,7 +2627,9 @@ app.delete("/banners/:id", async (req, res, next) => {
 const APARENCIA_PADRAO_MS = {
   logo: "logo.png", favicon: "logo.png", corPrincipal: "#d9aa35",
   corSecundaria: "#111214", corBotao: "#d9aa35", corTextoBotao: "#111111",
-  corFundo: "#0b0b0c", corTexto: "#ffffff", corRodape: "#090909",
+  corFundo: "#0b0b0c", corFundoCentro: "#0b0b0c", corSecoes: "#0b0b0c",
+  corCards: "#18191d", corCabecalho: "#111214",
+  corTexto: "#ffffff", corRodape: "#090909",
   fonte: "Inter,Arial,sans-serif"
 };
 function corHexAparenciaMS(valor, padrao) { return /^#[0-9a-f]{6}$/i.test(String(valor || "")) ? String(valor) : padrao; }
@@ -2641,6 +2643,10 @@ function limparAparenciaMS(body = {}) {
     corBotao: corHexAparenciaMS(body.corBotao, APARENCIA_PADRAO_MS.corBotao),
     corTextoBotao: corHexAparenciaMS(body.corTextoBotao, APARENCIA_PADRAO_MS.corTextoBotao),
     corFundo: corHexAparenciaMS(body.corFundo, APARENCIA_PADRAO_MS.corFundo),
+    corFundoCentro: corHexAparenciaMS(body.corFundoCentro, body.corFundo || APARENCIA_PADRAO_MS.corFundoCentro),
+    corSecoes: corHexAparenciaMS(body.corSecoes, body.corFundoCentro || body.corFundo || APARENCIA_PADRAO_MS.corSecoes),
+    corCards: corHexAparenciaMS(body.corCards, APARENCIA_PADRAO_MS.corCards),
+    corCabecalho: corHexAparenciaMS(body.corCabecalho, body.corSecundaria || APARENCIA_PADRAO_MS.corCabecalho),
     corTexto: corHexAparenciaMS(body.corTexto, APARENCIA_PADRAO_MS.corTexto),
     corRodape: corHexAparenciaMS(body.corRodape, APARENCIA_PADRAO_MS.corRodape),
     fonte: fontePermitida.includes(body.fonte) ? body.fonte : APARENCIA_PADRAO_MS.fonte
