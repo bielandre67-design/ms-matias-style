@@ -1,0 +1,29 @@
+ETAPA 5.2 - LOGIN COM SESSAO REAL
+
+1. Substitua no projeto:
+- server.js
+- admin.js
+
+Os demais arquivos acompanham o pacote para manter a versao completa sincronizada.
+
+2. No Render, mantenha a variavel:
+ADMIN_PANEL_TOKEN = sua senha atual do painel
+
+Nao precisa trocar a senha que voce ja escolheu.
+
+Opcional:
+ADMIN_SESSION_MINUTES = 480
+(480 minutos = 8 horas; se nao definir, o sistema usa 8 horas.)
+
+3. Atualize:
+git add .
+git commit -m "Adicionar login com sessao real no painel"
+git push
+
+O que mudou:
+- A senha nao fica mais salva no navegador.
+- Depois do login, o servidor cria uma sessao aleatoria.
+- A sessao expira automaticamente.
+- O botao Sair encerra a sessao no servidor.
+- Rotas administrativas aceitam apenas uma sessao valida.
+- Varias tentativas erradas continuam limitadas.

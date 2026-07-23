@@ -1,64 +1,101 @@
 // SEGURANÇA DO PAINEL MS -----------------------------------------------------
 (function configurarSegurancaPainelMS(){
-  const CHAVE_TOKEN_MS = "ms_admin_token";
+  const CHAVE_SESSAO_MS = "ms_admin_session";
   const fetchOriginalMS = window.fetch.bind(window);
   const apiAdminMS = (location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.port === "5500" || location.protocol === "file:")
     ? "http://localhost:3000"
     : "https://ms-matias-style.onrender.com";
+  let loginEmAndamentoMS = null;
 
-  function tokenMS(){ return sessionStorage.getItem(CHAVE_TOKEN_MS) || ""; }
-  function salvarTokenMS(valor){ sessionStorage.setItem(CHAVE_TOKEN_MS, valor); }
-  function limparTokenMS(){ sessionStorage.removeItem(CHAVE_TOKEN_MS); }
+  function sessaoMS(){ return sessionStorage.getItem(CHAVE_SESSAO_MS) || ""; }
+  function salvarSessaoMS(valor){ sessionStorage.setItem(CHAVE_SESSAO_MS, valor); }
+  function limparSessaoMS(){ sessionStorage.removeItem(CHAVE_SESSAO_MS); }
+
+  async function validarSessaoMS(){
+    const token = sessaoMS();
+    if(!token) return false;
+    try{
+      const resposta = await fetchOriginalMS(`${apiAdminMS}/admin-session`, {
+        headers:{"X-Admin-Session":token}, cache:"no-store"
+      });
+      return resposta.ok;
+    }catch(_){ return false; }
+  }
 
   async function autenticarMS(){
-    let token = tokenMS();
-    while(!token){
-      token = prompt("Digite a senha de segurança do painel MS:") || "";
-      if(!token) return false;
-      salvarTokenMS(token);
-    }
-    const resposta = await fetchOriginalMS(`${apiAdminMS}/admin-auth`, {
-      method:"POST",
-      headers:{"X-Admin-Token":token},
-      cache:"no-store"
-    });
-    if(!resposta.ok){
-      limparTokenMS();
-      alert("Senha incorreta ou segurança ainda não configurada no Render.");
-      return false;
-    }
-    document.documentElement.classList.add("admin-autenticado-ms");
-    return true;
+    if(loginEmAndamentoMS) return loginEmAndamentoMS;
+    loginEmAndamentoMS = (async()=>{
+      if(await validarSessaoMS()){
+        document.documentElement.classList.add("admin-autenticado-ms");
+        return true;
+      }
+      limparSessaoMS();
+      const senha = prompt("Digite a senha do painel MS:") || "";
+      if(!senha) return false;
+      try{
+        const resposta = await fetchOriginalMS(`${apiAdminMS}/admin-auth`, {
+          method:"POST",
+          headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({senha}),
+          cache:"no-store"
+        });
+        const dados = await resposta.json().catch(()=>({}));
+        if(!resposta.ok || !dados.sessionToken){
+          alert(dados.mensagem || "Senha incorreta.");
+          return false;
+        }
+        salvarSessaoMS(dados.sessionToken);
+        document.documentElement.classList.add("admin-autenticado-ms");
+        return true;
+      }catch(_){
+        alert("Não foi possível conectar ao servidor do painel.");
+        return false;
+      }
+    })();
+    try { return await loginEmAndamentoMS; }
+    finally { loginEmAndamentoMS = null; }
   }
 
   window.fetch = async function(input, init={}){
     const url = typeof input === "string" ? input : input?.url || "";
     const destinoAdmin = url.startsWith(apiAdminMS) || url.startsWith("/");
-    if(destinoAdmin){
+    const rotaDeLogin = url.includes("/admin-auth") || url.includes("/admin-session") || url.includes("/admin-logout");
+    if(destinoAdmin && !rotaDeLogin){
       const headers = new Headers(init.headers || (typeof input !== "string" ? input.headers : undefined) || {});
-      const token = tokenMS();
-      if(token) headers.set("X-Admin-Token", token);
+      const token = sessaoMS();
+      if(token) headers.set("X-Admin-Session", token);
       init = {...init, headers};
     }
-    const resposta = await fetchOriginalMS(input, init);
-    if(resposta.status === 401 && !url.includes("/admin-auth")){
-      limparTokenMS();
+    let resposta = await fetchOriginalMS(input, init);
+    if(resposta.status === 401 && destinoAdmin && !rotaDeLogin){
+      limparSessaoMS();
+      document.documentElement.classList.remove("admin-autenticado-ms");
       const ok = await autenticarMS();
       if(ok){
         const headers = new Headers(init.headers || {});
-        headers.set("X-Admin-Token", tokenMS());
-        return fetchOriginalMS(input, {...init, headers});
+        headers.set("X-Admin-Session", sessaoMS());
+        resposta = await fetchOriginalMS(input, {...init, headers});
       }
     }
     return resposta;
   };
 
-  window.sairPainelSeguroMS = function(){
-    limparTokenMS();
+  window.sairPainelSeguroMS = async function(){
+    const token = sessaoMS();
+    try{
+      if(token) await fetchOriginalMS(`${apiAdminMS}/admin-logout`, {
+        method:"POST", headers:{"X-Admin-Session":token}, cache:"no-store"
+      });
+    }catch(_){}
+    limparSessaoMS();
+    document.documentElement.classList.remove("admin-autenticado-ms");
     location.reload();
   };
 
-  document.addEventListener("DOMContentLoaded", autenticarMS);
+  document.addEventListener("DOMContentLoaded", async()=>{
+    const ok = await autenticarMS();
+    if(!ok) document.body.innerHTML = '<main style="min-height:100vh;display:grid;place-items:center;background:#090b10;color:#fff;font-family:Arial;padding:24px;text-align:center"><div><h1>Acesso ao painel cancelado</h1><p>Atualize a página para tentar novamente.</p></div></main>';
+  });
 })();
 
 (function () {

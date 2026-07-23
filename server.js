@@ -6,6 +6,7 @@ require("dotenv").config();
 const { MercadoPagoConfig, Preference } = require("mercadopago");
 const fs = require("fs");
 const path = require("path");
+const crypto = require("crypto");
 const { Pool } = require("pg");
 const multer = require("multer");
 const { v2: cloudinary } = require("cloudinary");
@@ -283,7 +284,7 @@ app.use(cors({
     callback(null, origensPermitidasMS.includes(limpa));
   },
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "X-Admin-Token"],
+  allowedHeaders: ["Content-Type", "X-Admin-Session"],
   maxAge: 86400
 }));
 
@@ -312,29 +313,92 @@ app.use(limiteGeralMS);
 app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: true, limit: "1mb" }));
 
-function tokenAdminValidoMS(req) {
+const sessoesAdminMS = new Map();
+const DURACAO_SESSAO_ADMIN_MS = Math.max(15, Number(process.env.ADMIN_SESSION_MINUTES || 480)) * 60 * 1000;
+
+function limparSessoesExpiradasMS() {
+  const agora = Date.now();
+  for (const [token, sessao] of sessoesAdminMS.entries()) {
+    if (!sessao || sessao.expiraEm <= agora) sessoesAdminMS.delete(token);
+  }
+}
+
+function senhaAdminValidaMS(senhaRecebida) {
   const esperado = String(process.env.ADMIN_PANEL_TOKEN || "").trim();
-  const recebido = String(req.get("X-Admin-Token") || "").trim();
-  if (!esperado || !recebido || esperado.length !== recebido.length) return false;
-  try { return require("crypto").timingSafeEqual(Buffer.from(esperado), Buffer.from(recebido)); }
+  const recebido = String(senhaRecebida || "").trim();
+  if (!esperado || !recebido) return false;
+  const a = Buffer.from(esperado);
+  const b = Buffer.from(recebido);
+  if (a.length !== b.length) return false;
+  try { return crypto.timingSafeEqual(a, b); }
   catch (_) { return false; }
+}
+
+function obterSessaoAdminMS(req) {
+  limparSessoesExpiradasMS();
+  const token = String(req.get("X-Admin-Session") || "").trim();
+  if (!token) return null;
+  const sessao = sessoesAdminMS.get(token);
+  if (!sessao || sessao.expiraEm <= Date.now()) {
+    sessoesAdminMS.delete(token);
+    return null;
+  }
+  // Renova a sessão enquanto o painel está em uso.
+  sessao.expiraEm = Date.now() + DURACAO_SESSAO_ADMIN_MS;
+  return { token, sessao };
 }
 
 function exigirAdminMS(req, res, next) {
   if (!process.env.ADMIN_PANEL_TOKEN) {
     return res.status(503).json({ mensagem: "Defina ADMIN_PANEL_TOKEN no Render para proteger o painel." });
   }
-  if (!tokenAdminValidoMS(req)) {
-    return res.status(401).json({ mensagem: "Acesso administrativo não autorizado." });
+  const autenticacao = obterSessaoAdminMS(req);
+  if (!autenticacao) {
+    return res.status(401).json({ mensagem: "Sessão administrativa inválida ou expirada." });
   }
+  req.adminSessao = autenticacao.sessao;
   next();
 }
 
 app.post("/admin-auth", limiteLoginAdminMS, (req, res) => {
-  if (!process.env.ADMIN_PANEL_TOKEN) return res.status(503).json({ mensagem: "ADMIN_PANEL_TOKEN não configurado." });
-  if (!tokenAdminValidoMS(req)) return res.status(401).json({ mensagem: "Senha administrativa incorreta." });
+  if (!process.env.ADMIN_PANEL_TOKEN) {
+    return res.status(503).json({ mensagem: "ADMIN_PANEL_TOKEN não configurado." });
+  }
+  if (!senhaAdminValidaMS(req.body?.senha)) {
+    return res.status(401).json({ mensagem: "Senha administrativa incorreta." });
+  }
+  limparSessoesExpiradasMS();
+  const token = crypto.randomBytes(32).toString("hex");
+  const agora = Date.now();
+  sessoesAdminMS.set(token, {
+    criadaEm: agora,
+    expiraEm: agora + DURACAO_SESSAO_ADMIN_MS,
+    ip: req.ip,
+    agente: String(req.get("user-agent") || "").slice(0, 250)
+  });
+  res.set("Cache-Control", "no-store");
+  res.json({
+    ok: true,
+    sessionToken: token,
+    expiresInMinutes: Math.round(DURACAO_SESSAO_ADMIN_MS / 60000)
+  });
+});
+
+app.get("/admin-session", (req, res) => {
+  const autenticacao = obterSessaoAdminMS(req);
+  res.set("Cache-Control", "no-store");
+  if (!autenticacao) return res.status(401).json({ autenticado: false });
+  res.json({ autenticado: true, expiraEm: new Date(autenticacao.sessao.expiraEm).toISOString() });
+});
+
+app.post("/admin-logout", (req, res) => {
+  const token = String(req.get("X-Admin-Session") || "").trim();
+  if (token) sessoesAdminMS.delete(token);
+  res.set("Cache-Control", "no-store");
   res.json({ ok: true });
 });
+
+setInterval(limparSessoesExpiradasMS, 10 * 60 * 1000).unref();
 
 const rotasAdminLeituraMS = [
   "/pedidos", "/pedidos-excluidos", "/estoque", "/cupons"
