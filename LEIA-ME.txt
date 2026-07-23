@@ -1,14 +1,13 @@
-ESTOQUE OPÇÃO A
+ETAPA 5 - VISUAL PREMIUM SEM EMOJIS
 
-Substitua no projeto:
-- admin.html
-- admin.css
-- admin.js
+Substitua somente estes arquivos na pasta principal do site:
+- ms-icons.js
+- ms-icons.css
+- style.css
 
-O novo estoque funciona em etapas:
-1. Categoria
-2. Produto
-3. Cor
-4. Tamanho ou numeração
+O novo sistema converte emojis da interface em ícones SVG profissionais, inclusive quando aparecem junto com textos ou são criados dinamicamente pelo JavaScript.
 
-Produtos novos cadastrados continuam aparecendo automaticamente na categoria correta, incluindo P/M/G/GG, numeração 34 a 44, Único e opções personalizadas.
+Depois publique normalmente:
+git add .
+git commit -m "Etapa 5 visual premium sem emojis"
+git push

@@ -1158,7 +1158,13 @@ a{
   }
 
   .btn-detalhe-carrinho::after{
-    content:"🛒";
+    content:"";
+    width:18px;
+    height:18px;
+    border:2px solid currentColor;
+    border-top:0;
+    border-radius:2px;
+    transform:skew(-6deg);
     color:var(--gold);
     font-size:21px;
   }
