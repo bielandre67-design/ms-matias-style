@@ -1,0 +1,9 @@
+ETAPA 4 - BARRA DE BENEFICIOS EM UMA UNICA FAIXA
+
+Arquivos alterados:
+- beneficios-loja.js
+- style.css
+
+Substitua apenas estes dois arquivos na pasta principal do site.
+A barra agora fica em uma faixa unica continua, com movimento de esteira.
+Os beneficios nao aparecem mais como blocos ou abas separados.

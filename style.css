@@ -15473,3 +15473,72 @@ html body .barra-beneficios-topo span b{font-weight:400}
 html body .barra-beneficios-topo[data-ativo="false"]{display:none!important}
 @media(min-width:769px){html body .barra-beneficios-topo[data-desktop="false"]{display:none!important}}
 @media(max-width:768px){html body .barra-beneficios-topo[data-mobile="false"]{display:none!important}}
+
+/* ETAPA 4 - BARRA DE BENEFICIOS EM UMA UNICA FAIXA */
+html body .barra-beneficios-topo{
+  display:block !important;
+  width:100% !important;
+  min-height:42px !important;
+  height:auto !important;
+  padding:0 !important;
+  overflow:hidden !important;
+  background:var(--beneficios-fundo-ms,#000) !important;
+  color:var(--beneficios-texto-ms,#fff) !important;
+  border:0 !important;
+}
+html body .beneficios-esteira-ms{
+  width:100%;
+  overflow:hidden;
+  white-space:nowrap;
+}
+html body .beneficios-trilho-ms{
+  display:flex;
+  width:max-content;
+  min-width:100%;
+  animation:beneficiosEsteiraMS 25s linear infinite;
+  will-change:transform;
+}
+html body .beneficios-grupo-ms{
+  display:flex;
+  align-items:center;
+  flex-shrink:0;
+  min-width:100%;
+  justify-content:space-around;
+  gap:44px;
+  padding:11px 28px;
+  box-sizing:border-box;
+}
+html body .beneficio-faixa-item-ms{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  flex:0 0 auto;
+  font-size:12px;
+  line-height:1;
+  font-weight:850;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+html body .beneficio-faixa-item-ms b{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-size:16px;
+}
+html body .barra-beneficios-topo:hover .beneficios-trilho-ms{
+  animation-play-state:paused;
+}
+@keyframes beneficiosEsteiraMS{
+  from{transform:translateX(0)}
+  to{transform:translateX(-50%)}
+}
+@media(max-width:760px){
+  html body .beneficios-trilho-ms{animation-duration:19s}
+  html body .beneficios-grupo-ms{gap:30px;padding:11px 20px}
+  html body .beneficio-faixa-item-ms{font-size:11px;letter-spacing:.055em}
+}
+@media(prefers-reduced-motion:reduce){
+  html body .beneficios-trilho-ms{animation:none;transform:none}
+  html body .beneficios-grupo-ms[aria-hidden="true"]{display:none}
+  html body .beneficios-grupo-ms{flex-wrap:wrap;white-space:normal;justify-content:center}
+}
