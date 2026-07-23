@@ -115,6 +115,45 @@
     }
   };
 
+
+  const mostrarErroCliente = (mensagem) => {
+    const textoBruto = String(mensagem || '').trim();
+    const texto = /sess[aã]o administrativa|admin/i.test(textoBruto)
+      ? 'Não foi possível consultar o estoque agora. Atualize a página e tente novamente.'
+      : (textoBruto || 'Não foi possível adicionar o produto ao carrinho.');
+
+    try {
+      if (typeof window.avisoCarrinhoPremium === 'function') {
+        window.avisoCarrinhoPremium(texto);
+        return;
+      }
+    } catch (_) {}
+
+    let aviso = document.getElementById('msErroCarrinhoPublico');
+    if (!aviso) {
+      aviso = document.createElement('div');
+      aviso.id = 'msErroCarrinhoPublico';
+      aviso.setAttribute('role', 'alert');
+      Object.assign(aviso.style, {
+        position: 'fixed', right: '18px', bottom: '18px', zIndex: '999999',
+        maxWidth: '360px', padding: '14px 16px', borderRadius: '12px',
+        background: '#171717', color: '#fff', border: '1px solid #d6a928',
+        boxShadow: '0 14px 40px rgba(0,0,0,.45)', fontWeight: '700',
+        fontFamily: 'Arial, sans-serif', lineHeight: '1.35', opacity: '0',
+        transform: 'translateY(10px)', transition: 'opacity .18s ease, transform .18s ease'
+      });
+      document.body.appendChild(aviso);
+    }
+    aviso.textContent = texto;
+    aviso.style.opacity = '1';
+    aviso.style.transform = 'translateY(0)';
+    clearTimeout(window.__msErroCarrinhoTimer);
+    window.__msErroCarrinhoTimer = setTimeout(() => {
+      aviso.style.opacity = '0';
+      aviso.style.transform = 'translateY(10px)';
+    }, 4200);
+  };
+
   const mostrarConfirmacao = (item, botao) => {
     try {
       if (typeof window.animarProdutoParaCarrinho === 'function') window.animarProdutoParaCarrinho(botao);
@@ -164,7 +203,7 @@
       return true;
     } catch (erro) {
       console.error('[MS] Falha ao adicionar ao carrinho:', erro);
-      alert(erro?.message || 'Não foi possível adicionar o produto ao carrinho.');
+      mostrarErroCliente(erro?.message);
       return false;
     } finally {
       botao.disabled = false;

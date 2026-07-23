@@ -486,8 +486,19 @@ const rotasAdminEscritaMS = [
   "/loja-config", "/aparencia-config", "/home-config", "/upload-imagens", "/categorias",
   "/produtos", "/diagnostico-mercado-pago", "/backups", "/auditoria"
 ];
+const rotasPublicasEstoqueMS = new Set([
+  "/estoque/disponivel",
+  "/estoque/validar-carrinho"
+]);
+
 app.use((req, res, next) => {
   const caminho = req.path;
+
+  // A loja precisa consultar disponibilidade e validar o carrinho sem usar
+  // uma sessão administrativa. Somente cadastro/edição/exclusão de estoque
+  // continuam protegidos pelo login do painel.
+  if (rotasPublicasEstoqueMS.has(caminho)) return next();
+
   const escrita = req.method !== "GET" && req.method !== "HEAD" && req.method !== "OPTIONS";
   const leituraProtegida = req.method === "GET" && rotasAdminLeituraMS.some((r) => caminho === r || caminho.startsWith(r + "/"));
   const escritaProtegida = escrita && rotasAdminEscritaMS.some((r) => caminho === r || caminho.startsWith(r + "/"));

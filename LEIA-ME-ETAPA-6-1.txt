@@ -1,0 +1,17 @@
+ETAPA 6.1 - CORREÇÃO DA SESSÃO ADMINISTRATIVA NA LOJA
+
+Arquivos alterados:
+- server.js
+- carrinho-ms.js
+
+Correções:
+1. /estoque/disponivel e /estoque/validar-carrinho voltaram a ser rotas públicas de consulta.
+2. Cadastro, edição e exclusão de estoque continuam protegidos pela sessão do painel.
+3. A loja não exibe mais mensagens de sessão administrativa para clientes.
+4. Erros do carrinho aparecem em um aviso visual dentro da loja, sem caixa nativa do navegador.
+
+Teste recomendado:
+- Selecionar um tamanho e adicionar um produto.
+- Aumentar quantidade no carrinho.
+- Abrir carrinho.html e validar o estoque.
+- Confirmar que o painel ainda exige login para alterar estoque.
