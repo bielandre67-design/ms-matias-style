@@ -1,5 +1,7 @@
 const express = require("express");
 const cors = require("cors");
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
 require("dotenv").config();
 const { MercadoPagoConfig, Preference } = require("mercadopago");
 const fs = require("fs");
@@ -251,9 +253,108 @@ async function iniciarPostgresMS() {
 }
 
 
-app.use(cors());
-app.use(express.json({ limit: "2mb" }));
-app.use(express.urlencoded({ extended: true, limit: "2mb" }));
+app.disable("x-powered-by");
+app.set("trust proxy", 1);
+
+const origensPermitidasMS = String(process.env.ALLOWED_ORIGINS || [
+  process.env.FRONTEND_URL,
+  process.env.BACKEND_URL,
+  "https://ms-matias-style.vercel.app",
+  "https://ms-matias-style.onrender.com",
+  "http://localhost:3000",
+  "http://127.0.0.1:3000",
+  "http://localhost:5500",
+  "http://127.0.0.1:5500"
+].filter(Boolean).join(","))
+  .split(",")
+  .map((origem) => origem.trim().replace(/\/$/, ""))
+  .filter(Boolean);
+
+app.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  referrerPolicy: { policy: "strict-origin-when-cross-origin" }
+}));
+
+app.use(cors({
+  origin(origem, callback) {
+    if (!origem) return callback(null, true);
+    const limpa = origem.replace(/\/$/, "");
+    callback(null, origensPermitidasMS.includes(limpa));
+  },
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "X-Admin-Token"],
+  maxAge: 86400
+}));
+
+const limiteGeralMS = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 600,
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+  message: { mensagem: "Muitas solicitações. Aguarde alguns minutos e tente novamente." }
+});
+const limiteLoginAdminMS = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+  message: { mensagem: "Muitas tentativas de acesso. Aguarde 15 minutos." }
+});
+const limiteCheckoutMS = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  limit: 40,
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+  message: { mensagem: "Muitas tentativas de pagamento. Aguarde alguns minutos." }
+});
+app.use(limiteGeralMS);
+app.use(express.json({ limit: "1mb" }));
+app.use(express.urlencoded({ extended: true, limit: "1mb" }));
+
+function tokenAdminValidoMS(req) {
+  const esperado = String(process.env.ADMIN_PANEL_TOKEN || "").trim();
+  const recebido = String(req.get("X-Admin-Token") || "").trim();
+  if (!esperado || !recebido || esperado.length !== recebido.length) return false;
+  try { return require("crypto").timingSafeEqual(Buffer.from(esperado), Buffer.from(recebido)); }
+  catch (_) { return false; }
+}
+
+function exigirAdminMS(req, res, next) {
+  if (!process.env.ADMIN_PANEL_TOKEN) {
+    return res.status(503).json({ mensagem: "Defina ADMIN_PANEL_TOKEN no Render para proteger o painel." });
+  }
+  if (!tokenAdminValidoMS(req)) {
+    return res.status(401).json({ mensagem: "Acesso administrativo não autorizado." });
+  }
+  next();
+}
+
+app.post("/admin-auth", limiteLoginAdminMS, (req, res) => {
+  if (!process.env.ADMIN_PANEL_TOKEN) return res.status(503).json({ mensagem: "ADMIN_PANEL_TOKEN não configurado." });
+  if (!tokenAdminValidoMS(req)) return res.status(401).json({ mensagem: "Senha administrativa incorreta." });
+  res.json({ ok: true });
+});
+
+const rotasAdminLeituraMS = [
+  "/pedidos", "/pedidos-excluidos", "/estoque", "/cupons"
+];
+const rotasAdminEscritaMS = [
+  "/frete-config", "/frete-teste", "/estoque", "/pedidos", "/pedidos-excluidos",
+  "/excluir-pedido", "/atualizar-status", "/cupons", "/banners", "/pagamento-config",
+  "/loja-config", "/aparencia-config", "/home-config", "/upload-imagens", "/categorias",
+  "/produtos", "/diagnostico-mercado-pago"
+];
+app.use((req, res, next) => {
+  const caminho = req.path;
+  const escrita = req.method !== "GET" && req.method !== "HEAD" && req.method !== "OPTIONS";
+  const leituraProtegida = req.method === "GET" && rotasAdminLeituraMS.some((r) => caminho === r || caminho.startsWith(r + "/"));
+  const escritaProtegida = escrita && rotasAdminEscritaMS.some((r) => caminho === r || caminho.startsWith(r + "/"));
+  if (leituraProtegida || escritaProtegida) return exigirAdminMS(req, res, next);
+  next();
+});
+
+app.use(["/criar-pagamento", "/criar-pagamento-pix", "/checkout-mp"], limiteCheckoutMS);
 
 // Entrega os arquivos da loja e do painel pelo próprio Node.
 // Assim, use http://localhost:3000/admin.html em vez do Live Server.

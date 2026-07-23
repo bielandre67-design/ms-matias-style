@@ -18,6 +18,8 @@
     "mercadopago": "^2.12.1",
     "pg": "^8.22.0",
     "multer": "^2.0.2",
-    "cloudinary": "^2.7.0"
+    "cloudinary": "^2.7.0",
+    "helmet": "^8.1.0",
+    "express-rate-limit": "^8.1.0"
   }
 }

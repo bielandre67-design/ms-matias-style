@@ -1,3 +1,66 @@
+// SEGURANÇA DO PAINEL MS -----------------------------------------------------
+(function configurarSegurancaPainelMS(){
+  const CHAVE_TOKEN_MS = "ms_admin_token";
+  const fetchOriginalMS = window.fetch.bind(window);
+  const apiAdminMS = (location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.port === "5500" || location.protocol === "file:")
+    ? "http://localhost:3000"
+    : "https://ms-matias-style.onrender.com";
+
+  function tokenMS(){ return sessionStorage.getItem(CHAVE_TOKEN_MS) || ""; }
+  function salvarTokenMS(valor){ sessionStorage.setItem(CHAVE_TOKEN_MS, valor); }
+  function limparTokenMS(){ sessionStorage.removeItem(CHAVE_TOKEN_MS); }
+
+  async function autenticarMS(){
+    let token = tokenMS();
+    while(!token){
+      token = prompt("Digite a senha de segurança do painel MS:") || "";
+      if(!token) return false;
+      salvarTokenMS(token);
+    }
+    const resposta = await fetchOriginalMS(`${apiAdminMS}/admin-auth`, {
+      method:"POST",
+      headers:{"X-Admin-Token":token},
+      cache:"no-store"
+    });
+    if(!resposta.ok){
+      limparTokenMS();
+      alert("Senha incorreta ou segurança ainda não configurada no Render.");
+      return false;
+    }
+    document.documentElement.classList.add("admin-autenticado-ms");
+    return true;
+  }
+
+  window.fetch = async function(input, init={}){
+    const url = typeof input === "string" ? input : input?.url || "";
+    const destinoAdmin = url.startsWith(apiAdminMS) || url.startsWith("/");
+    if(destinoAdmin){
+      const headers = new Headers(init.headers || (typeof input !== "string" ? input.headers : undefined) || {});
+      const token = tokenMS();
+      if(token) headers.set("X-Admin-Token", token);
+      init = {...init, headers};
+    }
+    const resposta = await fetchOriginalMS(input, init);
+    if(resposta.status === 401 && !url.includes("/admin-auth")){
+      limparTokenMS();
+      const ok = await autenticarMS();
+      if(ok){
+        const headers = new Headers(init.headers || {});
+        headers.set("X-Admin-Token", tokenMS());
+        return fetchOriginalMS(input, {...init, headers});
+      }
+    }
+    return resposta;
+  };
+
+  window.sairPainelSeguroMS = function(){
+    limparTokenMS();
+    location.reload();
+  };
+
+  document.addEventListener("DOMContentLoaded", autenticarMS);
+})();
+
 (function () {
   const pedidosContainer = document.getElementById("pedidos");
   const totalPedidos = document.getElementById("totalPedidos");
