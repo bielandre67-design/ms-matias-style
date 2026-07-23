@@ -15548,3 +15548,66 @@ html body .barra-beneficios-topo:hover .beneficios-trilho-ms{
   html body .beneficios-grupo-ms[aria-hidden="true"]{display:none}
   html body .beneficios-grupo-ms{flex-wrap:wrap;white-space:normal;justify-content:center}
 }
+
+/* =========================================================
+   CORREÇÃO: FUNDO PERSONALIZADO EM TODA A ÁREA DA LOJA
+   O painel já salvava --ms-cor-fundo, mas blocos centrais
+   mantinham cores fixas e escondiam a alteração.
+   ========================================================= */
+body.aparencia-ms-ativa,
+body.aparencia-ms-ativa #app,
+body.aparencia-ms-ativa main,
+body.aparencia-ms-ativa .pagina-loja-ms,
+body.aparencia-ms-ativa .conteudo-principal-ms{
+  background-color:var(--ms-cor-fundo) !important;
+  color:var(--ms-cor-texto) !important;
+  font-family:var(--ms-fonte) !important;
+}
+
+/* As seções centrais ficam transparentes para mostrar o fundo escolhido. */
+body.aparencia-ms-ativa .categorias-home,
+body.aparencia-ms-ativa .produtos,
+body.aparencia-ms-ativa .recomendados-ms,
+body.aparencia-ms-ativa .recomendados-produtos,
+body.aparencia-ms-ativa .conteudo-final,
+body.aparencia-ms-ativa .secao-produtos-ms,
+body.aparencia-ms-ativa .destaques-home-ms,
+body.aparencia-ms-ativa .vitrine-home-ms{
+  background-color:transparent !important;
+  background-image:none !important;
+}
+
+/* Mantém os cards destacados sem bloquear o fundo geral. */
+body.aparencia-ms-ativa .card-produto,
+body.aparencia-ms-ativa .produto-card,
+body.aparencia-ms-ativa .recomendado-card-ms{
+  background-color:color-mix(in srgb, var(--ms-cor-secundaria) 88%, transparent) !important;
+  color:var(--ms-cor-texto) !important;
+}
+
+/* Cabeçalho e menus obedecem à cor secundária do painel. */
+body.aparencia-ms-ativa .header,
+body.aparencia-ms-ativa .topo,
+body.aparencia-ms-ativa header,
+body.aparencia-ms-ativa nav.menu,
+body.aparencia-ms-ativa .menu-mobile-ms,
+body.aparencia-ms-ativa .submenu-categorias-ms{
+  background-color:var(--ms-cor-secundaria) !important;
+}
+
+/* Rodapé obedece à cor própria configurada. */
+body.aparencia-ms-ativa footer,
+body.aparencia-ms-ativa .rodape,
+body.aparencia-ms-ativa .footer,
+body.aparencia-ms-ativa .rodape-premium-ms{
+  background-color:var(--ms-cor-rodape) !important;
+}
+
+/* Compatibilidade para navegadores sem color-mix. */
+@supports not (background-color:color-mix(in srgb, #000 50%, transparent)){
+  body.aparencia-ms-ativa .card-produto,
+  body.aparencia-ms-ativa .produto-card,
+  body.aparencia-ms-ativa .recomendado-card-ms{
+    background-color:var(--ms-cor-secundaria) !important;
+  }
+}
