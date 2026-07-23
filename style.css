@@ -7894,24 +7894,9 @@ body{
 .avaliacao-produto span:hover{
   transform:scale(1.15);
 }
-
 .premium-titulo{
-  width:100%;
-  max-width:1400px;
-  margin:0 auto 50px;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  text-align:center;
+  margin-bottom:50px;
 }
-.premium-titulo p,
-.premium-titulo h2,
-.premium-titulo span{
-  width:100%;
-  text-align:center;
-}
-
 
 .premium-titulo p{
   color:#d4af37;
@@ -15624,5 +15609,52 @@ body.aparencia-ms-ativa .rodape-premium-ms{
   body.aparencia-ms-ativa .produto-card,
   body.aparencia-ms-ativa .recomendado-card-ms{
     background-color:var(--ms-cor-secundaria) !important;
+  }
+}
+
+/* =====================================================
+   MS - CENTRALIZACAO DEFINITIVA DOS CARDS NO COMPUTADOR
+   Mantem categorias e produtos alinhados ao centro.
+===================================================== */
+@media (min-width: 769px) {
+  /* Cards das categorias */
+  #categoriasHome.categorias-home {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    align-items: flex-start !important;
+    gap: 48px !important;
+    padding-left: 24px !important;
+    padding-right: 24px !important;
+    overflow-x: visible !important;
+  }
+
+  #categoriasHome .categoria-item {
+    flex: 0 0 110px !important;
+    min-width: 110px !important;
+  }
+
+  /* Cards dos produtos */
+  .produtos .grid-produtos,
+  section.produtos .grid-produtos,
+  .grid-produtos {
+    width: min(100%, 1100px) !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(260px, 320px)) !important;
+    justify-content: center !important;
+    justify-items: stretch !important;
+    gap: 32px !important;
+    overflow: visible !important;
+  }
+
+  .grid-produtos > .card-produto {
+    width: 100% !important;
+    max-width: 320px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
   }
 }
