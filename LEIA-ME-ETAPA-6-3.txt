@@ -1,0 +1,17 @@
+ETAPA 6.3 - EDITOR VISUAL DA PÁGINA DO PRODUTO
+
+Substitua os arquivos:
+- admin.html
+- index.html
+- server.js
+
+Adicione os arquivos novos:
+- editor-produto-admin.js
+- editor-produto-loja.js
+
+Depois:
+git add .
+git commit -m "Adicionar editor visual da pagina do produto"
+git push
+
+Teste primeiro mudando apenas uma cor ou o arredondamento. Use Ctrl+F5 na loja após publicar.

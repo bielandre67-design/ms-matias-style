@@ -235,6 +235,7 @@ html, body { min-height: 100%; }
       <button class="ms-tab" onclick="abrirAbaMS('vitrineAba', this)"><span>▧</span> Vitrine do site</button>
       <button class="ms-tab" onclick="abrirAbaMS('destaquesAba', this)"><span>★</span> Destaques da home</button>
       <button class="ms-tab" onclick="abrirAbaMS('aparenciaAba', this)"><span>🎨</span> Personalizar loja</button>
+      <button class="ms-tab" onclick="abrirAbaMS('editorProdutoAba', this); carregarEditorProdutoMS()"><span>◈</span> Página do produto</button>
       <button class="ms-tab" onclick="abrirAbaMS('beneficiosAba', this); carregarBeneficiosMS()"><span>✦</span> Barra de benefícios</button>
       <button class="ms-tab" onclick="abrirAbaMS('integracoesAba', this); carregarIntegracoesMS(); carregarPainelPagamentosMS()"><span>🔗</span> Integrações</button>
       <button class="ms-tab" onclick="abrirAbaMS('freteAba', this); carregarConfigFreteMS()"><span>🚚</span> Frete</button>
@@ -646,6 +647,23 @@ html, body { min-height: 100%; }
 
 
 
+
+    <section id="editorProdutoAba" class="ms-painel editor-produto-ms">
+      <div class="ep-topo-ms"><div><span>EDITOR VISUAL</span><h2>Página do produto</h2><p>Altere o visual dos detalhes do produto sem abrir o código. As mudanças só chegam à loja ao clicar em publicar.</p></div><button type="button" onclick="carregarEditorProdutoMS(true)">↻ Recarregar</button></div>
+      <div class="ep-layout-ms">
+        <div class="ep-controles-ms">
+          <article><h3>Estrutura</h3><label class="ep-switch-ms"><span>Editor ativo no site</span><input id="epAtivoMS" type="checkbox" checked></label><label>Fundo da página<input id="epFundoPaginaMS" type="color" value="#ffffff"></label><label>Largura máxima do conteúdo <output id="epLarguraConteudoOutMS">1540 px</output><input id="epLarguraConteudoMS" type="range" min="900" max="1800" value="1540"></label></article>
+          <article><h3>Imagem</h3><label>Largura no computador <output id="epImagemLarguraOutMS">555 px</output><input id="epImagemLarguraMS" type="range" min="320" max="760" value="555"></label><label>Arredondamento <output id="epImagemRaioOutMS">18 px</output><input id="epImagemRaioMS" type="range" min="0" max="48" value="18"></label><label class="ep-switch-ms"><span>Sombra na imagem</span><input id="epImagemSombraMS" type="checkbox" checked></label><label class="ep-switch-ms"><span>Mostrar miniaturas</span><input id="epMostrarMiniaturasMS" type="checkbox" checked></label></article>
+          <article><h3>Textos</h3><div class="ep-duplo-ms"><label>Cor do título<input id="epTituloCorMS" type="color" value="#050505"></label><label>Cor do preço<input id="epPrecoCorMS" type="color" value="#050505"></label></div><label>Tamanho do título <output id="epTituloTamanhoOutMS">42 px</output><input id="epTituloTamanhoMS" type="range" min="24" max="72" value="42"></label><label>Tamanho do preço <output id="epPrecoTamanhoOutMS">56 px</output><input id="epPrecoTamanhoMS" type="range" min="30" max="84" value="56"></label></article>
+          <article><h3>Botões</h3><div class="ep-duplo-ms"><label>Comprar agora<input id="epComprarFundoMS" type="color" value="#e7ba36"></label><label>Texto comprar<input id="epComprarTextoMS" type="color" value="#080808"></label><label>Adicionar ao carrinho<input id="epCarrinhoFundoMS" type="color" value="#ffffff"></label><label>Texto carrinho<input id="epCarrinhoTextoMS" type="color" value="#080808"></label></div><label>Arredondamento <output id="epBotaoRaioOutMS">18 px</output><input id="epBotaoRaioMS" type="range" min="0" max="40" value="18"></label></article>
+          <article><h3>Variações e informações</h3><label>Formato dos tamanhos<select id="epTamanhoFormatoMS"><option value="quadrado">Quadrado</option><option value="arredondado">Arredondado</option><option value="pilula">Pílula</option></select></label><label>Formato das cores<select id="epCorFormatoMS"><option value="circulo">Círculo</option><option value="quadrado">Quadrado</option></select></label><div class="ep-checks-ms"><label><input id="epMostrarAvaliacaoMS" type="checkbox" checked> Avaliações</label><label><input id="epMostrarParcelamentoMS" type="checkbox" checked> Parcelamento</label><label><input id="epMostrarQuantidadeMS" type="checkbox" checked> Quantidade</label><label><input id="epMostrarBreadcrumbMS" type="checkbox" checked> Caminho do produto</label></div></article>
+          <article><h3>Celular</h3><label>Largura da imagem <output id="epMobileImagemOutMS">100%</output><input id="epMobileImagemMS" type="range" min="70" max="100" value="100"></label><label>Tamanho do título <output id="epMobileTituloOutMS">29 px</output><input id="epMobileTituloMS" type="range" min="20" max="44" value="29"></label><label>Tamanho do preço <output id="epMobilePrecoOutMS">40 px</output><input id="epMobilePrecoMS" type="range" min="28" max="58" value="40"></label></article>
+        </div>
+        <aside class="ep-preview-wrap-ms"><div class="ep-preview-head-ms"><strong>Prévia aproximada</strong><span>Computador</span></div><div id="epPreviewMS" class="ep-preview-ms"><div class="ep-preview-img-ms">IMAGEM DO PRODUTO</div><div class="ep-preview-info-ms"><small>MS MATIAS STYLE</small><h3>Moletom Rosa MS</h3><div class="ep-preview-stars-ms">★★★★★</div><strong class="ep-preview-preco-ms">R$ 99,90</strong><p class="ep-preview-parcela-ms">💳 Até 3x sem juros</p><div class="ep-preview-tamanhos-ms"><i>P</i><i>M</i><i>G</i><i>GG</i></div><button class="ep-preview-comprar-ms">⚡ COMPRAR AGORA</button><button class="ep-preview-carrinho-ms">🛍 ADICIONAR AO CARRINHO</button></div></div></aside>
+      </div>
+      <div class="ep-rodape-ms"><span id="epStatusMS"></span><div><button type="button" onclick="restaurarEditorProdutoPadraoMS()">Restaurar padrão</button><button id="epSalvarMS" class="ep-publicar-ms" type="button" onclick="salvarEditorProdutoMS()">Salvar e publicar no site</button></div></div>
+    </section>
+
     <section id="beneficiosAba" class="ms-painel beneficios-config-ms">
       <div class="beneficios-topo-ms"><div><h2>Barra de benefícios</h2><p>Edite os avisos exibidos no topo dos detalhes dos produtos. Ao salvar, o site é atualizado automaticamente.</p></div><button type="button" onclick="carregarBeneficiosMS()">↻ Atualizar</button></div>
       <div class="beneficios-grade-config-ms">
@@ -883,7 +901,7 @@ function abrirAbaMS(id, btn){
   document.getElementById(id)?.classList.add('ativa');
   document.querySelectorAll('.ms-tab').forEach(b => b.classList.remove('ativa'));
   btn?.classList.add('ativa');
-  const titulos = {visao:'Dashboard', vitrineAba:'Vitrine do site', destaquesAba:'Destaques da home', aparenciaAba:'Personalizar loja', beneficiosAba:'Barra de benefícios', integracoesAba:'Integrações', produtosAba:'Produtos', precosAba:'Preços', estoqueAba:'Estoque', pedidosAba:'Pedidos', cuponsAba:'Cupons', relatoriosAba:'Relatórios', backupsAba:'Backups', auditoriaAba:'Auditoria', configuracoesAba:'Configurações'};
+  const titulos = {visao:'Dashboard', vitrineAba:'Vitrine do site', destaquesAba:'Destaques da home', aparenciaAba:'Personalizar loja', editorProdutoAba:'Página do produto', beneficiosAba:'Barra de benefícios', integracoesAba:'Integrações', produtosAba:'Produtos', precosAba:'Preços', estoqueAba:'Estoque', pedidosAba:'Pedidos', cuponsAba:'Cupons', relatoriosAba:'Relatórios', backupsAba:'Backups', auditoriaAba:'Auditoria', configuracoesAba:'Configurações'};
   const titulo = document.getElementById('tituloPaginaMS');
   if(titulo) titulo.innerText = titulos[id] || 'Painel ADM';
   if(id === 'vitrineAba') carregarBannersMS();
@@ -1665,5 +1683,6 @@ async function salvarTodosPrecosMS(){
 }
 </script>
 <script src="beneficios-admin.js?v=20260722-1"></script>
+<script src="editor-produto-admin.js?v=20260723-1"></script>
 </body>
 </html>
