@@ -516,7 +516,10 @@ function limparMedidasCategoriaFreteMS(entrada = {}) {
 }
 
 const FRETE_PADRAO_MS = {
+  entregaAtiva: true, retiradaAtiva: true,
+  cepOrigem: '90640130', diasPreparacao: 1,
   gratisAtivo: false, gratisAcima: 199.90, fixoAtivo: false, fixoValor: 15,
+  pesoPadrao: 0.5, alturaPadrao: 6, larguraPadrao: 28, comprimentoPadrao: 35,
   medidasCategorias: {},
   regioes: {
     sul:{ativo:true,min:3,max:7}, sudeste:{ativo:true,min:4,max:8},
@@ -524,16 +527,31 @@ const FRETE_PADRAO_MS = {
   }
 };
 const UFS_REGIAO_MS={RS:'sul',SC:'sul',PR:'sul',SP:'sudeste',RJ:'sudeste',MG:'sudeste',ES:'sudeste',GO:'centroOeste',MT:'centroOeste',MS:'centroOeste',DF:'centroOeste',BA:'nordeste',SE:'nordeste',AL:'nordeste',PE:'nordeste',PB:'nordeste',RN:'nordeste',CE:'nordeste',PI:'nordeste',MA:'nordeste',AM:'norte',PA:'norte',AC:'norte',RO:'norte',RR:'norte',AP:'norte',TO:'norte'};
-function limparFreteConfigMS(b={}){const regioes={};for(const k of Object.keys(FRETE_PADRAO_MS.regioes)){const r=b.regioes?.[k]||{};const min=Math.max(1,Math.min(60,Number(r.min||FRETE_PADRAO_MS.regioes[k].min)));const max=Math.max(min,Math.min(60,Number(r.max||FRETE_PADRAO_MS.regioes[k].max)));regioes[k]={ativo:r.ativo!==false,min,max};}return {gratisAtivo:b.gratisAtivo===true,gratisAcima:Math.max(0,Number(b.gratisAcima||FRETE_PADRAO_MS.gratisAcima)),fixoAtivo:b.fixoAtivo===true,fixoValor:Math.max(0,Number(b.fixoValor||FRETE_PADRAO_MS.fixoValor)),medidasCategorias:limparMedidasCategoriaFreteMS(b.medidasCategorias||{}),regioes};}
+function limparFreteConfigMS(b={}){const regioes={};for(const k of Object.keys(FRETE_PADRAO_MS.regioes)){const r=b.regioes?.[k]||{};const min=Math.max(1,Math.min(60,Number(r.min||FRETE_PADRAO_MS.regioes[k].min)));const max=Math.max(min,Math.min(60,Number(r.max||FRETE_PADRAO_MS.regioes[k].max)));regioes[k]={ativo:r.ativo!==false,min,max};}const cepOrigem=apenasNumerosMS(b.cepOrigem||FRETE_PADRAO_MS.cepOrigem).slice(0,8);return {entregaAtiva:b.entregaAtiva!==false,retiradaAtiva:b.retiradaAtiva!==false,cepOrigem:cepOrigem.length===8?cepOrigem:FRETE_PADRAO_MS.cepOrigem,diasPreparacao:Math.max(0,Math.min(30,Number(b.diasPreparacao??FRETE_PADRAO_MS.diasPreparacao))),gratisAtivo:b.gratisAtivo===true,gratisAcima:Math.max(0,Number(b.gratisAcima||FRETE_PADRAO_MS.gratisAcima)),fixoAtivo:b.fixoAtivo===true,fixoValor:Math.max(0,Number(b.fixoValor||FRETE_PADRAO_MS.fixoValor)),pesoPadrao:Math.max(.001,Number(b.pesoPadrao||FRETE_PADRAO_MS.pesoPadrao)),alturaPadrao:Math.max(1,Number(b.alturaPadrao||FRETE_PADRAO_MS.alturaPadrao)),larguraPadrao:Math.max(1,Number(b.larguraPadrao||FRETE_PADRAO_MS.larguraPadrao)),comprimentoPadrao:Math.max(1,Number(b.comprimentoPadrao||FRETE_PADRAO_MS.comprimentoPadrao)),medidasCategorias:limparMedidasCategoriaFreteMS(b.medidasCategorias||{}),regioes};}
 async function obterFreteConfigMS(){if(!pool)return FRETE_PADRAO_MS;const r=await pool.query('SELECT dados FROM app_state WHERE chave=$1',['frete_config']);return limparFreteConfigMS(r.rows[0]?.dados||FRETE_PADRAO_MS);}
 async function descobrirRegiaoCepMS(cep){const r=await fetch(`https://viacep.com.br/ws/${cep}/json/`);const d=await r.json();if(!r.ok||d.erro||!UFS_REGIAO_MS[d.uf]){const e=new Error('Não foi possível identificar a região desse CEP.');e.statusCode=400;throw e;}return {uf:d.uf,regiao:UFS_REGIAO_MS[d.uf]};}
 app.get('/frete-config',async(req,res,next)=>{try{res.json(await obterFreteConfigMS());}catch(e){next(e);}});
 app.put('/frete-config',async(req,res,next)=>{if(!pool)return res.status(503).json({mensagem:'PostgreSQL não configurado.'});try{const config=limparFreteConfigMS(req.body||{});if(!Object.values(config.regioes).some(r=>r.ativo))return res.status(400).json({mensagem:'Ative pelo menos uma região atendida.'});await pool.query(`INSERT INTO app_state(chave,dados,atualizado_em) VALUES($1,$2::jsonb,NOW()) ON CONFLICT(chave) DO UPDATE SET dados=EXCLUDED.dados, atualizado_em=NOW()`,['frete_config',JSON.stringify(config)]);res.json({ok:true,config});}catch(e){next(e);}});
 
+
+app.post('/frete-teste', async (req,res)=>{
+  try{
+    const cep=apenasNumerosMS(req.body?.cep);
+    if(cep.length!==8) return res.status(400).json({ok:false,mensagem:'Informe um CEP válido com 8 números.'});
+    const config=await obterFreteConfigMS();
+    const destino=await descobrirRegiaoCepMS(cep);
+    const reg=config.regioes[destino.regiao];
+    if(!config.entregaAtiva) return res.status(403).json({ok:false,mensagem:'As entregas estão desativadas no painel.'});
+    if(!reg?.ativo) return res.status(400).json({ok:false,mensagem:`A região de ${destino.uf} está desativada.`});
+    return res.json({ok:true,uf:destino.uf,regiao:destino.regiao,cepOrigem:config.cepOrigem,prazoMin:Number(reg.min)+Number(config.diasPreparacao||0),prazoMax:Number(reg.max)+Number(config.diasPreparacao||0),melhorEnvioConfigurado:!!process.env.MELHOR_ENVIO_TOKEN});
+  }catch(e){return res.status(e.statusCode||500).json({ok:false,mensagem:e.message||'Falha ao testar o frete.'});}
+});
+
 app.post("/calcular-frete", async (req, res) => {
   try {
     const cep = apenasNumerosMS(req.body?.cep);
-    const cepOrigem = apenasNumerosMS(process.env.CEP_ORIGEM || "90640130");
+    const configFrete = await obterFreteConfigMS();
+    const cepOrigem = apenasNumerosMS(configFrete.cepOrigem || process.env.CEP_ORIGEM || "90640130");
     const itensRecebidos = Array.isArray(req.body?.items) ? req.body.items : [];
 
     if (cep.length !== 8) {
@@ -550,14 +568,16 @@ app.post("/calcular-frete", async (req, res) => {
       return res.status(400).json({ erro: true, mensagem: "O carrinho está vazio." });
     }
 
-    const configFrete = await obterFreteConfigMS();
+    if (!configFrete.entregaAtiva) {
+      return res.status(403).json({ erro:true, codigo:'ENTREGA_DESATIVADA', mensagem:'As entregas estão temporariamente desativadas. Escolha retirada no local.' });
+    }
     const destino = await descobrirRegiaoCepMS(cep);
     const regraRegiao = configFrete.regioes[destino.regiao];
     if (!regraRegiao?.ativo) {
       return res.status(400).json({ erro:true, codigo:"REGIAO_NAO_ATENDIDA", mensagem:`No momento, não realizamos entregas para ${destino.uf}.` });
     }
     const subtotalFrete = itensRecebidos.reduce((t,item)=>t + Math.max(0,Number(item?.preco||item?.price||0))*Math.max(1,Number(item?.quantidade||item?.quantity||1)),0);
-    const prazoPersonalizado = Math.max(regraRegiao.min, regraRegiao.max);
+    const prazoPersonalizado = Math.max(regraRegiao.min, regraRegiao.max) + Math.max(0, Number(configFrete.diasPreparacao||0));
     if (configFrete.gratisAtivo && subtotalFrete >= configFrete.gratisAcima) {
       return res.json([{id:"ms-gratis",name:"Frete grátis",price:"0.00",delivery_time:prazoPersonalizado,company:{name:"MS Matias Style"},custom:true,free:true}]);
     }

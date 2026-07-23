@@ -8319,3 +8319,25 @@ document.addEventListener('DOMContentLoaded',()=>setTimeout(carregarConfigFreteL
   window.addEventListener('pointerdown',bloquearMetodoDesativadoMS,true);
   window.carregarConfigPagamentoCheckoutMS=carregarConfigPagamentoCheckoutMS;
 })();
+
+
+/* ETAPA 4.4 - regras de entrega publicadas pelo painel */
+(function(){
+  const API=(location.hostname==='localhost'||location.hostname==='127.0.0.1')?'http://127.0.0.1:3000':'https://ms-matias-style.onrender.com';
+  async function aplicarConfigFreteCheckoutMS(){
+    try{
+      const r=await fetch(`${API}/frete-config?t=${Date.now()}`,{cache:'no-store'});const c=await r.json();if(!r.ok)return;
+      document.querySelectorAll('input[type="radio"]').forEach(input=>{
+        const v=String(input.value||'').toLowerCase(), n=String(input.name||'').toLowerCase();
+        if(!n.includes('entrega')&&!n.includes('delivery'))return;
+        const label=input.closest('label')||input.parentElement;
+        const retirada=v.includes('retirada')||v.includes('pickup')||v.includes('local');
+        if(label)label.style.display=(retirada?c.retiradaAtiva===false:c.entregaAtiva===false)?'none':'';
+      });
+      if(c.entregaAtiva===false&&c.retiradaAtiva!==false){localStorage.setItem('tipoEntregaMS','retirada');}
+      if(c.retiradaAtiva===false&&c.entregaAtiva!==false){localStorage.setItem('tipoEntregaMS','entrega');}
+      window.configFreteCheckoutMS=c;
+    }catch(e){}
+  }
+  document.addEventListener('DOMContentLoaded',aplicarConfigFreteCheckoutMS);window.addEventListener('focus',aplicarConfigFreteCheckoutMS);
+})();

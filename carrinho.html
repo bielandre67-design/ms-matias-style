@@ -299,5 +299,27 @@
 })();
 </script>
 
+
+<script>
+/* ETAPA 4.4 - checkout obedece às configurações de entrega */
+(function(){
+  const API=(location.hostname==='localhost'||location.hostname==='127.0.0.1')?'http://127.0.0.1:3000':'https://ms-matias-style.onrender.com';
+  async function aplicarFretePainelMS(){
+    try{
+      const r=await fetch(`${API}/frete-config?t=${Date.now()}`,{cache:'no-store'}); const c=await r.json(); if(!r.ok)return;
+      const entrega=document.getElementById('deliveryModeShipping');
+      const retirada=document.getElementById('deliveryModePickup');
+      const labelEntrega=entrega?.closest('label'); const labelRetirada=retirada?.closest('label');
+      if(labelEntrega) labelEntrega.style.display=c.entregaAtiva===false?'none':'';
+      if(labelRetirada) labelRetirada.style.display=c.retiradaAtiva===false?'none':'';
+      if(c.entregaAtiva===false && c.retiradaAtiva!==false && retirada){retirada.checked=true; if(typeof setDeliveryMode==='function')setDeliveryMode('pickup');}
+      if(c.retiradaAtiva===false && c.entregaAtiva!==false && entrega){entrega.checked=true; if(typeof setDeliveryMode==='function')setDeliveryMode('shipping');}
+      window.configFreteCheckoutMS=c;
+    }catch(e){}
+  }
+  document.addEventListener('DOMContentLoaded',aplicarFretePainelMS); window.addEventListener('focus',aplicarFretePainelMS);
+})();
+</script>
+
 </body>
 </html>

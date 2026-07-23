@@ -536,6 +536,17 @@ html, body { min-height: 100%; }
       <div class="titulo-secao"><div><h2>Configurações de frete</h2><p>Controle as regras de entrega sem abrir o VS Code.</p></div></div>
       <div class="frete-admin-grid-ms">
         <section class="frete-admin-card-ms">
+          <div class="frete-admin-head-ms"><span>🚚</span><div><h3>Entrega</h3><p>Ative ou pause as entregas pelo site.</p></div><label class="switch-frete-ms"><input id="freteEntregaAtivaMS" type="checkbox"><i></i></label></div>
+          <label class="frete-campo-ms">CEP de origem<input id="freteCepOrigemMS" class="frete-input-ms" inputmode="numeric" maxlength="9" placeholder="00000-000"></label>
+          <label class="frete-campo-ms">Dias de preparação<input id="freteDiasPreparacaoMS" class="frete-input-ms" type="number" min="0" max="30" value="1"></label>
+        </section>
+        <section class="frete-admin-card-ms">
+          <div class="frete-admin-head-ms"><span>🏪</span><div><h3>Retirada no local</h3><p>Permita que o cliente retire sem pagar frete.</p></div><label class="switch-frete-ms"><input id="freteRetiradaAtivaMS" type="checkbox"><i></i></label></div>
+          <small class="frete-ajuda-ms">Quando ativada, a opção aparece no checkout e o endereço é combinado pelo WhatsApp.</small>
+        </section>
+      </div>
+      <div class="frete-admin-grid-ms">
+        <section class="frete-admin-card-ms">
           <div class="frete-admin-head-ms"><span>🎁</span><div><h3>Frete grátis</h3><p>Libere a entrega grátis quando o carrinho atingir um valor.</p></div><label class="switch-frete-ms"><input id="freteGratisAtivoMS" type="checkbox"><i></i></label></div>
           <label class="frete-campo-ms">Valor mínimo do pedido <div class="input-dinheiro-ms"><span>R$</span><input id="freteGratisValorMS" type="number" min="0" step="0.01" value="199.90"></div></label>
         </section>
@@ -548,6 +559,20 @@ html, body { min-height: 100%; }
       <section class="frete-admin-card-ms frete-regioes-card-ms">
         <div class="frete-card-title-ms"><div><h3>📍 Regiões atendidas e prazos</h3><p>Ative as regiões em que a loja entrega e escolha o prazo exibido ao cliente.</p></div><button type="button" class="btn-mini-frete-ms" onclick="marcarTodasRegioesFreteMS(true)">Marcar todas</button></div>
         <div id="freteRegioesMS" class="frete-regioes-grid-ms"></div>
+      </section>
+      <section class="frete-admin-card-ms frete-regioes-card-ms">
+        <div class="frete-card-title-ms"><div><h3>📦 Medidas padrão da embalagem</h3><p>Usadas quando o produto ou a categoria não tiver medidas próprias.</p></div></div>
+        <div class="frete-medida-grid-ms frete-padrao-grid-ms">
+          <label>Peso <small>kg</small><input id="fretePesoPadraoMS" type="number" min="0.001" step="0.001"></label>
+          <label>Altura <small>cm</small><input id="freteAlturaPadraoMS" type="number" min="1" step="0.1"></label>
+          <label>Largura <small>cm</small><input id="freteLarguraPadraoMS" type="number" min="1" step="0.1"></label>
+          <label>Comprimento <small>cm</small><input id="freteComprimentoPadraoMS" type="number" min="1" step="0.1"></label>
+        </div>
+      </section>
+      <section class="frete-admin-card-ms frete-regioes-card-ms">
+        <div class="frete-card-title-ms"><div><h3>🧪 Testar CEP</h3><p>Confirme se a entrega está liberada antes de publicar.</p></div></div>
+        <div class="frete-teste-linha-ms"><input id="freteTesteCepMS" class="frete-input-ms" inputmode="numeric" maxlength="9" placeholder="Digite um CEP"><button type="button" class="btn-mini-frete-ms" onclick="testarCepFreteMS()">Testar frete</button></div>
+        <p id="freteTesteResultadoMS" class="frete-teste-resultado-ms"></p>
       </section>
       <section class="frete-admin-card-ms frete-regioes-card-ms">
         <div class="frete-card-title-ms"><div><h3>📐 Dimensões por categoria</h3><p>Cadastre uma vez. Produtos da mesma categoria usarão automaticamente estas medidas no Melhor Envio.</p></div><button type="button" class="btn-mini-frete-ms" onclick="carregarCategoriasMedidasFreteMS(true)">Atualizar categorias</button></div>
