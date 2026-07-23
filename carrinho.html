@@ -273,5 +273,31 @@
   handleReturn();
 })();
 </script>
+
+<script>
+/* ETAPA 4.3 - carrinho mobile obedece ao painel */
+(function(){
+  const API=(location.hostname==='localhost'||location.hostname==='127.0.0.1')?'http://127.0.0.1:3000':'https://ms-matias-style.onrender.com';
+  const padrao={pixAtivo:true,cartaoAtivo:true,maxParcelas:12,valorMinimo:0};
+  let cfg={...padrao};
+  function aplicar(){
+    const pix=[document.getElementById('payPixButton'),document.getElementById('msPayPix')].filter(Boolean);
+    const cartao=[document.getElementById('payCardButton'),document.getElementById('msPayCard')].filter(Boolean);
+    pix.forEach(el=>{el.hidden=!cfg.pixAtivo;el.style.display=cfg.pixAtivo?'':'none';});
+    cartao.forEach(el=>{el.hidden=!cfg.cartaoAtivo;el.style.display=cfg.cartaoAtivo?'':'none';});
+    document.querySelectorAll('.ms-note,.ms-pay-box p').forEach(el=>{
+      if(cfg.pixAtivo&&cfg.cartaoAtivo)el.textContent='Escolha uma opção. No PIX, o QR Code abre aqui mesmo e a confirmação acontece automaticamente.';
+      else if(cfg.pixAtivo)el.textContent='O PIX está disponível e será confirmado automaticamente nesta tela.';
+      else if(cfg.cartaoAtivo)el.textContent='O pagamento será feito no ambiente seguro do Mercado Pago.';
+      else el.textContent='Pagamento temporariamente indisponível.';
+    });
+  }
+  async function carregar(){try{const r=await fetch(`${API}/pagamento-config?t=${Date.now()}`,{cache:'no-store'});const d=await r.json();if(r.ok)cfg={...padrao,...d};}catch(e){}aplicar();window.configPagamentoCheckoutMS=cfg;}
+  const obs=new MutationObserver(aplicar);
+  document.addEventListener('DOMContentLoaded',()=>{carregar();obs.observe(document.body,{childList:true,subtree:true});});
+  window.addEventListener('focus',carregar);
+})();
+</script>
+
 </body>
 </html>

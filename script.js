@@ -8244,3 +8244,78 @@ document.addEventListener('DOMContentLoaded',()=>setTimeout(carregarConfigFreteL
   document.head.appendChild(estilo);
   window.atualizarEstoqueDetalheMS = atualizarDetalhe;
 })();
+
+
+/* =========================================================
+   ETAPA 4.3 - CHECKOUT OBEDECE AO PAINEL DE PAGAMENTOS
+   ========================================================= */
+(function(){
+  "use strict";
+  const API_CONFIG_PAG_MS=(location.hostname==="localhost"||location.hostname==="127.0.0.1")
+    ? "http://127.0.0.1:3000"
+    : "https://ms-matias-style.onrender.com";
+  const PADRAO_CONFIG_PAG_MS={pixAtivo:true,cartaoAtivo:true,boletoAtivo:false,maxParcelas:12,valorMinimo:0};
+  let configPagamentoCheckoutMS={...PADRAO_CONFIG_PAG_MS};
+
+  function textoElementoMS(el){return String(el?.textContent||"").replace(/\s+/g," ").trim().toLowerCase();}
+  function ehBotaoPixMS(el){const t=textoElementoMS(el);return t.includes("pix")&&!t.includes("copiar")&&!t.includes("pague com pix");}
+  function ehBotaoCartaoMS(el){const t=textoElementoMS(el);return t.includes("cartão")||t.includes("cartao")||t.includes("outras opções")||t.includes("outras opcoes");}
+
+  function aplicarConfigPagamentoCheckoutMS(){
+    const c=configPagamentoCheckoutMS||PADRAO_CONFIG_PAG_MS;
+    const candidatos=[...document.querySelectorAll('button,a,[role="button"]')];
+    candidatos.forEach(el=>{
+      if(ehBotaoPixMS(el)){
+        el.hidden=!c.pixAtivo;
+        el.style.display=c.pixAtivo?"":"none";
+        el.setAttribute("aria-disabled",String(!c.pixAtivo));
+      }
+      if(ehBotaoCartaoMS(el)){
+        el.hidden=!c.cartaoAtivo;
+        el.style.display=c.cartaoAtivo?"":"none";
+        el.setAttribute("aria-disabled",String(!c.cartaoAtivo));
+      }
+    });
+
+    const caixas=[...document.querySelectorAll('.payment-methods,.metodos-pagamento,.formas-pagamento,.ms-payment-choice,.pagamento-opcoes')];
+    caixas.forEach(caixa=>{
+      let aviso=caixa.querySelector('.aviso-pagamento-indisponivel-ms');
+      if(!c.pixAtivo&&!c.cartaoAtivo){
+        if(!aviso){aviso=document.createElement('p');aviso.className='aviso-pagamento-indisponivel-ms';aviso.textContent='Pagamento temporariamente indisponível. Tente novamente mais tarde.';caixa.appendChild(aviso);}
+      }else if(aviso){aviso.remove();}
+    });
+
+    document.documentElement.dataset.pixAtivo=String(!!c.pixAtivo);
+    document.documentElement.dataset.cartaoAtivo=String(!!c.cartaoAtivo);
+    window.configPagamentoCheckoutMS=c;
+  }
+
+  async function carregarConfigPagamentoCheckoutMS(){
+    try{
+      const r=await fetch(`${API_CONFIG_PAG_MS}/pagamento-config?t=${Date.now()}`,{cache:'no-store'});
+      const d=await r.json();
+      if(r.ok) configPagamentoCheckoutMS={...PADRAO_CONFIG_PAG_MS,...d};
+    }catch(e){console.warn('Não foi possível carregar as formas de pagamento:',e);}
+    aplicarConfigPagamentoCheckoutMS();
+    return configPagamentoCheckoutMS;
+  }
+
+  function bloquearMetodoDesativadoMS(event){
+    const alvo=event.target instanceof Element?event.target.closest('button,a,[role="button"]'):null;
+    if(!alvo)return;
+    const c=configPagamentoCheckoutMS||PADRAO_CONFIG_PAG_MS;
+    if((ehBotaoPixMS(alvo)&&!c.pixAtivo)||(ehBotaoCartaoMS(alvo)&&!c.cartaoAtivo)){
+      event.preventDefault();event.stopPropagation();event.stopImmediatePropagation?.();
+      alert('Esta forma de pagamento está desativada no momento.');
+    }
+  }
+
+  const observar=new MutationObserver(()=>aplicarConfigPagamentoCheckoutMS());
+  document.addEventListener('DOMContentLoaded',()=>{
+    carregarConfigPagamentoCheckoutMS();
+    observar.observe(document.body,{childList:true,subtree:true});
+  });
+  window.addEventListener('focus',carregarConfigPagamentoCheckoutMS);
+  window.addEventListener('pointerdown',bloquearMetodoDesativadoMS,true);
+  window.carregarConfigPagamentoCheckoutMS=carregarConfigPagamentoCheckoutMS;
+})();
