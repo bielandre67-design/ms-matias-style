@@ -2769,9 +2769,9 @@ onclick="adicionarProdutoDetalhe(); return false;">
 
 </div> <!-- fecha menu-descricao-produto -->
 
-<section class="recomendados-ms">
+<section class="recomendados-ms" id="recomendadosMS">
   <div class="recomendados-topo-ms">
-    <h3>VOCÊ PODE GOSTAR DESSES TAMBÉM</h3>
+    <h3 id="tituloRecomendadosMS">VOCÊ PODE GOSTAR DESSES TAMBÉM</h3>
     <button type="button" id="verMaisRecomendadosMS">Ver mais ›</button>
   </div>
 
@@ -3778,6 +3778,37 @@ window.fecharCarrinhoMobileMS = function(){
 
 <!-- Controlador PIX final: precisa ficar por último -->
 
+<script>
+(function(){
+  const API=(location.hostname==='localhost'||location.hostname==='127.0.0.1')?'http://localhost:3000':'https://ms-matias-style.onrender.com';
+  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const moeda=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+  window.abrirProdutoRecomendadoMS=function(id){
+    const card=document.querySelector(`.card-produto[data-produto-id="${id}"],.card-produto[data-id="${id}"]`);
+    if(card&&typeof window.abrirProdutoDetalheCard==='function')return window.abrirProdutoDetalheCard(card);
+    const p=window.__produtosRecomendadosMS?.find(x=>Number(x.id)===Number(id));
+    if(p&&typeof window.abrirModalProduto==='function')return window.abrirModalProduto(p);
+  };
+  async function carregar(){
+    const sec=document.getElementById('recomendadosMS'),lista=sec?.querySelector('.recomendados-lista-ms'),titulo=document.getElementById('tituloRecomendadosMS');
+    if(!sec||!lista)return;
+    try{
+      const [rc,rp]=await Promise.all([fetch(`${API}/home-config?t=${Date.now()}`,{cache:'no-store'}),fetch(`${API}/produtos?t=${Date.now()}`,{cache:'no-store'})]);
+      const c=rc.ok?await rc.json():{};const d=rp.ok?await rp.json():[];const produtos=(Array.isArray(d)?d:d.produtos||[]).filter(p=>p.ativo!==false);
+      if(c.mostrarRecomendados===false){sec.hidden=true;return;}
+      sec.hidden=false;if(titulo)titulo.textContent=c.tituloRecomendados||'VOCÊ PODE GOSTAR DESSES TAMBÉM';
+      const ids=Array.isArray(c.recomendadosIds)?c.recomendadosIds.map(Number):[];const mapa=new Map(produtos.map(p=>[Number(p.id),p]));
+      let escolhidos=ids.map(id=>mapa.get(id)).filter(Boolean);
+      if(!escolhidos.length)escolhidos=produtos.filter(p=>p.destaque).sort((a,b)=>Number(a.destaqueOrdem||999)-Number(b.destaqueOrdem||999));
+      if(!escolhidos.length)escolhidos=produtos;
+      escolhidos=escolhidos.slice(0,Math.max(1,Math.min(20,Number(c.limiteRecomendados)||8)));window.__produtosRecomendadosMS=escolhidos;
+      if(!escolhidos.length){sec.hidden=true;return;}
+      lista.innerHTML=escolhidos.map(p=>`<article class="recomendado-card-ms" role="button" tabindex="0" onclick="abrirProdutoRecomendadoMS(${Number(p.id)})" onkeydown="if(event.key==='Enter')abrirProdutoRecomendadoMS(${Number(p.id)})"><img src="${esc(p.imagem||'logo.png')}" alt="${esc(p.nome||'Produto MS')}" loading="lazy" onerror="this.src='logo.png'"><h4>${esc(p.nome||'Produto MS')}</h4><strong>${moeda(p.preco)}</strong><small>Até 5x sem juros</small></article>`).join('');
+    }catch(e){console.error('Não foi possível carregar recomendações:',e);}
+  }
+  document.addEventListener('DOMContentLoaded',carregar);
+})();
+</script>
 <script src="beneficios-loja.js?v=20260722-1"></script>
 <script src="ms-icons.js"></script>
 <script src="carrinho-ms.js?v=20260723-v3"></script>

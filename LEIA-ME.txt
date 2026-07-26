@@ -1,13 +1,13 @@
-ETAPA 5 - VISUAL PREMIUM SEM EMOJIS
+MS Matias Style - Visual da Loja v12
 
-Substitua somente estes arquivos na pasta principal do site:
-- ms-icons.js
-- ms-icons.css
-- style.css
+Arquivos alterados:
+- admin.html
+- server.js
 
-O novo sistema converte emojis da interface em ícones SVG profissionais, inclusive quando aparecem junto com textos ou são criados dinamicamente pelo JavaScript.
+O que mudou:
+- A aba foi renomeada para "Visual da Loja" e permanece separada das demais áreas.
+- Edição independente do fundo geral/laterais, fundo central, seções, cards, cabeçalho e rodapé.
+- Prévia atualizada em tempo real.
+- O servidor agora salva todos os novos campos de aparência.
 
-Depois publique normalmente:
-git add .
-git commit -m "Etapa 5 visual premium sem emojis"
-git push
+Substitua os dois arquivos mantendo os demais arquivos atuais do projeto.

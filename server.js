@@ -2699,20 +2699,35 @@ app.put("/aparencia-config", async (req, res, next) => {
   } catch (erro) { next(erro); }
 });
 
+const HOME_CONFIG_PADRAO_MS = {
+  tituloDestaques:"DESTAQUES DA MS", mostrarDestaques:true,
+  tituloRecomendados:"VOCÊ PODE GOSTAR DESSES TAMBÉM", mostrarRecomendados:true,
+  limiteRecomendados:8, recomendadosIds:[]
+};
+function limparHomeConfigMS(body={}, atual={}) {
+  const base={...HOME_CONFIG_PADRAO_MS,...atual};
+  const ids=Array.isArray(body.recomendadosIds)?body.recomendadosIds:base.recomendadosIds;
+  return {
+    tituloDestaques:String(body.tituloDestaques ?? base.tituloDestaques).trim().slice(0,80)||HOME_CONFIG_PADRAO_MS.tituloDestaques,
+    mostrarDestaques:body.mostrarDestaques ?? base.mostrarDestaques,
+    tituloRecomendados:String(body.tituloRecomendados ?? base.tituloRecomendados).trim().slice(0,80)||HOME_CONFIG_PADRAO_MS.tituloRecomendados,
+    mostrarRecomendados:body.mostrarRecomendados ?? base.mostrarRecomendados,
+    limiteRecomendados:Math.max(1,Math.min(20,Number(body.limiteRecomendados ?? base.limiteRecomendados)||8)),
+    recomendadosIds:[...new Set((Array.isArray(ids)?ids:[]).map(Number).filter(Number.isInteger).filter(id=>id>0))].slice(0,50)
+  };
+}
 app.get("/home-config", async (req, res, next) => {
-  if (!pool) return res.json({ tituloDestaques:"DESTAQUES DA MS", mostrarDestaques:true });
+  if (!pool) return res.json(HOME_CONFIG_PADRAO_MS);
   try {
     const r=await pool.query("SELECT dados FROM app_state WHERE chave=$1", ["home_config"]);
-    res.json(r.rows[0]?.dados || { tituloDestaques:"DESTAQUES DA MS", mostrarDestaques:true });
+    res.json(limparHomeConfigMS({},r.rows[0]?.dados||{}));
   } catch(e){ next(e); }
 });
 app.put("/home-config", async (req, res, next) => {
   if (!pool) return res.status(503).json({mensagem:"Banco não configurado."});
   try {
-    const dados={
-      tituloDestaques:String(req.body?.tituloDestaques || "DESTAQUES DA MS").trim().slice(0,80),
-      mostrarDestaques:req.body?.mostrarDestaques !== false
-    };
+    const atual=await pool.query("SELECT dados FROM app_state WHERE chave=$1", ["home_config"]);
+    const dados=limparHomeConfigMS(req.body||{},atual.rows[0]?.dados||{});
     await pool.query(`INSERT INTO app_state(chave,dados,atualizado_em) VALUES($1,$2::jsonb,NOW())
       ON CONFLICT(chave) DO UPDATE SET dados=EXCLUDED.dados, atualizado_em=NOW()`, ["home_config",JSON.stringify(dados)]);
     res.json({ok:true,config:dados});

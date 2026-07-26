@@ -373,6 +373,20 @@ html, body { min-height: 100%; }
         </div>
       </section>
       <div id="gradeDestaquesHomeMS" class="grade-destaques-ms"><div class="destaque-vazio-ms">Carregando produtos...</div></div>
+
+      <section class="painel-card-ms recomendados-admin-box-ms" style="margin-top:22px">
+        <div class="card-header-ms">
+          <div><h2>Você pode gostar desses também</h2><p>Escolha os produtos e a ordem da esteira exibida perto do rodapé da loja.</p></div>
+          <button class="btn-dark-ms" type="button" onclick="salvarConfigRecomendadosMS()">Salvar recomendações</button>
+        </div>
+        <div class="destaques-config-ms" style="margin-top:16px">
+          <label>Título da seção no site<input id="tituloRecomendadosHomeMS" type="text" maxlength="80" value="VOCÊ PODE GOSTAR DESSES TAMBÉM"></label>
+          <label>Quantidade exibida<input id="limiteRecomendadosHomeMS" type="number" min="1" max="20" value="8"></label>
+          <label style="display:flex;align-items:center;gap:8px;min-height:46px"><input id="mostrarRecomendadosHomeMS" type="checkbox" checked> Mostrar no site</label>
+        </div>
+        <p id="statusRecomendadosHomeMS" style="margin:12px 0 0;color:var(--muted)">Selecione os produtos abaixo. As setas alteram a ordem.</p>
+        <div id="gradeRecomendadosHomeMS" class="grade-destaques-ms" style="margin-top:16px"><div class="destaque-vazio-ms">Carregando produtos...</div></div>
+      </section>
     </section>
 
     <section id="precosAba" class="ms-painel">

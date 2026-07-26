@@ -1240,8 +1240,10 @@ async function carregarDestaquesHomeMS(){
       const m=document.getElementById('mostrarDestaquesHomeMS');
       if(t)t.value=c.tituloDestaques||'DESTAQUES DA MS';
       if(m)m.checked=c.mostrarDestaques!==false;
+      aplicarConfigRecomendadosAdminMS(c);
     }
     renderDestaquesHomeMS();
+    renderRecomendadosHomeMS();
   }catch(e){
     console.error('Erro ao carregar destaques:',e);
     if(grade)grade.innerHTML='<div class="destaque-vazio-ms"><strong>Não consegui carregar os produtos.</strong><br><small>Clique em Atualizar para tentar novamente.</small></div>';
@@ -1278,6 +1280,48 @@ async function salvarConfigDestaquesHomeMS(){
   if(!r.ok)return alert('Não consegui salvar.');alert('Destaques da página inicial salvos.');
 }
 document.addEventListener('DOMContentLoaded',()=>setTimeout(carregarDestaquesHomeMS,700));
+
+// RECOMENDAÇÕES DA HOME -------------------------------------------------------
+let recomendadosSelecionadosMS=[];
+function aplicarConfigRecomendadosAdminMS(c={}){
+  recomendadosSelecionadosMS=Array.isArray(c.recomendadosIds)?c.recomendadosIds.map(Number).filter(Number.isFinite):[];
+  const titulo=document.getElementById('tituloRecomendadosHomeMS');
+  const mostrar=document.getElementById('mostrarRecomendadosHomeMS');
+  const limite=document.getElementById('limiteRecomendadosHomeMS');
+  if(titulo)titulo.value=c.tituloRecomendados||'VOCÊ PODE GOSTAR DESSES TAMBÉM';
+  if(mostrar)mostrar.checked=c.mostrarRecomendados!==false;
+  if(limite)limite.value=Math.max(1,Math.min(20,Number(c.limiteRecomendados)||8));
+}
+function renderRecomendadosHomeMS(){
+  const grade=document.getElementById('gradeRecomendadosHomeMS');if(!grade)return;
+  const pos=new Map(recomendadosSelecionadosMS.map((id,i)=>[Number(id),i]));
+  const lista=[...produtosDestaquesHomeMS].sort((a,b)=>{
+    const ap=pos.has(Number(a.id)),bp=pos.has(Number(b.id));
+    if(ap!==bp)return ap?-1:1;
+    if(ap&&bp)return pos.get(Number(a.id))-pos.get(Number(b.id));
+    return Number(a.id)-Number(b.id);
+  });
+  if(!lista.length){grade.innerHTML='<div class="destaque-vazio-ms">Nenhum produto cadastrado.</div>';return;}
+  grade.innerHTML=lista.map(p=>{const ativo=pos.has(Number(p.id));return `<article class="card-destaque-admin-ms ${ativo?'selecionado':''}"><div class="card-destaque-img-ms"><img src="${escDestaqueAdminMS(p.imagem||'logo.png')}" onerror="this.src='logo.png'"><span>${ativo?'✓ Recomendado':'Produto'}</span></div><div class="card-destaque-info-ms"><h3>${escDestaqueAdminMS(p.nome)}</h3><p>${escDestaqueAdminMS(p.categoria||'')} · ${moedaDestaqueAdminMS(p.preco)}</p><div class="card-destaque-actions-ms"><button class="${ativo?'ativo':''}" onclick="alternarRecomendadoHomeMS(${p.id})">${ativo?'Remover':'Selecionar'}</button><button onclick="moverRecomendadoHomeMS(${p.id},-1)" title="Mover para esquerda" ${ativo?'':'disabled'}>←</button><button onclick="moverRecomendadoHomeMS(${p.id},1)" title="Mover para direita" ${ativo?'':'disabled'}>→</button></div></div></article>`}).join('');
+}
+function alternarRecomendadoHomeMS(id){
+  id=Number(id);const i=recomendadosSelecionadosMS.indexOf(id);
+  if(i>=0)recomendadosSelecionadosMS.splice(i,1);else recomendadosSelecionadosMS.push(id);
+  renderRecomendadosHomeMS();
+}
+function moverRecomendadoHomeMS(id,direcao){
+  id=Number(id);const i=recomendadosSelecionadosMS.indexOf(id),j=i+Number(direcao);
+  if(i<0||j<0||j>=recomendadosSelecionadosMS.length)return;
+  [recomendadosSelecionadosMS[i],recomendadosSelecionadosMS[j]]=[recomendadosSelecionadosMS[j],recomendadosSelecionadosMS[i]];
+  renderRecomendadosHomeMS();
+}
+async function salvarConfigRecomendadosMS(){
+  const status=document.getElementById('statusRecomendadosHomeMS');
+  const body={tituloRecomendados:document.getElementById('tituloRecomendadosHomeMS')?.value.trim()||'VOCÊ PODE GOSTAR DESSES TAMBÉM',mostrarRecomendados:document.getElementById('mostrarRecomendadosHomeMS')?.checked!==false,limiteRecomendados:Math.max(1,Math.min(20,Number(document.getElementById('limiteRecomendadosHomeMS')?.value)||8)),recomendadosIds:recomendadosSelecionadosMS};
+  if(status)status.textContent='Salvando...';
+  try{const r=await fetch(`${API_DESTAQUES_ADMIN_MS}/home-config`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const d=await r.json();if(!r.ok)throw new Error(d.mensagem||'Não consegui salvar.');if(status)status.textContent='Recomendações publicadas no site.';}catch(e){if(status)status.textContent=e.message;else alert(e.message);}
+}
+
 
 
 // CONFIGURAÇÕES DE FRETE -----------------------------------------------------
