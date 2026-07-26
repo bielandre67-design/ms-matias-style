@@ -16051,3 +16051,110 @@ body.aparencia-ms-ativa .submenu-categorias-ms{
     padding-bottom:0 !important;
   }
 }
+
+/* =========================================================
+   MS MATIAS STYLE — CORREÇÃO DE CONTINUIDADE E CARDS CORTADOS
+   26/07/2026
+========================================================= */
+*, *::before, *::after { box-sizing: border-box; }
+
+@media (min-width: 769px){
+  /* O bloco de detalhes passa a fazer parte da mesma largura visual da página */
+  html body #produtoDetalhe .menu-descricao-produto{
+    width:calc(100vw - 96px) !important;
+    max-width:1760px !important;
+    margin:34px auto 0 !important;
+    padding:22px 24px 10px !important;
+    background:transparent !important;
+    border:0 !important;
+    border-radius:0 !important;
+    box-shadow:none !important;
+  }
+
+  html body #produtoDetalhe .aba-info{
+    width:100% !important;
+    margin:0 0 12px !important;
+  }
+
+  /* Aproxima os detalhes da vitrine para não parecer uma caixa isolada */
+  html body #produtoDetalhe .recomendados-ms{
+    width:calc(100vw - 96px) !important;
+    max-width:1760px !important;
+    margin:28px auto 0 !important;
+  }
+
+  /* A esteira usa toda a largura interna sem cortar o último card */
+  html body #produtoDetalhe .recomendados-lista-ms{
+    width:100% !important;
+    max-width:none !important;
+    min-width:0 !important;
+    padding:0 30px 22px !important;
+    margin:0 !important;
+    display:grid !important;
+    grid-auto-flow:column !important;
+    grid-auto-columns:clamp(245px,20vw,315px) !important;
+    gap:18px !important;
+    align-items:stretch !important;
+    justify-content:start !important;
+    overflow-x:auto !important;
+    overflow-y:hidden !important;
+    scroll-padding-inline:30px !important;
+  }
+
+  html body #produtoDetalhe .recomendado-card-ms{
+    width:100% !important;
+    min-width:0 !important;
+    max-width:none !important;
+    height:100% !important;
+    flex:none !important;
+  }
+
+  /* Mostra a roupa inteira, sem cortar mangas, capuz ou barra */
+  html body #produtoDetalhe .recomendado-card-ms img{
+    width:100% !important;
+    height:300px !important;
+    display:block !important;
+    object-fit:contain !important;
+    object-position:center !important;
+    padding:12px !important;
+    background:#080808 !important;
+  }
+}
+
+@media (max-width: 768px){
+  html body #produtoDetalhe .menu-descricao-produto{
+    width:100% !important;
+    margin:20px 0 0 !important;
+    padding:0 !important;
+    background:transparent !important;
+  }
+
+  html body #produtoDetalhe .recomendados-lista-ms{
+    width:100% !important;
+    max-width:none !important;
+    min-width:0 !important;
+    display:grid !important;
+    grid-auto-flow:column !important;
+    grid-auto-columns:minmax(250px,76vw) !important;
+    gap:12px !important;
+    padding:0 16px 14px !important;
+    overflow-x:auto !important;
+    overflow-y:hidden !important;
+  }
+
+  html body #produtoDetalhe .recomendado-card-ms{
+    width:100% !important;
+    min-width:0 !important;
+    max-width:none !important;
+    flex:none !important;
+  }
+
+  html body #produtoDetalhe .recomendado-card-ms img{
+    width:100% !important;
+    height:270px !important;
+    object-fit:contain !important;
+    object-position:center !important;
+    padding:10px !important;
+    background:#080808 !important;
+  }
+}
