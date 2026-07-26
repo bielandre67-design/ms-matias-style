@@ -1,0 +1,11 @@
+CORREÇÃO DOS CARDS "VOCÊ PODE GOSTAR DESSES TAMBÉM"
+
+Arquivos desta correção:
+- index.html
+- recomendados-fix.js
+
+Substitua o index.html e adicione recomendados-fix.js na mesma pasta do site.
+
+A correção usa o card completo do catálogo correspondente ao produto recomendado.
+Por isso, ao clicar, abre o produto certo com preço, fotos, cores, tamanhos,
+descrição e estoque ligados ao painel.
