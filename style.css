@@ -16284,3 +16284,45 @@ body.aparencia-ms-ativa .submenu-categorias-ms{
     max-height:205px !important;
   }
 }
+
+
+
+/* ===== Correção mobile: cards "Você pode gostar também" ===== */
+@media (max-width:768px){
+  .produtos-relacionados .card-produto,
+  .recomendados .card-produto,
+  .card-recomendado{
+    min-height:340px !important;
+    padding:12px !important;
+  }
+
+  .produtos-relacionados .produto-img,
+  .recomendados .produto-img,
+  .card-recomendado .produto-img{
+    height:170px !important;
+  }
+
+  .produtos-relacionados .card-produto h3,
+  .recomendados .card-produto h3,
+  .card-recomendado h3{
+    font-size:13px !important;
+    margin:10px 0 6px !important;
+    min-height:34px !important;
+  }
+
+  .produtos-relacionados .preco,
+  .recomendados .preco,
+  .card-recomendado .preco{
+    display:block !important;
+    font-size:18px !important;
+    margin:4px 0 2px !important;
+    line-height:1.2 !important;
+  }
+
+  .produtos-relacionados .parcelamento,
+  .recomendados .parcelamento,
+  .card-recomendado .parcelamento{
+    display:block !important;
+    font-size:12px !important;
+  }
+}
