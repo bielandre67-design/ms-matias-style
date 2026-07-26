@@ -5415,6 +5415,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const card = e.target.closest(".recomendado-card-ms");
     if(!card) return;
+    if(card.classList.contains("recomendado-banco-ms")) return;
 
     e.preventDefault();
     e.stopPropagation();
@@ -5668,6 +5669,7 @@ function dinheiro(valor){
 
     const card = e.target.closest('.recomendado-card-ms');
     if(!card) return;
+    if(card.classList.contains('recomendado-banco-ms')) return;
 
     e.preventDefault();
     e.stopPropagation();
@@ -8504,3 +8506,64 @@ document.addEventListener('DOMContentLoaded',()=>setTimeout(carregarConfigFreteL
     }
   };
 })();
+
+/* ========================================================================
+   FIX FINAL: CLIQUE NOS RECOMENDADOS VINDOS DO PAINEL ADM
+   Abre o mesmo card completo do catálogo, preservando nome, preço, imagens,
+   cores, tamanhos, descrição e estoque.
+   ======================================================================== */
+(function corrigirCliqueRecomendadosBancoMS(){
+  function escaparSeletorMS(valor){
+    if(window.CSS && typeof CSS.escape === 'function') return CSS.escape(String(valor));
+    return String(valor).replace(/["\\]/g, '\\$&');
+  }
+
+  function localizarCardCompletoMS(cardRecomendado){
+    const id = cardRecomendado?.dataset?.idBanco;
+    const nome = String(cardRecomendado?.dataset?.nome || '').trim().toLowerCase();
+
+    if(id){
+      const porId = document.querySelector(
+        `.card-produto.produto-banco-ms[data-id-banco="${escaparSeletorMS(id)}"]`
+      );
+      if(porId) return porId;
+    }
+
+    return [...document.querySelectorAll('.card-produto.produto-banco-ms')].find(card =>
+      String(card.dataset.nome || '').trim().toLowerCase() === nome
+    ) || null;
+  }
+
+  document.addEventListener('click', function(evento){
+    const favorito = evento.target.closest('.recomendado-banco-ms .rec-fav-ms');
+    if(favorito) return;
+
+    const recomendado = evento.target.closest('.recomendado-card-ms.recomendado-banco-ms');
+    if(!recomendado) return;
+
+    evento.preventDefault();
+    evento.stopPropagation();
+    evento.stopImmediatePropagation();
+
+    const cardCompleto = localizarCardCompletoMS(recomendado);
+
+    if(!cardCompleto){
+      console.warn('Produto recomendado não foi localizado no catálogo:', recomendado.dataset.idBanco);
+      if(typeof window.atualizarRecomendadosMS === 'function'){
+        window.atualizarRecomendadosMS();
+      }
+      return false;
+    }
+
+    window.msDetalheVeioSlider = false;
+
+    if(typeof window.abrirProdutoDetalheCard === 'function'){
+      window.abrirProdutoDetalheCard(cardCompleto);
+    }else{
+      cardCompleto.querySelector('.produto-img')?.click();
+    }
+
+    return false;
+  }, true);
+})();
+
