@@ -8506,118 +8506,96 @@ document.addEventListener('DOMContentLoaded',()=>setTimeout(carregarConfigFreteL
 })();
 
 /* ========================================================================
-   FIX DEFINITIVO MS: RECOMENDADOS ABREM O PRODUTO REAL DO CATÁLOGO
-   Executa na captura do WINDOW, antes dos listeners antigos no DOCUMENT.
-   Assim PC e mobile usam exatamente o mesmo card e a mesma função da vitrine.
+   FIX 82 MS: RECOMENDADOS ABREM DIRETAMENTE O PRODUTO DO PAINEL
+   Usa a funcao lexical original abrirProdutoDetalheCard, sem wrappers antigos.
    ======================================================================== */
-(function fixDefinitivoRecomendadosProdutoRealMS(){
-  function escaparCssMS(valor){
-    const texto = String(valor ?? '');
-    if (window.CSS && typeof window.CSS.escape === 'function') return window.CSS.escape(texto);
-    return texto.replace(/(["'\\.#:[\],=])/g, '\\$1');
+(function fix82RecomendadosMS(){
+  function normalizar82(valor){
+    return String(valor || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase();
   }
 
-  function normalizarMS(valor){
-    return String(valor || '')
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .trim()
-      .toLowerCase();
-  }
-
-  function localizarCardRealMS(recomendado){
-    const id = String(recomendado?.dataset?.idBanco || '').trim();
-
-    if (id) {
-      const cardPorId = document.querySelector(
-        `.card-produto.produto-banco-ms[data-id-banco="${escaparCssMS(id)}"]`
-      );
-      if (cardPorId) return cardPorId;
-    }
-
-    const nome = normalizarMS(recomendado?.dataset?.nome || recomendado?.querySelector('h4,h3')?.textContent);
-    if (!nome) return null;
-
-    return Array.from(document.querySelectorAll('.card-produto.produto-banco-ms')).find(card =>
-      normalizarMS(card.dataset.nome || card.querySelector('h3')?.textContent) === nome
-    ) || null;
-  }
-
-  function criarCardCompletoDoBancoMS(recomendado){
-    const id = String(recomendado?.dataset?.idBanco || '').trim();
+  function produtoPorRecomendado82(card){
+    const id = String(card?.dataset?.idBanco || '').trim();
+    const nome = normalizar82(card?.dataset?.nome || card?.querySelector('h3,h4')?.textContent);
     const produtos = Array.isArray(window.produtosBancoMS) ? window.produtosBancoMS : [];
-    const produto = produtos.find(item => String(item?.id ?? '') === id);
-    if (!produto) return null;
+    return produtos.find(p => id && String(p?.id ?? '') === id)
+      || produtos.find(p => nome && normalizar82(p?.nome) === nome)
+      || null;
+  }
 
+  function cardCompleto82(produto){
     const fotos = [...new Set([
-      produto.imagem,
-      ...(Array.isArray(produto.imagens) ? produto.imagens : [])
-    ].map(item => String(item || '').trim()).filter(Boolean))];
+      produto?.imagem,
+      ...(Array.isArray(produto?.imagens) ? produto.imagens : [])
+    ].map(v => String(v || '').trim()).filter(Boolean))];
 
-    const card = document.createElement('div');
+    const card = document.createElement('article');
     card.className = 'card-produto produto-banco-ms';
-    card.dataset.idBanco = String(produto.id ?? '');
-    card.dataset.chave = String(produto.chave || '');
-    card.dataset.nome = String(produto.nome || 'Produto MS');
-    card.dataset.preco = String(Number(produto.preco || 0).toFixed(2));
-    card.dataset.precoantigo = produto.precoAntigo == null ? '' : String(Number(produto.precoAntigo || 0).toFixed(2));
+    card.dataset.idBanco = String(produto?.id ?? '');
+    card.dataset.nome = String(produto?.nome || 'Produto MS');
+    card.dataset.preco = String(Number(produto?.preco || 0).toFixed(2));
+    card.dataset.precoantigo = produto?.precoAntigo == null ? '' : String(Number(produto.precoAntigo || 0).toFixed(2));
     card.dataset.img = fotos[0] || 'logo.png';
     card.dataset.fotos = fotos.join(',');
-    card.dataset.descricao = String(produto.tabelaMedidas || produto.descricao || '');
-    card.dataset.detalhes = String(produto.detalhesProduto || '');
-    card.dataset.composicao = String(produto.composicao || '');
-    card.dataset.cuidados = String(produto.cuidados || '');
-    card.dataset.cores = Array.isArray(produto.cores) ? produto.cores.join(',') : '';
-    card.dataset.tamanhos = Array.isArray(produto.tamanhos) ? produto.tamanhos.join(',') : '';
-    card.dataset.categoria = String(produto.categoria || '');
+    card.dataset.descricao = String(produto?.descricao || produto?.tabelaMedidas || '');
+    card.dataset.detalhes = String(produto?.detalhesProduto || produto?.detalhes || '');
+    card.dataset.composicao = String(produto?.composicao || '');
+    card.dataset.cuidados = String(produto?.cuidados || '');
+    card.dataset.cores = Array.isArray(produto?.cores) ? produto.cores.join(',') : String(produto?.cor || '');
+    card.dataset.cor = Array.isArray(produto?.cores) && produto.cores.length ? produto.cores[0] : String(produto?.cor || 'unica');
+    card.dataset.tamanhos = Array.isArray(produto?.tamanhos) ? produto.tamanhos.join(',') : '';
+    card.dataset.categoria = String(produto?.categoria || '');
     return card;
   }
 
-  function abrirProdutoRealMS(recomendado){
-    const cardReal = localizarCardRealMS(recomendado) || criarCardCompletoDoBancoMS(recomendado);
+  async function abrir82(recomendado){
+    let produto = produtoPorRecomendado82(recomendado);
 
-    if (!cardReal) {
-      console.error('MS: produto recomendado não encontrado no catálogo/painel.', {
-        id: recomendado?.dataset?.idBanco,
-        nome: recomendado?.dataset?.nome
-      });
-      return false;
+    if(!produto){
+      try{
+        const api = window.API_BASE || (typeof API_BASE !== 'undefined' ? API_BASE : 'https://ms-matias-style.onrender.com');
+        const resposta = await fetch(`${api}/produtos?ativos=true&t=${Date.now()}`, {cache:'no-store'});
+        const lista = await resposta.json();
+        if(Array.isArray(lista)){
+          window.produtosBancoMS = lista;
+          produto = produtoPorRecomendado82(recomendado);
+        }
+      }catch(erro){
+        console.error('MS FIX 82: erro ao buscar produto recomendado', erro);
+      }
     }
 
-    // Impede as rotinas antigas de tratarem este item como slider incompleto.
+    if(!produto){
+      console.error('MS FIX 82: produto recomendado nao encontrado', recomendado?.dataset);
+      alert('Não foi possível abrir este produto agora. Atualize a página e tente novamente.');
+      return;
+    }
+
+    const card = cardCompleto82(produto);
     window.msDetalheVeioSlider = false;
 
-    if (typeof window.abrirProdutoDetalheCard === 'function') {
-      window.abrirProdutoDetalheCard(cardReal);
-      return true;
-    }
+    // Chama diretamente a funcao original declarada neste arquivo.
+    abrirProdutoDetalheCard(card);
 
-    const imagemCard = cardReal.querySelector?.('.produto-img');
-    if (imagemCard) {
-      imagemCard.click();
-      return true;
+    // Garante campos adicionais depois da abertura.
+    if(typeof window.sincronizarTamanhosProdutoMS === 'function'){
+      window.sincronizarTamanhosProdutoMS(card);
     }
-
-    return false;
   }
 
-  // WINDOW captura antes do DOCUMENT, neutralizando todos os listeners antigos.
   window.addEventListener('click', function(evento){
     const alvo = evento.target;
-    if (!(alvo instanceof Element)) return;
-
-    const favorito = alvo.closest('.recomendado-card-ms .rec-fav-ms');
-    if (favorito) return; // mantém o coração funcionando normalmente
+    if(!(alvo instanceof Element)) return;
+    if(alvo.closest('.rec-fav-ms')) return;
 
     const recomendado = alvo.closest('.recomendado-card-ms.recomendado-banco-ms');
-    if (!recomendado) return;
+    if(!recomendado) return;
 
     evento.preventDefault();
     evento.stopPropagation();
     evento.stopImmediatePropagation();
-
-    abrirProdutoRealMS(recomendado);
+    abrir82(recomendado);
   }, true);
 
-  console.log('FIX DEFINITIVO MS: recomendados ligados ao produto real do catálogo.');
+  console.log('MS FIX 82 carregado');
 })();
