@@ -5415,6 +5415,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const card = e.target.closest(".recomendado-card-ms");
     if(!card) return;
+    if(card.closest("#recomendadosMS")) return;
 
     e.preventDefault();
     e.stopPropagation();
@@ -5668,6 +5669,7 @@ function dinheiro(valor){
 
     const card = e.target.closest('.recomendado-card-ms');
     if(!card) return;
+    if(card.closest('#recomendadosMS')) return;
 
     e.preventDefault();
     e.stopPropagation();
@@ -8503,99 +8505,4 @@ document.addEventListener('DOMContentLoaded',()=>setTimeout(carregarConfigFreteL
       return false;
     }
   };
-})();
-
-/* ========================================================================
-   FIX 82 MS: RECOMENDADOS ABREM DIRETAMENTE O PRODUTO DO PAINEL
-   Usa a funcao lexical original abrirProdutoDetalheCard, sem wrappers antigos.
-   ======================================================================== */
-(function fix82RecomendadosMS(){
-  function normalizar82(valor){
-    return String(valor || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase();
-  }
-
-  function produtoPorRecomendado82(card){
-    const id = String(card?.dataset?.idBanco || '').trim();
-    const nome = normalizar82(card?.dataset?.nome || card?.querySelector('h3,h4')?.textContent);
-    const produtos = Array.isArray(window.produtosBancoMS) ? window.produtosBancoMS : [];
-    return produtos.find(p => id && String(p?.id ?? '') === id)
-      || produtos.find(p => nome && normalizar82(p?.nome) === nome)
-      || null;
-  }
-
-  function cardCompleto82(produto){
-    const fotos = [...new Set([
-      produto?.imagem,
-      ...(Array.isArray(produto?.imagens) ? produto.imagens : [])
-    ].map(v => String(v || '').trim()).filter(Boolean))];
-
-    const card = document.createElement('article');
-    card.className = 'card-produto produto-banco-ms';
-    card.dataset.idBanco = String(produto?.id ?? '');
-    card.dataset.nome = String(produto?.nome || 'Produto MS');
-    card.dataset.preco = String(Number(produto?.preco || 0).toFixed(2));
-    card.dataset.precoantigo = produto?.precoAntigo == null ? '' : String(Number(produto.precoAntigo || 0).toFixed(2));
-    card.dataset.img = fotos[0] || 'logo.png';
-    card.dataset.fotos = fotos.join(',');
-    card.dataset.descricao = String(produto?.descricao || produto?.tabelaMedidas || '');
-    card.dataset.detalhes = String(produto?.detalhesProduto || produto?.detalhes || '');
-    card.dataset.composicao = String(produto?.composicao || '');
-    card.dataset.cuidados = String(produto?.cuidados || '');
-    card.dataset.cores = Array.isArray(produto?.cores) ? produto.cores.join(',') : String(produto?.cor || '');
-    card.dataset.cor = Array.isArray(produto?.cores) && produto.cores.length ? produto.cores[0] : String(produto?.cor || 'unica');
-    card.dataset.tamanhos = Array.isArray(produto?.tamanhos) ? produto.tamanhos.join(',') : '';
-    card.dataset.categoria = String(produto?.categoria || '');
-    return card;
-  }
-
-  async function abrir82(recomendado){
-    let produto = produtoPorRecomendado82(recomendado);
-
-    if(!produto){
-      try{
-        const api = window.API_BASE || (typeof API_BASE !== 'undefined' ? API_BASE : 'https://ms-matias-style.onrender.com');
-        const resposta = await fetch(`${api}/produtos?ativos=true&t=${Date.now()}`, {cache:'no-store'});
-        const lista = await resposta.json();
-        if(Array.isArray(lista)){
-          window.produtosBancoMS = lista;
-          produto = produtoPorRecomendado82(recomendado);
-        }
-      }catch(erro){
-        console.error('MS FIX 82: erro ao buscar produto recomendado', erro);
-      }
-    }
-
-    if(!produto){
-      console.error('MS FIX 82: produto recomendado nao encontrado', recomendado?.dataset);
-      alert('Não foi possível abrir este produto agora. Atualize a página e tente novamente.');
-      return;
-    }
-
-    const card = cardCompleto82(produto);
-    window.msDetalheVeioSlider = false;
-
-    // Chama diretamente a funcao original declarada neste arquivo.
-    abrirProdutoDetalheCard(card);
-
-    // Garante campos adicionais depois da abertura.
-    if(typeof window.sincronizarTamanhosProdutoMS === 'function'){
-      window.sincronizarTamanhosProdutoMS(card);
-    }
-  }
-
-  window.addEventListener('click', function(evento){
-    const alvo = evento.target;
-    if(!(alvo instanceof Element)) return;
-    if(alvo.closest('.rec-fav-ms')) return;
-
-    const recomendado = alvo.closest('.recomendado-card-ms.recomendado-banco-ms');
-    if(!recomendado) return;
-
-    evento.preventDefault();
-    evento.stopPropagation();
-    evento.stopImmediatePropagation();
-    abrir82(recomendado);
-  }, true);
-
-  console.log('MS FIX 82 carregado');
 })();

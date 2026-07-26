@@ -2570,7 +2570,7 @@ data-img="conjunto-bege.jpeg">
 
 
 </div>
-<script src="script.js?v=20260726-fix82-recomendados"></script>
+<script src="script.js?v=20260726-recomendados-real-v1"></script>
 
 <div id="msToast" class="ms-toast">
   <img src="logo.png" alt="MS">
@@ -3784,7 +3784,7 @@ window.fecharCarrinhoMobileMS = function(){
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const moeda=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
   window.abrirProdutoRecomendadoMS=function(id){
-    const card=document.querySelector(`.card-produto[data-produto-id="${id}"],.card-produto[data-id="${id}"]`);
+    const card=document.querySelector(`.card-produto.produto-banco-ms[data-id-banco="${id}"],.card-produto[data-produto-id="${id}"],.card-produto[data-id="${id}"]`);
     if(card&&typeof window.abrirProdutoDetalheCard==='function')return window.abrirProdutoDetalheCard(card);
     const p=window.__produtosRecomendadosMS?.find(x=>Number(x.id)===Number(id));
     if(p&&typeof window.abrirModalProduto==='function')return window.abrirModalProduto(p);
