@@ -16284,3 +16284,124 @@ body.aparencia-ms-ativa .submenu-categorias-ms{
     max-height:205px !important;
   }
 }
+
+/* =========================================================
+   GALERIA DO PRODUTO COMPACTA E EQUILIBRADA - 26/07/2026
+   Mantém foto e informações visíveis na mesma dobra da tela.
+   ========================================================= */
+@media (min-width: 901px){
+  html body #produtoDetalhe .produto-detalhe-page{
+    width:calc(100vw - 64px) !important;
+    max-width:1540px !important;
+    padding:20px 24px 36px !important;
+  }
+
+  html body #produtoDetalhe .breadcrumb-produto{
+    margin:2px 0 20px !important;
+  }
+
+  html body #produtoDetalhe .produto-layout-novo{
+    grid-template-columns:84px minmax(460px, 610px) minmax(340px, 1fr) !important;
+    gap:30px !important;
+    align-items:start !important;
+    justify-content:center !important;
+  }
+
+  html body #produtoDetalhe .galeria-produto-nova{
+    width:84px !important;
+    gap:10px !important;
+    padding-top:0 !important;
+  }
+
+  html body #produtoDetalhe .thumb-seta{
+    width:32px !important;
+    height:32px !important;
+    flex:0 0 32px !important;
+  }
+
+  html body #produtoDetalhe .miniaturas-detalhe{
+    gap:10px !important;
+  }
+
+  html body #produtoDetalhe .miniaturas-detalhe img{
+    width:78px !important;
+    min-width:78px !important;
+    height:86px !important;
+    object-fit:cover !important;
+    border-radius:11px !important;
+  }
+
+  html body #produtoDetalhe .imagem-produto-nova{
+    width:100% !important;
+    max-width:610px !important;
+    height:520px !important;
+    min-height:0 !important;
+    border-radius:18px !important;
+    margin:0 !important;
+    background:#f7f7f7 !important;
+    box-shadow:0 12px 34px rgba(0,0,0,.07) !important;
+  }
+
+  html body #produtoDetalhe .imagem-produto-nova img,
+  html body #produtoDetalhe .imagem-produto-nova #detalheImg{
+    width:100% !important;
+    height:100% !important;
+    padding:20px !important;
+    object-fit:contain !important;
+    object-position:center !important;
+  }
+
+  html body #produtoDetalhe .info-produto-nova{
+    padding-top:4px !important;
+    align-self:start !important;
+  }
+
+  html body #produtoDetalhe .info-produto-nova h2,
+  html body #produtoDetalhe .info-produto-nova #detalheNome{
+    font-size:clamp(30px,2.25vw,38px) !important;
+    margin-bottom:12px !important;
+  }
+
+  html body #produtoDetalhe .avaliacao-detalhe{
+    margin-bottom:18px !important;
+  }
+
+  html body #produtoDetalhe .preco-detalhe,
+  html body #produtoDetalhe #detalhePreco{
+    font-size:clamp(32px,2.5vw,40px) !important;
+  }
+
+  html body #produtoDetalhe .parcelamento-detalhe{
+    margin-bottom:20px !important;
+  }
+
+  html body #produtoDetalhe .info-produto-nova hr{
+    margin:20px 0 !important;
+  }
+
+  html body #produtoDetalhe .tamanhos-detalhe{
+    margin-bottom:20px !important;
+  }
+
+  html body #produtoDetalhe .btn-comprar-detalhe,
+  html body #produtoDetalhe .btn-add-carrinho-detalhe{
+    min-height:58px !important;
+  }
+}
+
+@media (min-width:901px) and (max-width:1200px){
+  html body #produtoDetalhe .produto-layout-novo{
+    grid-template-columns:72px minmax(400px, 520px) minmax(320px, 1fr) !important;
+    gap:22px !important;
+  }
+  html body #produtoDetalhe .galeria-produto-nova{width:72px !important;}
+  html body #produtoDetalhe .miniaturas-detalhe img{
+    width:68px !important;
+    min-width:68px !important;
+    height:78px !important;
+  }
+  html body #produtoDetalhe .imagem-produto-nova{
+    max-width:520px !important;
+    height:470px !important;
+  }
+}
