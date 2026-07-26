@@ -5415,7 +5415,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const card = e.target.closest(".recomendado-card-ms");
     if(!card) return;
-    if(card.classList.contains("recomendado-banco-ms")) return;
 
     e.preventDefault();
     e.stopPropagation();
@@ -5669,7 +5668,6 @@ function dinheiro(valor){
 
     const card = e.target.closest('.recomendado-card-ms');
     if(!card) return;
-    if(card.classList.contains('recomendado-banco-ms')) return;
 
     e.preventDefault();
     e.stopPropagation();
@@ -7809,8 +7807,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const parcelas = preco >= 120 ? 3 : 5;
 
     return `<article class="recomendado-card-ms recomendado-banco-ms"
-      role="button" tabindex="0"
-      onclick="return window.abrirProdutoRecomendadoBancoMS(event, this)"
       data-id-banco="${escaparHTMLMS(produto.id || '')}"
       data-nome="${escaparHTMLMS(produto.nome || 'Produto MS')}"
       data-preco="${preco.toFixed(2)}"
@@ -7881,83 +7877,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Sempre que outro produto abrir no detalhe, recalcula para não recomendar ele mesmo.
   document.addEventListener('click', evento => {
-    if (evento.target instanceof Element && evento.target.closest('.card-produto')){
+    if (evento.target instanceof Element && evento.target.closest('.card-produto, .recomendado-card-ms')){
       setTimeout(() => {
         if (Array.isArray(window.produtosBancoMS)) renderizarRecomendadosBancoMS(window.produtosBancoMS);
       }, 120);
     }
-  });
-
-
-
-  window.abrirProdutoRecomendadoBancoMS = function(evento, cardRecomendado){
-    if(evento?.target?.closest?.('.rec-fav-ms')) return false;
-
-    evento?.preventDefault?.();
-    evento?.stopPropagation?.();
-
-    const id = String(cardRecomendado?.dataset?.idBanco || '');
-    const produtos = Array.isArray(window.produtosBancoMS) ? window.produtosBancoMS : [];
-    const produto = produtos.find(item => String(item?.id || '') === id);
-
-    if(!produto){
-      console.warn('Produto recomendado não encontrado no catálogo:', id);
-      return false;
-    }
-
-    const fotos = fotosRecomendadoMS(produto);
-    const tamanhos = Array.isArray(produto.tamanhos) && produto.tamanhos.length
-      ? produto.tamanhos : ['P','M','G','GG'];
-    const cores = Array.isArray(produto.cores) ? produto.cores : [];
-    const preco = numeroPrecoMS(produto.preco);
-    const antigo = produto.precoAntigo == null ? '' : numeroPrecoMS(produto.precoAntigo);
-
-    const cardCompleto = document.createElement('div');
-    cardCompleto.className = 'card-produto produto-banco-ms';
-    cardCompleto.dataset.idBanco = id;
-    cardCompleto.dataset.nome = produto.nome || 'Produto MS';
-    cardCompleto.dataset.preco = preco.toFixed(2);
-    cardCompleto.dataset.precoantigo = antigo === '' ? '' : antigo.toFixed(2);
-    cardCompleto.dataset.img = fotos[0] || 'logo.png';
-    cardCompleto.dataset.fotos = fotos.join(',');
-    cardCompleto.dataset.descricao = produto.tabelaMedidas || produto.descricao || '';
-    cardCompleto.dataset.detalhes = produto.detalhesProduto || '';
-    cardCompleto.dataset.composicao = produto.composicao || '';
-    cardCompleto.dataset.cuidados = produto.cuidados || '';
-    cardCompleto.dataset.cores = cores.join(',');
-    cardCompleto.dataset.tamanhos = tamanhos.join(',');
-    cardCompleto.dataset.categoria = produto.categoria || '';
-
-    window.msDetalheVeioSlider = false;
-
-    if(typeof window.abrirProdutoDetalheCard === 'function'){
-      window.abrirProdutoDetalheCard(cardCompleto);
-    }else if(typeof abrirProdutoDetalheCard === 'function'){
-      abrirProdutoDetalheCard(cardCompleto);
-    }else{
-      console.error('Função de abrir detalhes não encontrada.');
-      return false;
-    }
-
-    setTimeout(() => {
-      if(typeof window.sincronizarTamanhosProdutoMS === 'function'){
-        window.sincronizarTamanhosProdutoMS(cardCompleto);
-      }
-      const detalhe = document.getElementById('produtoDetalhe');
-      if(detalhe){
-        detalhe.classList.add('ativo');
-        detalhe.style.display = 'block';
-        detalhe.scrollTo({top: 0, behavior: 'smooth'});
-      }
-    }, 0);
-
-    return false;
-  };
-
-  document.addEventListener('keydown', function(evento){
-    const card = evento.target?.closest?.('.recomendado-card-ms.recomendado-banco-ms');
-    if(!card || (evento.key !== 'Enter' && evento.key !== ' ')) return;
-    window.abrirProdutoRecomendadoBancoMS(evento, card);
   });
 
   window.atualizarRecomendadosMS = atualizarRecomendadosMS;
@@ -8580,3 +8504,110 @@ document.addEventListener('DOMContentLoaded',()=>setTimeout(carregarConfigFreteL
     }
   };
 })();
+
+/* ========================================================================
+   FIX DEFINITIVO MS: RECOMENDADOS ABREM O PRODUTO REAL DO CATÁLOGO
+   Executa no window/capture antes dos listeners antigos e usa o ID do painel.
+   ======================================================================== */
+(function fixDefinitivoRecomendadosMS(){
+  function seletorSeguroMS(valor){
+    const texto=String(valor ?? '');
+    return (window.CSS && typeof CSS.escape==='function')
+      ? CSS.escape(texto)
+      : texto.replace(/["\\]/g,'\\$&');
+  }
+
+  function fotosProdutoMS(produto){
+    const extras=Array.isArray(produto?.imagens) ? produto.imagens : [];
+    return [...new Set([produto?.imagem,...extras]
+      .map(v=>String(v||'').trim()).filter(Boolean))];
+  }
+
+  function criarCardCompletoMS(produto){
+    const card=document.createElement('div');
+    const fotos=fotosProdutoMS(produto);
+    const tamanhos=Array.isArray(produto?.tamanhos)&&produto.tamanhos.length
+      ? produto.tamanhos : ['P','M','G','GG'];
+    const cores=Array.isArray(produto?.cores) ? produto.cores : [];
+    const preco=Number(produto?.preco||0);
+    const antigo=produto?.precoAntigo==null ? '' : Number(produto.precoAntigo||0);
+
+    card.className='card-produto produto-banco-ms';
+    card.dataset.idBanco=String(produto?.id??'');
+    card.dataset.chave=String(produto?.chave||'');
+    card.dataset.nome=String(produto?.nome||'Produto MS');
+    card.dataset.preco=preco.toFixed(2);
+    card.dataset.precoantigo=antigo==='' ? '' : antigo.toFixed(2);
+    card.dataset.img=fotos[0]||'logo.png';
+    card.dataset.fotos=fotos.join(',');
+    card.dataset.descricao=String(produto?.tabelaMedidas||produto?.descricao||'');
+    card.dataset.detalhes=String(produto?.detalhesProduto||'');
+    card.dataset.composicao=String(produto?.composicao||'');
+    card.dataset.cuidados=String(produto?.cuidados||'');
+    card.dataset.cores=cores.join(',');
+    card.dataset.tamanhos=tamanhos.join(',');
+    card.dataset.categoria=String(produto?.categoria||'');
+    return card;
+  }
+
+  function acharProdutoMS(cardRecomendado){
+    const id=String(cardRecomendado?.dataset?.idBanco||'');
+    const produtos=Array.isArray(window.produtosBancoMS) ? window.produtosBancoMS : [];
+    if(id){
+      const peloId=produtos.find(p=>String(p?.id??'')===id);
+      if(peloId) return peloId;
+    }
+    const nome=String(cardRecomendado?.dataset?.nome||'').trim().toLowerCase();
+    return produtos.find(p=>String(p?.nome||'').trim().toLowerCase()===nome)||null;
+  }
+
+  function abrirProdutoRealMS(cardRecomendado){
+    const id=String(cardRecomendado?.dataset?.idBanco||'');
+    let cardCatalogo=null;
+
+    if(id){
+      cardCatalogo=document.querySelector(
+        `.card-produto.produto-banco-ms[data-id-banco="${seletorSeguroMS(id)}"]`
+      );
+    }
+
+    if(!cardCatalogo){
+      const produto=acharProdutoMS(cardRecomendado);
+      if(produto) cardCatalogo=criarCardCompletoMS(produto);
+    }
+
+    if(!cardCatalogo){
+      console.error('MS: produto recomendado não localizado no catálogo/painel.',id);
+      return false;
+    }
+
+    window.msDetalheVeioSlider=false;
+
+    if(typeof window.abrirProdutoDetalheCard==='function'){
+      window.abrirProdutoDetalheCard(cardCatalogo);
+    }else if(typeof abrirProdutoDetalheCard==='function'){
+      abrirProdutoDetalheCard(cardCatalogo);
+    }
+
+    setTimeout(function(){
+      if(typeof window.atualizarRecomendadosMS==='function'){
+        window.atualizarRecomendadosMS();
+      }
+    },250);
+    return true;
+  }
+
+  window.addEventListener('click',function(evento){
+    if(!(evento.target instanceof Element)) return;
+    const recomendado=evento.target.closest('.recomendado-card-ms.recomendado-banco-ms');
+    if(!recomendado) return;
+
+    if(evento.target.closest('.rec-fav-ms')) return;
+
+    evento.preventDefault();
+    evento.stopPropagation();
+    evento.stopImmediatePropagation();
+    abrirProdutoRealMS(recomendado);
+  },true);
+})();
+
