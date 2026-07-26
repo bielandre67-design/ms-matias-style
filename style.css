@@ -16285,44 +16285,103 @@ body.aparencia-ms-ativa .submenu-categorias-ms{
   }
 }
 
+/* ===== FIX FINAL MOBILE: preço dos recomendados sempre visível ===== */
+@media (max-width: 768px){
 
-
-/* ===== Correção mobile: cards "Você pode gostar também" ===== */
-@media (max-width:768px){
-  .produtos-relacionados .card-produto,
-  .recomendados .card-produto,
-  .card-recomendado{
-    min-height:340px !important;
-    padding:12px !important;
+  html body #produtoDetalhe .recomendados-lista-ms{
+    align-items: stretch !important;
+    padding-bottom: 18px !important;
   }
 
-  .produtos-relacionados .produto-img,
-  .recomendados .produto-img,
-  .card-recomendado .produto-img{
-    height:170px !important;
+  html body #produtoDetalhe .recomendado-card-ms{
+    flex: 0 0 220px !important;
+    width: 220px !important;
+    min-width: 220px !important;
+    max-width: 220px !important;
+
+    height: 390px !important;
+    min-height: 390px !important;
+    max-height: 390px !important;
+
+    padding: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
   }
 
-  .produtos-relacionados .card-produto h3,
-  .recomendados .card-produto h3,
-  .card-recomendado h3{
-    font-size:13px !important;
-    margin:10px 0 6px !important;
-    min-height:34px !important;
+  html body #produtoDetalhe .recomendado-card-ms > img{
+    flex: 0 0 205px !important;
+    width: 100% !important;
+    height: 205px !important;
+    min-height: 205px !important;
+    max-height: 205px !important;
+    margin: 0 !important;
+    padding: 10px !important;
+    object-fit: contain !important;
+    box-sizing: border-box !important;
   }
 
-  .produtos-relacionados .preco,
-  .recomendados .preco,
-  .card-recomendado .preco{
-    display:block !important;
-    font-size:18px !important;
-    margin:4px 0 2px !important;
-    line-height:1.2 !important;
+  /* Funciona tanto nos cards com DIV quanto nos cards sem DIV */
+  html body #produtoDetalhe .recomendado-card-ms > div{
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    padding: 12px 14px 14px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    box-sizing: border-box !important;
   }
 
-  .produtos-relacionados .parcelamento,
-  .recomendados .parcelamento,
-  .card-recomendado .parcelamento{
-    display:block !important;
-    font-size:12px !important;
+  html body #produtoDetalhe .recomendado-card-ms h4{
+    flex: 0 0 auto !important;
+    margin: 12px 14px 7px !important;
+    padding: 0 !important;
+    min-height: 42px !important;
+    max-height: 42px !important;
+    font-size: 17px !important;
+    line-height: 1.22 !important;
+    overflow: hidden !important;
+    color: #fff !important;
+  }
+
+  html body #produtoDetalhe .recomendado-card-ms > div h4{
+    margin: 0 0 7px !important;
+  }
+
+  html body #produtoDetalhe .recomendado-card-ms strong{
+    display: block !important;
+    flex: 0 0 auto !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: static !important;
+    margin: 0 14px 5px !important;
+    padding: 0 !important;
+    min-height: 24px !important;
+    font-size: 20px !important;
+    line-height: 1.2 !important;
+    color: #fff !important;
+  }
+
+  html body #produtoDetalhe .recomendado-card-ms > div strong{
+    margin: 0 0 5px !important;
+  }
+
+  html body #produtoDetalhe .recomendado-card-ms small,
+  html body #produtoDetalhe .recomendado-card-ms p{
+    display: block !important;
+    flex: 0 0 auto !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: static !important;
+    margin: 0 14px 12px !important;
+    padding: 0 !important;
+    font-size: 13px !important;
+    line-height: 1.25 !important;
+    color: #999 !important;
+  }
+
+  html body #produtoDetalhe .recomendado-card-ms > div p,
+  html body #produtoDetalhe .recomendado-card-ms > div small{
+    margin: 0 !important;
   }
 }
