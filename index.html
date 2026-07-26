@@ -2570,7 +2570,7 @@ data-img="conjunto-bege.jpeg">
 
 
 </div>
-<script src="script.js?v=20260726-recomendados-real-v1"></script>
+<script src="script.js?v=20260726-fix84-recomendados"></script>
 
 <div id="msToast" class="ms-toast">
   <img src="logo.png" alt="MS">
@@ -3784,7 +3784,7 @@ window.fecharCarrinhoMobileMS = function(){
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const moeda=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
   window.abrirProdutoRecomendadoMS=function(id){
-    const card=document.querySelector(`.card-produto.produto-banco-ms[data-id-banco="${id}"],.card-produto[data-produto-id="${id}"],.card-produto[data-id="${id}"]`);
+    const card=document.querySelector(`.card-produto[data-produto-id="${id}"],.card-produto[data-id="${id}"]`);
     if(card&&typeof window.abrirProdutoDetalheCard==='function')return window.abrirProdutoDetalheCard(card);
     const p=window.__produtosRecomendadosMS?.find(x=>Number(x.id)===Number(id));
     if(p&&typeof window.abrirModalProduto==='function')return window.abrirModalProduto(p);
@@ -3803,7 +3803,7 @@ window.fecharCarrinhoMobileMS = function(){
       if(!escolhidos.length)escolhidos=produtos;
       escolhidos=escolhidos.slice(0,Math.max(1,Math.min(20,Number(c.limiteRecomendados)||8)));window.__produtosRecomendadosMS=escolhidos;
       if(!escolhidos.length){sec.hidden=true;return;}
-      lista.innerHTML=escolhidos.map(p=>`<article class="recomendado-card-ms" role="button" tabindex="0" onclick="abrirProdutoRecomendadoMS(${Number(p.id)})" onkeydown="if(event.key==='Enter')abrirProdutoRecomendadoMS(${Number(p.id)})"><img src="${esc(p.imagem||'logo.png')}" alt="${esc(p.nome||'Produto MS')}" loading="lazy" onerror="this.src='logo.png'"><h4>${esc(p.nome||'Produto MS')}</h4><strong>${moeda(p.preco)}</strong><small>Até 5x sem juros</small></article>`).join('');
+      lista.innerHTML=escolhidos.map(p=>`<article class="recomendado-card-ms recomendado-banco-ms" data-id-banco="${Number(p.id)}" role="button" tabindex="0"><img src="${esc(p.imagem||'logo.png')}" alt="${esc(p.nome||'Produto MS')}" loading="lazy" onerror="this.src='logo.png'"><h4>${esc(p.nome||'Produto MS')}</h4><strong>${moeda(p.preco)}</strong><small>Até 5x sem juros</small></article>`).join('');
     }catch(e){console.error('Não foi possível carregar recomendações:',e);}
   }
   document.addEventListener('DOMContentLoaded',carregar);

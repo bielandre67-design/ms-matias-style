@@ -5415,7 +5415,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const card = e.target.closest(".recomendado-card-ms");
     if(!card) return;
-    if(card.closest("#recomendadosMS")) return;
+    if(card.classList.contains("recomendado-banco-ms")) return;
 
     e.preventDefault();
     e.stopPropagation();
@@ -5669,7 +5669,7 @@ function dinheiro(valor){
 
     const card = e.target.closest('.recomendado-card-ms');
     if(!card) return;
-    if(card.closest('#recomendadosMS')) return;
+    if(card.classList.contains('recomendado-banco-ms')) return;
 
     e.preventDefault();
     e.stopPropagation();
@@ -8506,3 +8506,46 @@ document.addEventListener('DOMContentLoaded',()=>setTimeout(carregarConfigFreteL
     }
   };
 })();
+
+/* FIX 84: recomendados do painel abrem o card real da vitrine */
+(function(){
+  function abrirRecomendadoBancoRealMS(cardRecomendado){
+    const id = String(cardRecomendado?.dataset?.idBanco || '').trim();
+    if(!id) return false;
+
+    const cardReal = document.querySelector(
+      `.card-produto.produto-banco-ms[data-id-banco="${CSS.escape(id)}"]`
+    );
+
+    if(!cardReal){
+      console.error('Card real do produto não encontrado para o recomendado:', id);
+      return false;
+    }
+
+    if(typeof window.abrirProdutoDetalheCard === 'function'){
+      window.abrirProdutoDetalheCard(cardReal);
+      return true;
+    }
+    return false;
+  }
+
+  document.addEventListener('click', function(evento){
+    const card = evento.target.closest('.recomendado-card-ms.recomendado-banco-ms');
+    if(!card) return;
+    if(evento.target.closest('.rec-fav-ms')) return;
+
+    evento.preventDefault();
+    evento.stopPropagation();
+    evento.stopImmediatePropagation();
+    abrirRecomendadoBancoRealMS(card);
+  }, true);
+
+  document.addEventListener('keydown', function(evento){
+    if(evento.key !== 'Enter' && evento.key !== ' ') return;
+    const card = evento.target.closest('.recomendado-card-ms.recomendado-banco-ms');
+    if(!card) return;
+    evento.preventDefault();
+    abrirRecomendadoBancoRealMS(card);
+  }, true);
+})();
+
