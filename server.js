@@ -3230,11 +3230,13 @@ app.delete("/backups/:id", async (req, res, next) => {
 
 // BARRA DE BENEFÍCIOS DA LOJA ------------------------------------------------
 const BENEFICIOS_PADRAO_MS = {
-  ativo: true, fundo: "#000000", corTexto: "#ffffff", mostrarDesktop: true, mostrarMobile: true,
+  ativo: true, fundo: "#090909", corTexto: "#ffffff", corIcone: "#d8ad43",
+  mostrarDesktop: true, mostrarMobile: true, pausarHover: true, velocidade: 28, altura: 44,
   itens: [
-    { id: "frete", icone: "truck", texto: "FRETE PARA TODO O BRASIL", ativo: true, ordem: 1 },
-    { id: "parcelamento", icone: "card", texto: "PARCELE EM ATÉ 3X SEM JUROS", ativo: true, ordem: 2 },
-    { id: "troca", icone: "repeat", texto: "TROCA GARANTIDA EM ATÉ 7 DIAS", ativo: true, ordem: 3 }
+    { id: "frete", icone: "truck", texto: "ENVIO PARA TODO O BRASIL", ativo: true, ordem: 1 },
+    { id: "seguranca", icone: "shield", texto: "COMPRA 100% SEGURA", ativo: true, ordem: 2 },
+    { id: "parcelamento", icone: "card", texto: "ATÉ 5X SEM JUROS", ativo: true, ordem: 3 },
+    { id: "retirada", icone: "pin", texto: "RETIRADA NO LOCAL", ativo: true, ordem: 4 }
   ]
 };
 function limparBeneficiosConfigMS(valor = {}) {
@@ -3251,8 +3253,12 @@ function limparBeneficiosConfigMS(valor = {}) {
     ativo: entrada.ativo !== false,
     fundo: /^#[0-9a-f]{6}$/i.test(String(entrada.fundo || "")) ? entrada.fundo : BENEFICIOS_PADRAO_MS.fundo,
     corTexto: /^#[0-9a-f]{6}$/i.test(String(entrada.corTexto || "")) ? entrada.corTexto : BENEFICIOS_PADRAO_MS.corTexto,
+    corIcone: /^#[0-9a-f]{6}$/i.test(String(entrada.corIcone || "")) ? entrada.corIcone : BENEFICIOS_PADRAO_MS.corIcone,
     mostrarDesktop: entrada.mostrarDesktop !== false,
     mostrarMobile: entrada.mostrarMobile !== false,
+    pausarHover: entrada.pausarHover !== false,
+    velocidade: Math.max(12, Math.min(60, Number(entrada.velocidade) || BENEFICIOS_PADRAO_MS.velocidade)),
+    altura: Math.max(36, Math.min(58, Number(entrada.altura) || BENEFICIOS_PADRAO_MS.altura)),
     itens: (itens.length ? itens : BENEFICIOS_PADRAO_MS.itens).sort((a,b) => a.ordem - b.ordem)
   };
 }
