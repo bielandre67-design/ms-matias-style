@@ -6412,6 +6412,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const link = evento.target.closest('header a, nav.menu a, .menu-mobile a, a[href^="#"], a[href="index.html"], a[href^="index.html#"]');
     if(!link) return;
 
+    // O botão do carrinho não é navegação. Não feche camadas nem altere o scroll.
+    if (link.matches('.btn-com-badge') || link.id === 'btnAbrirCarrinhoMS' || /abrirCarrinho/i.test(link.getAttribute('onclick') || '')) {
+      return;
+    }
+
     fecharTudoDoCarrinhoMS();
 
     const href = link.getAttribute('href') || '';
@@ -8606,5 +8611,73 @@ document.addEventListener('DOMContentLoaded',()=>setTimeout(carregarConfigFreteL
       alert('Não foi possível abrir este produto agora. Tente novamente.');
     });
   }, true);
+})();
+
+/* =========================================================
+   MS FIX DEFINITIVO - ABERTURA DO CARRINHO NO PC SEM PULAR
+   Mantém a posição atual da página e evita navegação acidental.
+   ========================================================= */
+(function instalarCarrinhoPCSemPuloMS(){
+  function abrirCarrinhoPCSeguroMS(evento){
+    if(evento){
+      evento.preventDefault?.();
+      evento.stopPropagation?.();
+      evento.stopImmediatePropagation?.();
+    }
+
+    const posicaoAtual = window.scrollY || document.documentElement.scrollTop || 0;
+    const carrinhoPC = document.getElementById('carrinho');
+    const fundo = document.getElementById('fundoCarrinho');
+
+    if(!carrinhoPC){
+      alert('Não foi possível abrir o carrinho. Atualize a página e tente novamente.');
+      return false;
+    }
+
+    // Fecha apenas a versão mobile, sem executar rotinas gerais que mexem no scroll.
+    const carrinhoMobile = document.getElementById('carrinhoMobileMS');
+    if(carrinhoMobile){
+      carrinhoMobile.classList.remove('ativo');
+      carrinhoMobile.style.display = 'none';
+    }
+
+    carrinhoPC.style.display = 'block';
+    carrinhoPC.classList.add('ativo');
+    if(fundo){
+      fundo.style.display = 'block';
+      fundo.classList.add('ativo');
+    }
+
+    if(typeof window.atualizarCarrinho === 'function'){
+      window.atualizarCarrinho();
+    }
+
+    // Algumas correções antigas alteravam a posição do body. Restaura o ponto exato.
+    requestAnimationFrame(function(){
+      window.scrollTo({top: posicaoAtual, left: 0, behavior: 'auto'});
+    });
+
+    return false;
+  }
+
+  window.abrirCarrinhoPCMS = abrirCarrinhoPCSeguroMS;
+  window.abrirCarrinhoResponsivoMS = function(evento){
+    if(window.innerWidth <= 768){
+      evento?.preventDefault?.();
+      evento?.stopPropagation?.();
+      return typeof window.abrirCarrinhoMobileMS === 'function'
+        ? window.abrirCarrinhoMobileMS()
+        : false;
+    }
+    return abrirCarrinhoPCSeguroMS(evento);
+  };
+
+  document.addEventListener('DOMContentLoaded', function(){
+    const botao = document.getElementById('btnAbrirCarrinhoMS');
+    if(!botao) return;
+    botao.addEventListener('click', function(evento){
+      window.abrirCarrinhoResponsivoMS(evento);
+    }, true);
+  });
 })();
 
